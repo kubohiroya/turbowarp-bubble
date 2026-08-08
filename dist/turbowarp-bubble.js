@@ -209,7 +209,7 @@
         "opcode": "setAdvanceFrames",
         "blockType": "COMMAND",
         "text": "set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
-        "description": "Sets at least two comma-separated registered image assets for the waiting indicator. An empty list removes the indicator.",
+        "description": "Sets at least two comma-separated registered image assets for the awaiting-advance indicator. An empty list removes the indicator.",
         "arguments": {
           "ASSETS": {
             "type": "STRING",
@@ -229,7 +229,7 @@
         "opcode": "sayWithBubbleStyle",
         "blockType": "COMMAND",
         "text": "say [MESSAGE] with bubble style [STYLE]",
-        "description": "Shows or replaces this sprite's layered say bubble in the speaking phase.",
+        "description": "Shows or replaces this sprite's layered say bubble in talking animation mode.",
         "arguments": {
           "MESSAGE": {
             "type": "STRING",
@@ -245,7 +245,7 @@
         "opcode": "thinkWithBubbleStyle",
         "blockType": "COMMAND",
         "text": "think [MESSAGE] with bubble style [STYLE]",
-        "description": "Shows or replaces this sprite's layered think bubble in the speaking phase.",
+        "description": "Shows or replaces this sprite's layered think bubble in talking animation mode.",
         "arguments": {
           "MESSAGE": {
             "type": "STRING",
@@ -258,15 +258,31 @@
         }
       },
       {
-        "opcode": "setBubblePhase",
+        "opcode": "setBubbleAnimationMode",
         "blockType": "COMMAND",
-        "text": "set this bubble phase [PHASE]",
-        "description": "Changes this sprite's bubble phase. Waiting stops talk animation and starts the advance indicator.",
-        "arguments": { "PHASE": {
+        "text": "set this bubble animation mode [MODE]",
+        "description": "Changes this sprite's bubble animation mode. Awaiting advance stops talk animation and starts the configured advance frames.",
+        "arguments": { "MODE": {
           "type": "STRING",
-          "defaultValue": "waiting",
-          "menu": "phase"
+          "defaultValue": "awaiting-advance",
+          "menu": "animationMode"
         } }
+      },
+      {
+        "opcode": "waitForBubbleAdvance",
+        "blockType": "COMMAND",
+        "text": "wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds",
+        "description": "Switches to awaiting-advance mode, evaluates a Runtime Expression condition using variables updated by Async Input, and waits until the condition is true or the timeout expires. Zero disables the timeout.",
+        "arguments": {
+          "CONDITION": {
+            "type": "STRING",
+            "defaultValue": "input == \"pressed\""
+          },
+          "TIMEOUT": {
+            "type": "NUMBER",
+            "defaultValue": 10
+          }
+        }
       },
       {
         "opcode": "closeBubble",
@@ -323,11 +339,11 @@
           "FOOTER_LIKE"
         ]
       },
-      "phase": {
+      "animationMode": {
         "acceptReporters": true,
         "items": [
-          "speaking",
-          "waiting",
+          "talking",
+          "awaiting-advance",
           "idle"
         ]
       }
@@ -6670,10 +6686,10 @@
     }
   };
   var validKinds = /* @__PURE__ */ new Set(["say", "think"]);
-  var validPhases$1 = /* @__PURE__ */ new Set([
+  var validAnimationModes$1 = /* @__PURE__ */ new Set([
     "idle",
-    "speaking",
-    "waiting"
+    "talking",
+    "awaiting-advance"
   ]);
   function isRecord$1(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -6879,18 +6895,18 @@
       "kind",
       "text",
       "styleName"
-    ], ["phase"], "Show bubble input");
+    ], ["animationMode"], "Show bubble input");
     if (!validKinds.has(value.kind)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
     if (typeof value.text !== "string") throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string.");
-    const phase = value.phase ?? "speaking";
-    if (!validPhases$1.has(phase)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble phase is invalid.");
+    const animationMode = value.animationMode ?? "talking";
+    if (!validAnimationModes$1.has(animationMode)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid.");
     return {
       actor: value.actor,
       actorKey: requireName(value.actorKey, "Bubble actor key"),
       kind: value.kind,
       text: value.text,
       styleName: requireName(value.styleName, "Bubble style name"),
-      phase
+      animationMode
     };
   }
   function createBubbleComposition(options) {
@@ -6980,17 +6996,17 @@
           scheduler,
           ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
         });
-        let currentPhase = "idle";
+        let currentAnimationMode = "idle";
         let closed = false;
         let transitionTail = Promise.resolve();
-        const applyPhase = async (phase) => {
-          if (phase === currentPhase) return;
-          if (phase === "speaking") {
+        const applyAnimationMode = async (mode) => {
+          if (mode === currentAnimationMode) return;
+          if (mode === "talking") {
             await indicatorLoop?.stop();
             await surface?.setLayerVisible("advanceIndicator", false);
             await surface?.setLayerVisible("portraitTalk", talkLoop !== void 0);
             await talkLoop?.start({ primed: true });
-          } else if (phase === "waiting") {
+          } else if (mode === "awaiting-advance") {
             await talkLoop?.stop({ reset: true });
             await surface?.setLayerVisible("portraitTalk", false);
             await surface?.setLayerVisible("advanceIndicator", indicatorLoop !== void 0);
@@ -6999,7 +7015,7 @@
             await Promise.all([talkLoop?.stop({ reset: true }), indicatorLoop?.stop()]);
             await Promise.all([surface?.setLayerVisible("portraitTalk", false), surface?.setLayerVisible("advanceIndicator", false)]);
           }
-          currentPhase = phase;
+          currentAnimationMode = mode;
         };
         await Promise.all([
           surface.setLayerVisible("portraitBase", style.portrait !== void 0),
@@ -7010,17 +7026,17 @@
         await surface.show();
         surfaceVisible = true;
         await blinkLoop?.start({ primed: true });
-        await applyPhase(input.phase);
+        await applyAnimationMode(input.animationMode);
         const handle = Object.freeze({
           actorKey: input.actorKey,
           kind: input.kind,
-          get phase() {
-            return currentPhase;
+          get animationMode() {
+            return currentAnimationMode;
           },
-          setPhase(phase) {
+          setAnimationMode(mode) {
             if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
-            if (!validPhases$1.has(phase)) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble phase is invalid."));
-            transitionTail = transitionTail.then(() => applyPhase(phase));
+            if (!validAnimationModes$1.has(mode)) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid."));
+            transitionTail = transitionTail.then(() => applyAnimationMode(mode));
             return transitionTail;
           },
           async close() {
@@ -7483,10 +7499,10 @@
   //#region src/extension.ts
   var blockDefinitions = block_definitions_default.blocks;
   var definitionMenus = block_definitions_default.menus;
-  var validPhases = /* @__PURE__ */ new Set([
+  var validAnimationModes = /* @__PURE__ */ new Set([
     "idle",
-    "speaking",
-    "waiting"
+    "talking",
+    "awaiting-advance"
   ]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
   var EXTENSION_VERSION = "0.1.0";
@@ -7501,11 +7517,17 @@
       _defineProperty(this, "options", void 0);
       _defineProperty(this, "styles", /* @__PURE__ */ new Map());
       _defineProperty(this, "handles", /* @__PURE__ */ new Map());
+      _defineProperty(this, "waits", /* @__PURE__ */ new Map());
+      _defineProperty(this, "waitScheduler", void 0);
       _defineProperty(this, "composition", null);
       _defineProperty(this, "disposed", false);
       if (!runtime) throw extensionError("TurboWarp runtime is unavailable.");
       this.runtime = runtime;
       this.options = options;
+      this.waitScheduler = options.scheduler ?? Object.freeze({
+        setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
+        clearTimeout: (handle) => globalThis.clearTimeout(handle)
+      });
       const releaseAll = () => {
         this.releaseAll().catch(() => void 0);
       };
@@ -7633,13 +7655,59 @@
     thinkWithBubbleStyle(args, util) {
       return this.show("think", args, util);
     }
-    async setBubblePhase(args, util) {
+    async setBubbleAnimationMode(args, util) {
       const target = this.requireTarget(util);
-      const phase = this.toString(args.PHASE).trim().toLowerCase();
-      if (!validPhases.has(phase)) throw extensionError("phase must be speaking, waiting, or idle.");
+      const mode = this.toString(args.MODE).trim().toLowerCase();
+      if (!validAnimationModes.has(mode)) throw extensionError("animation mode must be talking, awaiting-advance, or idle.");
       const handle = this.handles.get(target.id);
       if (!handle) throw extensionError("this target does not have an active bubble.");
-      await handle.setPhase(phase);
+      await handle.setAnimationMode(mode);
+    }
+    async waitForBubbleAdvance(args, util) {
+      const target = this.requireTarget(util);
+      const handle = this.handles.get(target.id);
+      if (!handle) throw extensionError("this target does not have an active bubble.");
+      const condition = this.toString(args.CONDITION).trim();
+      if (!condition) throw extensionError("wait condition is empty.");
+      const timeoutSeconds = Scratch.Cast.toNumber(args.TIMEOUT);
+      if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) throw extensionError("wait timeout must be zero or greater.");
+      if (!this.isRecord(this.runtime.ext_kubohiroyaasyncinput)) throw extensionError("Bubble wait requires Async Input. Load @kubohiroya/turbowarp-async-input before using this block.");
+      const runtimeExpression = this.runtime.ext_kubohiroyaruntimeexpression;
+      if (!this.isRecord(runtimeExpression) || typeof runtimeExpression.runtimeCondition !== "function") throw extensionError("Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.");
+      if (typeof this.runtime.on !== "function" || typeof this.runtime.off !== "function") throw extensionError("TurboWarp runtime events are unavailable.");
+      this.cancelWait(target.id, "Bubble wait was replaced.");
+      await handle.setAnimationMode("awaiting-advance");
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        let timeoutHandle;
+        const cleanup = () => {
+          this.runtime.off?.("BEFORE_EXECUTE", checkCondition);
+          if (timeoutHandle !== void 0) this.waitScheduler.clearTimeout(timeoutHandle);
+          if (this.waits.get(target.id) === pending) this.waits.delete(target.id);
+        };
+        const finish = (error) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          if (error) {
+            reject(error);
+            return;
+          }
+          handle.setAnimationMode("idle").then(resolve, reject);
+        };
+        const checkCondition = () => {
+          try {
+            if (runtimeExpression.runtimeCondition({ EXPRESSION: condition })) finish();
+          } catch (error) {
+            finish(error instanceof Error ? error : extensionError("wait condition evaluation failed."));
+          }
+        };
+        const pending = Object.freeze({ cancel: finish });
+        this.waits.set(target.id, pending);
+        this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
+        if (timeoutSeconds > 0) timeoutHandle = this.waitScheduler.setTimeout(() => finish(), timeoutSeconds * 1e3);
+        checkCondition();
+      });
     }
     async closeBubble(_args, util) {
       const target = this.requireTarget(util);
@@ -7649,6 +7717,7 @@
       return EXTENSION_VERSION;
     }
     async releaseAll() {
+      this.cancelAllWaits("Bubble waits were released.");
       if (!this.composition) return;
       await this.composition.releaseAll();
       this.handles.clear();
@@ -7656,6 +7725,7 @@
     async dispose() {
       if (this.disposed) return;
       this.disposed = true;
+      this.cancelAllWaits("Bubble extension was disposed.");
       if (this.composition) await this.composition.dispose();
       this.handles.clear();
       this.styles.clear();
@@ -7674,6 +7744,20 @@
     }
     toString(value) {
       return Scratch.Cast.toString(value);
+    }
+    isRecord(value) {
+      return typeof value === "object" && value !== null && !Array.isArray(value);
+    }
+    abortError(message) {
+      const error = extensionError(message);
+      error.name = "AbortError";
+      return error;
+    }
+    cancelWait(targetId, message) {
+      this.waits.get(targetId)?.cancel(this.abortError(message));
+    }
+    cancelAllWaits(message) {
+      for (const targetId of [...this.waits.keys()]) this.cancelWait(targetId, message);
     }
     requireName(value, label) {
       const name = this.toString(value).trim();
@@ -7757,6 +7841,7 @@
       const target = this.requireTarget(util);
       const placement = normalizeBubblePlacement(style.placement ?? "up-right");
       if (target.isStage && placement.basis === "actor") throw extensionError("actor-relative bubble placement requires a sprite or clone.");
+      this.cancelWait(target.id, "Bubble wait was replaced.");
       const composition = this.getComposition();
       let handle;
       try {
@@ -7774,6 +7859,7 @@
       if (composition.hasActiveBubble(target.id)) this.handles.set(target.id, handle);
     }
     async releaseOwnedTarget(targetId) {
+      this.cancelWait(targetId, "Bubble wait was released.");
       this.handles.delete(targetId);
       if (this.composition) await this.composition.releaseTarget(targetId);
     }

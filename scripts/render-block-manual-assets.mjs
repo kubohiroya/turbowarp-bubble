@@ -13,6 +13,7 @@ const fontFamily =
 
 const colors = Object.freeze({
   asset: "#5b7cfa",
+  asyncInput: "#2f9d8f",
   bubble: "#ff6680",
   bubbleDark: "#d94b68",
   control: "#ffab19",
@@ -22,6 +23,7 @@ const colors = Object.freeze({
   panel: "#ffffff",
   page: "#f2f4f8",
   svgText: "#9966ff",
+  temporaryVariables: "#ff8c1a",
 });
 
 function escapeXml(value) {
@@ -158,7 +160,7 @@ function quickStartSvg() {
   const body = `
   <rect width="1200" height="880" fill="${colors.page}"/>
   <text x="32" y="48" class="heading">Bubbleブロック：最小構成</text>
-  <text x="32" y="74" class="body">緑の旗でstyleを準備し、セリフごとに speaking → waiting → close を実行します。</text>
+  <text x="32" y="74" class="body">緑の旗でstyleと入力を準備し、セリフごとに say → Bubble内蔵待機 → close を実行します。</text>
   ${panel(24, 96, 560, 752, "1. 緑の旗で準備")}
   ${panel(616, 96, 560, 752, "2. セリフを表示して入力待ち")}
   ${block({
@@ -323,10 +325,43 @@ function quickStartSvg() {
       ],
     ],
   })}
-  <path d="M 690 390 V 412" stroke="#aab2c3" stroke-width="4" stroke-linecap="round"/>
+  ${block({
+    x: 640,
+    y: 390,
+    width: 510,
+    color: colors.temporaryVariables,
+    fontSize: 12,
+    ariaLabel: "Temporary Variablesでinput変数を初期化",
+    lines: [
+      [
+        { text: "set runtime variable" },
+        { input: "input" },
+        { text: "to" },
+        { input: "" },
+      ],
+    ],
+  })}
+  ${block({
+    x: 640,
+    y: 448,
+    width: 510,
+    color: colors.asyncInput,
+    fontSize: 12,
+    ariaLabel: "Async InputでSpaceキーをinput変数へ登録",
+    lines: [
+      [
+        { text: "listen for key" },
+        { input: "Space" },
+        { text: "set runtime var" },
+        { input: "input" },
+        { text: "to" },
+        { input: "pressed" },
+      ],
+    ],
+  })}
   ${block({
     x: 668,
-    y: 418,
+    y: 506,
     width: 454,
     color: colors.bubble,
     fontSize: 14,
@@ -342,44 +377,40 @@ function quickStartSvg() {
   })}
   ${block({
     x: 668,
-    y: 480,
+    y: 568,
     width: 454,
+    height: 72,
     color: colors.bubble,
-    fontSize: 14,
-    ariaLabel: "Bubbleをwaiting phaseへ変更",
-    lines: [[{ text: "set this bubble phase" }, { input: "waiting" }]],
-  })}
-  ${block({
-    x: 668,
-    y: 542,
-    width: 454,
-    color: colors.control,
-    fontSize: 14,
-    ariaLabel: "キー入力またはタップまで待つ",
+    fontSize: 12,
+    ariaLabel: "Bubbleで条件成立またはタイムアウトまで待機",
     lines: [
-      [{ text: "wait until" }, { input: "space key pressed? or mouse down?" }],
+      [
+        { text: "wait with this bubble until condition" },
+        { input: 'input == "pressed"' },
+      ],
+      [{ text: "or timeout after" }, { input: "10" }, { text: "seconds" }],
     ],
   })}
   ${block({
     x: 668,
-    y: 604,
+    y: 652,
     width: 454,
     color: colors.bubble,
     fontSize: 14,
     ariaLabel: "Bubbleを閉じる",
     lines: [[{ text: "close this bubble" }]],
   })}
-  <rect x="644" y="674" width="502" height="132" rx="16" fill="#fff3f6" stroke="#ffc4d1"/>
-  <text x="668" y="704" class="body" style="font-weight:700">重要：Bubble自身は入力を待ちません</text>
-  <text x="668" y="733" class="body">waitingで「次へ」を動かし、Scratch側で待機。</text>
-  <text x="668" y="762" class="body">入力成立後にcloseを実行してください。</text>`;
+  <rect x="644" y="720" width="502" height="112" rx="16" fill="#fff3f6" stroke="#ffc4d1"/>
+  <text x="668" y="750" class="body" style="font-weight:700">Bubbleが条件成立またはtimeoutまで待機</text>
+  <text x="668" y="779" class="body">待機中はadvance framesをループし、口パクを停止。</text>
+  <text x="668" y="808" class="body">待機後はidleへ移り、次のcloseを実行します。</text>`;
 
   return svgDocument({
     width: 1200,
     height: 880,
     title: "TurboWarp Bubbleブロックの最小構成",
     description:
-      "Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に使うブロック例。",
+      "各Next画像を個別登録し、Async InputとRuntime Expressionを介したBubble内蔵待機を使うブロック例。",
     body,
   });
 }
@@ -872,8 +903,8 @@ function phaseCard({
 }) {
   return `<g>
     <rect x="${x}" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
-    <rect x="${x + 20}" y="106" width="116" height="34" rx="17" fill="${phase === "waiting" ? colors.bubble : "#e8ebf2"}"/>
-    <text x="${x + 78}" y="129" text-anchor="middle" style="fill:${phase === "waiting" ? "#ffffff" : colors.ink};font-size:15px;font-weight:700">${escapeXml(title)}</text>
+    <rect x="${x + 20}" y="106" width="170" height="34" rx="17" fill="${phase === "awaiting-advance" ? colors.bubble : "#e8ebf2"}"/>
+    <text x="${x + 105}" y="129" text-anchor="middle" style="fill:${phase === "awaiting-advance" ? "#ffffff" : colors.ink};font-size:15px;font-weight:700">${escapeXml(title)}</text>
     <text x="${x + 20}" y="164" class="small">${escapeXml(subtitle)}</text>
     ${face({ centerX: x + 76, centerY: 253, eyesClosed, mouthOpen, scale: 0.72 })}
     ${speechBubble({
@@ -903,13 +934,13 @@ function phaseCard({
 function phaseGuideSvg() {
   const body = `
   <rect width="1200" height="500" fill="${colors.page}"/>
-  <text x="32" y="47" class="heading">phaseでアニメーションを切り替える</text>
+  <text x="32" y="47" class="heading">animation modeで表示中の動きを切り替える</text>
   <text x="32" y="72" class="small">緑は実行中、灰色は停止・非表示です。目パチはBubbleが表示されている間継続します。</text>
   ${phaseCard({
     x: 24,
-    title: "speaking",
+    title: "talking",
     subtitle: "say／think直後",
-    phase: "speaking",
+    phase: "talking",
     eyesClosed: false,
     mouthOpen: true,
     indicator: false,
@@ -921,9 +952,9 @@ function phaseGuideSvg() {
   })}
   ${phaseCard({
     x: 420,
-    title: "waiting",
-    subtitle: "キー入力／タップ待ち",
-    phase: "waiting",
+    title: "awaiting-advance",
+    subtitle: "ユーザの「次へ」操作待ち",
+    phase: "awaiting-advance",
     eyesClosed: true,
     mouthOpen: false,
     indicator: true,
@@ -950,9 +981,9 @@ function phaseGuideSvg() {
   return svgDocument({
     width: 1200,
     height: 500,
-    title: "Bubble phase比較",
+    title: "Bubble animation mode比較",
     description:
-      "speaking、waiting、idleにおける目パチ、口パク、次へアイコンの動作比較。",
+      "talking、awaiting-advance、idleにおける目パチ、口パク、advance framesの動作比較。",
     body,
   });
 }
@@ -967,49 +998,49 @@ function timelineSegment(x, width, label, active) {
 function lifecycleFrameSvg(index) {
   const phase =
     index < 8
-      ? "speaking"
+      ? "talking"
       : index < 14
-        ? "waiting"
+        ? "awaiting-advance"
         : index === 14
           ? "input"
           : "closed";
-  const mouthOpen = phase === "speaking" && index % 2 === 1;
+  const mouthOpen = phase === "talking" && index % 2 === 1;
   const eyesClosed = index === 3 || index === 11;
-  const indicator = phase === "waiting" || phase === "input";
+  const indicator = phase === "awaiting-advance" || phase === "input";
   const indicatorOffset = index % 2 === 0 ? 0 : 7;
   const activeIndex =
-    phase === "speaking"
+    phase === "talking"
       ? 0
-      : phase === "waiting"
+      : phase === "awaiting-advance"
         ? 1
         : phase === "input"
           ? 2
           : 3;
   const stateText =
-    phase === "speaking"
-      ? "speaking：目パチ＋口パク"
-      : phase === "waiting"
-        ? "waiting：口パク停止＋次へループ"
+    phase === "talking"
+      ? "talking：目パチ＋口パク"
+      : phase === "awaiting-advance"
+        ? "awaiting-advance：口パク停止＋次へループ"
         : phase === "input"
           ? "キー入力／タップ成立"
           : "close：timer・skin・drawableを解放";
   const blockText =
-    phase === "speaking"
+    phase === "talking"
       ? "say  [海へ出発！]  with bubble style  [hero-dialogue]"
-      : phase === "waiting"
-        ? "set this bubble phase  [waiting]"
+      : phase === "awaiting-advance"
+        ? 'wait with this bubble until  [input == "pressed"]  or timeout  [10] seconds'
         : phase === "input"
-          ? "space key pressed?  or  mouse down?"
+          ? 'Runtime Expression:  input == "pressed"  → true'
           : "close this bubble";
   const blockColor = phase === "input" ? colors.control : colors.bubble;
 
   const body = `
   <rect width="960" height="540" fill="${colors.page}"/>
   <text x="30" y="42" class="heading">Bubble表示の1サイクル</text>
-  <text x="30" y="64" class="small">Bubbleは入力判定を行わないため、waitingの後はScratch側で待ちます。</text>
-  ${timelineSegment(30, 205, "1  say / speaking", activeIndex === 0)}
-  ${timelineSegment(250, 205, "2  waiting", activeIndex === 1)}
-  ${timelineSegment(470, 205, "3  キー／タップ", activeIndex === 2)}
+  <text x="30" y="64" class="small">Async Inputがruntime変数を更新し、BubbleはRuntime Expressionの条件成立またはtimeoutまで待ちます。</text>
+  ${timelineSegment(30, 205, "1  say / talking", activeIndex === 0)}
+  ${timelineSegment(250, 205, "2  Bubble内蔵待機", activeIndex === 1)}
+  ${timelineSegment(470, 205, "3  条件成立", activeIndex === 2)}
   ${timelineSegment(690, 205, "4  close", activeIndex === 3)}
   <rect x="30" y="132" width="900" height="288" rx="24" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
   ${face({ centerX: 194, centerY: 278, eyesClosed, mouthOpen, scale: 1.18 })}
@@ -1071,7 +1102,7 @@ async function main() {
     "utf8",
   );
   await writeFile(
-    join(assetsDirectory, "phase-guide.svg"),
+    join(assetsDirectory, "animation-mode-guide.svg"),
     phaseGuideSvg(),
     "utf8",
   );

@@ -5,8 +5,8 @@ const quickStartUrl = new URL(
   "../docs/assets/block-quick-start.svg",
   import.meta.url,
 );
-const phaseGuideUrl = new URL(
-  "../docs/assets/phase-guide.svg",
+const animationModeGuideUrl = new URL(
+  "../docs/assets/animation-mode-guide.svg",
   import.meta.url,
 );
 const placementGuideUrl = new URL(
@@ -103,7 +103,7 @@ function inspectGif(buffer) {
 
 const [
   quickStart,
-  phaseGuide,
+  animationModeGuide,
   placementGuide,
   actorTransformGuide,
   widthLinebreakGuide,
@@ -113,7 +113,7 @@ const [
   japaneseManual,
 ] = await Promise.all([
   readFile(quickStartUrl, "utf8"),
-  readFile(phaseGuideUrl, "utf8"),
+  readFile(animationModeGuideUrl, "utf8"),
   readFile(placementGuideUrl, "utf8"),
   readFile(actorTransformGuideUrl, "utf8"),
   readFile(widthLinebreakGuideUrl, "utf8"),
@@ -125,12 +125,23 @@ const [
 
 requireText(quickStart, 'viewBox="0 0 1200 880"', "Quick-start SVG");
 requireText(quickStart, "close this bubble", "Quick-start SVG");
+requireText(
+  quickStart,
+  "wait with this bubble until condition",
+  "Quick-start SVG",
+);
+requireText(quickStart, "set runtime variable", "Quick-start SVG");
+requireText(quickStart, "listen for key", "Quick-start SVG");
 for (const asset of ["Next1", "Next2"]) {
   requireText(quickStart, `costume:Assets:${asset}`, "Quick-start SVG");
   requireText(quickStart, `>${asset}<`, "Quick-start SVG");
 }
 forbidText(quickStart, "Next1 / Next2", "Quick-start SVG");
-requireText(phaseGuide, 'viewBox="0 0 1200 500"', "Phase-guide SVG");
+requireText(
+  animationModeGuide,
+  'viewBox="0 0 1200 500"',
+  "Animation-mode-guide SVG",
+);
 requireText(placementGuide, 'viewBox="0 0 1600 1560"', "Placement-guide SVG");
 requireText(
   actorTransformGuide,
@@ -236,9 +247,14 @@ for (const style of [
     "Bubble-style-gallery SVG",
   );
 }
-for (const phase of ["speaking", "waiting", "idle"]) {
-  requireText(phaseGuide, phase, "Phase-guide SVG");
+for (const mode of ["talking", "awaiting-advance", "idle"]) {
+  requireText(animationModeGuide, mode, "Animation-mode-guide SVG");
 }
+forbidText(
+  animationModeGuide,
+  "set this bubble phase",
+  "Animation-mode-guide SVG",
+);
 
 const gif = inspectGif(lifecycle);
 if (
@@ -263,12 +279,13 @@ const requiredManualReferences = [
   "set advance frames",
   "say [MESSAGE] with bubble style",
   "think [MESSAGE] with bubble style",
-  "set this bubble phase",
+  "set this bubble animation mode",
+  "wait with this bubble until condition",
   "close this bubble",
   "Bubble version",
   "./assets/block-quick-start.svg",
   "./assets/bubble-lifecycle.gif",
-  "./assets/phase-guide.svg",
+  "./assets/animation-mode-guide.svg",
   "./assets/placement-guide.svg",
   "./assets/actor-transform-guide.svg",
   "./assets/width-linebreak-guide.svg",
@@ -285,3 +302,17 @@ requireText(
   "TurboWarp Bubble ブロック利用マニュアル",
   "Japanese block manual",
 );
+for (const [manualSource, label] of [
+  [manual, "English block manual"],
+  [japaneseManual, "Japanese block manual"],
+]) {
+  forbidText(manualSource, "set this bubble phase", label);
+  forbidText(
+    manualSource,
+    "wait until <space key pressed? or mouse down?>",
+    label,
+  );
+  requireText(manualSource, "awaiting-advance", label);
+  requireText(manualSource, "turbowarp-async-input", label);
+  requireText(manualSource, "turbowarp-runtime-expression", label);
+}

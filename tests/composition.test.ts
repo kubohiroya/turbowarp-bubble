@@ -173,7 +173,7 @@ describe("Bubble composition", () => {
       layer: "advanceIndicator",
       visible: false,
     });
-    expect(handle.phase).toBe("speaking");
+    expect(handle.animationMode).toBe("talking");
     expect(harness.composition.hasActiveBubble("Hero")).toBe(true);
     expect(harness.scheduler.size).toBe(2);
   });
@@ -250,7 +250,7 @@ describe("Bubble composition", () => {
     );
   });
 
-  it("stops mouth animation and loops the advance indicator while waiting", async () => {
+  it("stops mouth animation and loops the indicator while awaiting advance", async () => {
     const harness = createHarness();
     const handle = await harness.composition.show({
       actor: { id: "Hero" },
@@ -260,8 +260,8 @@ describe("Bubble composition", () => {
       styleName: "dialogue",
     });
 
-    await handle.setPhase("waiting");
-    expect(handle.phase).toBe("waiting");
+    await handle.setAnimationMode("awaiting-advance");
+    expect(handle.animationMode).toBe("awaiting-advance");
     expect(harness.visibility.slice(-2)).toEqual([
       { layer: "portraitTalk", visible: false },
       { layer: "advanceIndicator", visible: true },
@@ -315,7 +315,9 @@ describe("Bubble composition", () => {
       styleName: "dialogue",
     });
 
-    await expect(firstHandle.setPhase("waiting")).rejects.toMatchObject({
+    await expect(
+      firstHandle.setAnimationMode("awaiting-advance"),
+    ).rejects.toMatchObject({
       code: "BUBBLE-COMPOSITION-005",
     });
     expect(first.releaseTarget).toHaveBeenCalledTimes(1);

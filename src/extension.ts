@@ -10,9 +10,10 @@ import {
 } from "./composition.js";
 import type {
   BubbleComposition,
+  BubbleAnimationMode,
   BubbleFrameAnimationInput,
   BubbleHandle,
-  BubblePhase,
+  BubbleScheduler,
   BubblePlacementInput,
   BubblePortraitInput,
   BubbleStyleInput,
@@ -53,6 +54,17 @@ interface BlockUtility {
 
 interface BubbleExtensionRuntime extends TurboWarpBubbleRuntime {
   on?(event: string, listener: (...args: unknown[]) => void): void;
+  off?(event: string, listener: (...args: unknown[]) => void): void;
+  readonly ext_kubohiroyaasyncinput?: unknown;
+  readonly ext_kubohiroyaruntimeexpression?: TurboWarpRuntimeExpressionExtension;
+}
+
+interface TurboWarpRuntimeExpressionExtension {
+  runtimeCondition(args: Readonly<{ EXPRESSION: unknown }>): boolean;
+}
+
+interface PendingBubbleWait {
+  cancel(error: Error): void;
 }
 
 type BubbleExtensionOptions = TurboWarpBubbleCompositionOptions;
@@ -62,7 +74,11 @@ type AnimationField = "blink" | "talk";
 
 const blockDefinitions = definitions.blocks as readonly BlockDefinition[];
 const definitionMenus = definitions.menus as Record<string, DefinitionMenu>;
-const validPhases = new Set<BubblePhase>(["idle", "speaking", "waiting"]);
+const validAnimationModes = new Set<BubbleAnimationMode>([
+  "idle",
+  "talking",
+  "awaiting-advance",
+]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
 export const EXTENSION_VERSION = "0.1.0";
@@ -78,6 +94,8 @@ export class BubbleExtension implements TurboWarpExtension {
   private readonly options: BubbleExtensionOptions;
   private readonly styles = new Map<string, BubbleStyleInput>();
   private readonly handles = new Map<string, BubbleHandle>();
+  private readonly waits = new Map<string, PendingBubbleWait>();
+  private readonly waitScheduler: BubbleScheduler;
   private composition: BubbleComposition | null = null;
   private disposed = false;
 
@@ -88,6 +106,16 @@ export class BubbleExtension implements TurboWarpExtension {
     if (!runtime) throw extensionError("TurboWarp runtime is unavailable.");
     this.runtime = runtime;
     this.options = options;
+    this.waitScheduler =
+      options.scheduler ??
+      Object.freeze({
+        setTimeout: (callback: () => void, milliseconds: number) =>
+          globalThis.setTimeout(callback, milliseconds),
+        clearTimeout: (handle: unknown) =>
+          globalThis.clearTimeout(
+            handle as ReturnType<typeof globalThis.setTimeout>,
+          ),
+      });
     const releaseAll = (): void => {
       void this.releaseAll().catch(() => undefined);
     };
@@ -259,19 +287,105 @@ export class BubbleExtension implements TurboWarpExtension {
     return this.show("think", args, util);
   }
 
-  public async setBubblePhase(
+  public async setBubbleAnimationMode(
     args: BlockArguments,
     util: BlockUtility,
   ): Promise<void> {
     const target = this.requireTarget(util);
-    const phase = this.toString(args.PHASE).trim().toLowerCase() as BubblePhase;
-    if (!validPhases.has(phase)) {
-      throw extensionError("phase must be speaking, waiting, or idle.");
+    const mode = this.toString(args.MODE)
+      .trim()
+      .toLowerCase() as BubbleAnimationMode;
+    if (!validAnimationModes.has(mode)) {
+      throw extensionError(
+        "animation mode must be talking, awaiting-advance, or idle.",
+      );
     }
     const handle = this.handles.get(target.id);
     if (!handle)
       throw extensionError("this target does not have an active bubble.");
-    await handle.setPhase(phase);
+    await handle.setAnimationMode(mode);
+  }
+
+  public async waitForBubbleAdvance(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const target = this.requireTarget(util);
+    const handle = this.handles.get(target.id);
+    if (!handle)
+      throw extensionError("this target does not have an active bubble.");
+    const condition = this.toString(args.CONDITION).trim();
+    if (!condition) throw extensionError("wait condition is empty.");
+    const timeoutSeconds = Scratch.Cast.toNumber(args.TIMEOUT);
+    if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) {
+      throw extensionError("wait timeout must be zero or greater.");
+    }
+    if (!this.isRecord(this.runtime.ext_kubohiroyaasyncinput)) {
+      throw extensionError(
+        "Bubble wait requires Async Input. Load @kubohiroya/turbowarp-async-input before using this block.",
+      );
+    }
+    const runtimeExpression = this.runtime.ext_kubohiroyaruntimeexpression;
+    if (
+      !this.isRecord(runtimeExpression) ||
+      typeof runtimeExpression.runtimeCondition !== "function"
+    ) {
+      throw extensionError(
+        "Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.",
+      );
+    }
+    if (
+      typeof this.runtime.on !== "function" ||
+      typeof this.runtime.off !== "function"
+    ) {
+      throw extensionError("TurboWarp runtime events are unavailable.");
+    }
+
+    this.cancelWait(target.id, "Bubble wait was replaced.");
+    await handle.setAnimationMode("awaiting-advance");
+
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      let timeoutHandle: unknown;
+      const cleanup = (): void => {
+        this.runtime.off?.("BEFORE_EXECUTE", checkCondition);
+        if (timeoutHandle !== undefined)
+          this.waitScheduler.clearTimeout(timeoutHandle);
+        if (this.waits.get(target.id) === pending) this.waits.delete(target.id);
+      };
+      const finish = (error?: Error): void => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (error) {
+          reject(error);
+          return;
+        }
+        void handle.setAnimationMode("idle").then(resolve, reject);
+      };
+      const checkCondition = (): void => {
+        try {
+          if (runtimeExpression.runtimeCondition({ EXPRESSION: condition }))
+            finish();
+        } catch (error) {
+          finish(
+            error instanceof Error
+              ? error
+              : extensionError("wait condition evaluation failed."),
+          );
+        }
+      };
+      const pending: PendingBubbleWait = Object.freeze({ cancel: finish });
+      this.waits.set(target.id, pending);
+      this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
+      if (timeoutSeconds > 0) {
+        timeoutHandle = this.waitScheduler.setTimeout(
+          () => finish(),
+          timeoutSeconds * 1000,
+        );
+      }
+      checkCondition();
+    });
   }
 
   public async closeBubble(
@@ -287,6 +401,7 @@ export class BubbleExtension implements TurboWarpExtension {
   }
 
   public async releaseAll(): Promise<void> {
+    this.cancelAllWaits("Bubble waits were released.");
     if (!this.composition) return;
     await this.composition.releaseAll();
     this.handles.clear();
@@ -295,6 +410,7 @@ export class BubbleExtension implements TurboWarpExtension {
   public async dispose(): Promise<void> {
     if (this.disposed) return;
     this.disposed = true;
+    this.cancelAllWaits("Bubble extension was disposed.");
     if (this.composition) await this.composition.dispose();
     this.handles.clear();
     this.styles.clear();
@@ -320,6 +436,25 @@ export class BubbleExtension implements TurboWarpExtension {
 
   private toString(value: unknown): string {
     return Scratch.Cast.toString(value);
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  private abortError(message: string): Error {
+    const error = extensionError(message);
+    error.name = "AbortError";
+    return error;
+  }
+
+  private cancelWait(targetId: string, message: string): void {
+    this.waits.get(targetId)?.cancel(this.abortError(message));
+  }
+
+  private cancelAllWaits(message: string): void {
+    for (const targetId of [...this.waits.keys()])
+      this.cancelWait(targetId, message);
   }
 
   private requireName(value: unknown, label: string): string {
@@ -459,6 +594,7 @@ export class BubbleExtension implements TurboWarpExtension {
         "actor-relative bubble placement requires a sprite or clone.",
       );
     }
+    this.cancelWait(target.id, "Bubble wait was replaced.");
     const composition = this.getComposition();
     let handle: BubbleHandle;
     try {
@@ -479,6 +615,7 @@ export class BubbleExtension implements TurboWarpExtension {
   }
 
   private async releaseOwnedTarget(targetId: string): Promise<void> {
+    this.cancelWait(targetId, "Bubble wait was released.");
     this.handles.delete(targetId);
     if (this.composition) await this.composition.releaseTarget(targetId);
   }

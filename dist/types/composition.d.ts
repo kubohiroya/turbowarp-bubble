@@ -8,7 +8,7 @@ export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, 
 export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
 export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
 export type BubbleKind = "say" | "think";
-export type BubblePhase = "idle" | "speaking" | "waiting";
+export type BubbleAnimationMode = "idle" | "talking" | "awaiting-advance";
 export type BubbleLayer = "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";
 export interface BubbleFrameAnimationInput {
     readonly frames: ReadonlyArray<string>;
@@ -95,13 +95,13 @@ export interface ShowBubbleInput {
     readonly kind: BubbleKind;
     readonly text: string;
     readonly styleName: string;
-    readonly phase?: BubblePhase;
+    readonly animationMode?: BubbleAnimationMode;
 }
 export interface BubbleHandle {
     readonly actorKey: string;
     readonly kind: BubbleKind;
-    readonly phase: BubblePhase;
-    setPhase(phase: BubblePhase): Promise<void>;
+    readonly animationMode: BubbleAnimationMode;
+    setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
     close(): Promise<void>;
 }
 export interface BubbleComposition {

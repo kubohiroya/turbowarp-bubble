@@ -2,23 +2,28 @@
 
 このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
 
-![Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に実行するブロック例](./assets/block-quick-start.svg)
+![Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例](./assets/block-quick-start.svg)
 
 ## 1. 必要な拡張機能
 
-次の3つはすべて「サンドボックスなしで実行」を許可して読み込みます。推奨順はAsset Manager、SVG Text、Bubbleです。実際には、最初のBubble表示より前に依存拡張が揃っていれば構いません。
+入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る5つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime ExpressionはBubbleの待機ブロックより前に、Asset ManagerとSVG Textは最初のBubble表示より前に読み込みます。
 
-| 順番 | 拡張機能            | 読み込み先                                                                                            |
-| ---: | ------------------- | ----------------------------------------------------------------------------------------------------- |
-|    1 | Asset Manager 0.7.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`        |
-|    2 | SVG Text 0.3.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                  |
-|    3 | Bubble 0.1.0        | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js` |
+| 順番 | 拡張機能                 | 読み込み先                                                                                               |
+| ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
+|    1 | Temporary Variables      | TurboWarpの拡張機能ライブラリから追加                                                                    |
+|    2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`               |
+|    3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
+|    4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
+|    5 | SVG Text 0.3.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                     |
+|    6 | Bubble 0.1.0             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js`    |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。Bubbleだけを読み込んでも、表示時にAsset ManagerとSVG Textが見つからなければ明示的なエラーになります。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時にAsset ManagerかSVG Textが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。
 
 参考：
 
 - [Asset Manager 日本語ガイド](https://kubohiroya.github.io/turbowarp-asset-manager/ja/)
+- [Async Input 日本語ガイド](https://kubohiroya.github.io/turbowarp-async-input/ja/)
+- [Runtime Expression 日本語ガイド](https://kubohiroya.github.io/turbowarp-runtime-expression/ja/)
 - [SVG Text 日本語ガイド](https://kubohiroya.github.io/turbowarp-svg-text/ja/)
 
 ## 2. 表情画像を準備する
@@ -170,34 +175,38 @@ set advance frames [Next1,Next2]
 
 ## 5. セリフを表示して入力を待つ
 
-`say`または`think`はBubbleを表示するとすぐ次のブロックへ進み、初期phaseは`speaking`になります。
+`say`または`think`はBubbleを表示するとすぐ次のブロックへ進み、初期animation modeは`talking`になります。
 
 ```text
+set runtime variable [input] to []
+listen for key [Space] set runtime var [input] to [pressed]
+listen for touch on this sprite set runtime var [input] to [pressed]
 say [海へ出発！] with bubble style [hero-dialogue]
-set this bubble phase [waiting]
-wait until <space key pressed? or mouse down?>
+wait with this bubble until condition [input == "pressed"] or timeout after [10] seconds
 close this bubble
 ```
 
-`waiting`に変えると口パクが止まり、「次へ」アイコンがループします。Bubble自身はキー入力、タップ、文字送り完了を判定しません。`wait until`など、通常のScratch/TurboWarpブロックで待ち、入力成立後に`close this bubble`を実行してください。
+まずTemporary Variablesで`input`を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、`input == "pressed"`をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に`awaiting-advance`となり、口パクを停止して`set advance frames`の画像をループします。条件成立またはtimeout後は`idle`へ移り、次の`close this bubble`へ進みます。timeoutを`0`にすると時間制限なしです。
 
-音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で`waiting`へ切り替えます。
+次の待機に入る前に`input`を空文字へ戻してください。前回の`pressed`が残っていると、次の条件が直ちに成立します。別のBubble表示、close、対象targetの停止、projectの開始・停止、runtime破棄では、targetが所有する待機とlistener、timerをキャンセルして解放します。
 
-![sayで口パクし、waitingで次へアイコンを動かし、入力成立後にBubbleを閉じるアニメーション](./assets/bubble-lifecycle.gif)
+音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で`awaiting-advance`へ切り替えます。
 
-アニメーションGIFを再生できない環境では、次の比較図で各phaseを確認できます。
+![sayで口パクし、awaiting-advanceでadvance framesを動かし、入力成立後にBubbleを閉じるアニメーション](./assets/bubble-lifecycle.gif)
 
-![speaking、waiting、idleの目パチ、口パク、次へアイコンの状態比較](./assets/phase-guide.svg)
+アニメーションGIFを再生できない環境では、次の比較図で各animation modeを確認できます。
 
-## 6. phaseの使い分け
+![talking、awaiting-advance、idleの目パチ、口パク、advance framesの状態比較](./assets/animation-mode-guide.svg)
 
-| phase      | 目パチ | 口パク       | 「次へ」アイコン | 主な用途                 |
-| ---------- | ------ | ------------ | ---------------- | ------------------------ |
-| `speaking` | 実行   | 実行         | 非表示           | セリフ表示中、音声再生中 |
-| `waiting`  | 実行   | 停止・非表示 | ループ           | キー入力やタップ待ち     |
-| `idle`     | 実行   | 停止・非表示 | 停止・非表示     | Bubbleを表示したまま静止 |
+## 6. Animation modeの使い分け
 
-`set this bubble phase [PHASE]`は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
+| mode               | 目パチ | 口パク       | advance frames | 主な用途                     |
+| ------------------ | ------ | ------------ | -------------- | ---------------------------- |
+| `talking`          | 実行   | 実行         | 非表示         | セリフ表示中、音声再生中     |
+| `awaiting-advance` | 実行   | 停止・非表示 | ループ         | ユーザによる「次へ」操作待ち |
+| `idle`             | 実行   | 停止・非表示 | 停止・非表示   | Bubbleを表示したまま静止     |
+
+`set this bubble animation mode [MODE]`は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
 
 ## 7. sayとthink
 
@@ -206,7 +215,7 @@ say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]
 ```
 
-どちらも同じvisual style、表情レイヤー、placement、phase制御を使えます。`say`／`think`だけで形状を固定せず、`set bubble visual style`で`NORMAL`、`THINKING`などを明示的に選びます。Composition APIのsurfaceには`say`／`think`のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。
+どちらも同じvisual style、表情レイヤー、placement、animation mode制御を使えます。`say`／`think`だけで形状を固定せず、`set bubble visual style`で`NORMAL`、`THINKING`などを明示的に選びます。Composition APIのsurfaceには`say`／`think`のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。
 
 同じsprite、clone、またはStageで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。
 
@@ -216,44 +225,47 @@ Bubble styleの定義は拡張機能内で共有されますが、表示中のBu
 
 1. 元spriteで、緑の旗が押されたときにアセットとstyleを1回定義します。
 2. 各clone自身から`say`または`think`を実行します。
-3. phase変更とcloseも、表示したのと同じcloneから実行します。
+3. animation mode変更とcloseも、表示したのと同じcloneから実行します。
 
 cloneが停止・削除された場合は、そのtargetに属するtimer、SVG Text skin、drawableが自動解放されます。
 
 ## 9. ブロック一覧
 
-| ブロック                                                                       | 説明                                                  |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義または再定義する                    |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する     |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Actor boundsからtail先端までの距離を設定する          |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Bubble本体のSVG形状を10種類から設定する               |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Bubble borderからtail先端までの基準長を設定する       |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | 本体位置と、文字を含む全体のscaleを設定する           |
-| `set portrait base [ASSET] for bubble style [STYLE]`                           | portraitのベース画像を設定する                        |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分と間隔を設定する                            |
-| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分と間隔を設定する                            |
-| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]` | waiting中の「次へ」アニメーションを設定する           |
-| `say [MESSAGE] with bubble style [STYLE]`                                      | speaking phaseでsay表示を開始・置換する               |
-| `think [MESSAGE] with bubble style [STYLE]`                                    | speaking phaseでthink表示を開始・置換する             |
-| `set this bubble phase [PHASE]`                                                | 自分のBubbleを`speaking`、`waiting`、`idle`へ変更する |
-| `close this bubble`                                                            | 自分のBubbleと所有resourceを解放する                  |
-| `Bubble version`                                                               | Bubble実装versionを返す                               |
+| ブロック                                                                               | 説明                                                   |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義または再定義する                     |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する      |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する           |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Bubble本体のSVG形状を10種類から設定する                |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Bubble borderからtail先端までの基準長を設定する        |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | 本体位置と、文字を含む全体のscaleを設定する            |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                   | portraitのベース画像を設定する                         |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | 目パチ差分と間隔を設定する                             |
+| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`            | 口パク差分と間隔を設定する                             |
+| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`         | `awaiting-advance`中の「次へ」アニメーションを設定する |
+| `say [MESSAGE] with bubble style [STYLE]`                                              | `talking` modeでsay表示を開始・置換する                |
+| `think [MESSAGE] with bubble style [STYLE]`                                            | `talking` modeでthink表示を開始・置換する              |
+| `set this bubble animation mode [MODE]`                                                | `talking`、`awaiting-advance`、`idle`からmodeを選ぶ    |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Runtime Expressionの条件成立またはtimeoutまで待つ      |
+| `close this bubble`                                                                    | 自分のBubbleと所有resourceを解放する                   |
+| `Bubble version`                                                                       | Bubble実装versionを返す                                |
 
 ## 10. よくあるエラー
 
-| 状況                          | 原因と対処                                                        |
-| ----------------------------- | ----------------------------------------------------------------- |
-| Asset Managerを要求するエラー | Asset Manager 0.7.xをサンドボックスなしで読み込む                 |
-| SVG Textを要求するエラー      | SVG Text 0.3.xをサンドボックスなしで読み込む                      |
-| `bubble style is not defined` | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する |
-| image assetが未登録           | `register resource ... as asset ...`の完了後にBubbleを表示する    |
-| assetが画像ではない           | `MIME type of asset [NAME]`で`image/*`か確認する                  |
-| advance framesが1枚           | 2枚以上にするか、空にしてadvance表示を解除する                    |
-| frame intervalエラー          | `SECONDS`を0より大きい有限値にする                                |
-| StageからActor相対表示した    | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする           |
-| placementが不正               | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する          |
-| 目や口がずれる                | ベースと全差分のcanvasサイズ、中心、透明領域を揃える              |
+| 状況                               | 原因と対処                                                               |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| Asset Managerを要求するエラー      | Asset Manager 0.7.xをサンドボックスなしで読み込む                        |
+| SVG Textを要求するエラー           | SVG Text 0.3.xをサンドボックスなしで読み込む                             |
+| Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
+| Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
+| `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
+| image assetが未登録                | `register resource ... as asset ...`の完了後にBubbleを表示する           |
+| assetが画像ではない                | `MIME type of asset [NAME]`で`image/*`か確認する                         |
+| advance framesが1枚                | 2枚以上にするか、空にしてadvance表示を解除する                           |
+| frame intervalエラー               | `SECONDS`を0より大きい有限値にする                                       |
+| StageからActor相対表示した         | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする                  |
+| placementが不正                    | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する                 |
+| 目や口がずれる                     | ベースと全差分のcanvasサイズ、中心、透明領域を揃える                     |
 
 ## 11. 自動解放されるタイミング
 
@@ -277,4 +289,4 @@ pnpm docs:render
 pnpm docs:check
 ```
 
-`docs:check`は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全15ブロックへの参照、およびPages用HTMLが最新であることを検証します。
+`docs:check`は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全16ブロックへの参照、およびPages用HTMLが最新であることを検証します。

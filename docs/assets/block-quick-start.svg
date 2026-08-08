@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="880" viewBox="0 0 1200 880" role="img" aria-labelledby="title description">
   <title id="title">TurboWarp Bubbleブロックの最小構成</title>
-  <desc id="description">Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に使うブロック例。</desc>
+  <desc id="description">各Next画像を個別登録し、Async InputとRuntime Expressionを介したBubble内蔵待機を使うブロック例。</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
     .heading { fill: #25283a; font-size: 28px; font-weight: 700; }
@@ -14,7 +14,7 @@
 
   <rect width="1200" height="880" fill="#f2f4f8"/>
   <text x="32" y="48" class="heading">Bubbleブロック：最小構成</text>
-  <text x="32" y="74" class="body">緑の旗でstyleを準備し、セリフごとに speaking → waiting → close を実行します。</text>
+  <text x="32" y="74" class="body">緑の旗でstyleと入力を準備し、セリフごとに say → Bubble内蔵待機 → close を実行します。</text>
   <g>
     <rect x="24" y="96" width="560" height="752" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
     <text x="48" y="134" class="subheading">1. 緑の旗で準備</text>
@@ -174,38 +174,57 @@
 <rect x="932.08" y="343" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
 <text x="940.08" y="362" class="input-text" style="font-size:12px">hero-dialogue</text>
   </g>
-  <path d="M 690 390 V 412" stroke="#aab2c3" stroke-width="4" stroke-linecap="round"/>
+  <g role="group" aria-label="Temporary Variablesでinput変数を初期化">
+    <rect x="640" y="390" width="510" height="50" rx="12" fill="#ff8c1a" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="658" y="390" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="657" y="421" class="block-text" style="font-size:12px">set runtime variable</text>
+<rect x="812.8" y="402" width="53.199999999999996" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="820.8" y="421" class="input-text" style="font-size:12px">input</text>
+<text x="873" y="421" class="block-text" style="font-size:12px">to</text>
+<rect x="894.88" y="402" width="34" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="902.88" y="421" class="input-text" style="font-size:12px"></text>
+  </g>
+  <g role="group" aria-label="Async InputでSpaceキーをinput変数へ登録">
+    <rect x="640" y="448" width="510" height="50" rx="12" fill="#2f9d8f" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="658" y="448" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="657" y="479" class="block-text" style="font-size:12px">listen for key</text>
+<rect x="768.16" y="460" width="53.199999999999996" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="776.16" y="479" class="input-text" style="font-size:12px">Space</text>
+<text x="828.36" y="479" class="block-text" style="font-size:12px">set runtime var</text>
+<rect x="946.96" y="460" width="53.199999999999996" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="954.96" y="479" class="input-text" style="font-size:12px">input</text>
+<text x="1007.1600000000001" y="479" class="block-text" style="font-size:12px">to</text>
+<rect x="1029.0400000000002" y="460" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="1037.0400000000002" y="479" class="input-text" style="font-size:12px">pressed</text>
+  </g>
   <g role="group" aria-label="sayブロックでセリフを表示">
-    <rect x="668" y="418" width="454" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="686" y="418" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="685" y="449" class="block-text" style="font-size:14px">say</text>
-<rect x="718.04" y="428" width="86" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="726.04" y="449" class="input-text" style="font-size:14px">海へ出発！</text>
-<text x="811.04" y="449" class="block-text" style="font-size:14px">with bubble style</text>
-<rect x="965.6" y="428" width="128.84000000000003" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="973.6" y="449" class="input-text" style="font-size:14px">hero-dialogue</text>
+    <rect x="668" y="506" width="454" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="686" y="506" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="685" y="537" class="block-text" style="font-size:14px">say</text>
+<rect x="718.04" y="516" width="86" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="726.04" y="537" class="input-text" style="font-size:14px">海へ出発！</text>
+<text x="811.04" y="537" class="block-text" style="font-size:14px">with bubble style</text>
+<rect x="965.6" y="516" width="128.84000000000003" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="973.6" y="537" class="input-text" style="font-size:14px">hero-dialogue</text>
   </g>
-  <g role="group" aria-label="Bubbleをwaiting phaseへ変更">
-    <rect x="668" y="480" width="454" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="686" y="480" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="685" y="511" class="block-text" style="font-size:14px">set this bubble phase</text>
-<rect x="874.2800000000001" y="490" width="76.75999999999999" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="882.2800000000001" y="511" class="input-text" style="font-size:14px">waiting</text>
-  </g>
-  <g role="group" aria-label="キー入力またはタップまで待つ">
-    <rect x="668" y="542" width="454" height="50" rx="12" fill="#ffab19" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="686" y="542" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="685" y="573" class="block-text" style="font-size:14px">wait until</text>
-<rect x="778.8" y="552" width="302.44000000000017" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="786.8" y="573" class="input-text" style="font-size:14px">space key pressed? or mouse down?</text>
+  <g role="group" aria-label="Bubbleで条件成立またはタイムアウトまで待機">
+    <rect x="668" y="568" width="454" height="72" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="686" y="568" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="685" y="595" class="block-text" style="font-size:12px">wait with this bubble until condition</text>
+<rect x="967.28" y="576" width="149.92" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="975.28" y="595" class="input-text" style="font-size:12px">input == &quot;pressed&quot;</text>
+<text x="685" y="620" class="block-text" style="font-size:12px">or timeout after</text>
+<rect x="811.04" y="601" width="34" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="819.04" y="620" class="input-text" style="font-size:12px">10</text>
+<text x="852.04" y="620" class="block-text" style="font-size:12px">seconds</text>
   </g>
   <g role="group" aria-label="Bubbleを閉じる">
-    <rect x="668" y="604" width="454" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="686" y="604" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="685" y="635" class="block-text" style="font-size:14px">close this bubble</text>
+    <rect x="668" y="652" width="454" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="686" y="652" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="685" y="683" class="block-text" style="font-size:14px">close this bubble</text>
   </g>
-  <rect x="644" y="674" width="502" height="132" rx="16" fill="#fff3f6" stroke="#ffc4d1"/>
-  <text x="668" y="704" class="body" style="font-weight:700">重要：Bubble自身は入力を待ちません</text>
-  <text x="668" y="733" class="body">waitingで「次へ」を動かし、Scratch側で待機。</text>
-  <text x="668" y="762" class="body">入力成立後にcloseを実行してください。</text>
+  <rect x="644" y="720" width="502" height="112" rx="16" fill="#fff3f6" stroke="#ffc4d1"/>
+  <text x="668" y="750" class="body" style="font-weight:700">Bubbleが条件成立またはtimeoutまで待機</text>
+  <text x="668" y="779" class="body">待機中はadvance framesをループし、口パクを停止。</text>
+  <text x="668" y="808" class="body">待機後はidleへ移り、次のcloseを実行します。</text>
 </svg>

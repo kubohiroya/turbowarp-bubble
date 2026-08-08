@@ -77,6 +77,17 @@
       ]
     },
     {
+      "opcode": "setBubbleAnimationMode",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MODE",
+          "type": "STRING",
+          "menu": "animationMode"
+        }
+      ]
+    },
+    {
       "opcode": "setBubbleDistance",
       "blockType": "COMMAND",
       "arguments": [
@@ -109,17 +120,6 @@
         {
           "id": "Y",
           "type": "NUMBER"
-        }
-      ]
-    },
-    {
-      "opcode": "setBubblePhase",
-      "blockType": "COMMAND",
-      "arguments": [
-        {
-          "id": "PHASE",
-          "type": "STRING",
-          "menu": "phase"
         }
       ]
     },
@@ -212,11 +212,25 @@
           "type": "STRING"
         }
       ]
+    },
+    {
+      "opcode": "waitForBubbleAdvance",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "CONDITION",
+          "type": "STRING"
+        },
+        {
+          "id": "TIMEOUT",
+          "type": "NUMBER"
+        }
+      ]
     }
   ],
   "menus": [
     {
-      "id": "phase",
+      "id": "animationMode",
       "acceptReporters": true
     },
     {
