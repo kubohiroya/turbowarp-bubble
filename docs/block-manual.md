@@ -82,7 +82,9 @@ set bubble placement [up-right] for bubble style [hero-dialogue]
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](./assets/placement-guide.svg)
 
-Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、図専用の近似図形ではありません。形状rendererのstandalone surface接続は後続実装です。
+Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。三角形tailの基部2点は実際の本体border上にあり、本体polygonとのJSClipper union後の単一pathを描くため、接合部に内部border線は残りません。
+
+背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、図専用の近似図形ではありません。形状rendererのstandalone surface接続は後続実装です。
 
 Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
 
@@ -115,7 +117,7 @@ left / left-up-left / up-left / up-up-left
 
 ![10種類のBubble visual styleを同じSVG rendererで比較する図](./assets/bubble-style-gallery.svg)
 
-形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。図はBubble側の共有`renderBubbleSvg`から生成しています。現段階では形状renderer基盤の仕様例であり、styleを選ぶblock／APIとstandalone surfaceへの接続は後続実装です。
+形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。図はBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は[platener/jsclipper](https://github.com/platener/jsclipper)による本体との和集合です。`THINKING`／`DREAMING`は丸trailのためunion対象外です。現段階では形状renderer基盤の仕様例であり、styleを選ぶblock／APIとstandalone surfaceへの接続は後続実装です。
 
 `NEGATIVE`はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。
 

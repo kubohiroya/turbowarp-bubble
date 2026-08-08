@@ -27,8 +27,36 @@ describe("renderBubbleSvg", () => {
     });
 
     expect(up).not.toEqual(right);
-    expect(up).toMatch(/110\.00,7\.00/u);
-    expect(right).toMatch(/213\.00,56\.00/u);
+    expect(up).toContain("L 101.0000 24.0000 L 110.0000 6.0000 Z");
+    expect(right).toContain("L 214.0000 56.0000");
+  });
+
+  it("unions the body and border-anchored tail at all 16 directions", () => {
+    for (let direction = 0; direction < 360; direction += 22.5) {
+      const svg = renderBubbleSvg({
+        style: "NORMAL",
+        lines: ["連続した輪郭"],
+        tailDirection: direction,
+      });
+
+      expect(svg).toContain('data-boolean-operation="union"');
+      expect(svg).toContain('data-tail-base-on-border="true"');
+      expect(svg).not.toContain("<polygon");
+      expect(svg.match(/<path\b/gu)).toHaveLength(1);
+    }
+  });
+
+  it("keeps thought trails separate from polygon union", () => {
+    for (const style of ["THINKING", "DREAMING"] as const) {
+      const svg = renderBubbleSvg({
+        style,
+        lines: ["思考"],
+        tailDirection: 225,
+      });
+
+      expect(svg).not.toContain('data-boolean-operation="union"');
+      expect(svg).toContain("<circle");
+    }
   });
 
   it("escapes text and rejects invalid dimensions", () => {

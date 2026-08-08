@@ -41,7 +41,9 @@ const layout = wrapText({
 
 ![10種類のBubble visual styleを同じSVG rendererで比較する図](docs/assets/bubble-style-gallery.svg)
 
-この図はBubble側の共有`renderBubbleSvg`から生成しています。現段階では形状rendererの基盤と仕様例であり、standalone surfaceのstyle block／APIへの接続は後続実装です。`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにせず、orientationとsegmentsも公開入力にしません。
+この図はBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は、tail基部の2点を実際の本体border上から求め、[platener/jsclipper](https://github.com/platener/jsclipper)で本体polygonとtail三角形の和集合を作り、単一の外周pathだけを描画します。`THINKING`／`DREAMING`の丸trailは独立形状のままです。
+
+現段階では形状rendererの基盤と仕様例であり、standalone surfaceのstyle block／APIへの接続は後続実装です。`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにせず、orientationとsegmentsも公開入力にしません。
 
 配布bundleに含まれる依存ライブラリのライセンスは、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
 
@@ -109,7 +111,7 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図の外形は共有`renderBubbleSvg`から生成しています。現在のstandalone rendererは配置基準を実装済みですが、この形状rendererのsurface接続は後続実装です。
+図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図の外形は共有`renderBubbleSvg`から生成しています。現在のstandalone rendererは配置基準を実装済みですが、この形状rendererのsurface接続は後続実装です。
 
 ### 表示phase
 

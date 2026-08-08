@@ -86,6 +86,7 @@
     "advance-indicator"
   ],
   "dependencies": {
-    "@cto.af/linebreak": "4.0.3"
+    "@cto.af/linebreak": "4.0.3",
+    "jsclipper": "github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1"
   }
 }

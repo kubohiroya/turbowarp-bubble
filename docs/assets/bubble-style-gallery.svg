@@ -20,7 +20,7 @@
         <rect x="32" y="118" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="48" y="150" style="fill:#25283a;font-size:18px;font-weight:700">NORMAL</text>
         <svg x="40" y="162" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
-    <title>NORMAL visual style example</title><polygon points="91.43,140.41 87.66,159.74 104.54,149.59" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="232" height="122" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" /><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">今日はいい天気だね</text>
+    <title>NORMAL visual style example</title><path d="M 39.1842 145.7784 L 36.4377 145.1190 L 33.8282 144.0381 L 31.4199 142.5623 L 29.2721 140.7279 L 27.4377 138.5801 L 25.9619 136.1718 L 24.8810 133.5623 L 24.2216 130.8158 L 24.0000 128.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 238.0000 24.0000 L 240.8158 24.2216 L 243.5623 24.8810 L 246.1718 25.9619 L 248.5801 27.4377 L 250.7279 29.2721 L 252.5623 31.4199 L 254.0381 33.8282 L 255.1190 36.4377 L 255.7784 39.1842 L 256.0000 42.0000 L 256.0000 128.0000 L 255.7784 130.8158 L 255.1190 133.5623 L 254.0381 136.1718 L 252.5623 138.5801 L 250.7279 140.7279 L 248.5801 142.5623 L 246.1718 144.0381 L 243.5623 145.1190 L 240.8158 145.7784 L 238.0000 146.0000 L 106.2873 146.0000 L 86.9630 160.7447 L 88.2873 146.0000 L 42.0000 146.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">今日はいい天気だね</text>
   </svg>
         <text x="180" y="350" text-anchor="middle" class="small">通常の会話</text>
 <text x="180" y="368" text-anchor="middle" class="small">丸い本体＋話者を指すtail</text>
@@ -30,7 +30,7 @@
         <rect x="344" y="118" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="360" y="150" style="fill:#25283a;font-size:18px;font-weight:700">THINKING</text>
         <svg x="352" y="162" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="THINKING" overflow="visible">
-    <title>THINKING visual style example</title><circle cx="92.82535978025803" cy="152.37236839860094" r="5" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><circle cx="89.521559506876" cy="157.0906841737055" r="3.5" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><path d="M 42 85
+    <title>THINKING visual style example</title><circle cx="92.12515224204833" cy="153.37236839860094" r="5" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><circle cx="88.82135196866629" cy="158.0906841737055" r="3.5" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><path d="M 42 85
     C 22 65, 32 42, 60 44
     C 68 22, 122 19, 140 37
     C 164 16, 228 24, 226 48
@@ -49,7 +49,7 @@
         <rect x="656" y="118" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="672" y="150" style="fill:#25283a;font-size:18px;font-weight:700">DREAMING</text>
         <svg x="664" y="162" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="DREAMING" overflow="visible">
-    <title>DREAMING visual style example</title><circle cx="93.34157857297397" cy="151.63513155874082" r="7" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><circle cx="89.93453454104876" cy="156.50089470181746" r="4.5" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><circle cx="87.66317185309862" cy="159.74473679720185" r="3" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><path d="M 42 85
+    <title>DREAMING visual style example</title><circle cx="92.64137103476426" cy="152.63513155874082" r="7" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><circle cx="89.23432700283905" cy="157.50089470181746" r="4.5" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><circle cx="86.96296431488891" cy="160.74473679720185" r="3" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/><path d="M 42 85
     C 22 65, 32 42, 60 44
     C 68 22, 122 19, 140 37
     C 164 16, 228 24, 226 48
@@ -68,7 +68,7 @@
         <rect x="968" y="118" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="984" y="150" style="fill:#25283a;font-size:18px;font-weight:700">YELLING</text>
         <svg x="976" y="162" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="YELLING" overflow="visible">
-    <title>YELLING visual style example</title><polygon points="140.00,6.00 166.26,23.58 198.14,13.82 213.57,35.74 244.77,35.74 246.31,57.67 270.64,67.42 258.00,85.00 270.64,102.58 246.31,112.33 244.77,134.26 213.57,134.26 198.14,156.18 166.26,146.42 140.00,164.00 113.74,146.42 81.86,156.18 66.43,134.26 35.23,134.26 33.69,112.33 9.36,102.58 22.00,85.00 9.36,67.42 33.69,57.67 35.23,35.74 66.43,35.74 81.86,13.82 113.74,23.58" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">危ない！</text>
+    <title>YELLING visual style example</title><path d="M 166.2575 23.5795 L 198.1404 13.8235 L 213.5718 35.7446 L 244.7654 35.7443 L 246.3143 57.6653 L 270.6403 67.4209 L 258.0000 85.0000 L 270.6403 102.5791 L 246.3143 112.3347 L 244.7654 134.2557 L 213.5718 134.2554 L 198.1404 156.1765 L 166.2575 146.4205 L 140.0000 164.0000 L 113.7425 146.4205 L 81.8596 156.1765 L 66.4282 134.2554 L 35.2346 134.2557 L 33.6857 112.3347 L 9.3597 102.5791 L 22.0000 85.0000 L 9.3597 67.4209 L 33.6857 57.6653 L 35.2346 35.7443 L 66.4282 35.7446 L 81.8596 13.8235 L 113.7425 23.5795 L 140.0000 6.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">危ない！</text>
   </svg>
         <text x="1116" y="350" text-anchor="middle" class="small">叫び</text>
 <text x="1116" y="368" text-anchor="middle" class="small">鋭いburst輪郭で強調</text>
@@ -78,7 +78,7 @@
         <rect x="1280" y="118" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="1296" y="150" style="fill:#25283a;font-size:18px;font-weight:700">OFF_PANEL</text>
         <svg x="1288" y="162" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="OFF_PANEL" overflow="visible">
-    <title>OFF_PANEL visual style example</title><polygon points="25.00,77.00 7.00,85.00 25.00,93.00" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="232" height="122" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" /><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">こっちだよ！</text>
+    <title>OFF_PANEL visual style example</title><path d="M 24.0000 76.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 238.0000 24.0000 L 240.8158 24.2216 L 243.5623 24.8810 L 246.1718 25.9619 L 248.5801 27.4377 L 250.7279 29.2721 L 252.5623 31.4199 L 254.0381 33.8282 L 255.1190 36.4377 L 255.7784 39.1842 L 256.0000 42.0000 L 256.0000 128.0000 L 255.7784 130.8158 L 255.1190 133.5623 L 254.0381 136.1718 L 252.5623 138.5801 L 250.7279 140.7279 L 248.5801 142.5623 L 246.1718 144.0381 L 243.5623 145.1190 L 240.8158 145.7784 L 238.0000 146.0000 L 42.0000 146.0000 L 39.1842 145.7784 L 36.4377 145.1190 L 33.8282 144.0381 L 31.4199 142.5623 L 29.2721 140.7279 L 27.4377 138.5801 L 25.9619 136.1718 L 24.8810 133.5623 L 24.2216 130.8158 L 24.0000 128.0000 L 24.0000 94.0000 L 6.0000 85.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">こっちだよ！</text>
   </svg>
         <text x="1428" y="350" text-anchor="middle" class="small">画面外の話者</text>
 <text x="1428" y="368" text-anchor="middle" class="small">tailを画面端方向へ伸ばす</text>
@@ -88,18 +88,7 @@
         <rect x="32" y="418" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="48" y="450" style="fill:#25283a;font-size:18px;font-weight:700">WAVY</text>
         <svg x="40" y="462" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="WAVY" overflow="visible">
-    <title>WAVY visual style example</title><polygon points="91.43,140.41 87.66,159.74 104.54,149.59" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><path d="M 38 24
-    Q 51 32 64 24
-    T 90 24 T 116 24 T 142 24
-    T 242 24 Q 256 24 256 38
-    Q 248 51 256 64
-    T 256 132 Q 256 146 242 146
-    Q 229 138 216 146
-    T 90 146 T 64 146 T 38 146
-    Q 24 146 24 132
-    Q 32 119 24 106
-    T 24 38 Q 24 24 38 24 Z"
-    fill="#fff4cc" stroke="#6f5b45" stroke-width="3"/><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">なんだか不安…</text>
+    <title>WAVY visual style example</title><path d="M 256.0000 24.0000 L 259.8042 36.2000 L 258.3511 48.4000 L 253.6489 60.6000 L 252.1958 72.8000 L 259.8042 97.2000 L 258.3511 109.4000 L 253.6489 121.6000 L 252.1958 133.8000 L 256.0000 146.0000 L 244.4000 142.1958 L 232.8000 143.6489 L 221.2000 148.3511 L 209.6000 149.8042 L 186.4000 142.1958 L 174.8000 143.6489 L 163.2000 148.3511 L 151.6000 149.8042 L 128.4000 142.1958 L 116.8000 143.6489 L 105.2000 148.3511 L 103.6522 148.5450 L 103.6522 148.5450 L 84.3976 164.4084 L 86.1226 147.3520 L 70.4000 142.1958 L 58.8000 143.6489 L 47.2000 148.3511 L 35.6000 149.8042 L 24.0000 146.0000 L 20.1958 133.8000 L 21.6489 121.6000 L 26.3511 109.4000 L 27.8042 97.2000 L 20.1958 72.8000 L 21.6489 60.6000 L 26.3511 48.4000 L 27.8042 36.2000 L 24.0000 24.0000 L 35.6000 27.8042 L 47.2000 26.3511 L 58.8000 21.6489 L 70.4000 20.1958 L 93.6000 27.8042 L 105.2000 26.3511 L 116.8000 21.6489 L 128.4000 20.1958 L 151.6000 27.8042 L 163.2000 26.3511 L 174.8000 21.6489 L 186.4000 20.1958 L 209.6000 27.8042 L 221.2000 26.3511 L 232.8000 21.6489 L 244.4000 20.1958 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">なんだか不安…</text>
   </svg>
         <text x="180" y="650" text-anchor="middle" class="small">不安・弱り</text>
 <text x="180" y="668" text-anchor="middle" class="small">揺れる輪郭</text>
@@ -109,7 +98,7 @@
         <rect x="344" y="418" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="360" y="450" style="fill:#25283a;font-size:18px;font-weight:700">WHISPERING</text>
         <svg x="352" y="462" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="WHISPERING" overflow="visible">
-    <title>WHISPERING visual style example</title><polygon points="91.43,140.41 87.66,159.74 104.54,149.59" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="232" height="122" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-dasharray="5 5"/><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">静かにしてね</text>
+    <title>WHISPERING visual style example</title><path d="M 39.1842 145.7784 L 36.4377 145.1190 L 33.8282 144.0381 L 31.4199 142.5623 L 29.2721 140.7279 L 27.4377 138.5801 L 25.9619 136.1718 L 24.8810 133.5623 L 24.2216 130.8158 L 24.0000 128.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 238.0000 24.0000 L 240.8158 24.2216 L 243.5623 24.8810 L 246.1718 25.9619 L 248.5801 27.4377 L 250.7279 29.2721 L 252.5623 31.4199 L 254.0381 33.8282 L 255.1190 36.4377 L 255.7784 39.1842 L 256.0000 42.0000 L 256.0000 128.0000 L 255.7784 130.8158 L 255.1190 133.5623 L 254.0381 136.1718 L 252.5623 138.5801 L 250.7279 140.7279 L 248.5801 142.5623 L 246.1718 144.0381 L 243.5623 145.1190 L 240.8158 145.7784 L 238.0000 146.0000 L 106.2873 146.0000 L 86.9630 160.7447 L 88.2873 146.0000 L 42.0000 146.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" stroke-dasharray="5 5"/><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">静かにしてね</text>
   </svg>
         <text x="492" y="650" text-anchor="middle" class="small">ささやき</text>
 <text x="492" y="668" text-anchor="middle" class="small">破線の弱い輪郭</text>
@@ -119,7 +108,7 @@
         <rect x="656" y="418" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="672" y="450" style="fill:#25283a;font-size:18px;font-weight:700">ANNOUNCEMENT</text>
         <svg x="664" y="462" width="280" height="170" viewBox="0 0 280 170" data-bubble-renderer="canonical" data-bubble-style="ANNOUNCEMENT" overflow="visible">
-    <title>ANNOUNCEMENT visual style example</title><polygon points="91.43,140.41 87.66,159.74 104.54,149.59" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="232" height="122" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" /><rect x="30" y="30" width="220" height="110" rx="13" fill="none" stroke="#6f5b45" stroke-width="1.5"/><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">まもなく開演します</text>
+    <title>ANNOUNCEMENT visual style example</title><path d="M 39.1842 145.7784 L 36.4377 145.1190 L 33.8282 144.0381 L 31.4199 142.5623 L 29.2721 140.7279 L 27.4377 138.5801 L 25.9619 136.1718 L 24.8810 133.5623 L 24.2216 130.8158 L 24.0000 128.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 238.0000 24.0000 L 240.8158 24.2216 L 243.5623 24.8810 L 246.1718 25.9619 L 248.5801 27.4377 L 250.7279 29.2721 L 252.5623 31.4199 L 254.0381 33.8282 L 255.1190 36.4377 L 255.7784 39.1842 L 256.0000 42.0000 L 256.0000 128.0000 L 255.7784 130.8158 L 255.1190 133.5623 L 254.0381 136.1718 L 252.5623 138.5801 L 250.7279 140.7279 L 248.5801 142.5623 L 246.1718 144.0381 L 243.5623 145.1190 L 240.8158 145.7784 L 238.0000 146.0000 L 106.2873 146.0000 L 86.9630 160.7447 L 88.2873 146.0000 L 42.0000 146.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><rect x="30" y="30" width="220" height="110" rx="13" fill="none" stroke="#6f5b45" stroke-width="1.5"/><text x="140" y="89.9" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">まもなく開演します</text>
   </svg>
         <text x="804" y="650" text-anchor="middle" class="small">放送・告知</text>
 <text x="804" y="668" text-anchor="middle" class="small">二重の強い輪郭</text>

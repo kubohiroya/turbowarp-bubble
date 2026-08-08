@@ -125,6 +125,19 @@ if (productionRendererPanels?.length !== 19) {
     `Placement-guide SVG must contain 19 production-rendered panels, found ${productionRendererPanels?.length ?? 0}.`,
   );
 }
+const unionedActorBubbles = placementGuide.match(
+  /data-boolean-operation="union"/gu,
+);
+if (unionedActorBubbles?.length !== 16) {
+  throw new Error(
+    `Placement-guide SVG must contain 16 JSClipper-unioned actor bubbles, found ${unionedActorBubbles?.length ?? 0}.`,
+  );
+}
+requireText(
+  placementGuide,
+  'data-tail-base-on-border="true"',
+  "Placement-guide SVG",
+);
 for (const direction of ["up", "right", "down", "left"]) {
   requireText(
     placementGuide,
