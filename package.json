@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Composable say and think bubbles with portrait layers and animated advance indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -81,6 +81,7 @@
     "@kubohiroya/vite-plugin-turbowarp-extension": "0.1.1",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
+    "jsclipper": "github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1",
     "marked": "18.0.9",
     "prettier": "^3.9.6",
     "typescript": "^6.0.3",
@@ -98,7 +99,6 @@
     "advance-indicator"
   ],
   "dependencies": {
-    "@cto.af/linebreak": "4.0.3",
-    "jsclipper": "github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1"
+    "@cto.af/linebreak": "4.0.3"
   }
 }
