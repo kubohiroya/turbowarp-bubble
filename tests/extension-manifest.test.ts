@@ -50,9 +50,55 @@ describe("extension API manifest", () => {
           ],
         },
         {
+          opcode: "setBubbleDistance",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "DISTANCE", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setBubbleOffset",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "SCALE", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+            { id: "X", type: "NUMBER" },
+            { id: "Y", type: "NUMBER" },
+          ],
+        },
+        {
           opcode: "setBubblePhase",
           blockType: "COMMAND",
           arguments: [{ id: "PHASE", type: "STRING", menu: "phase" }],
+        },
+        {
+          opcode: "setBubblePlacement",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "PLACEMENT", type: "STRING", menu: "placement" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setBubbleTailLength",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "LENGTH", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setBubbleVisualStyle",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "STYLE", type: "STRING" },
+            {
+              id: "VISUAL_STYLE",
+              type: "STRING",
+              menu: "visualStyle",
+            },
+          ],
         },
         {
           opcode: "setPortraitBase",
@@ -80,7 +126,11 @@ describe("extension API manifest", () => {
           ],
         },
       ],
-      menus: [{ id: "phase", acceptReporters: true }],
+      menus: [
+        { id: "phase", acceptReporters: true },
+        { id: "placement", acceptReporters: true },
+        { id: "visualStyle", acceptReporters: true },
+      ],
     });
     expect(serializeExtensionManifest(extensionConfig.id, definitions)).toBe(
       `${JSON.stringify(manifest, null, 2)}\n`,

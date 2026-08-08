@@ -20,21 +20,53 @@ const manifest = JSON.parse(
   ),
 );
 
-for (const name of ["createBubbleComposition", "BubbleCompositionError"]) {
+for (const name of [
+  "createBubbleComposition",
+  "BubbleCompositionError",
+  "UnicodeLineBreakProvider",
+  "normalizeBubblePlacement",
+  "renderBubbleSvg",
+  "wrapText",
+]) {
   if (!composition.includes(name)) {
     throw new Error(`dist/composition.js does not export ${name}.`);
   }
 }
 
-for (const name of ["BubbleComposition", "BubbleHandle", "BubbleStyleInput"]) {
+for (const name of [
+  "BubbleComposition",
+  "BubbleHandle",
+  "BubbleStyleInput",
+  "BubblePlacement",
+  "BubbleBodyCenterOffsetInput",
+  "BubbleVisualStyle",
+  "LineBreakProvider",
+  "WrappedTextLayout",
+]) {
   if (!declaration.includes(name)) {
     throw new Error(`dist/types/composition.d.ts does not declare ${name}.`);
+  }
+}
+
+for (const nodeApi of ["node:", "process.", "Buffer."]) {
+  for (const [fileName, output] of [
+    ["dist/composition.js", composition],
+    ["dist/turbowarp-bubble.js", extension],
+  ]) {
+    if (output.includes(nodeApi)) {
+      throw new Error(`${fileName} contains Node.js API: ${nodeApi}`);
+    }
   }
 }
 
 for (const value of [
   "kubohiroyabubble",
   "defineBubbleStyle",
+  "setBubblePlacement",
+  "setBubbleDistance",
+  "setBubbleVisualStyle",
+  "setBubbleTailLength",
+  "setBubbleOffset",
   "sayWithBubbleStyle",
   "setBubblePhase",
   "kubohiroyaassetmanager",
@@ -45,7 +77,7 @@ for (const value of [
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 10) {
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 15) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

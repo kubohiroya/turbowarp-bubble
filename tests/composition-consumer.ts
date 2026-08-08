@@ -2,8 +2,11 @@ import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manag
 import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createBubbleComposition,
+  renderBubbleSvg,
+  wrapText,
   type BubbleComposition,
   type BubbleHandle,
+  type WrappedTextLayout,
 } from "@kubohiroya/turbowarp-bubble/composition";
 
 declare const runtime: Parameters<
@@ -35,6 +38,11 @@ const bubbles: BubbleComposition = createBubbleComposition({
 bubbles.defineStyle({
   name: "dialogue",
   textStyle: "dialogue-text",
+  placement: "north-northeast",
+  distance: 12,
+  tailLength: 18,
+  offset: [10, -10, 120],
+  visualStyle: "WAVY",
   portrait: {
     base: "HeroFace",
     blink: { frames: ["EyesOpen", "EyesClosed"], frameIntervalSeconds: 0.4 },
@@ -46,6 +54,12 @@ bubbles.defineStyle({
   },
 });
 
+bubbles.defineStyle({
+  name: "narration",
+  textStyle: "dialogue-text",
+  placement: "FOOTER_LIKE",
+});
+
 const handle: Promise<BubbleHandle> = bubbles.show({
   actor: {},
   actorKey: "Hero",
@@ -54,3 +68,19 @@ const handle: Promise<BubbleHandle> = bubbles.show({
   styleName: "dialogue",
 });
 void handle;
+
+const wrapped: WrappedTextLayout = wrapText({
+  text: "これは長いセリフです。",
+  maxWidth: 320,
+  measureText: (text) => text.length * 16,
+});
+void wrapped;
+
+const bubbleSvg: string = renderBubbleSvg({
+  style: "NORMAL",
+  lines: wrapped.lines.map(({ text }) => text),
+  width: 368,
+  height: 120,
+  tailDirection: 225,
+});
+void bubbleSvg;

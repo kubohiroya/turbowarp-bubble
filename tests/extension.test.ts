@@ -44,6 +44,7 @@ function createRuntime(
   options: { assetManager?: boolean; svgText?: boolean } = {},
 ) {
   let nextDrawable = 1;
+  let nextSvgSkin = 200;
   const drawableSkins = new Map<number, number>();
   const skinSizes = new Map<number, [number, number]>([
     [11, [96, 96]],
@@ -56,9 +57,20 @@ function createRuntime(
   ]);
   const created: number[] = [];
   const destroyed: number[] = [];
+  const destroyedSkins: number[] = [];
+  const createdSvgSkins: string[] = [];
   const visibility = new Map<number, boolean>();
   const positions = new Map<number, [number, number]>();
   const renderer: TurboWarpBubbleRenderer = {
+    createSVGSkin: vi.fn((svg) => {
+      const skinId = nextSvgSkin;
+      nextSvgSkin += 1;
+      createdSvgSkins.push(svg);
+      const width = Number(svg.match(/\bwidth="([0-9.]+)"/u)?.[1] ?? 1);
+      const height = Number(svg.match(/\bheight="([0-9.]+)"/u)?.[1] ?? 1);
+      skinSizes.set(skinId, [width, height]);
+      return skinId;
+    }),
     createDrawable: vi.fn(() => {
       const id = nextDrawable;
       nextDrawable += 1;
@@ -67,6 +79,9 @@ function createRuntime(
     }),
     destroyDrawable: vi.fn((id) => {
       destroyed.push(id);
+    }),
+    destroySkin: vi.fn((skinId) => {
+      destroyedSkins.push(skinId);
     }),
     getCurrentSkinSize: vi.fn((id) => {
       const skinId = drawableSkins.get(id);
@@ -135,7 +150,9 @@ function createRuntime(
   return {
     assets,
     created,
+    createdSvgSkins,
     destroyed,
+    destroyedSkins,
     drawableSkins,
     emit,
     positions,
@@ -179,7 +196,12 @@ describe("Bubble extension", () => {
     expect(info.id).toBe("kubohiroyabubble");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
       "defineBubbleStyle",
+      "setBubblePlacement",
       "setPortraitBase",
+      "setBubbleDistance",
+      "setBubbleVisualStyle",
+      "setBubbleTailLength",
+      "setBubbleOffset",
       "setBlinkFrames",
       "setTalkFrames",
       "setAdvanceFrames",
@@ -193,6 +215,229 @@ describe("Bubble extension", () => {
       acceptReporters: true,
       items: ["speaking", "waiting", "idle"],
     });
+    expect(info.menus.placement).toEqual({
+      acceptReporters: true,
+      items: [
+        "up",
+        "up-up-right",
+        "up-right",
+        "right-up-right",
+        "right",
+        "right-down-right",
+        "down-right",
+        "down-down-right",
+        "down",
+        "down-down-left",
+        "down-left",
+        "left-down-left",
+        "left",
+        "left-up-left",
+        "up-left",
+        "up-up-left",
+        "HEADER_LIKE",
+        "CENTER",
+        "FOOTER_LIKE",
+      ],
+    });
+    expect(info.menus.visualStyle).toEqual({
+      acceptReporters: true,
+      items: [
+        "NORMAL",
+        "THINKING",
+        "DREAMING",
+        "YELLING",
+        "OFF_PANEL",
+        "WAVY",
+        "WHISPERING",
+        "ANNOUNCEMENT",
+        "NARRATION",
+        "NO_BUBBLE",
+      ],
+    });
+  });
+
+  it("places actor-relative bubbles by aliases and continuous angles", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    let bounds = { bottom: -60, left: -10, right: 50, top: 20 };
+    target.getBoundsForBubble = () => bounds;
+    extension.defineBubbleStyle({ STYLE: "placed", TEXT_STYLE: "default" });
+    extension.setBubblePlacement({
+      STYLE: "placed",
+      PLACEMENT: "east",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "right", STYLE: "placed" },
+      { target },
+    );
+    const drawableId = harness.created.at(-1);
+    expect(drawableId).toBeDefined();
+    expect(harness.positions.get(drawableId!)).toEqual([150, -20]);
+
+    bounds = { bottom: -20, left: -50, right: 10, top: 60 };
+    target.onTargetVisualChange?.(target);
+    expect(harness.positions.get(drawableId!)).toEqual([130, 20]);
+
+    extension.setBubblePlacement({ STYLE: "placed", PLACEMENT: "33.75" });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "angle", STYLE: "placed" },
+      { target },
+    );
+    expect(harness.positions.get(harness.created.at(-1)!)).not.toEqual([
+      130, 20,
+    ]);
+  });
+
+  it("scales text and applies actor distance, tail length, and offset", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "transform", TEXT_STYLE: "default" });
+    extension.setBubblePlacement({ STYLE: "transform", PLACEMENT: "right" });
+    extension.setBubbleDistance({ STYLE: "transform", DISTANCE: 5 });
+    extension.setBubbleTailLength({ STYLE: "transform", LENGTH: 15 });
+    extension.setBubbleOffset({
+      STYLE: "transform",
+      X: -10,
+      Y: 8,
+      SCALE: 120,
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "scaled", STYLE: "transform" },
+      { target },
+    );
+
+    const textDrawable = harness.created.at(-1)!;
+    expect(harness.renderer.updateDrawableScale).toHaveBeenCalledWith(
+      textDrawable,
+      [120, 120],
+    );
+    // The requested x position is 168; stage-edge clamping keeps it visible.
+    expect(harness.positions.get(textDrawable)).toEqual([132, -12]);
+  });
+
+  it("renders the selected SVG body behind actor-relative content", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "body", TEXT_STYLE: "default" });
+    extension.setBubbleVisualStyle({
+      STYLE: "body",
+      VISUAL_STYLE: "YELLING",
+    });
+    extension.setBubbleTailLength({ STYLE: "body", LENGTH: 28 });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "Editor body", STYLE: "body" },
+      { target },
+    );
+
+    expect(harness.created).toHaveLength(2);
+    const [bodyDrawable, textDrawable] = harness.created;
+    expect(bodyDrawable).toBeDefined();
+    expect(textDrawable).toBeDefined();
+    expect(harness.createdSvgSkins).toHaveLength(1);
+    expect(harness.createdSvgSkins[0]).toContain('data-bubble-style="YELLING"');
+    expect(harness.createdSvgSkins[0]).toContain(
+      'data-boolean-operation="union"',
+    );
+    expect(harness.visibility.get(bodyDrawable!)).toBe(true);
+    expect(harness.renderer.setDrawableOrder).toHaveBeenNthCalledWith(
+      1,
+      bodyDrawable,
+      Infinity,
+      "sprite",
+    );
+    expect(harness.renderer.setDrawableOrder).toHaveBeenNthCalledWith(
+      2,
+      textDrawable,
+      Infinity,
+      "sprite",
+    );
+
+    await extension.closeBubble({}, { target });
+    expect(harness.destroyedSkins).toEqual([200]);
+  });
+
+  it("places background-relative bubbles independently of actor visibility", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const hiddenActor = { ...actor(), visible: false };
+    extension.defineBubbleStyle({
+      STYLE: "header",
+      TEXT_STYLE: "default",
+    });
+    extension.setBubblePlacement({
+      STYLE: "header",
+      PLACEMENT: "HEADER_LIKE",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "header", STYLE: "header" },
+      { target: hiddenActor },
+    );
+    const drawableId = harness.created.at(-1)!;
+    expect(harness.positions.get(drawableId)).toEqual([0, 140]);
+    expect(harness.visibility.get(drawableId)).toBe(true);
+    expect(hiddenActor.onTargetVisualChange).toBeNull();
+    expect(harness.createdSvgSkins.at(-1)).not.toContain(
+      'data-boolean-operation="union"',
+    );
+  });
+
+  it("keeps text visible without creating a visible body for NO_BUBBLE", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
+    extension.setBubbleVisualStyle({
+      STYLE: "plain",
+      VISUAL_STYLE: "NO_BUBBLE",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "文字だけ", STYLE: "plain" },
+      { target },
+    );
+
+    const [bodyDrawable, textDrawable] = harness.created;
+    expect(harness.visibility.get(bodyDrawable!)).toBe(false);
+    expect(harness.visibility.get(textDrawable!)).toBe(true);
+  });
+
+  it("allows background placement from Stage and rejects actor placement there", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const stage: TurboWarpBubbleTarget = {
+      id: "stage-id",
+      isStage: true,
+      visible: true,
+    };
+    extension.defineBubbleStyle({ STYLE: "stage", TEXT_STYLE: "default" });
+
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "bad", STYLE: "stage" },
+        { target: stage },
+      ),
+    ).rejects.toThrow(
+      "actor-relative bubble placement requires a sprite or clone",
+    );
+
+    extension.setBubblePlacement({
+      STYLE: "stage",
+      PLACEMENT: "FOOTER_LIKE",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "footer", STYLE: "stage" },
+      { target: stage },
+    );
+    expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -140]);
+    await extension.setBubblePhase({ PHASE: "idle" }, { target: stage });
+    await extension.closeBubble({}, { target: stage });
   });
 
   it("renders layered speech and changes from talk to advance animation", async () => {
@@ -226,7 +471,7 @@ describe("Bubble extension", () => {
       { target },
     );
 
-    expect(harness.created).toHaveLength(5);
+    expect(harness.created).toHaveLength(6);
     expect(harness.setText).toHaveBeenCalledWith(
       { STYLE: "dialogue-text", TEXT: "こんにちは" },
       { target: expect.objectContaining({ drawableID: expect.any(Number) }) },
@@ -239,7 +484,8 @@ describe("Bubble extension", () => {
 
     await extension.closeBubble({}, { target });
     expect(scheduler.size).toBe(0);
-    expect(harness.destroyed).toHaveLength(5);
+    expect(harness.destroyed).toHaveLength(6);
+    expect(harness.destroyedSkins).toHaveLength(1);
     expect(harness.releaseTextActor).toHaveBeenCalledOnce();
   });
 
@@ -256,7 +502,7 @@ describe("Bubble extension", () => {
     );
 
     harness.emit("STOP_FOR_TARGET", target);
-    await vi.waitFor(() => expect(harness.destroyed).toHaveLength(1));
+    await vi.waitFor(() => expect(harness.destroyed).toHaveLength(2));
   });
 
   it("reports missing dependent extensions with corrective messages", async () => {
