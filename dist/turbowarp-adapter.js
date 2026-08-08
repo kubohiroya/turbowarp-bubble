@@ -486,22 +486,22 @@ var w = /* @__PURE__ */ o(((e, t) => {
 		function V() {
 			return this.t == 0 ? this.s : this[0] << 24 >> 24;
 		}
-		function _e() {
+		function H() {
 			return this.t == 0 ? this.s : this[0] << 16 >> 16;
 		}
-		function ve(e) {
+		function _e(e) {
 			return Math.floor(Math.LN2 * this.DB / Math.log(e));
 		}
-		function ye() {
+		function ve() {
 			return this.s < 0 ? -1 : this.t <= 0 || this.t == 1 && this[0] <= 0 ? 0 : 1;
 		}
-		function be(e) {
+		function ye(e) {
 			if (e ??= 10, this.signum() == 0 || e < 2 || e > 36) return "0";
 			var t = this.chunkSize(e), n = e ** +t, r = S(n), i = l(), a = l(), o = "";
 			for (this.divRemTo(r, i, a); i.signum() > 0;) o = (n + a.intValue()).toString(e).substr(1) + o, i.divRemTo(r, i, a);
 			return a.intValue().toString(e) + o;
 		}
-		function xe(e, t) {
+		function be(e, t) {
 			this.fromInt(0), t ??= 10;
 			for (var n = this.chunkSize(t), r = t ** +n, i = !1, a = 0, o = 0, s = 0; s < e.length; ++s) {
 				var l = y(e, s);
@@ -513,32 +513,32 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			a > 0 && (this.dMultiply(t ** +a), this.dAddOffset(o, 0)), i && c.ZERO.subTo(this, this);
 		}
-		function Se(e, t, n) {
+		function xe(e, t, n) {
 			if (typeof t == "number") {
 				if (e < 2) this.fromInt(1);
-				else for (this.fromNumber(e, n), this.testBit(e - 1) || this.bitwiseTo(c.ONE.shiftLeft(e - 1), U, this), this.isEven() && this.dAddOffset(1, 0); !this.isProbablePrime(t);) this.dAddOffset(2, 0), this.bitLength() > e && this.subTo(c.ONE.shiftLeft(e - 1), this);
+				else for (this.fromNumber(e, n), this.testBit(e - 1) || this.bitwiseTo(c.ONE.shiftLeft(e - 1), W, this), this.isEven() && this.dAddOffset(1, 0); !this.isProbablePrime(t);) this.dAddOffset(2, 0), this.bitLength() > e && this.subTo(c.ONE.shiftLeft(e - 1), this);
 			} else {
 				var r = [], i = e & 7;
 				r.length = (e >> 3) + 1, t.nextBytes(r), i > 0 ? r[0] &= (1 << i) - 1 : r[0] = 0, this.fromString(r, 256);
 			}
 		}
-		function Ce() {
+		function Se() {
 			var e = this.t, t = [];
 			t[0] = this.s;
 			var n = this.DB - e * this.DB % 8, r, i = 0;
 			if (e-- > 0) for (n < this.DB && (r = this[e] >> n) != (this.s & this.DM) >> n && (t[i++] = r | this.s << this.DB - n); e >= 0;) n < 8 ? (r = (this[e] & (1 << n) - 1) << 8 - n, r |= this[--e] >> (n += this.DB - 8)) : (r = this[e] >> (n -= 8) & 255, n <= 0 && (n += this.DB, --e)), r & 128 && (r |= -256), i == 0 && (this.s & 128) != (r & 128) && ++i, (i > 0 || r != this.s) && (t[i++] = r);
 			return t;
 		}
-		function we(e) {
+		function Ce(e) {
 			return this.compareTo(e) == 0;
 		}
-		function Te(e) {
+		function we(e) {
 			return this.compareTo(e) < 0 ? this : e;
 		}
-		function Ee(e) {
+		function Te(e) {
 			return this.compareTo(e) > 0 ? this : e;
 		}
-		function De(e, t, n) {
+		function Ee(e, t, n) {
 			var r, i, a = Math.min(e.t, this.t);
 			for (r = 0; r < a; ++r) n[r] = t(this[r], e[r]);
 			if (e.t < this.t) {
@@ -550,81 +550,81 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			n.s = t(this.s, e.s), n.clamp();
 		}
-		function Oe(e, t) {
+		function De(e, t) {
 			return e & t;
 		}
-		function H(e) {
+		function U(e) {
 			var t = l();
-			return this.bitwiseTo(e, Oe, t), t;
+			return this.bitwiseTo(e, De, t), t;
 		}
-		function U(e, t) {
+		function W(e, t) {
 			return e | t;
 		}
-		function ke(e) {
+		function Oe(e) {
 			var t = l();
-			return this.bitwiseTo(e, U, t), t;
+			return this.bitwiseTo(e, W, t), t;
 		}
-		function Ae(e, t) {
+		function ke(e, t) {
 			return e ^ t;
 		}
-		function je(e) {
+		function Ae(e) {
 			var t = l();
-			return this.bitwiseTo(e, Ae, t), t;
+			return this.bitwiseTo(e, ke, t), t;
 		}
-		function Me(e, t) {
+		function je(e, t) {
 			return e & ~t;
 		}
-		function Ne(e) {
+		function Me(e) {
 			var t = l();
-			return this.bitwiseTo(e, Me, t), t;
+			return this.bitwiseTo(e, je, t), t;
 		}
-		function Pe() {
+		function Ne() {
 			for (var e = l(), t = 0; t < this.t; ++t) e[t] = this.DM & ~this[t];
 			return e.t = this.t, e.s = ~this.s, e;
 		}
-		function W(e) {
+		function G(e) {
 			var t = l();
 			return e < 0 ? this.rShiftTo(-e, t) : this.lShiftTo(e, t), t;
 		}
-		function Fe(e) {
+		function Pe(e) {
 			var t = l();
 			return e < 0 ? this.lShiftTo(-e, t) : this.rShiftTo(e, t), t;
 		}
-		function Ie(e) {
+		function Fe(e) {
 			if (e == 0) return -1;
 			var t = 0;
 			return e & 65535 || (e >>= 16, t += 16), e & 255 || (e >>= 8, t += 8), e & 15 || (e >>= 4, t += 4), e & 3 || (e >>= 2, t += 2), e & 1 || ++t, t;
 		}
-		function Le() {
-			for (var e = 0; e < this.t; ++e) if (this[e] != 0) return e * this.DB + Ie(this[e]);
+		function Ie() {
+			for (var e = 0; e < this.t; ++e) if (this[e] != 0) return e * this.DB + Fe(this[e]);
 			return this.s < 0 ? this.t * this.DB : -1;
 		}
-		function Re(e) {
+		function Le(e) {
 			for (var t = 0; e != 0;) e &= e - 1, ++t;
 			return t;
 		}
-		function G() {
-			for (var e = 0, t = this.s & this.DM, n = 0; n < this.t; ++n) e += Re(this[n] ^ t);
+		function K() {
+			for (var e = 0, t = this.s & this.DM, n = 0; n < this.t; ++n) e += Le(this[n] ^ t);
 			return e;
 		}
-		function ze(e) {
+		function Re(e) {
 			var t = Math.floor(e / this.DB);
 			return t >= this.t ? this.s != 0 : !!(this[t] & 1 << e % this.DB);
 		}
-		function Be(e, t) {
+		function ze(e, t) {
 			var n = c.ONE.shiftLeft(e);
 			return this.bitwiseTo(n, t, n), n;
 		}
+		function Be(e) {
+			return this.changeBit(e, W);
+		}
 		function Ve(e) {
-			return this.changeBit(e, U);
+			return this.changeBit(e, je);
 		}
 		function He(e) {
-			return this.changeBit(e, Me);
+			return this.changeBit(e, ke);
 		}
-		function Ue(e) {
-			return this.changeBit(e, Ae);
-		}
-		function We(e, t) {
+		function Ue(e, t) {
 			for (var n = 0, r = 0, i = Math.min(e.t, this.t); n < i;) r += this[n] + e[n], t[n++] = r & this.DM, r >>= this.DB;
 			if (e.t < this.t) {
 				for (r += e.s; n < this.t;) r += this[n], t[n++] = r & this.DM, r >>= this.DB;
@@ -635,58 +635,58 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			t.s = r < 0 ? -1 : 0, r > 0 ? t[n++] = r : r < -1 && (t[n++] = this.DV + r), t.t = n, t.clamp();
 		}
-		function Ge(e) {
+		function We(e) {
 			var t = l();
 			return this.addTo(e, t), t;
 		}
-		function Ke(e) {
+		function Ge(e) {
 			var t = l();
 			return this.subTo(e, t), t;
 		}
-		function qe(e) {
+		function Ke(e) {
 			var t = l();
 			return this.multiplyTo(e, t), t;
 		}
-		function Je() {
+		function qe() {
 			var e = l();
 			return this.squareTo(e), e;
 		}
-		function Ye(e) {
+		function Je(e) {
 			var t = l();
 			return this.divRemTo(e, t, null), t;
 		}
-		function Xe(e) {
+		function Ye(e) {
 			var t = l();
 			return this.divRemTo(e, null, t), t;
 		}
-		function Ze(e) {
+		function Xe(e) {
 			var t = l(), n = l();
 			return this.divRemTo(e, t, n), [t, n];
 		}
-		function Qe(e) {
+		function Ze(e) {
 			this[this.t] = this.am(0, e - 1, this, 0, 0, this.t), ++this.t, this.clamp();
 		}
-		function $e(e, t) {
+		function Qe(e, t) {
 			if (e != 0) {
 				for (; this.t <= t;) this[this.t++] = 0;
 				for (this[t] += e; this[t] >= this.DV;) this[t] -= this.DV, ++t >= this.t && (this[this.t++] = 0), ++this[t];
 			}
 		}
-		function et() {}
-		function tt(e) {
+		function $e() {}
+		function et(e) {
 			return e;
 		}
-		function nt(e, t, n) {
+		function tt(e, t, n) {
 			e.multiplyTo(t, n);
 		}
-		function rt(e, t) {
+		function nt(e, t) {
 			e.squareTo(t);
 		}
-		et.prototype.convert = tt, et.prototype.revert = tt, et.prototype.mulTo = nt, et.prototype.sqrTo = rt;
-		function it(e) {
-			return this.exp(e, new et());
+		$e.prototype.convert = et, $e.prototype.revert = et, $e.prototype.mulTo = tt, $e.prototype.sqrTo = nt;
+		function rt(e) {
+			return this.exp(e, new $e());
 		}
-		function at(e, t, n) {
+		function it(e, t, n) {
 			var r = Math.min(this.t + e.t, t);
 			for (n.s = 0, n.t = r; r > 0;) n[--r] = 0;
 			var i;
@@ -694,40 +694,40 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			for (i = Math.min(e.t, t); r < i; ++r) this.am(0, e[r], n, r, 0, t - r);
 			n.clamp();
 		}
-		function ot(e, t, n) {
+		function at(e, t, n) {
 			--t;
 			var r = n.t = this.t + e.t - t;
 			for (n.s = 0; --r >= 0;) n[r] = 0;
 			for (r = Math.max(t - this.t, 0); r < e.t; ++r) n[this.t + r - t] = this.am(t - r, e[r], n, 0, 0, this.t + r - t);
 			n.clamp(), n.drShiftTo(1, n);
 		}
-		function st(e) {
+		function ot(e) {
 			this.r2 = l(), this.q3 = l(), c.ONE.dlShiftTo(2 * e.t, this.r2), this.mu = this.r2.divide(e), this.m = e;
 		}
-		function ct(e) {
+		function st(e) {
 			if (e.s < 0 || e.t > 2 * this.m.t) return e.mod(this.m);
 			if (e.compareTo(this.m) < 0) return e;
 			var t = l();
 			return e.copyTo(t), this.reduce(t), t;
 		}
-		function lt(e) {
+		function ct(e) {
 			return e;
 		}
-		function ut(e) {
+		function lt(e) {
 			for (e.drShiftTo(this.m.t - 1, this.r2), e.t > this.m.t + 1 && (e.t = this.m.t + 1, e.clamp()), this.mu.multiplyUpperTo(this.r2, this.m.t + 1, this.q3), this.m.multiplyLowerTo(this.q3, this.m.t + 1, this.r2); e.compareTo(this.r2) < 0;) e.dAddOffset(1, this.m.t + 1);
 			for (e.subTo(this.r2, e); e.compareTo(this.m) >= 0;) e.subTo(this.m, e);
 		}
-		function dt(e, t) {
+		function ut(e, t) {
 			e.squareTo(t), this.reduce(t);
 		}
-		function ft(e, t, n) {
+		function dt(e, t, n) {
 			e.multiplyTo(t, n), this.reduce(n);
 		}
-		st.prototype.convert = ct, st.prototype.revert = lt, st.prototype.reduce = ut, st.prototype.mulTo = ft, st.prototype.sqrTo = dt;
-		function pt(e, t) {
+		ot.prototype.convert = st, ot.prototype.revert = ct, ot.prototype.reduce = lt, ot.prototype.mulTo = dt, ot.prototype.sqrTo = ut;
+		function ft(e, t) {
 			var n = e.bitLength(), r, i = S(1), a;
 			if (n <= 0) return i;
-			r = n < 18 ? 1 : n < 48 ? 3 : n < 144 ? 4 : n < 768 ? 5 : 6, a = n < 8 ? new F(t) : t.isEven() ? new st(t) : new B(t);
+			r = n < 18 ? 1 : n < 48 ? 3 : n < 144 ? 4 : n < 768 ? 5 : 6, a = n < 8 ? new F(t) : t.isEven() ? new ot(t) : new B(t);
 			var o = [], s = 3, c = r - 1, u = (1 << r) - 1;
 			if (o[1] = a.convert(this), r > 1) {
 				var d = l();
@@ -745,7 +745,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			return a.revert(i);
 		}
-		function mt(e) {
+		function pt(e) {
 			var t = this.s < 0 ? this.negate() : this.clone(), n = e.s < 0 ? e.negate() : e.clone();
 			if (t.compareTo(n) < 0) {
 				var r = t;
@@ -756,7 +756,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			for (i < a && (a = i), a > 0 && (t.rShiftTo(a, t), n.rShiftTo(a, n)); t.signum() > 0;) (i = t.getLowestSetBit()) > 0 && t.rShiftTo(i, t), (i = n.getLowestSetBit()) > 0 && n.rShiftTo(i, n), t.compareTo(n) >= 0 ? (t.subTo(n, t), t.rShiftTo(1, t)) : (n.subTo(t, n), n.rShiftTo(1, n));
 			return a > 0 && n.lShiftTo(a, n), n;
 		}
-		function ht(e) {
+		function mt(e) {
 			if (e <= 0) return 0;
 			var t = this.DV % e, n = this.s < 0 ? e - 1 : 0;
 			if (this.t > 0) {
@@ -765,7 +765,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			return n;
 		}
-		function gt(e) {
+		function ht(e) {
 			var t = e.isEven();
 			if (this.isEven() && t || e.signum() == 0) return c.ZERO;
 			for (var n = e.clone(), r = this.clone(), i = S(1), a = S(0), o = S(0), s = S(1); n.signum() != 0;) {
@@ -779,7 +779,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			else return s;
 			return s.signum() < 0 ? s.add(e) : s;
 		}
-		var K = [
+		var q = [
 			2,
 			3,
 			5,
@@ -948,27 +948,27 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			983,
 			991,
 			997
-		], _t = (1 << 26) / K[K.length - 1];
-		function vt(e) {
+		], gt = (1 << 26) / q[q.length - 1];
+		function _t(e) {
 			var t, n = this.abs();
-			if (n.t == 1 && n[0] <= K[K.length - 1]) {
-				for (t = 0; t < K.length; ++t) if (n[0] == K[t]) return !0;
+			if (n.t == 1 && n[0] <= q[q.length - 1]) {
+				for (t = 0; t < q.length; ++t) if (n[0] == q[t]) return !0;
 				return !1;
 			}
 			if (n.isEven()) return !1;
-			for (t = 1; t < K.length;) {
-				for (var r = K[t], i = t + 1; i < K.length && r < _t;) r *= K[i++];
-				for (r = n.modInt(r); t < i;) if (r % K[t++] == 0) return !1;
+			for (t = 1; t < q.length;) {
+				for (var r = q[t], i = t + 1; i < q.length && r < gt;) r *= q[i++];
+				for (r = n.modInt(r); t < i;) if (r % q[t++] == 0) return !1;
 			}
 			return n.millerRabin(e);
 		}
-		function yt(e) {
+		function vt(e) {
 			var t = this.subtract(c.ONE), n = t.getLowestSetBit();
 			if (n <= 0) return !1;
 			var r = t.shiftRight(n);
-			e = e + 1 >> 1, e > K.length && (e = K.length);
+			e = e + 1 >> 1, e > q.length && (e = q.length);
 			for (var i = l(), a = 0; a < e; ++a) {
-				i.fromInt(K[Math.floor(Math.random() * K.length)]);
+				i.fromInt(q[Math.floor(Math.random() * q.length)]);
 				var o = i.modPow(r, this);
 				if (o.compareTo(c.ONE) != 0 && o.compareTo(t) != 0) {
 					for (var s = 1; s++ < n && o.compareTo(t) != 0;) if (o = o.modPowInt(2, this), o.compareTo(c.ONE) == 0) return !1;
@@ -977,29 +977,29 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			return !0;
 		}
-		c.prototype.chunkSize = ve, c.prototype.toRadix = be, c.prototype.fromRadix = xe, c.prototype.fromNumber = Se, c.prototype.bitwiseTo = De, c.prototype.changeBit = Be, c.prototype.addTo = We, c.prototype.dMultiply = Qe, c.prototype.dAddOffset = $e, c.prototype.multiplyLowerTo = at, c.prototype.multiplyUpperTo = ot, c.prototype.modInt = ht, c.prototype.millerRabin = yt, c.prototype.clone = he, c.prototype.intValue = ge, c.prototype.byteValue = V, c.prototype.shortValue = _e, c.prototype.signum = ye, c.prototype.toByteArray = Ce, c.prototype.equals = we, c.prototype.min = Te, c.prototype.max = Ee, c.prototype.and = H, c.prototype.or = ke, c.prototype.xor = je, c.prototype.andNot = Ne, c.prototype.not = Pe, c.prototype.shiftLeft = W, c.prototype.shiftRight = Fe, c.prototype.getLowestSetBit = Le, c.prototype.bitCount = G, c.prototype.testBit = ze, c.prototype.setBit = Ve, c.prototype.clearBit = He, c.prototype.flipBit = Ue, c.prototype.add = Ge, c.prototype.subtract = Ke, c.prototype.multiply = qe, c.prototype.divide = Ye, c.prototype.remainder = Xe, c.prototype.divideAndRemainder = Ze, c.prototype.modPow = pt, c.prototype.modInverse = gt, c.prototype.pow = it, c.prototype.gcd = mt, c.prototype.isProbablePrime = vt, c.prototype.square = Je;
-		var q = c;
-		if (q.prototype.IsNegative = function() {
-			return this.compareTo(q.ZERO) == -1;
-		}, q.op_Equality = function(e, t) {
+		c.prototype.chunkSize = _e, c.prototype.toRadix = ye, c.prototype.fromRadix = be, c.prototype.fromNumber = xe, c.prototype.bitwiseTo = Ee, c.prototype.changeBit = ze, c.prototype.addTo = Ue, c.prototype.dMultiply = Ze, c.prototype.dAddOffset = Qe, c.prototype.multiplyLowerTo = it, c.prototype.multiplyUpperTo = at, c.prototype.modInt = mt, c.prototype.millerRabin = vt, c.prototype.clone = he, c.prototype.intValue = ge, c.prototype.byteValue = V, c.prototype.shortValue = H, c.prototype.signum = ve, c.prototype.toByteArray = Se, c.prototype.equals = Ce, c.prototype.min = we, c.prototype.max = Te, c.prototype.and = U, c.prototype.or = Oe, c.prototype.xor = Ae, c.prototype.andNot = Me, c.prototype.not = Ne, c.prototype.shiftLeft = G, c.prototype.shiftRight = Pe, c.prototype.getLowestSetBit = Ie, c.prototype.bitCount = K, c.prototype.testBit = Re, c.prototype.setBit = Be, c.prototype.clearBit = Ve, c.prototype.flipBit = He, c.prototype.add = We, c.prototype.subtract = Ge, c.prototype.multiply = Ke, c.prototype.divide = Je, c.prototype.remainder = Ye, c.prototype.divideAndRemainder = Xe, c.prototype.modPow = ft, c.prototype.modInverse = ht, c.prototype.pow = rt, c.prototype.gcd = pt, c.prototype.isProbablePrime = _t, c.prototype.square = qe;
+		var J = c;
+		if (J.prototype.IsNegative = function() {
+			return this.compareTo(J.ZERO) == -1;
+		}, J.op_Equality = function(e, t) {
 			return e.compareTo(t) == 0;
-		}, q.op_Inequality = function(e, t) {
+		}, J.op_Inequality = function(e, t) {
 			return e.compareTo(t) != 0;
-		}, q.op_GreaterThan = function(e, t) {
+		}, J.op_GreaterThan = function(e, t) {
 			return e.compareTo(t) > 0;
-		}, q.op_LessThan = function(e, t) {
+		}, J.op_LessThan = function(e, t) {
 			return e.compareTo(t) < 0;
-		}, q.op_Addition = function(e, t) {
-			return new q(e).add(new q(t));
-		}, q.op_Subtraction = function(e, t) {
-			return new q(e).subtract(new q(t));
-		}, q.Int128Mul = function(e, t) {
-			return new q(e).multiply(new q(t));
-		}, q.op_Division = function(e, t) {
+		}, J.op_Addition = function(e, t) {
+			return new J(e).add(new J(t));
+		}, J.op_Subtraction = function(e, t) {
+			return new J(e).subtract(new J(t));
+		}, J.Int128Mul = function(e, t) {
+			return new J(e).multiply(new J(t));
+		}, J.op_Division = function(e, t) {
 			return e.divide(t);
-		}, q.prototype.ToDouble = function() {
+		}, J.prototype.ToDouble = function() {
 			return parseFloat(this.toString());
-		}, bt === void 0) var bt = function(e, t) {
+		}, yt === void 0) var yt = function(e, t) {
 			var n;
 			if (Object.getOwnPropertyNames === void 0) {
 				for (n in t.prototype) (e.prototype[n] === void 0 || e.prototype[n] == Object.prototype[n]) && (e.prototype[n] = t.prototype[n]);
@@ -1055,7 +1055,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			return this.m_Childs.length > 0 ? this.m_Childs[0] : null;
 		}, e.PolyTree.prototype.Total = function() {
 			return this.m_AllPolys.length;
-		}, bt(e.PolyTree, e.PolyNode), e.Math_Abs_Int64 = e.Math_Abs_Int32 = e.Math_Abs_Double = function(e) {
+		}, yt(e.PolyTree, e.PolyNode), e.Math_Abs_Int64 = e.Math_Abs_Int32 = e.Math_Abs_Double = function(e) {
 			return Math.abs(e);
 		}, e.Math_Max_Int32_Int32 = function(e, t) {
 			return Math.max(e, t);
@@ -1168,7 +1168,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			} while (r != n);
 			return !1;
 		}, e.ClipperBase.prototype.PointOnLineSegment = function(e, t, n, r) {
-			return r ? e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && q.op_Equality(q.Int128Mul(e.X - t.X, n.Y - t.Y), q.Int128Mul(n.X - t.X, e.Y - t.Y)) : e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && (e.X - t.X) * (n.Y - t.Y) == (n.X - t.X) * (e.Y - t.Y);
+			return r ? e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && J.op_Equality(J.Int128Mul(e.X - t.X, n.Y - t.Y), J.Int128Mul(n.X - t.X, e.Y - t.Y)) : e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && (e.X - t.X) * (n.Y - t.Y) == (n.X - t.X) * (e.Y - t.Y);
 		}, e.ClipperBase.prototype.PointOnPolygon = function(e, t, n) {
 			for (var r = t;;) {
 				if (this.PointOnLineSegment(e, r.Pt, r.Next.Pt, n)) return !0;
@@ -1177,13 +1177,13 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			return !1;
 		}, e.ClipperBase.prototype.SlopesEqual = e.ClipperBase.SlopesEqual = function() {
 			var t = arguments, n = t.length, r, i, a, o, s, c, l;
-			return n == 3 ? (r = t[0], i = t[1], l = t[2], l ? q.op_Equality(q.Int128Mul(r.Delta.Y, i.Delta.X), q.Int128Mul(r.Delta.X, i.Delta.Y)) : e.Cast_Int64(r.Delta.Y * i.Delta.X) == e.Cast_Int64(r.Delta.X * i.Delta.Y)) : n == 4 ? (a = t[0], o = t[1], s = t[2], l = t[3], l ? q.op_Equality(q.Int128Mul(a.Y - o.Y, o.X - s.X), q.Int128Mul(a.X - o.X, o.Y - s.Y)) : e.Cast_Int64((a.Y - o.Y) * (o.X - s.X)) - e.Cast_Int64((a.X - o.X) * (o.Y - s.Y)) === 0) : (a = t[0], o = t[1], s = t[2], c = t[3], l = t[4], l ? q.op_Equality(q.Int128Mul(a.Y - o.Y, s.X - c.X), q.Int128Mul(a.X - o.X, s.Y - c.Y)) : e.Cast_Int64((a.Y - o.Y) * (s.X - c.X)) - e.Cast_Int64((a.X - o.X) * (s.Y - c.Y)) === 0);
+			return n == 3 ? (r = t[0], i = t[1], l = t[2], l ? J.op_Equality(J.Int128Mul(r.Delta.Y, i.Delta.X), J.Int128Mul(r.Delta.X, i.Delta.Y)) : e.Cast_Int64(r.Delta.Y * i.Delta.X) == e.Cast_Int64(r.Delta.X * i.Delta.Y)) : n == 4 ? (a = t[0], o = t[1], s = t[2], l = t[3], l ? J.op_Equality(J.Int128Mul(a.Y - o.Y, o.X - s.X), J.Int128Mul(a.X - o.X, o.Y - s.Y)) : e.Cast_Int64((a.Y - o.Y) * (o.X - s.X)) - e.Cast_Int64((a.X - o.X) * (o.Y - s.Y)) === 0) : (a = t[0], o = t[1], s = t[2], c = t[3], l = t[4], l ? J.op_Equality(J.Int128Mul(a.Y - o.Y, s.X - c.X), J.Int128Mul(a.X - o.X, s.Y - c.Y)) : e.Cast_Int64((a.Y - o.Y) * (s.X - c.X)) - e.Cast_Int64((a.X - o.X) * (s.Y - c.Y)) === 0);
 		}, e.ClipperBase.SlopesEqual3 = function(t, n, r) {
-			return r ? q.op_Equality(q.Int128Mul(t.Delta.Y, n.Delta.X), q.Int128Mul(t.Delta.X, n.Delta.Y)) : e.Cast_Int64(t.Delta.Y * n.Delta.X) == e.Cast_Int64(t.Delta.X * n.Delta.Y);
+			return r ? J.op_Equality(J.Int128Mul(t.Delta.Y, n.Delta.X), J.Int128Mul(t.Delta.X, n.Delta.Y)) : e.Cast_Int64(t.Delta.Y * n.Delta.X) == e.Cast_Int64(t.Delta.X * n.Delta.Y);
 		}, e.ClipperBase.SlopesEqual4 = function(t, n, r, i) {
-			return i ? q.op_Equality(q.Int128Mul(t.Y - n.Y, n.X - r.X), q.Int128Mul(t.X - n.X, n.Y - r.Y)) : e.Cast_Int64((t.Y - n.Y) * (n.X - r.X)) - e.Cast_Int64((t.X - n.X) * (n.Y - r.Y)) === 0;
+			return i ? J.op_Equality(J.Int128Mul(t.Y - n.Y, n.X - r.X), J.Int128Mul(t.X - n.X, n.Y - r.Y)) : e.Cast_Int64((t.Y - n.Y) * (n.X - r.X)) - e.Cast_Int64((t.X - n.X) * (n.Y - r.Y)) === 0;
 		}, e.ClipperBase.SlopesEqual5 = function(t, n, r, i, a) {
-			return a ? q.op_Equality(q.Int128Mul(t.Y - n.Y, r.X - i.X), q.Int128Mul(t.X - n.X, r.Y - i.Y)) : e.Cast_Int64((t.Y - n.Y) * (r.X - i.X)) - e.Cast_Int64((t.X - n.X) * (r.Y - i.Y)) === 0;
+			return a ? J.op_Equality(J.Int128Mul(t.Y - n.Y, r.X - i.X), J.Int128Mul(t.X - n.X, r.Y - i.Y)) : e.Cast_Int64((t.Y - n.Y) * (r.X - i.X)) - e.Cast_Int64((t.X - n.X) * (r.Y - i.Y)) === 0;
 		}, e.ClipperBase.prototype.Clear = function() {
 			this.DisposeLocalMinimaList();
 			for (var t = 0, n = this.m_edges.length; t < n; ++t) {
@@ -1861,16 +1861,16 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			this.m_IntersectList.length = 0;
 		};
-		var xt = function(e) {
+		var bt = function(e) {
 			return e < 0 ? Math.ceil(e - .5) : Math.round(e);
-		}, St = function(e) {
+		}, xt = function(e) {
 			return e < 0 ? Math.ceil(e - .5) : Math.floor(e + .5);
-		}, Ct = function(e) {
+		}, St = function(e) {
 			return e < 0 ? -Math.round(Math.abs(e)) : Math.round(e);
-		}, wt = function(e) {
+		}, Ct = function(e) {
 			return e < 0 ? (e -= .5, e < -2147483648 ? Math.ceil(e) : e | 0) : (e += .5, e > 2147483647 ? Math.floor(e) : e | 0);
 		};
-		a.msie ? e.Clipper.Round = xt : a.chromium ? e.Clipper.Round = Ct : a.safari ? e.Clipper.Round = wt : e.Clipper.Round = St, e.Clipper.TopX = function(t, n) {
+		a.msie ? e.Clipper.Round = bt : a.chromium ? e.Clipper.Round = St : a.safari ? e.Clipper.Round = Ct : e.Clipper.Round = xt, e.Clipper.TopX = function(t, n) {
 			return n == t.Top.Y ? t.Top.X : t.Bot.X + e.Clipper.Round(t.Dx * (n - t.Bot.Y));
 		}, e.Clipper.prototype.IntersectPoint = function(t, n, r) {
 			r.X = 0, r.Y = 0;
@@ -2248,7 +2248,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 		}, e.Clipper.ClosedPathsFromPolyTree = function(t) {
 			var n = new e.Paths();
 			return e.Clipper.AddPolyNodeToPaths(t, e.Clipper.NodeType.ntClosed, n), n;
-		}, bt(e.Clipper, e.ClipperBase), e.Clipper.NodeType = {
+		}, yt(e.Clipper, e.ClipperBase), e.Clipper.NodeType = {
 			ntAny: 0,
 			ntOpen: 1,
 			ntClosed: 2
@@ -3037,7 +3037,7 @@ function me(e) {
 }
 //#endregion
 //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
-var he = 2048, ge = 2112, V = Uint8Array, _e = Uint16Array, ve = Int32Array, ye = new V([
+var he = 2048, ge = 2112, V = Uint8Array, H = Uint16Array, _e = Int32Array, ve = new V([
 	0,
 	0,
 	0,
@@ -3068,42 +3068,42 @@ var he = 2048, ge = 2112, V = Uint8Array, _e = Uint16Array, ve = Int32Array, ye 
 	5,
 	0,
 	0,
+	0,
+	0
+]), ye = new V([
+	0,
+	0,
+	0,
+	0,
+	1,
+	1,
+	2,
+	2,
+	3,
+	3,
+	4,
+	4,
+	5,
+	5,
+	6,
+	6,
+	7,
+	7,
+	8,
+	8,
+	9,
+	9,
+	10,
+	10,
+	11,
+	11,
+	12,
+	12,
+	13,
+	13,
 	0,
 	0
 ]), be = new V([
-	0,
-	0,
-	0,
-	0,
-	1,
-	1,
-	2,
-	2,
-	3,
-	3,
-	4,
-	4,
-	5,
-	5,
-	6,
-	6,
-	7,
-	7,
-	8,
-	8,
-	9,
-	9,
-	10,
-	10,
-	11,
-	11,
-	12,
-	12,
-	13,
-	13,
-	0,
-	0
-]), xe = new V([
 	16,
 	17,
 	18,
@@ -3123,51 +3123,51 @@ var he = 2048, ge = 2112, V = Uint8Array, _e = Uint16Array, ve = Int32Array, ye 
 	14,
 	1,
 	15
-]), Se = function(e, t) {
-	for (var n = new _e(31), r = 0; r < 31; ++r) n[r] = t += 1 << e[r - 1];
-	for (var i = new ve(n[30]), r = 1; r < 30; ++r) for (var a = n[r]; a < n[r + 1]; ++a) i[a] = a - n[r] << 5 | r;
+]), xe = function(e, t) {
+	for (var n = new H(31), r = 0; r < 31; ++r) n[r] = t += 1 << e[r - 1];
+	for (var i = new _e(n[30]), r = 1; r < 30; ++r) for (var a = n[r]; a < n[r + 1]; ++a) i[a] = a - n[r] << 5 | r;
 	return {
 		b: n,
 		r: i
 	};
-}, Ce = Se(ye, 2), we = Ce.b, Te = Ce.r;
-we[28] = 258, Te[258] = 28;
-var Ee = Se(be, 0), De = Ee.b;
-Ee.r;
-for (var Oe = new _e(32768), H = 0; H < 32768; ++H) {
-	var U = (H & 43690) >> 1 | (H & 21845) << 1;
-	U = (U & 52428) >> 2 | (U & 13107) << 2, U = (U & 61680) >> 4 | (U & 3855) << 4, Oe[H] = ((U & 65280) >> 8 | (U & 255) << 8) >> 1;
+}, Se = xe(ve, 2), Ce = Se.b, we = Se.r;
+Ce[28] = 258, we[258] = 28;
+var Te = xe(ye, 0), Ee = Te.b;
+Te.r;
+for (var De = new H(32768), U = 0; U < 32768; ++U) {
+	var W = (U & 43690) >> 1 | (U & 21845) << 1;
+	W = (W & 52428) >> 2 | (W & 13107) << 2, W = (W & 61680) >> 4 | (W & 3855) << 4, De[U] = ((W & 65280) >> 8 | (W & 255) << 8) >> 1;
 }
-for (var ke = (function(e, t, n) {
-	for (var r = e.length, i = 0, a = new _e(t); i < r; ++i) e[i] && ++a[e[i] - 1];
-	var o = new _e(t);
+for (var Oe = (function(e, t, n) {
+	for (var r = e.length, i = 0, a = new H(t); i < r; ++i) e[i] && ++a[e[i] - 1];
+	var o = new H(t);
 	for (i = 1; i < t; ++i) o[i] = o[i - 1] + a[i - 1] << 1;
 	var s;
 	if (n) {
-		s = new _e(1 << t);
+		s = new H(1 << t);
 		var c = 15 - t;
-		for (i = 0; i < r; ++i) if (e[i]) for (var l = i << 4 | e[i], u = t - e[i], d = o[e[i] - 1]++ << u, f = d | (1 << u) - 1; d <= f; ++d) s[Oe[d] >> c] = l;
-	} else for (s = new _e(r), i = 0; i < r; ++i) e[i] && (s[i] = Oe[o[e[i] - 1]++] >> 15 - e[i]);
+		for (i = 0; i < r; ++i) if (e[i]) for (var l = i << 4 | e[i], u = t - e[i], d = o[e[i] - 1]++ << u, f = d | (1 << u) - 1; d <= f; ++d) s[De[d] >> c] = l;
+	} else for (s = new H(r), i = 0; i < r; ++i) e[i] && (s[i] = De[o[e[i] - 1]++] >> 15 - e[i]);
 	return s;
-}), Ae = new V(288), H = 0; H < 144; ++H) Ae[H] = 8;
-for (var H = 144; H < 256; ++H) Ae[H] = 9;
-for (var H = 256; H < 280; ++H) Ae[H] = 7;
-for (var H = 280; H < 288; ++H) Ae[H] = 8;
-for (var je = new V(32), H = 0; H < 32; ++H) je[H] = 5;
-var Me = /*#__PURE__*/ ke(Ae, 9, 1), Ne = /*#__PURE__*/ ke(je, 5, 1), Pe = function(e) {
+}), ke = new V(288), U = 0; U < 144; ++U) ke[U] = 8;
+for (var U = 144; U < 256; ++U) ke[U] = 9;
+for (var U = 256; U < 280; ++U) ke[U] = 7;
+for (var U = 280; U < 288; ++U) ke[U] = 8;
+for (var Ae = new V(32), U = 0; U < 32; ++U) Ae[U] = 5;
+var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = function(e) {
 	for (var t = e[0], n = 1; n < e.length; ++n) e[n] > t && (t = e[n]);
 	return t;
-}, W = function(e, t, n) {
+}, G = function(e, t, n) {
 	var r = t / 8 | 0;
 	return (e[r] | e[r + 1] << 8) >> (t & 7) & n;
-}, Fe = function(e, t) {
+}, Pe = function(e, t) {
 	var n = t / 8 | 0;
 	return (e[n] | e[n + 1] << 8 | e[n + 2] << 16) >> (t & 7);
-}, Ie = function(e) {
+}, Fe = function(e) {
 	return (e + 7) / 8 | 0;
-}, Le = function(e, t, n) {
+}, Ie = function(e, t, n) {
 	return (t == null || t < 0) && (t = 0), (n == null || n > e.length) && (n = e.length), new V(e.subarray(t, n));
-}, Re = [
+}, Le = [
 	"unexpected EOF",
 	"invalid block type",
 	"invalid length/literal",
@@ -3182,11 +3182,11 @@ var Me = /*#__PURE__*/ ke(Ae, 9, 1), Ne = /*#__PURE__*/ ke(je, 5, 1), Pe = funct
 	"filename too long",
 	"stream finishing",
 	"invalid zip data"
-], G = function(e, t, n) {
-	var r = Error(t || Re[e]);
-	if (r.code = e, Error.captureStackTrace && Error.captureStackTrace(r, G), !n) throw r;
+], K = function(e, t, n) {
+	var r = Error(t || Le[e]);
+	if (r.code = e, Error.captureStackTrace && Error.captureStackTrace(r, K), !n) throw r;
 	return r;
-}, ze = function(e, t, n, r) {
+}, Re = function(e, t, n, r) {
 	var i = e.length, a = r ? r.length : 0;
 	if (!i || t.f && !t.l) return n || new V(0);
 	var o = !n, s = o || t.i != 2, c = t.i;
@@ -3200,103 +3200,103 @@ var Me = /*#__PURE__*/ ke(Ae, 9, 1), Ne = /*#__PURE__*/ ke(je, 5, 1), Pe = funct
 	}, u = t.f || 0, d = t.p || 0, f = t.b || 0, p = t.l, m = t.d, h = t.m, g = t.n, _ = i * 8;
 	do {
 		if (!p) {
-			u = W(e, d, 1);
-			var v = W(e, d + 1, 3);
+			u = G(e, d, 1);
+			var v = G(e, d + 1, 3);
 			if (d += 3, !v) {
-				var y = Ie(d) + 4, b = e[y - 4] | e[y - 3] << 8, x = y + b;
+				var y = Fe(d) + 4, b = e[y - 4] | e[y - 3] << 8, x = y + b;
 				if (x > i) {
-					c && G(0);
+					c && K(0);
 					break;
 				}
 				s && l(f + b), n.set(e.subarray(y, x), f), t.b = f += b, t.p = d = x * 8, t.f = u;
 				continue;
 			}
-			if (v == 1) p = Me, m = Ne, h = 9, g = 5;
+			if (v == 1) p = je, m = Me, h = 9, g = 5;
 			else if (v == 2) {
-				var S = W(e, d, 31) + 257, C = W(e, d + 10, 15) + 4, ee = S + W(e, d + 5, 31) + 1;
+				var S = G(e, d, 31) + 257, C = G(e, d + 10, 15) + 4, ee = S + G(e, d + 5, 31) + 1;
 				d += 14;
-				for (var w = new V(ee), T = new V(19), E = 0; E < C; ++E) T[xe[E]] = W(e, d + E * 3, 7);
+				for (var w = new V(ee), T = new V(19), E = 0; E < C; ++E) T[be[E]] = G(e, d + E * 3, 7);
 				d += C * 3;
-				for (var te = Pe(T), D = (1 << te) - 1, ne = ke(T, te, 1), E = 0; E < ee;) {
-					var re = ne[W(e, d, D)];
+				for (var te = Ne(T), D = (1 << te) - 1, ne = Oe(T, te, 1), E = 0; E < ee;) {
+					var re = ne[G(e, d, D)];
 					d += re & 15;
 					var y = re >> 4;
 					if (y < 16) w[E++] = y;
 					else {
 						var O = 0, k = 0;
-						for (y == 16 ? (k = 3 + W(e, d, 3), d += 2, O = w[E - 1]) : y == 17 ? (k = 3 + W(e, d, 7), d += 3) : y == 18 && (k = 11 + W(e, d, 127), d += 7); k--;) w[E++] = O;
+						for (y == 16 ? (k = 3 + G(e, d, 3), d += 2, O = w[E - 1]) : y == 17 ? (k = 3 + G(e, d, 7), d += 3) : y == 18 && (k = 11 + G(e, d, 127), d += 7); k--;) w[E++] = O;
 					}
 				}
 				var ie = w.subarray(0, S), A = w.subarray(S);
-				h = Pe(ie), g = Pe(A), p = ke(ie, h, 1), m = ke(A, g, 1);
-			} else G(1);
+				h = Ne(ie), g = Ne(A), p = Oe(ie, h, 1), m = Oe(A, g, 1);
+			} else K(1);
 			if (d > _) {
-				c && G(0);
+				c && K(0);
 				break;
 			}
 		}
 		s && l(f + 131072);
 		for (var j = (1 << h) - 1, M = (1 << g) - 1, N = d;; N = d) {
-			var O = p[Fe(e, d) & j], P = O >> 4;
+			var O = p[Pe(e, d) & j], P = O >> 4;
 			if (d += O & 15, d > _) {
-				c && G(0);
+				c && K(0);
 				break;
 			}
-			if (O || G(2), P < 256) n[f++] = P;
+			if (O || K(2), P < 256) n[f++] = P;
 			else if (P == 256) {
 				N = d, p = null;
 				break;
 			} else {
 				var F = P - 254;
 				if (P > 264) {
-					var E = P - 257, I = ye[E];
-					F = W(e, d, (1 << I) - 1) + we[E], d += I;
+					var E = P - 257, I = ve[E];
+					F = G(e, d, (1 << I) - 1) + Ce[E], d += I;
 				}
-				var L = m[Fe(e, d) & M], R = L >> 4;
-				L || G(3), d += L & 15;
-				var A = De[R];
+				var L = m[Pe(e, d) & M], R = L >> 4;
+				L || K(3), d += L & 15;
+				var A = Ee[R];
 				if (R > 3) {
-					var I = be[R];
-					A += Fe(e, d) & (1 << I) - 1, d += I;
+					var I = ye[R];
+					A += Pe(e, d) & (1 << I) - 1, d += I;
 				}
 				if (d > _) {
-					c && G(0);
+					c && K(0);
 					break;
 				}
 				s && l(f + 131072);
 				var z = f + F;
 				if (f < A) {
 					var ae = a - A, oe = Math.min(A, z);
-					for (ae + f < 0 && G(3); f < oe; ++f) n[f] = r[ae + f];
+					for (ae + f < 0 && K(3); f < oe; ++f) n[f] = r[ae + f];
 				}
 				for (; f < z; ++f) n[f] = n[f - A];
 			}
 		}
 		t.l = p, t.p = N, t.b = f, t.f = u, p && (u = 1, t.m = h, t.d = m, t.n = g);
 	} while (!u);
-	return f != n.length && o ? Le(n, 0, f) : n.subarray(0, f);
-}, Be = /*#__PURE__*/ new V(0), Ve = function(e) {
-	(e[0] != 31 || e[1] != 139 || e[2] != 8) && G(6, "invalid gzip data");
+	return f != n.length && o ? Ie(n, 0, f) : n.subarray(0, f);
+}, ze = /*#__PURE__*/ new V(0), Be = function(e) {
+	(e[0] != 31 || e[1] != 139 || e[2] != 8) && K(6, "invalid gzip data");
 	var t = e[3], n = 10;
 	t & 4 && (n += (e[10] | e[11] << 8) + 2);
 	for (var r = (t >> 3 & 1) + (t >> 4 & 1); r > 0; r -= !e[n++]);
 	return n + (t & 2);
-}, He = function(e) {
+}, Ve = function(e) {
 	var t = e.length;
 	return (e[t - 4] | e[t - 3] << 8 | e[t - 2] << 16 | e[t - 1] << 24) >>> 0;
 };
-function Ue(e, t) {
-	var n = Ve(e);
-	return n + 8 > e.length && G(6, "invalid gzip data"), ze(e.subarray(n, -8), { i: 2 }, t && t.out || new V(He(e)), t && t.dictionary);
+function He(e, t) {
+	var n = Be(e);
+	return n + 8 > e.length && K(6, "invalid gzip data"), Re(e.subarray(n, -8), { i: 2 }, t && t.out || new V(Ve(e)), t && t.dictionary);
 }
-var We = typeof TextDecoder < "u" && /*#__PURE__*/ new TextDecoder();
+var Ue = typeof TextDecoder < "u" && /*#__PURE__*/ new TextDecoder();
 try {
-	We.decode(Be, { stream: !0 });
+	Ue.decode(ze, { stream: !0 });
 } catch {}
 //#endregion
 //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/swap.js
-var Ge = new Uint8Array(new Uint32Array([305419896]).buffer)[0] === 18;
-function Ke(e) {
+var We = new Uint8Array(new Uint32Array([305419896]).buffer)[0] === 18;
+function Ge(e) {
 	let t = e.length;
 	for (let n = 0; n < t; n += 4) [e[n], e[n + 1], e[n + 2], e[n + 3]] = [
 		e[n + 3],
@@ -3305,15 +3305,15 @@ function Ke(e) {
 		e[n]
 	];
 }
-function qe(e) {}
-var Je = Ge ? Ke : qe, Ye = new TextDecoder(), Xe = class e {
+function Ke(e) {}
+var qe = We ? Ge : Ke, Je = new TextDecoder(), Ye = class e {
 	constructor(e) {
 		if (e instanceof Uint8Array) {
 			let t = 0, n = new DataView(e.buffer);
 			if (this.highStart = n.getUint32(0, !0), this.errorValue = n.getUint32(4, !0), t = n.getUint32(8, !0), t !== 4294967295) throw Error("Trie created with old version of @cto.af/unicode-trie.");
 			if (t = n.getUint32(12, !0), 16 + t > e.byteLength) throw RangeError("Invalid input length");
 			let r = e.subarray(16 + t);
-			this.values = r.length ? JSON.parse(Ye.decode(Ue(r))) : [], e = Ue(e.subarray(16, 16 + t)), Je(e), this.data = new Int32Array(e.buffer);
+			this.values = r.length ? JSON.parse(Je.decode(He(r))) : [], e = He(e.subarray(16, 16 + t)), qe(e), this.data = new Int32Array(e.buffer);
 		} else ({data: this.data, highStart: this.highStart, errorValue: this.errorValue, values: this.values = []} = e);
 	}
 	static fromBase64(t) {
@@ -3338,9 +3338,9 @@ var Je = Ge ? Ke : qe, Ye = new TextDecoder(), Xe = class e {
 		let t = this.get(e);
 		return this.values[t] ?? t;
 	}
-}, Ze = Xe.fromBase64("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\n   v6Y9S0rqHMbaN8j3flUbVIdpnonTleaP+JsiapunntfVOer7WUdXNw+jCyvNYxE6P9Ix+7Mu\n   TCa3uM3mb9JUmfLe1q59N19yulXnD5dfU/yRyn/8vR2Cr9H8JB/btsm29undfCw/56tbVmVX\n   d53nXtV0+Iw4rjNTk8udOvdtwl13j1B1YuT5b04HMpsW/7HCr8t/dF0Of846J3W9HPtdNnUf\n   x7UvpdsiV1mJjawiFLWODEm73G1mLF1J2/GB7X7UtvqhJeeTfPc4T7mPtLpuWqWJ66malIZV\n   Oq6uerCp9Oh1dlzCzrpIudKf92/hsZbP+hIbHa0Q/fQYe/v4lmd5T5s6veq6vYViyzJT69KV\n   2t/FlN451zKFrm3i9U0264J0fQOX9U5Vfe6S+xPRL8VaHJe8rK69qpNJqe92jX81XX3X2fr8\n   XPaHsq1PdPWWa12Sag1GaXmwT98pZ/2vy8+h7e8gsHdGcrvn+ou5l5j6K7GfmPobXJiY4xLb\n   d9C3GKnM2H7Xkd7j+z1I03X5ftWxjd9KwDLy0mNPV/fUtSCh4wyeF5DXS8nzWnSd9Jqrfrye\n   UWfa3NP1O131E9TnTDItvs/rn9Qwm9y3lS/yuiSdDK2J32LmH61l4/l7DpMcFl0cy/HpKvNU\n   5Z6yuzmgsPj4PZX78jydfMzx1BFk7Gr61smlU9yXf7w+UL7Pa5Fc9pe3lTntI+YJYvTvQ9Y9\n   x9gbNOU66lxyYJPsuqPtBRpjvW7uX6n9Y3LpfMUe8+fYy6sJ+99x2QyVR1TJrEvlz9Lxmzq8\n   Kct+jO8mpnIrV35pYv3rso+6j2w1RzkxpWeOslpV38Xey7lJ7XVVnDdFVyDn2o2m7A1s871r\n   U3+hbp661LfjbL6l6vL9O5v5uiqdcd/9mG3sVrlrktHl3m+5Ln46Qply/f51rDq2afV3U92P\n   9Z2CVPu71+kExf4uhm265Mpfcrjl9S+p/WGjb9FEeYmrHlhsXTLb772b2v3U8bKvoAk6VaQ3\n   ZdqvWf2FytNd9g1W/c57VNf9+JuMuXT+ZJ1tnZ6T7U+un1PXpSm/BxKiZ+b6nUC5P+bybdoU\n   3wWR9zP1WcOrrtc06dG7rA9gf6lzCCVlQKl1cKvW16r7MjdxPqHue3m55l5M6yRy1q8p6i+d\n   GzbfR5Dtqeeu1D2rulVlp+67ulXfzlDPqS/AP52us+kb5aoetdp226wrqOtHuvxc9InlsMrX\n   5HCkgvtULt80VtPB5tvHlLbU51R1leQ+nW0ftknjClM7Ktf7Pt9n161FKfULHbeU/P5brO/5\n   8PeveZ2l+s31OpmmizxP5z/VrssvNP7Vb9XbUGr+LWSdWKr4c/lemct7U/1KfJcs5nfiXNcz\n   Va3lCf2OXi75c+gaSd/4SyH/pmds+8G2fWCbvmwMeZapf6v2g9hU16vF7l/65K8cc6uh7bIs\n   W8jdLyyxp4BPPOru6+Qx8rd8beIyhew8xjoMtU8l90dcyldseUOJPpPLevpc7ZnvL8f4oaRO\n   ad34WVeefPYVSdG+27T7vPdESj0VV5leyvXoufQvffKZTpZmGy+27UNKfYCc5dWmj2fbp44Z\n   P6G/WN9X1cl8beoieS7ad7+PGP14nz1ATO1q3Xx2jHnpWO1xR1uPovumYQndrFD9uyrdvpD4\n   b9L8Yaz9wxl5bbVu/XlT9j2X/Rr6Hl7brYPd0V1jM5bOk+84oUn7xpeeH7IhVJ7j25+IrU9s\n   ig+XOi7lGMtGj9pGB903/kuMQVPuORpjv7+c35AvvYYkNO1CviFvU4/HkF+qe2ZTG+VTn1bt\n   fV7y5/PtqNR76oeuy4zlH3n/9ND3qPuxu7xb3cuj7heahiXq4ljrC1R5vm5M39HGFz7yzRLr\n   k1PoMMfcPzeGvDPWPssxw6Rzo8QcXmp3XGSSHX2/Et08k67f5dtmuupKN2FvMpOsKObeDnVx\n   k3ofp1h6VrFIVVdV7T2fYm9013l7k/5rbNlKaBuXso7LLV+K1d67uuWiJ19ShhcjvUP97FsO\n   Q+V7pdfDpy5rtv2qEPkU7XFY0v3Q+Oc8FpqHdHV9Xf415XFbPTPfPk7qNWsufow9vkqlz6v+\n   eA4udH9l3XxtiA5ZyN5XpvxSNzdetRdQlWnKjzbP695Xt9+WTz/bJk5y6tDVlYHUe0Crv9Bv\n   vMf+bnzq79DHenfs/ZD3y4TO7b0S7vPM8Z5yL2mTG1XXKcyMLh5093OzvwbVfzr/1hHDby7u\n   ufhH5z/Vrm1YZPsheUtn2pQh+RnfMmCqy3PN7aSeN0oRtrp8m6oONOXflHVfrnj0ccdU1lVS\n   yYu7Ssjz96ZwxEgz13rX1c3Y+Sp2vJve7eN+zP3nYsojYunAhMq1cs2vM1X9J99+Q2g+d+1z\n   5OznpXJD1zcKcc/U33KN39TzgCnr4lz95Fz1cW79kxT6SDF00UruT5ZDZ8Xl9x83MV0I0CwB\n   AB+LCAC4xcFoAgMdjksWhCAMBO/CelYzJ4gMCqiI4t/n/a9hyk29JN3p5DL7bj7GTQrbKypR\n   dDVVywyhZCz4xkUhnSIj5EExoFoQisIfbICE2WJOoAESSK7wecCscDJSxRXMbBAlfLCyIbTh\n   T8tr5/YikvVFSYq3dURbKo/gf+Q3zBCELycCXW/uB2mPjCb8AAAA"), Qe = Object.fromEntries(Ze.values.map((e, t) => [e, t])), { values: $e } = Ze, { AI: et, AL: tt, CJ: nt, CM: rt, NS: it, SA: at, SG: ot, SP: st, XX: ct } = Qe, lt = Xe.fromBase64("AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk\n   SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY\n   753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG\n   r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3\n   1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH\n   uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE\n   /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8\n   zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6\n   H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel\n   WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO\n   ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u\n   f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8\n   If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u\n   33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA");
-Object.fromEntries(lt.values.map((e, t) => [e, t]));
-var { values: ut } = lt, { AK: dt, AL: ft, AP: pt, AS: mt, B2: ht, BA: gt, BB: K, BK: _t, CB: vt, CL: yt, CM: q, CP: bt, CR: xt, EB: St, EM: Ct, EX: wt, GL: Tt, H2: Et, H3: Dt, HH: Ot, HL: kt, HY: At, ID: jt, IN: Mt, IS: Nt, JL: Pt, JT: Ft, JV: It, LF: Lt, NU: Rt, OP: zt, NL: Bt, NS: Vt, PO: Ht, PR: Ut, RI: Wt, SP: Gt, SY: Kt, QU: qt, VF: Jt, VI: Yt, WJ: Xt, ZW: Zt, ZWJ: Qt } = Qe, J = Object.freeze({
+}, Xe = Ye.fromBase64("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\n   v6Y9S0rqHMbaN8j3flUbVIdpnonTleaP+JsiapunntfVOer7WUdXNw+jCyvNYxE6P9Ix+7Mu\n   TCa3uM3mb9JUmfLe1q59N19yulXnD5dfU/yRyn/8vR2Cr9H8JB/btsm29undfCw/56tbVmVX\n   d53nXtV0+Iw4rjNTk8udOvdtwl13j1B1YuT5b04HMpsW/7HCr8t/dF0Of846J3W9HPtdNnUf\n   x7UvpdsiV1mJjawiFLWODEm73G1mLF1J2/GB7X7UtvqhJeeTfPc4T7mPtLpuWqWJ66malIZV\n   Oq6uerCp9Oh1dlzCzrpIudKf92/hsZbP+hIbHa0Q/fQYe/v4lmd5T5s6veq6vYViyzJT69KV\n   2t/FlN451zKFrm3i9U0264J0fQOX9U5Vfe6S+xPRL8VaHJe8rK69qpNJqe92jX81XX3X2fr8\n   XPaHsq1PdPWWa12Sag1GaXmwT98pZ/2vy8+h7e8gsHdGcrvn+ou5l5j6K7GfmPobXJiY4xLb\n   d9C3GKnM2H7Xkd7j+z1I03X5ftWxjd9KwDLy0mNPV/fUtSCh4wyeF5DXS8nzWnSd9Jqrfrye\n   UWfa3NP1O131E9TnTDItvs/rn9Qwm9y3lS/yuiSdDK2J32LmH61l4/l7DpMcFl0cy/HpKvNU\n   5Z6yuzmgsPj4PZX78jydfMzx1BFk7Gr61smlU9yXf7w+UL7Pa5Fc9pe3lTntI+YJYvTvQ9Y9\n   x9gbNOU66lxyYJPsuqPtBRpjvW7uX6n9Y3LpfMUe8+fYy6sJ+99x2QyVR1TJrEvlz9Lxmzq8\n   Kct+jO8mpnIrV35pYv3rso+6j2w1RzkxpWeOslpV38Xey7lJ7XVVnDdFVyDn2o2m7A1s871r\n   U3+hbp661LfjbL6l6vL9O5v5uiqdcd/9mG3sVrlrktHl3m+5Ln46Qply/f51rDq2afV3U92P\n   9Z2CVPu71+kExf4uhm265Mpfcrjl9S+p/WGjb9FEeYmrHlhsXTLb772b2v3U8bKvoAk6VaQ3\n   ZdqvWf2FytNd9g1W/c57VNf9+JuMuXT+ZJ1tnZ6T7U+un1PXpSm/BxKiZ+b6nUC5P+bybdoU\n   3wWR9zP1WcOrrtc06dG7rA9gf6lzCCVlQKl1cKvW16r7MjdxPqHue3m55l5M6yRy1q8p6i+d\n   GzbfR5Dtqeeu1D2rulVlp+67ulXfzlDPqS/AP52us+kb5aoetdp226wrqOtHuvxc9InlsMrX\n   5HCkgvtULt80VtPB5tvHlLbU51R1leQ+nW0ftknjClM7Ktf7Pt9n161FKfULHbeU/P5brO/5\n   8PeveZ2l+s31OpmmizxP5z/VrssvNP7Vb9XbUGr+LWSdWKr4c/lemct7U/1KfJcs5nfiXNcz\n   Va3lCf2OXi75c+gaSd/4SyH/pmds+8G2fWCbvmwMeZapf6v2g9hU16vF7l/65K8cc6uh7bIs\n   W8jdLyyxp4BPPOru6+Qx8rd8beIyhew8xjoMtU8l90dcyldseUOJPpPLevpc7ZnvL8f4oaRO\n   ad34WVeefPYVSdG+27T7vPdESj0VV5leyvXoufQvffKZTpZmGy+27UNKfYCc5dWmj2fbp44Z\n   P6G/WN9X1cl8beoieS7ad7+PGP14nz1ATO1q3Xx2jHnpWO1xR1uPovumYQndrFD9uyrdvpD4\n   b9L8Yaz9wxl5bbVu/XlT9j2X/Rr6Hl7brYPd0V1jM5bOk+84oUn7xpeeH7IhVJ7j25+IrU9s\n   ig+XOi7lGMtGj9pGB903/kuMQVPuORpjv7+c35AvvYYkNO1CviFvU4/HkF+qe2ZTG+VTn1bt\n   fV7y5/PtqNR76oeuy4zlH3n/9ND3qPuxu7xb3cuj7heahiXq4ljrC1R5vm5M39HGFz7yzRLr\n   k1PoMMfcPzeGvDPWPssxw6Rzo8QcXmp3XGSSHX2/Et08k67f5dtmuupKN2FvMpOsKObeDnVx\n   k3ofp1h6VrFIVVdV7T2fYm9013l7k/5rbNlKaBuXso7LLV+K1d67uuWiJ19ShhcjvUP97FsO\n   Q+V7pdfDpy5rtv2qEPkU7XFY0v3Q+Oc8FpqHdHV9Xf415XFbPTPfPk7qNWsufow9vkqlz6v+\n   eA4udH9l3XxtiA5ZyN5XpvxSNzdetRdQlWnKjzbP695Xt9+WTz/bJk5y6tDVlYHUe0Crv9Bv\n   vMf+bnzq79DHenfs/ZD3y4TO7b0S7vPM8Z5yL2mTG1XXKcyMLh5093OzvwbVfzr/1hHDby7u\n   ufhH5z/Vrm1YZPsheUtn2pQh+RnfMmCqy3PN7aSeN0oRtrp8m6oONOXflHVfrnj0ccdU1lVS\n   yYu7Ssjz96ZwxEgz13rX1c3Y+Sp2vJve7eN+zP3nYsojYunAhMq1cs2vM1X9J99+Q2g+d+1z\n   5OznpXJD1zcKcc/U33KN39TzgCnr4lz95Fz1cW79kxT6SDF00UruT5ZDZ8Xl9x83MV0I0CwB\n   AB+LCAC4xcFoAgMdjksWhCAMBO/CelYzJ4gMCqiI4t/n/a9hyk29JN3p5DL7bj7GTQrbKypR\n   dDVVywyhZCz4xkUhnSIj5EExoFoQisIfbICE2WJOoAESSK7wecCscDJSxRXMbBAlfLCyIbTh\n   T8tr5/YikvVFSYq3dURbKo/gf+Q3zBCELycCXW/uB2mPjCb8AAAA"), Ze = Object.fromEntries(Xe.values.map((e, t) => [e, t])), { values: Qe } = Xe, { AI: $e, AL: et, CJ: tt, CM: nt, NS: rt, SA: it, SG: at, SP: ot, XX: st } = Ze, ct = Ye.fromBase64("AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk\n   SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY\n   753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG\n   r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3\n   1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH\n   uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE\n   /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8\n   zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6\n   H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel\n   WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO\n   ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u\n   f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8\n   If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u\n   33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA");
+Object.fromEntries(ct.values.map((e, t) => [e, t]));
+var { values: lt } = ct, { AK: ut, AL: dt, AP: ft, AS: pt, B2: mt, BA: ht, BB: q, BK: gt, CB: _t, CL: vt, CM: J, CP: yt, CR: bt, EB: xt, EM: St, EX: Ct, GL: wt, H2: Tt, H3: Et, HH: Dt, HL: Ot, HY: kt, ID: At, IN: jt, IS: Mt, JL: Nt, JT: Pt, JV: Ft, LF: It, NU: Lt, OP: Rt, NL: zt, NS: Bt, PO: Vt, PR: Ht, RI: Ut, SP: Wt, SY: Gt, QU: Kt, VF: qt, VI: Jt, WJ: Yt, ZW: Xt, ZWJ: Zt } = Ze, Qt = Object.freeze({
 	alignment: "left",
 	backgroundColor: "#ffffff",
 	font: "Helvetica",
@@ -3373,22 +3373,22 @@ function sn(e) {
 		"textColor"
 	]);
 	if (Object.keys(t).some((e) => !n.has(e))) throw Y("Text style has unknown properties.");
-	let r = t.alignment ?? J.alignment;
+	let r = t.alignment ?? Qt.alignment;
 	if (r !== "left" && r !== "center" && r !== "right") throw Y("Text alignment must be left, center, or right.");
-	let i = t.font === void 0 ? J.font : an(t.font, "Text font");
+	let i = t.font === void 0 ? Qt.font : an(t.font, "Text font");
 	if (i.length > rn || [...i].some((e) => {
 		let t = e.codePointAt(0) ?? 0;
 		return t <= 31 || t === 127 || ",;{}".includes(e);
 	})) throw Y("Text font contains unsupported characters.");
-	let a = t.fontPercent ?? J.fontPercent;
+	let a = t.fontPercent ?? Qt.fontPercent;
 	if (typeof a != "number" || !Number.isFinite(a) || a < 1 || a > 1e3) throw Y("Text fontPercent must be from 1 through 1000.");
 	return Object.freeze({
 		alignment: r,
-		backgroundColor: on(t.backgroundColor, J.backgroundColor),
+		backgroundColor: on(t.backgroundColor, Qt.backgroundColor),
 		font: i,
 		fontPercent: a,
 		name: an(t.name, "Text style name"),
-		textColor: on(t.textColor, J.textColor)
+		textColor: on(t.textColor, Qt.textColor)
 	});
 }
 function cn(e) {
@@ -3435,10 +3435,12 @@ function mn(e, t, n = 1) {
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${d}" height="${f}" viewBox="0 0 ${d} ${f}" role="img" data-bubble-presentation="TEXT_ACTOR"><title>${un(e)}</title><rect width="${d}" height="${f}" rx="${dn(c)}" fill="${un(r.backgroundColor)}"/><text xml:space="preserve" fill="${un(r.textColor)}" font-family="${un(r.font)}" font-size="${dn(a)}" text-anchor="${p}">${h}</text></svg>`;
 }
 function hn(e) {
-	let t = cn(e), n = /* @__PURE__ */ new Map([[J.name, J]]), r = /* @__PURE__ */ new Map(), i = !1, a = () => {
+	let t = cn(e), n = /* @__PURE__ */ new Map([[Qt.name, Qt]]), r = /* @__PURE__ */ new Map(), i = !1, a = () => {
 		if (i) throw Y("Text engine has been released.");
 	}, o = (e, i, a) => {
-		let o = n.get(a) ?? J, s = t.renderer.createSVGSkin(mn(i, o, pn(t.renderer)));
+		let o = n.get(a);
+		if (!o) throw Y(`Text style is not defined: ${a}`);
+		let s = t.renderer.createSVGSkin(mn(i, o, pn(t.renderer)));
 		if (!Number.isInteger(s) || s < 0) throw Y("TurboWarp did not create an SVG text skin.");
 		try {
 			t.renderer.updateDrawableSkinId(e.drawableID, s);
@@ -4181,7 +4183,17 @@ function tr(e, t = {}) {
 		}
 	} : null, c = Ln({
 		assetManager: o,
-		svgText: t.svgText ?? s ?? (() => {
+		svgText: (t.svgText ? {
+			defineStyle(e) {
+				t.svgText?.defineStyle(e);
+			},
+			setText(e) {
+				t.svgText?.setText(e);
+			},
+			releaseTarget(e) {
+				t.svgText?.releaseTarget(e), qn(e);
+			}
+		} : null) ?? s ?? (() => {
 			throw new $("BUBBLE-RUNTIME-001", "Bubble text engine is unavailable.");
 		})(),
 		createSurface({ actor: e, actorKey: t, style: r }) {

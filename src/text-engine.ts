@@ -279,7 +279,8 @@ export function createBubbleTextEngine(
     text: string,
     styleName: string,
   ): void => {
-    const style = styles.get(styleName) ?? defaultStyle;
+    const style = styles.get(styleName);
+    if (!style) throw engineError(`Text style is not defined: ${styleName}`);
     const skinId = runtime.renderer.createSVGSkin(
       renderTextActorSvg(text, style, stageScale(runtime.renderer)),
     );

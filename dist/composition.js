@@ -773,7 +773,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			for (i < a && (a = i), a > 0 && (t.rShiftTo(a, t), n.rShiftTo(a, n)); t.signum() > 0;) (i = t.getLowestSetBit()) > 0 && t.rShiftTo(i, t), (i = n.getLowestSetBit()) > 0 && n.rShiftTo(i, n), t.compareTo(n) >= 0 ? (t.subTo(n, t), t.rShiftTo(1, t)) : (n.subTo(t, n), n.rShiftTo(1, n));
 			return a > 0 && n.lShiftTo(a, n), n;
 		}
-		function xt(e) {
+		function B(e) {
 			if (e <= 0) return 0;
 			var t = this.DV % e, n = this.s < 0 ? e - 1 : 0;
 			if (this.t > 0) {
@@ -782,7 +782,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			}
 			return n;
 		}
-		function St(e) {
+		function xt(e) {
 			var t = e.isEven();
 			if (this.isEven() && t || e.signum() == 0) return c.ZERO;
 			for (var n = e.clone(), r = this.clone(), i = x(1), a = x(0), o = x(0), s = x(1); n.signum() != 0;) {
@@ -796,7 +796,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			else return s;
 			return s.signum() < 0 ? s.add(e) : s;
 		}
-		var B = [
+		var V = [
 			2,
 			3,
 			5,
@@ -965,27 +965,27 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			983,
 			991,
 			997
-		], V = (1 << 26) / B[B.length - 1];
-		function Ct(e) {
+		], H = (1 << 26) / V[V.length - 1];
+		function St(e) {
 			var t, n = this.abs();
-			if (n.t == 1 && n[0] <= B[B.length - 1]) {
-				for (t = 0; t < B.length; ++t) if (n[0] == B[t]) return !0;
+			if (n.t == 1 && n[0] <= V[V.length - 1]) {
+				for (t = 0; t < V.length; ++t) if (n[0] == V[t]) return !0;
 				return !1;
 			}
 			if (n.isEven()) return !1;
-			for (t = 1; t < B.length;) {
-				for (var r = B[t], i = t + 1; i < B.length && r < V;) r *= B[i++];
-				for (r = n.modInt(r); t < i;) if (r % B[t++] == 0) return !1;
+			for (t = 1; t < V.length;) {
+				for (var r = V[t], i = t + 1; i < V.length && r < H;) r *= V[i++];
+				for (r = n.modInt(r); t < i;) if (r % V[t++] == 0) return !1;
 			}
 			return n.millerRabin(e);
 		}
-		function wt(e) {
+		function Ct(e) {
 			var t = this.subtract(c.ONE), n = t.getLowestSetBit();
 			if (n <= 0) return !1;
 			var r = t.shiftRight(n);
-			e = e + 1 >> 1, e > B.length && (e = B.length);
+			e = e + 1 >> 1, e > V.length && (e = V.length);
 			for (var i = l(), a = 0; a < e; ++a) {
-				i.fromInt(B[Math.floor(Math.random() * B.length)]);
+				i.fromInt(V[Math.floor(Math.random() * V.length)]);
 				var o = i.modPow(r, this);
 				if (o.compareTo(c.ONE) != 0 && o.compareTo(t) != 0) {
 					for (var s = 1; s++ < n && o.compareTo(t) != 0;) if (o = o.modPowInt(2, this), o.compareTo(c.ONE) == 0) return !1;
@@ -994,29 +994,29 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			}
 			return !0;
 		}
-		c.prototype.chunkSize = Oe, c.prototype.toRadix = M, c.prototype.fromRadix = N, c.prototype.fromNumber = Ae, c.prototype.bitwiseTo = Fe, c.prototype.changeBit = Ye, c.prototype.addTo = Qe, c.prototype.dMultiply = ot, c.prototype.dAddOffset = st, c.prototype.multiplyLowerTo = ft, c.prototype.multiplyUpperTo = pt, c.prototype.modInt = xt, c.prototype.millerRabin = wt, c.prototype.clone = we, c.prototype.intValue = Te, c.prototype.byteValue = Ee, c.prototype.shortValue = De, c.prototype.signum = ke, c.prototype.toByteArray = je, c.prototype.equals = Me, c.prototype.min = Ne, c.prototype.max = Pe, c.prototype.and = Le, c.prototype.or = ze, c.prototype.xor = P, c.prototype.andNot = Ve, c.prototype.not = He, c.prototype.shiftLeft = Ue, c.prototype.shiftRight = We, c.prototype.getLowestSetBit = Ke, c.prototype.bitCount = qe, c.prototype.testBit = Je, c.prototype.setBit = Xe, c.prototype.clearBit = L, c.prototype.flipBit = Ze, c.prototype.add = $e, c.prototype.subtract = et, c.prototype.multiply = tt, c.prototype.divide = rt, c.prototype.remainder = it, c.prototype.divideAndRemainder = at, c.prototype.modPow = yt, c.prototype.modInverse = St, c.prototype.pow = dt, c.prototype.gcd = bt, c.prototype.isProbablePrime = Ct, c.prototype.square = nt;
-		var H = c;
-		if (H.prototype.IsNegative = function() {
-			return this.compareTo(H.ZERO) == -1;
-		}, H.op_Equality = function(e, t) {
+		c.prototype.chunkSize = Oe, c.prototype.toRadix = M, c.prototype.fromRadix = N, c.prototype.fromNumber = Ae, c.prototype.bitwiseTo = Fe, c.prototype.changeBit = Ye, c.prototype.addTo = Qe, c.prototype.dMultiply = ot, c.prototype.dAddOffset = st, c.prototype.multiplyLowerTo = ft, c.prototype.multiplyUpperTo = pt, c.prototype.modInt = B, c.prototype.millerRabin = Ct, c.prototype.clone = we, c.prototype.intValue = Te, c.prototype.byteValue = Ee, c.prototype.shortValue = De, c.prototype.signum = ke, c.prototype.toByteArray = je, c.prototype.equals = Me, c.prototype.min = Ne, c.prototype.max = Pe, c.prototype.and = Le, c.prototype.or = ze, c.prototype.xor = P, c.prototype.andNot = Ve, c.prototype.not = He, c.prototype.shiftLeft = Ue, c.prototype.shiftRight = We, c.prototype.getLowestSetBit = Ke, c.prototype.bitCount = qe, c.prototype.testBit = Je, c.prototype.setBit = Xe, c.prototype.clearBit = L, c.prototype.flipBit = Ze, c.prototype.add = $e, c.prototype.subtract = et, c.prototype.multiply = tt, c.prototype.divide = rt, c.prototype.remainder = it, c.prototype.divideAndRemainder = at, c.prototype.modPow = yt, c.prototype.modInverse = xt, c.prototype.pow = dt, c.prototype.gcd = bt, c.prototype.isProbablePrime = St, c.prototype.square = nt;
+		var U = c;
+		if (U.prototype.IsNegative = function() {
+			return this.compareTo(U.ZERO) == -1;
+		}, U.op_Equality = function(e, t) {
 			return e.compareTo(t) == 0;
-		}, H.op_Inequality = function(e, t) {
+		}, U.op_Inequality = function(e, t) {
 			return e.compareTo(t) != 0;
-		}, H.op_GreaterThan = function(e, t) {
+		}, U.op_GreaterThan = function(e, t) {
 			return e.compareTo(t) > 0;
-		}, H.op_LessThan = function(e, t) {
+		}, U.op_LessThan = function(e, t) {
 			return e.compareTo(t) < 0;
-		}, H.op_Addition = function(e, t) {
-			return new H(e).add(new H(t));
-		}, H.op_Subtraction = function(e, t) {
-			return new H(e).subtract(new H(t));
-		}, H.Int128Mul = function(e, t) {
-			return new H(e).multiply(new H(t));
-		}, H.op_Division = function(e, t) {
+		}, U.op_Addition = function(e, t) {
+			return new U(e).add(new U(t));
+		}, U.op_Subtraction = function(e, t) {
+			return new U(e).subtract(new U(t));
+		}, U.Int128Mul = function(e, t) {
+			return new U(e).multiply(new U(t));
+		}, U.op_Division = function(e, t) {
 			return e.divide(t);
-		}, H.prototype.ToDouble = function() {
+		}, U.prototype.ToDouble = function() {
 			return parseFloat(this.toString());
-		}, Tt === void 0) var Tt = function(e, t) {
+		}, wt === void 0) var wt = function(e, t) {
 			var n;
 			if (Object.getOwnPropertyNames === void 0) {
 				for (n in t.prototype) (e.prototype[n] === void 0 || e.prototype[n] == Object.prototype[n]) && (e.prototype[n] = t.prototype[n]);
@@ -1072,7 +1072,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			return this.m_Childs.length > 0 ? this.m_Childs[0] : null;
 		}, e.PolyTree.prototype.Total = function() {
 			return this.m_AllPolys.length;
-		}, Tt(e.PolyTree, e.PolyNode), e.Math_Abs_Int64 = e.Math_Abs_Int32 = e.Math_Abs_Double = function(e) {
+		}, wt(e.PolyTree, e.PolyNode), e.Math_Abs_Int64 = e.Math_Abs_Int32 = e.Math_Abs_Double = function(e) {
 			return Math.abs(e);
 		}, e.Math_Max_Int32_Int32 = function(e, t) {
 			return Math.max(e, t);
@@ -1185,7 +1185,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			} while (r != n);
 			return !1;
 		}, e.ClipperBase.prototype.PointOnLineSegment = function(e, t, n, r) {
-			return r ? e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && H.op_Equality(H.Int128Mul(e.X - t.X, n.Y - t.Y), H.Int128Mul(n.X - t.X, e.Y - t.Y)) : e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && (e.X - t.X) * (n.Y - t.Y) == (n.X - t.X) * (e.Y - t.Y);
+			return r ? e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && U.op_Equality(U.Int128Mul(e.X - t.X, n.Y - t.Y), U.Int128Mul(n.X - t.X, e.Y - t.Y)) : e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && (e.X - t.X) * (n.Y - t.Y) == (n.X - t.X) * (e.Y - t.Y);
 		}, e.ClipperBase.prototype.PointOnPolygon = function(e, t, n) {
 			for (var r = t;;) {
 				if (this.PointOnLineSegment(e, r.Pt, r.Next.Pt, n)) return !0;
@@ -1194,13 +1194,13 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			return !1;
 		}, e.ClipperBase.prototype.SlopesEqual = e.ClipperBase.SlopesEqual = function() {
 			var t = arguments, n = t.length, r, i, a, o, s, c, l;
-			return n == 3 ? (r = t[0], i = t[1], l = t[2], l ? H.op_Equality(H.Int128Mul(r.Delta.Y, i.Delta.X), H.Int128Mul(r.Delta.X, i.Delta.Y)) : e.Cast_Int64(r.Delta.Y * i.Delta.X) == e.Cast_Int64(r.Delta.X * i.Delta.Y)) : n == 4 ? (a = t[0], o = t[1], s = t[2], l = t[3], l ? H.op_Equality(H.Int128Mul(a.Y - o.Y, o.X - s.X), H.Int128Mul(a.X - o.X, o.Y - s.Y)) : e.Cast_Int64((a.Y - o.Y) * (o.X - s.X)) - e.Cast_Int64((a.X - o.X) * (o.Y - s.Y)) === 0) : (a = t[0], o = t[1], s = t[2], c = t[3], l = t[4], l ? H.op_Equality(H.Int128Mul(a.Y - o.Y, s.X - c.X), H.Int128Mul(a.X - o.X, s.Y - c.Y)) : e.Cast_Int64((a.Y - o.Y) * (s.X - c.X)) - e.Cast_Int64((a.X - o.X) * (s.Y - c.Y)) === 0);
+			return n == 3 ? (r = t[0], i = t[1], l = t[2], l ? U.op_Equality(U.Int128Mul(r.Delta.Y, i.Delta.X), U.Int128Mul(r.Delta.X, i.Delta.Y)) : e.Cast_Int64(r.Delta.Y * i.Delta.X) == e.Cast_Int64(r.Delta.X * i.Delta.Y)) : n == 4 ? (a = t[0], o = t[1], s = t[2], l = t[3], l ? U.op_Equality(U.Int128Mul(a.Y - o.Y, o.X - s.X), U.Int128Mul(a.X - o.X, o.Y - s.Y)) : e.Cast_Int64((a.Y - o.Y) * (o.X - s.X)) - e.Cast_Int64((a.X - o.X) * (o.Y - s.Y)) === 0) : (a = t[0], o = t[1], s = t[2], c = t[3], l = t[4], l ? U.op_Equality(U.Int128Mul(a.Y - o.Y, s.X - c.X), U.Int128Mul(a.X - o.X, s.Y - c.Y)) : e.Cast_Int64((a.Y - o.Y) * (s.X - c.X)) - e.Cast_Int64((a.X - o.X) * (s.Y - c.Y)) === 0);
 		}, e.ClipperBase.SlopesEqual3 = function(t, n, r) {
-			return r ? H.op_Equality(H.Int128Mul(t.Delta.Y, n.Delta.X), H.Int128Mul(t.Delta.X, n.Delta.Y)) : e.Cast_Int64(t.Delta.Y * n.Delta.X) == e.Cast_Int64(t.Delta.X * n.Delta.Y);
+			return r ? U.op_Equality(U.Int128Mul(t.Delta.Y, n.Delta.X), U.Int128Mul(t.Delta.X, n.Delta.Y)) : e.Cast_Int64(t.Delta.Y * n.Delta.X) == e.Cast_Int64(t.Delta.X * n.Delta.Y);
 		}, e.ClipperBase.SlopesEqual4 = function(t, n, r, i) {
-			return i ? H.op_Equality(H.Int128Mul(t.Y - n.Y, n.X - r.X), H.Int128Mul(t.X - n.X, n.Y - r.Y)) : e.Cast_Int64((t.Y - n.Y) * (n.X - r.X)) - e.Cast_Int64((t.X - n.X) * (n.Y - r.Y)) === 0;
+			return i ? U.op_Equality(U.Int128Mul(t.Y - n.Y, n.X - r.X), U.Int128Mul(t.X - n.X, n.Y - r.Y)) : e.Cast_Int64((t.Y - n.Y) * (n.X - r.X)) - e.Cast_Int64((t.X - n.X) * (n.Y - r.Y)) === 0;
 		}, e.ClipperBase.SlopesEqual5 = function(t, n, r, i, a) {
-			return a ? H.op_Equality(H.Int128Mul(t.Y - n.Y, r.X - i.X), H.Int128Mul(t.X - n.X, r.Y - i.Y)) : e.Cast_Int64((t.Y - n.Y) * (r.X - i.X)) - e.Cast_Int64((t.X - n.X) * (r.Y - i.Y)) === 0;
+			return a ? U.op_Equality(U.Int128Mul(t.Y - n.Y, r.X - i.X), U.Int128Mul(t.X - n.X, r.Y - i.Y)) : e.Cast_Int64((t.Y - n.Y) * (r.X - i.X)) - e.Cast_Int64((t.X - n.X) * (r.Y - i.Y)) === 0;
 		}, e.ClipperBase.prototype.Clear = function() {
 			this.DisposeLocalMinimaList();
 			for (var t = 0, n = this.m_edges.length; t < n; ++t) {
@@ -1878,16 +1878,16 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			}
 			this.m_IntersectList.length = 0;
 		};
-		var Et = function(e) {
+		var Tt = function(e) {
 			return e < 0 ? Math.ceil(e - .5) : Math.round(e);
-		}, Dt = function(e) {
+		}, Et = function(e) {
 			return e < 0 ? Math.ceil(e - .5) : Math.floor(e + .5);
-		}, Ot = function(e) {
+		}, Dt = function(e) {
 			return e < 0 ? -Math.round(Math.abs(e)) : Math.round(e);
-		}, kt = function(e) {
+		}, Ot = function(e) {
 			return e < 0 ? (e -= .5, e < -2147483648 ? Math.ceil(e) : e | 0) : (e += .5, e > 2147483647 ? Math.floor(e) : e | 0);
 		};
-		a.msie ? e.Clipper.Round = Et : a.chromium ? e.Clipper.Round = Ot : a.safari ? e.Clipper.Round = kt : e.Clipper.Round = Dt, e.Clipper.TopX = function(t, n) {
+		a.msie ? e.Clipper.Round = Tt : a.chromium ? e.Clipper.Round = Dt : a.safari ? e.Clipper.Round = Ot : e.Clipper.Round = Et, e.Clipper.TopX = function(t, n) {
 			return n == t.Top.Y ? t.Top.X : t.Bot.X + e.Clipper.Round(t.Dx * (n - t.Bot.Y));
 		}, e.Clipper.prototype.IntersectPoint = function(t, n, r) {
 			r.X = 0, r.Y = 0;
@@ -2265,7 +2265,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 		}, e.Clipper.ClosedPathsFromPolyTree = function(t) {
 			var n = new e.Paths();
 			return e.Clipper.AddPolyNodeToPaths(t, e.Clipper.NodeType.ntClosed, n), n;
-		}, Tt(e.Clipper, e.ClipperBase), e.Clipper.NodeType = {
+		}, wt(e.Clipper, e.ClipperBase), e.Clipper.NodeType = {
 			ntAny: 0,
 			ntOpen: 1,
 			ntClosed: 2
@@ -3374,7 +3374,7 @@ function bt(e, t) {
 	}
 	return e;
 }
-var xt = class {
+var B = class {
 	cp = -Infinity;
 	cls = -1;
 	char = "";
@@ -3386,13 +3386,13 @@ var xt = class {
 	[Symbol.for("nodejs.util.inspect.custom")](e, t, n) {
 		return `${yt(this.cls)}(${this.cp.toString(16).padStart(4, "0")}:${JSON.stringify(this.char)})${this.ignored ? "Ig" : ""}`;
 	}
-}, St = class {
+}, xt = class {
 	str = "";
 	len = 0;
 	prevChunk = 0;
-	prev = new xt(-1, -Infinity, "", 0);
-	cur = new xt(-1, -Infinity, "", 0);
-	next = new xt(-1, -Infinity, "", 0);
+	prev = new B(-1, -Infinity, "", 0);
+	cur = new B(-1, -Infinity, "", 0);
+	next = new B(-1, -Infinity, "", 0);
 	LB8 = !1;
 	spaces = !1;
 	RI = 0;
@@ -3405,13 +3405,13 @@ var xt = class {
 		this.next.ignored ? this.cur.len = this.next.len : (this.prev = this.cur, this.cur = this.next), this.next = e;
 	}
 	pushEnd() {
-		this.push(new xt(-2, Infinity, "", this.next.len));
+		this.push(new B(-2, Infinity, "", this.next.len));
 	}
 	*codePoints(e, t = !0) {
 		if (t) for (; e < this.len;) if (e === this.cur.len && this.next.cls >= 0) yield this.next, e += this.next.char.length;
 		else {
 			let t = this.str.codePointAt(e), n = String.fromCodePoint(t), r = ct.get(t);
-			e += n.length, yield new xt(bt(r, n), t, n, e);
+			e += n.length, yield new B(bt(r, n), t, n, e);
 		}
 		else for (; e > 0;) if (e === this.cur.len) yield this.cur, e -= this.cur.char.length;
 		else if (e === this.prev.len) yield this.prev, e -= this.prev.char.length;
@@ -3419,7 +3419,7 @@ var xt = class {
 			let t = e - 1, n = this.str.charCodeAt(t);
 			n >= 56320 && n <= 57343 && t--;
 			let r = this.str.codePointAt(t), i = String.fromCodePoint(r);
-			yield new xt(bt(ct.get(r), i), r, i, e), e = t;
+			yield new B(bt(ct.get(r), i), r, i, e), e = t;
 		}
 	}
 	classAfterSpaces(e) {
@@ -3437,326 +3437,327 @@ var xt = class {
 		let r = `${n(this.prev)} => ${n(this.cur)} => ${n(this.next)}`;
 		return this.LB8 && (r += " LB8"), this.spaces && (r += " spaces"), this.RI > 0 && (r += ` RI: ${this.RI}`), this.props && (r += ` ${JSON.stringify(this.props)}`), r;
 	}
-}, B = class {
+}, V = class {
 	string = void 0;
 	props = void 0;
 	constructor(e, t = !1) {
 		this.position = e, this.required = t;
 	}
-}, V = R.fromBase64("AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk\n   SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY\n   753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG\n   r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3\n   1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH\n   uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE\n   /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8\n   zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6\n   H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel\n   WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO\n   ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u\n   f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8\n   If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u\n   33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA");
-Object.fromEntries(V.values.map((e, t) => [e, t]));
-var { values: Ct } = V, { AK: wt, AL: H, AP: Tt, AS: Et, B2: Dt, BA: Ot, BB: kt, BK: At, CB: jt, CL: Mt, CM: Nt, CP: Pt, CR: Ft, EB: It, EM: Lt, EX: Rt, GL: zt, H2: Bt, H3: Vt, HH: Ht, HL: U, HY: Ut, ID: Wt, IN: Gt, IS: Kt, JL: qt, JT: Jt, JV: Yt, LF: Xt, NU: W, OP: Zt, NL: Qt, NS: $t, PO: en, PR: tn, RI: nn, SP: G, SY: rn, QU: K, VF: an, VI: on, WJ: sn, ZW: cn, ZWJ: ln } = lt, un = /* @__PURE__ */ new Set([
-	H,
+}, H = R.fromBase64("AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk\n   SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY\n   753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG\n   r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3\n   1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH\n   uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE\n   /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8\n   zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6\n   H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel\n   WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO\n   ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u\n   f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8\n   If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u\n   33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA");
+Object.fromEntries(H.values.map((e, t) => [e, t]));
+var { values: St } = H, { AK: Ct, AL: U, AP: wt, AS: Tt, B2: Et, BA: Dt, BB: Ot, BK: kt, CB: At, CL: jt, CM: Mt, CP: Nt, CR: Pt, EB: Ft, EM: It, EX: Lt, GL: Rt, H2: zt, H3: Bt, HH: Vt, HL: W, HY: Ht, ID: Ut, IN: Wt, IS: Gt, JL: Kt, JT: qt, JV: Jt, LF: Yt, NU: G, OP: Xt, NL: Zt, NS: Qt, PO: $t, PR: en, RI: tn, SP: K, SY: nn, QU: q, VF: rn, VI: an, WJ: on, ZW: sn, ZWJ: cn } = lt, ln = /* @__PURE__ */ new Set([
 	U,
-	W
-]), dn = /* @__PURE__ */ new Set([
-	At,
-	Ft,
-	Xt,
-	Qt,
-	G,
-	cn
-]), fn = /* @__PURE__ */ new Set([
-	Wt,
-	It,
-	Lt
-]), pn = /* @__PURE__ */ new Set([
-	qt,
-	Yt,
-	Bt,
-	Vt
-]), mn = /* @__PURE__ */ new Set([
-	qt,
-	Yt,
-	Jt,
-	Bt,
-	Vt
-]), hn = /* @__PURE__ */ new Set([Yt, Jt]), gn = /* @__PURE__ */ new Set([
-	G,
-	zt,
-	sn,
-	Mt,
-	K,
+	W,
+	G
+]), un = /* @__PURE__ */ new Set([
+	kt,
 	Pt,
-	Rt,
-	Kt,
-	rn,
-	At,
-	Ft,
-	Xt,
-	Qt,
-	cn
-]), _n = /* @__PURE__ */ new Set([
-	-1,
-	At,
-	Ft,
-	Xt,
-	Qt,
+	Yt,
 	Zt,
 	K,
+	sn
+]), dn = /* @__PURE__ */ new Set([
+	Ut,
+	Ft,
+	It
+]), fn = /* @__PURE__ */ new Set([
+	Kt,
+	Jt,
 	zt,
-	G,
-	cn
-]), q = Symbol("PASS"), J = Symbol("NO_BREAK"), vn = Symbol("MAY_BREAK"), yn = Symbol("MUST_BREAK");
+	Bt
+]), pn = /* @__PURE__ */ new Set([
+	Kt,
+	Jt,
+	qt,
+	zt,
+	Bt
+]), mn = /* @__PURE__ */ new Set([Jt, qt]), hn = /* @__PURE__ */ new Set([
+	K,
+	Rt,
+	on,
+	jt,
+	q,
+	Nt,
+	Lt,
+	Gt,
+	nn,
+	kt,
+	Pt,
+	Yt,
+	Zt,
+	sn
+]), gn = /* @__PURE__ */ new Set([
+	-1,
+	kt,
+	Pt,
+	Yt,
+	Zt,
+	Xt,
+	q,
+	Rt,
+	K,
+	sn
+]), J = Symbol("PASS"), Y = Symbol("NO_BREAK"), _n = Symbol("MAY_BREAK"), vn = Symbol("MUST_BREAK");
+function yn(e) {
+	return e.cur.cls === -1 && e.next.cls !== -2 ? Y : J;
+}
 function bn(e) {
-	return e.cur.cls === -1 && e.next.cls !== -2 ? J : q;
+	return e.next.cls === -2 && (e.cur.len === 0 || e.cur.len !== e.prevChunk) ? vn : J;
 }
 function xn(e) {
-	return e.next.cls === -2 && (e.cur.len === 0 || e.cur.len !== e.prevChunk) ? yn : q;
+	return e.cur.cls === kt ? vn : J;
 }
 function Sn(e) {
-	return e.cur.cls === At ? yn : q;
+	switch (e.cur.cls) {
+		case Pt: return e.next.cls === Yt ? Y : vn;
+		case Yt:
+		case Zt: return vn;
+	}
+	return J;
 }
 function Cn(e) {
-	switch (e.cur.cls) {
-		case Ft: return e.next.cls === Xt ? J : yn;
-		case Xt:
-		case Qt: return yn;
+	switch (e.next.cls) {
+		case kt:
+		case Pt:
+		case Yt:
+		case Zt: return Y;
 	}
-	return q;
+	return J;
 }
 function wn(e) {
-	switch (e.next.cls) {
-		case At:
-		case Ft:
-		case Xt:
-		case Qt: return J;
-	}
-	return q;
+	return e.cur.cls !== tn && (e.RI = 0), e.spaces ? (e.next.cls !== K && (e.spaces = !1), Y) : J;
 }
 function Tn(e) {
-	return e.cur.cls !== nn && (e.RI = 0), e.spaces ? (e.next.cls !== G && (e.spaces = !1), J) : q;
+	if (e.next.cls === sn) return Y;
+	if (e.next.cls === K) switch (e.cur.cls) {
+		case sn:
+		case Xt:
+		case q:
+		case jt:
+		case Nt:
+		case Et: break;
+		default: return Y;
+	}
+	return J;
 }
 function En(e) {
-	if (e.next.cls === cn) return J;
-	if (e.next.cls === G) switch (e.cur.cls) {
-		case cn:
-		case Zt:
-		case K:
-		case Mt:
-		case Pt:
-		case Dt: break;
-		default: return J;
-	}
-	return q;
+	return e.LB8 ? (e.LB8 = !1, _n) : e.cur.cls === sn ? e.next.cls === K ? (e.LB8 = !0, Y) : _n : J;
 }
 function Dn(e) {
-	return e.LB8 ? (e.LB8 = !1, vn) : e.cur.cls === cn ? e.next.cls === G ? (e.LB8 = !0, J) : vn : q;
+	return e.cur.cls === cn ? Y : J;
 }
 function On(e) {
-	return e.cur.cls === ln ? J : q;
+	return !un.has(e.cur.cls) && (e.next.cls === Mt || e.next.cls === cn) ? (e.next.ignored = !0, Y) : J;
 }
 function kn(e) {
-	return !dn.has(e.cur.cls) && (e.next.cls === Nt || e.next.cls === ln) ? (e.next.ignored = !0, J) : q;
+	return e.cur.cls === Mt && (e.cur.cls = U), e.next.cls === Mt && (e.next.cls = U), J;
 }
 function An(e) {
-	return e.cur.cls === Nt && (e.cur.cls = H), e.next.cls === Nt && (e.next.cls = H), q;
+	return e.next.cls === on || e.cur.cls === on ? Y : J;
 }
 function jn(e) {
-	return e.next.cls === sn || e.cur.cls === sn ? J : q;
+	return e.cur.cls === Rt ? Y : J;
 }
 function Mn(e) {
-	return e.cur.cls === zt ? J : q;
+	if (e.next.cls === Rt) switch (e.cur.cls) {
+		case K:
+		case Dt:
+		case Ht:
+		case Vt: return J;
+		default: return Y;
+	}
+	return J;
 }
 function Nn(e) {
-	if (e.next.cls === zt) switch (e.cur.cls) {
-		case G:
-		case Ot:
-		case Ut:
-		case Ht: return q;
-		default: return J;
+	switch (e.next.cls) {
+		case jt:
+		case Nt:
+		case Lt:
+		case nn: return Y;
 	}
-	return q;
+	return J;
 }
 function Pn(e) {
-	switch (e.next.cls) {
-		case Mt:
-		case Pt:
-		case Rt:
-		case rn: return J;
-	}
-	return q;
+	return e.cur.cls === Xt ? (e.next.cls === K && (e.spaces = !0), Y) : J;
 }
 function Fn(e) {
-	return e.cur.cls === Zt ? (e.next.cls === G && (e.spaces = !0), J) : q;
+	return gn.has(e.prev.cls) && /^\p{Pi}$/u.test(e.cur.char) && e.cur.cls === q ? (e.spaces = !0, Y) : J;
 }
 function In(e) {
-	return _n.has(e.prev.cls) && /^\p{Pi}$/u.test(e.cur.char) && e.cur.cls === K ? (e.spaces = !0, J) : q;
+	if (/^\p{gc=Pf}$/u.test(e.next.char) && e.next.cls === q) {
+		let t = e.afterNext();
+		if (!t || hn.has(t.cls)) return Y;
+	}
+	return J;
 }
 function Ln(e) {
-	if (/^\p{gc=Pf}$/u.test(e.next.char) && e.next.cls === K) {
-		let t = e.afterNext();
-		if (!t || gn.has(t.cls)) return J;
-	}
-	return q;
+	return e.cur.cls === K && e.next.cls === Gt && e.afterNext()?.cls === G ? _n : J;
 }
 function Rn(e) {
-	return e.cur.cls === G && e.next.cls === Kt && e.afterNext()?.cls === W ? vn : q;
+	return e.next.cls === Gt ? Y : J;
 }
 function zn(e) {
-	return e.next.cls === Kt ? J : q;
+	if (e.cur.cls === jt || e.cur.cls === Nt) {
+		if (e.classAfterSpaces(e.cur.len) === Qt) return e.next.cls === K && (e.spaces = !0), Y;
+		if (e.next.cls === K) return Y;
+	}
+	return J;
 }
 function Bn(e) {
-	if (e.cur.cls === Mt || e.cur.cls === Pt) {
-		if (e.classAfterSpaces(e.cur.len) === $t) return e.next.cls === G && (e.spaces = !0), J;
-		if (e.next.cls === G) return J;
+	if (e.cur.cls === Et) {
+		if (e.classAfterSpaces(e.cur.len) === Et) return e.next.cls === K && (e.spaces = !0), Y;
+		if (e.next.cls === K) return Y;
 	}
-	return q;
+	return J;
 }
 function Vn(e) {
-	if (e.cur.cls === Dt) {
-		if (e.classAfterSpaces(e.cur.len) === Dt) return e.next.cls === G && (e.spaces = !0), J;
-		if (e.next.cls === G) return J;
-	}
-	return q;
+	return e.cur.cls === K ? _n : J;
 }
 function Hn(e) {
-	return e.cur.cls === G ? vn : q;
+	return e.next.cls === q && !/^\p{Pi}$/u.test(e.next.char) || e.cur.cls === q && !/^\p{Pf}$/u.test(e.cur.char) ? Y : J;
 }
 function Un(e) {
-	return e.next.cls === K && !/^\p{Pi}$/u.test(e.next.char) || e.cur.cls === K && !/^\p{Pf}$/u.test(e.cur.char) ? J : q;
+	if (!H.get(e.cur.cp) && e.next.cls === q) return Y;
+	if (e.next.cls === q) {
+		let t = e.afterNext();
+		if (!t || !H.get(t.cp)) return Y;
+	}
+	return e.cur.cls === q && !H.get(e.next.cp) || (e.prev.cls === -1 || !H.get(e.prev.cp)) && e.cur.cls === q ? Y : J;
 }
 function Wn(e) {
-	if (!V.get(e.cur.cp) && e.next.cls === K) return J;
-	if (e.next.cls === K) {
-		let t = e.afterNext();
-		if (!t || !V.get(t.cp)) return J;
-	}
-	return e.cur.cls === K && !V.get(e.next.cp) || (e.prev.cls === -1 || !V.get(e.prev.cp)) && e.cur.cls === K ? J : q;
+	return e.cur.cls === At || e.next.cls === At ? _n : J;
 }
-function Gn(e) {
-	return e.cur.cls === jt || e.next.cls === jt ? vn : q;
-}
-var Kn = /* @__PURE__ */ new Set([
+var Gn = /* @__PURE__ */ new Set([
 	-1,
+	kt,
+	Pt,
+	Yt,
+	Zt,
+	K,
+	sn,
 	At,
-	Ft,
-	Xt,
-	Qt,
-	G,
-	cn,
-	jt,
-	zt
+	Rt
 ]);
+function Kn(e) {
+	return Gn.has(e.prev.cls) && (e.cur.cls === Ht || e.cur.cls === Vt) && (e.next.cls === U || e.next.cls === W) ? Y : J;
+}
 function qn(e) {
-	return Kn.has(e.prev.cls) && (e.cur.cls === Ut || e.cur.cls === Ht) && (e.next.cls === H || e.next.cls === U) ? J : q;
+	if (e.cur.cls === Ot) return Y;
+	switch (e.next.cls) {
+		case Dt:
+		case Vt:
+		case Ht:
+		case Qt: return Y;
+	}
+	return J;
 }
 function Jn(e) {
-	if (e.cur.cls === kt) return J;
-	switch (e.next.cls) {
-		case Ot:
-		case Ht:
-		case Ut:
-		case $t: return J;
-	}
-	return q;
+	return e.prev.cls === W && (e.cur.cls === Ht || e.cur.cls === Vt) && e.next.cls !== W ? Y : J;
 }
 function Yn(e) {
-	return e.prev.cls === U && (e.cur.cls === Ut || e.cur.cls === Ht) && e.next.cls !== U ? J : q;
+	return e.cur.cls === nn && e.next.cls === W ? Y : J;
 }
 function Xn(e) {
-	return e.cur.cls === rn && e.next.cls === U ? J : q;
+	return e.next.cls === Wt ? Y : J;
 }
 function Zn(e) {
-	return e.next.cls === Gt ? J : q;
+	switch (e.cur.cls) {
+		case U:
+		case W:
+			if (e.next.cls === G) return Y;
+			break;
+		case G: if (e.next.cls === U || e.next.cls === W) return Y;
+	}
+	return J;
 }
 function Qn(e) {
-	switch (e.cur.cls) {
-		case H:
-		case U:
-			if (e.next.cls === W) return J;
-			break;
-		case W: if (e.next.cls === H || e.next.cls === U) return J;
-	}
-	return q;
+	return e.cur.cls === en && dn.has(e.next.cls) || e.next.cls === $t && dn.has(e.cur.cls) ? Y : J;
 }
 function $n(e) {
-	return e.cur.cls === tn && fn.has(e.next.cls) || e.next.cls === en && fn.has(e.cur.cls) ? J : q;
+	return (e.cur.cls === en || e.cur.cls === $t) && (e.next.cls === U || e.next.cls === W) || (e.cur.cls === U || e.cur.cls === W) && (e.next.cls === en || e.next.cls === $t) ? Y : J;
 }
-function er(e) {
-	return (e.cur.cls === tn || e.cur.cls === en) && (e.next.cls === H || e.next.cls === U) || (e.cur.cls === H || e.cur.cls === U) && (e.next.cls === tn || e.next.cls === en) ? J : q;
-}
-var tr = /* @__PURE__ */ new Set([en, tn]), nr = /* @__PURE__ */ new Set([Mt, Pt]);
-function rr(e) {
+var er = /* @__PURE__ */ new Set([$t, en]), tr = /* @__PURE__ */ new Set([jt, Nt]);
+function nr(e) {
 	let t = null;
-	if (tr.has(e.next.cls) ? t = nr.has(e.cur.cls) ? e.prev.len : e.cur.len : e.next.cls === W && (t = e.cur.len), t !== null) SyIsLoop: for (let { cls: n } of e.codePoints(t, !1)) switch (n) {
-		case rn:
-		case Kt: continue;
-		case W: return J;
+	if (er.has(e.next.cls) ? t = tr.has(e.cur.cls) ? e.prev.len : e.cur.len : e.next.cls === G && (t = e.cur.len), t !== null) SyIsLoop: for (let { cls: n } of e.codePoints(t, !1)) switch (n) {
+		case nn:
+		case Gt: continue;
+		case G: return Y;
 		default: break SyIsLoop;
 	}
-	if (e.cur.cls === en || e.cur.cls === tn) {
-		if (e.next.cls === Zt) {
+	if (e.cur.cls === $t || e.cur.cls === en) {
+		if (e.next.cls === Xt) {
 			let t = e.afterNext();
-			if (t && (t.cls === W || t.cls === Kt && e.afterNext(2)?.cls === W)) return J;
-		} else if (e.next.cls === W) return J;
+			if (t && (t.cls === G || t.cls === Gt && e.afterNext(2)?.cls === G)) return Y;
+		} else if (e.next.cls === G) return Y;
 	}
-	return e.cur.cls === Ut && e.next.cls === W || e.cur.cls === Kt && e.next.cls === W ? J : q;
+	return e.cur.cls === Ht && e.next.cls === G || e.cur.cls === Gt && e.next.cls === G ? Y : J;
+}
+function rr(e) {
+	switch (e.cur.cls) {
+		case Kt:
+			if (fn.has(e.next.cls)) return Y;
+			break;
+		case Jt:
+		case zt:
+			if (mn.has(e.next.cls)) return Y;
+			break;
+		case qt:
+		case Bt: if (e.next.cls === qt) return Y;
+	}
+	return J;
 }
 function ar(e) {
 	switch (e.cur.cls) {
-		case qt:
-			if (pn.has(e.next.cls)) return J;
-			break;
-		case Yt:
-		case Bt:
-			if (hn.has(e.next.cls)) return J;
-			break;
+		case Kt:
 		case Jt:
-		case Vt: if (e.next.cls === Jt) return J;
+		case qt:
+		case zt:
+		case Bt:
+			if (e.next.cls === $t) return Y;
+			break;
+		case en: if (pn.has(e.next.cls)) return Y;
 	}
-	return q;
+	return J;
 }
 function or(e) {
-	switch (e.cur.cls) {
-		case qt:
-		case Yt:
-		case Jt:
-		case Bt:
-		case Vt:
-			if (e.next.cls === en) return J;
-			break;
-		case tn: if (mn.has(e.next.cls)) return J;
-	}
-	return q;
+	return (e.cur.cls === U || e.cur.cls === W) && (e.next.cls === U || e.next.cls === W) ? Y : J;
 }
 function sr(e) {
-	return (e.cur.cls === H || e.cur.cls === U) && (e.next.cls === H || e.next.cls === U) ? J : q;
-}
-function cr(e) {
 	let { prev: t, cur: n, next: r } = e;
 	function i(e) {
-		return e.cls === wt || e.char === "◌" || e.cls === Et;
+		return e.cls === Ct || e.char === "◌" || e.cls === Tt;
 	}
-	return n.cls === Tt && i(r) || i(n) && (r.cls === an || r.cls === on) || i(t) && n.cls === on && (r.cls === wt || r.char === "◌") || i(n) && i(r) && e.afterNext()?.cls === an ? J : q;
+	return n.cls === wt && i(r) || i(n) && (r.cls === rn || r.cls === an) || i(t) && n.cls === an && (r.cls === Ct || r.char === "◌") || i(n) && i(r) && e.afterNext()?.cls === rn ? Y : J;
+}
+function cr(e) {
+	return e.cur.cls === Gt && (e.next.cls === U || e.next.cls === W) ? Y : J;
 }
 function lr(e) {
-	return e.cur.cls === Kt && (e.next.cls === H || e.next.cls === U) ? J : q;
-}
-function ur(e) {
 	switch (e.cur.cls) {
-		case H:
 		case U:
 		case W:
-			if (e.next.cls === Zt && !V.get(e.next.cp)) return J;
+		case G:
+			if (e.next.cls === Xt && !H.get(e.next.cp)) return Y;
 			break;
-		case Pt: if (!V.get(e.cur.cp) && un.has(e.next.cls)) return J;
+		case Nt: if (!H.get(e.cur.cp) && ln.has(e.next.cls)) return Y;
 	}
-	return q;
+	return J;
+}
+function ur(e) {
+	if (e.cur.cls === tn) {
+		if (e.next.cls === tn && ++e.RI % 2 != 0) return Y;
+	} else e.RI = 0;
+	return J;
 }
 function dr(e) {
-	if (e.cur.cls === nn) {
-		if (e.next.cls === nn && ++e.RI % 2 != 0) return J;
-	} else e.RI = 0;
-	return q;
+	return e.cur.cls === Ft && e.next.cls === It || e.next.cls === It && /^\p{ExtPict}$/u.test(e.cur.char) && /^\p{gc=Cn}$/u.test(e.cur.char) ? Y : J;
 }
-function fr(e) {
-	return e.cur.cls === It && e.next.cls === Lt || e.next.cls === Lt && /^\p{ExtPict}$/u.test(e.cur.char) && /^\p{gc=Cn}$/u.test(e.cur.char) ? J : q;
+function fr() {
+	return _n;
 }
-function pr() {
-	return vn;
-}
-var mr = [
+var pr = [
+	yn,
 	bn,
 	xn,
 	Sn,
@@ -3782,15 +3783,15 @@ var mr = [
 	Hn,
 	Un,
 	Wn,
-	Gn,
+	Kn,
+	Jn,
 	qn,
 	Yn,
-	Jn,
 	Xn,
 	Zn,
 	Qn,
 	$n,
-	er,
+	nr,
 	rr,
 	ar,
 	or,
@@ -3799,9 +3800,8 @@ var mr = [
 	lr,
 	ur,
 	dr,
-	fr,
-	pr
-], hr = class {
+	fr
+], mr = class {
 	#e;
 	constructor(e = {}) {
 		if (this.#e = {
@@ -3809,8 +3809,8 @@ var mr = [
 			example7: !1,
 			verbose: !1,
 			...e
-		}, this.rules = [...mr], this.#e.example7) throw Error("'example7' flag deprecated");
-		this.#e.verbose && this.rules.unshift((e) => (console.log(e.cur.len, e), q));
+		}, this.rules = [...pr], this.#e.example7) throw Error("'example7' flag deprecated");
+		this.#e.verbose && this.rules.unshift((e) => (console.log(e.cur.len, e), J));
 	}
 	removeRule(...e) {
 		let t = [];
@@ -3835,10 +3835,10 @@ var mr = [
 		for (let t of this.rules) {
 			let n = t.call(this, e);
 			switch (n) {
-				case q: break;
-				case J: return this.#e.verbose && console.log(`  ${t.name}: NO_BREAK`), null;
-				case vn: return this.#e.verbose && console.log(`  ${t.name}: MAY_BREAK`), new B(e.cur.len);
-				case yn: return this.#e.verbose && console.log(`  ${t.name}: MUST_BREAK`), new B(e.cur.len, !0);
+				case J: break;
+				case Y: return this.#e.verbose && console.log(`  ${t.name}: NO_BREAK`), null;
+				case _n: return this.#e.verbose && console.log(`  ${t.name}: MAY_BREAK`), new V(e.cur.len);
+				case vn: return this.#e.verbose && console.log(`  ${t.name}: MUST_BREAK`), new V(e.cur.len, !0);
 				default: throw Error(`Invalid state: "${n}"`);
 			}
 		}
@@ -3849,44 +3849,44 @@ var mr = [
 		t && (this.#e.string && (t.string = e.str.slice(e.prevChunk, e.cur.len)), e.props &&= (t.props = e.props, void 0), yield t, e.prevChunk = e.cur.len);
 	}
 	*breaks(e) {
-		let t = new St(e);
+		let t = new xt(e);
 		for (let e of t.codePoints(0)) t.push(e), yield* this.#n(t);
 		t.pushEnd(), yield* this.#n(t);
 	}
 };
 //#endregion
 //#region src/text-layout.ts
-function gr(e, t) {
+function hr(e, t) {
 	let n = new Intl.Segmenter(t, { granularity: "grapheme" }), r = /* @__PURE__ */ new Set([0]);
 	for (let t of n.segment(e)) r.add(t.index + t.segment.length);
 	return r;
 }
-var _r = class {
-	#e = new hr();
+var gr = class {
+	#e = new mr();
 	#t;
 	constructor(e = "ja") {
 		this.#t = e;
 	}
 	getBreakOpportunities(e) {
-		let t = gr(e, this.#t), n = /* @__PURE__ */ new Map();
+		let t = hr(e, this.#t), n = /* @__PURE__ */ new Map();
 		for (let r of this.#e.breaks(e)) t.has(r.position) && n.set(r.position, (n.get(r.position) ?? !1) || r.required);
 		return Object.freeze([...n].sort(([e], [t]) => e - t).map(([e, t]) => Object.freeze({
 			position: e,
 			required: t
 		})));
 	}
-}, vr = /* @__PURE__ */ new Map(), yr = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/gu;
-function br(e) {
-	let t = vr.get(e);
+}, _r = /* @__PURE__ */ new Map(), vr = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/gu;
+function yr(e) {
+	let t = _r.get(e);
 	if (t) return t;
-	let n = new _r(e);
-	return vr.set(e, n), n;
+	let n = new gr(e);
+	return _r.set(e, n), n;
 }
-function xr(e, t) {
+function br(e, t) {
 	if (!Number.isFinite(e) || e < 0) throw TypeError(`${t} must return a non-negative finite number.`);
 	return e;
 }
-function Sr(e, t, n) {
+function xr(e, t, n) {
 	let r = /* @__PURE__ */ new Map();
 	for (let i of t.getBreakOpportunities(e)) {
 		let { position: t, required: a } = i;
@@ -3897,28 +3897,28 @@ function Sr(e, t, n) {
 		required: t
 	}));
 }
-function Cr(e, t, n, r, i) {
+function Sr(e, t, n, r, i) {
 	if (e.length === 0) return [{
 		text: "",
 		start: t,
 		end: t,
 		width: 0
 	}];
-	let a = gr(e, i), o = [...a].sort((e, t) => e - t), s = Sr(e, r, a), c = [], l = 0;
+	let a = hr(e, i), o = [...a].sort((e, t) => e - t), s = xr(e, r, a), c = [], l = 0;
 	for (; l < e.length;) {
 		let r = s.find((e) => e.position > l && e.required)?.position ?? e.length, i, a = 0;
 		for (let t of s) {
 			if (t.position <= l || t.position > r) continue;
-			let o = e.slice(l, t.position), s = xr(n.measureText(o), "measureText");
+			let o = e.slice(l, t.position), s = br(n.measureText(o), "measureText");
 			s <= n.maxWidth && (i = t.position, a = s);
 		}
 		if (i === void 0) {
 			let t = o.filter((e) => e > l && e <= r);
 			for (let r of t) {
-				let t = e.slice(l, r), o = xr(n.measureText(t), "measureText");
+				let t = e.slice(l, r), o = br(n.measureText(t), "measureText");
 				o <= n.maxWidth && (i = r, a = o);
 			}
-			i === void 0 && (i = t[0] ?? r, a = xr(n.measureText(e.slice(l, i)), "measureText"));
+			i === void 0 && (i = t[0] ?? r, a = br(n.measureText(e.slice(l, i)), "measureText"));
 		}
 		c.push({
 			text: e.slice(l, i),
@@ -3929,23 +3929,23 @@ function Cr(e, t, n, r, i) {
 	}
 	return c;
 }
-function wr(e) {
+function Cr(e) {
 	if (typeof e.text != "string") throw TypeError("text must be a string.");
 	if (!Number.isFinite(e.maxWidth) || e.maxWidth <= 0) throw TypeError("maxWidth must be a positive finite number.");
 	if (typeof e.measureText != "function") throw TypeError("measureText must be a function.");
-	let t = e.locale ?? "ja", n = e.lineBreakProvider ?? br(t), r = [], i = 0;
-	for (let a of e.text.matchAll(yr)) {
+	let t = e.locale ?? "ja", n = e.lineBreakProvider ?? yr(t), r = [], i = 0;
+	for (let a of e.text.matchAll(vr)) {
 		let o = a.index;
-		r.push(...Cr(e.text.slice(i, o), i, e, n, t)), i = o + a[0].length;
+		r.push(...Sr(e.text.slice(i, o), i, e, n, t)), i = o + a[0].length;
 	}
-	return r.push(...Cr(e.text.slice(i), i, e, n, t)), Object.freeze({
+	return r.push(...Sr(e.text.slice(i), i, e, n, t)), Object.freeze({
 		lines: Object.freeze(r.map((e) => Object.freeze(e))),
 		maxLineWidth: Math.max(0, ...r.map((e) => e.width))
 	});
 }
 //#endregion
 //#region src/text-engine.ts
-var Y = Object.freeze({
+var wr = Object.freeze({
 	alignment: "left",
 	backgroundColor: "#ffffff",
 	font: "Helvetica",
@@ -3978,22 +3978,22 @@ function Mr(e) {
 		"textColor"
 	]);
 	if (Object.keys(t).some((e) => !n.has(e))) throw X("Text style has unknown properties.");
-	let r = t.alignment ?? Y.alignment;
+	let r = t.alignment ?? wr.alignment;
 	if (r !== "left" && r !== "center" && r !== "right") throw X("Text alignment must be left, center, or right.");
-	let i = t.font === void 0 ? Y.font : Ar(t.font, "Text font");
+	let i = t.font === void 0 ? wr.font : Ar(t.font, "Text font");
 	if (i.length > kr || [...i].some((e) => {
 		let t = e.codePointAt(0) ?? 0;
 		return t <= 31 || t === 127 || ",;{}".includes(e);
 	})) throw X("Text font contains unsupported characters.");
-	let a = t.fontPercent ?? Y.fontPercent;
+	let a = t.fontPercent ?? wr.fontPercent;
 	if (typeof a != "number" || !Number.isFinite(a) || a < 1 || a > 1e3) throw X("Text fontPercent must be from 1 through 1000.");
 	return Object.freeze({
 		alignment: r,
-		backgroundColor: jr(t.backgroundColor, Y.backgroundColor),
+		backgroundColor: jr(t.backgroundColor, wr.backgroundColor),
 		font: i,
 		fontPercent: a,
 		name: Ar(t.name, "Text style name"),
-		textColor: jr(t.textColor, Y.textColor)
+		textColor: jr(t.textColor, wr.textColor)
 	});
 }
 function Nr(e) {
@@ -4040,10 +4040,12 @@ function zr(e, t, n = 1) {
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${d}" height="${f}" viewBox="0 0 ${d} ${f}" role="img" data-bubble-presentation="TEXT_ACTOR"><title>${Fr(e)}</title><rect width="${d}" height="${f}" rx="${Ir(c)}" fill="${Fr(r.backgroundColor)}"/><text xml:space="preserve" fill="${Fr(r.textColor)}" font-family="${Fr(r.font)}" font-size="${Ir(a)}" text-anchor="${p}">${h}</text></svg>`;
 }
 function Br(e) {
-	let t = Nr(e), n = /* @__PURE__ */ new Map([[Y.name, Y]]), r = /* @__PURE__ */ new Map(), i = !1, a = () => {
+	let t = Nr(e), n = /* @__PURE__ */ new Map([[wr.name, wr]]), r = /* @__PURE__ */ new Map(), i = !1, a = () => {
 		if (i) throw X("Text engine has been released.");
 	}, o = (e, i, a) => {
-		let o = n.get(a) ?? Y, s = t.renderer.createSVGSkin(zr(i, o, Rr(t.renderer)));
+		let o = n.get(a);
+		if (!o) throw X(`Text style is not defined: ${a}`);
+		let s = t.renderer.createSVGSkin(zr(i, o, Rr(t.renderer)));
 		if (!Number.isInteger(s) || s < 0) throw X("TurboWarp did not create an SVG text skin.");
 		try {
 			t.renderer.updateDrawableSkinId(e.drawableID, s);
@@ -4533,4 +4535,4 @@ function ci(e) {
 	});
 }
 //#endregion
-export { Z as BubbleCompositionError, _r as UnicodeLineBreakProvider, re as actorRelativeBubbleCenter, d as bubbleBackgroundRegions, Te as bubbleBodyCenterOffset, u as bubbleDirectionAliases, l as bubbleDirectionNames, Vr as bubblePresentationModes, D as bubbleVisualStyles, ci as createBubbleComposition, Br as createBubbleTextEngine, ee as defaultBubbleDistance, te as defaultBubbleOffset, f as defaultBubblePlacementInput, x as defaultBubbleTailLength, C as normalizeBubbleDistance, w as normalizeBubbleOffset, y as normalizeBubblePlacement, ne as normalizeBubbleTailLength, De as renderBubbleSvg, zr as renderTextActorSvg, wr as wrapText };
+export { Z as BubbleCompositionError, gr as UnicodeLineBreakProvider, re as actorRelativeBubbleCenter, d as bubbleBackgroundRegions, Te as bubbleBodyCenterOffset, u as bubbleDirectionAliases, l as bubbleDirectionNames, Vr as bubblePresentationModes, D as bubbleVisualStyles, ci as createBubbleComposition, Br as createBubbleTextEngine, ee as defaultBubbleDistance, te as defaultBubbleOffset, f as defaultBubblePlacementInput, x as defaultBubbleTailLength, C as normalizeBubbleDistance, w as normalizeBubbleOffset, y as normalizeBubblePlacement, ne as normalizeBubbleTailLength, De as renderBubbleSvg, zr as renderTextActorSvg, Cr as wrapText };

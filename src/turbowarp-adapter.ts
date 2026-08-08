@@ -665,8 +665,22 @@ export function createTurboWarpBubbleComposition(
         },
       }
     : null;
+  const injectedSvgText: BubbleSvgText | null = options.svgText
+    ? {
+        defineStyle(input): void {
+          options.svgText?.defineStyle(input);
+        },
+        setText(input): void {
+          options.svgText?.setText(input);
+        },
+        releaseTarget(target): void {
+          options.svgText?.releaseTarget(target);
+          restoreTargetCostume(target);
+        },
+      }
+    : null;
   const svgText: BubbleSvgText =
-    options.svgText ??
+    injectedSvgText ??
     ownedSvgText ??
     (() => {
       throw new BubbleRuntimeAdapterError(

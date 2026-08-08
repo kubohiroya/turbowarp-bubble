@@ -5,7 +5,7 @@
       "opcode": "beginTextStyle",
       "blockType": "COMMAND",
       "text": "begin text style [STYLE]",
-      "description": "Starts a new text style draft. Starting another draft discards unsaved changes.",
+      "description": "Starts a thread-owned text style draft. Starting another draft in the same script discards its unsaved changes.",
       "arguments": {
         "STYLE": { "type": "STRING", "defaultValue": "default" }
       }

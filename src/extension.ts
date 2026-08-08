@@ -53,6 +53,7 @@ interface DefinitionMenu {
 
 interface BlockUtility {
   readonly target: TurboWarpBubbleTarget;
+  readonly thread?: object;
 }
 
 interface BubbleExtensionRuntime extends TurboWarpBubbleRuntime {
@@ -85,6 +86,7 @@ const validAnimationModes = new Set<BubbleAnimationMode>([
 const validPresentationModes = new Set<BubblePresentationMode>(
   bubblePresentationModes,
 );
+const fallbackTextStyleDraftOwner = Object.freeze({});
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
 export const EXTENSION_VERSION = "0.2.0";
@@ -102,9 +104,9 @@ export class BubbleExtension implements TurboWarpExtension {
   private readonly textStyles = new Map<string, BubbleTextStyleInput>();
   private readonly handles = new Map<string, BubbleHandle>();
   private readonly waits = new Map<string, PendingBubbleWait>();
+  private readonly textStyleDrafts = new Map<object, BubbleTextStyleInput>();
   private readonly waitScheduler: BubbleScheduler;
   private composition: BubbleComposition | null = null;
-  private textStyleDraft: BubbleTextStyleInput | null = null;
   private disposed = false;
 
   public constructor(
@@ -151,19 +153,25 @@ export class BubbleExtension implements TurboWarpExtension {
     };
   }
 
-  public beginTextStyle(args: BlockArguments): void {
-    this.textStyleDraft = Object.freeze({
-      name: this.requireName(args.STYLE, "text style"),
-    });
+  public beginTextStyle(args: BlockArguments, util?: BlockUtility): void {
+    this.textStyleDrafts.set(
+      this.textStyleDraftOwner(util),
+      Object.freeze({
+        name: this.requireName(args.STYLE, "text style"),
+      }),
+    );
   }
 
-  public setTextFont(args: BlockArguments): void {
-    this.updateTextStyleDraft({
-      font: this.requireName(args.FONT, "font"),
-    });
+  public setTextFont(args: BlockArguments, util?: BlockUtility): void {
+    this.updateTextStyleDraft(
+      {
+        font: this.requireName(args.FONT, "font"),
+      },
+      util,
+    );
   }
 
-  public setTextSize(args: BlockArguments): void {
+  public setTextSize(args: BlockArguments, util?: BlockUtility): void {
     const fontPercent = Scratch.Cast.toNumber(args.SIZE);
     if (
       !Number.isFinite(fontPercent) ||
@@ -172,22 +180,31 @@ export class BubbleExtension implements TurboWarpExtension {
     ) {
       throw extensionError("text size must be from 1 through 1000 percent.");
     }
-    this.updateTextStyleDraft({ fontPercent });
+    this.updateTextStyleDraft({ fontPercent }, util);
   }
 
-  public setTextColor(args: BlockArguments): void {
-    this.updateTextStyleDraft({
-      textColor: this.requireName(args.COLOR, "text color"),
-    });
+  public setTextColor(args: BlockArguments, util?: BlockUtility): void {
+    this.updateTextStyleDraft(
+      {
+        textColor: this.requireName(args.COLOR, "text color"),
+      },
+      util,
+    );
   }
 
-  public setTextBackgroundColor(args: BlockArguments): void {
-    this.updateTextStyleDraft({
-      backgroundColor: this.requireName(args.COLOR, "text background color"),
-    });
+  public setTextBackgroundColor(
+    args: BlockArguments,
+    util?: BlockUtility,
+  ): void {
+    this.updateTextStyleDraft(
+      {
+        backgroundColor: this.requireName(args.COLOR, "text background color"),
+      },
+      util,
+    );
   }
 
-  public setTextAlign(args: BlockArguments): void {
+  public setTextAlign(args: BlockArguments, util?: BlockUtility): void {
     const alignment = this.toString(args.ALIGN).trim().toLowerCase();
     if (
       alignment !== "left" &&
@@ -196,14 +213,15 @@ export class BubbleExtension implements TurboWarpExtension {
     ) {
       throw extensionError("text align must be left, center, or right.");
     }
-    this.updateTextStyleDraft({ alignment });
+    this.updateTextStyleDraft({ alignment }, util);
   }
 
-  public saveTextStyle(): void {
-    const draft = this.requireTextStyleDraft();
+  public saveTextStyle(_args: BlockArguments, util?: BlockUtility): void {
+    const owner = this.textStyleDraftOwner(util);
+    const draft = this.requireTextStyleDraft(owner);
     this.textStyles.set(draft.name, draft);
     this.composition?.defineTextStyle(draft);
-    this.textStyleDraft = null;
+    this.textStyleDrafts.delete(owner);
   }
 
   public defineBubbleStyle(args: BlockArguments): void {
@@ -504,7 +522,7 @@ export class BubbleExtension implements TurboWarpExtension {
 
   public async releaseAll(): Promise<void> {
     this.cancelAllWaits("Bubble waits were released.");
-    this.textStyleDraft = null;
+    this.textStyleDrafts.clear();
     if (!this.composition) return;
     await this.composition.releaseAll();
     this.handles.clear();
@@ -518,7 +536,7 @@ export class BubbleExtension implements TurboWarpExtension {
     this.handles.clear();
     this.styles.clear();
     this.textStyles.clear();
-    this.textStyleDraft = null;
+    this.textStyleDrafts.clear();
   }
 
   private toScratchBlock(block: BlockDefinition): Record<string, unknown> {
@@ -575,18 +593,25 @@ export class BubbleExtension implements TurboWarpExtension {
     return style;
   }
 
-  private requireTextStyleDraft(): BubbleTextStyleInput {
-    if (!this.textStyleDraft) {
+  private textStyleDraftOwner(util?: Pick<BlockUtility, "thread">): object {
+    return util?.thread ?? fallbackTextStyleDraftOwner;
+  }
+
+  private requireTextStyleDraft(owner: object): BubbleTextStyleInput {
+    const draft = this.textStyleDrafts.get(owner);
+    if (!draft) {
       throw extensionError("begin a text style before setting or saving it.");
     }
-    return this.textStyleDraft;
+    return draft;
   }
 
   private updateTextStyleDraft(
     patch: Partial<Omit<BubbleTextStyleInput, "name">>,
+    util?: Pick<BlockUtility, "thread">,
   ): void {
-    const draft = this.requireTextStyleDraft();
-    this.textStyleDraft = Object.freeze({ ...draft, ...patch });
+    const owner = this.textStyleDraftOwner(util);
+    const draft = this.requireTextStyleDraft(owner);
+    this.textStyleDrafts.set(owner, Object.freeze({ ...draft, ...patch }));
   }
 
   private normalizeTransformNumber(

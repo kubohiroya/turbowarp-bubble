@@ -86,5 +86,12 @@ describe("Bubble text engine", () => {
     expect(() => state.engine.releaseTarget({ drawableID: 1 })).toThrow(
       "not owned",
     );
+    expect(() =>
+      state.engine.setText({
+        styleName: "missing",
+        target: { drawableID: 1 },
+        text: "Missing style",
+      }),
+    ).toThrow("Text style is not defined: missing");
   });
 });

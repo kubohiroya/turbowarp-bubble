@@ -180,7 +180,7 @@ set text size [100] %
 set text align [left]
 save text style
 </code></pre>
-<p><code>begin</code>はextension全体で1個の作業中draftを作成・置換します。<code>save</code>はimmutableなnamed styleとして保存し、draftを破棄します。別draftの開始時、project開始・停止時にも未保存変更を破棄します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。</p>
+<p><code>begin</code>は現在のTurboWarp実行threadが所有する作業中draftを作成・置換します。並行scriptやcloneのdraftが互いに上書きされることはありません。<code>save</code>はimmutableなnamed styleとして保存し、そのthreadのdraftを破棄します。同じscriptでの別draft開始時、project開始・停止時にも未保存変更を破棄します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。</p>
 <h2 id="bubble-style">4. Bubble styleを定義する</h2>
 <p>まず、Bubble style名とSVG Textのstyle名を関連付けます。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
@@ -479,6 +479,10 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td><code>bubble style is not defined</code></td>
 <td><code>define bubble style</code>を先に実行する。緑の旗の再実行時も再定義する</td>
+</tr>
+<tr>
+<td><code>Text style is not defined</code></td>
+<td>対応する<code>begin</code>・各設定・<code>save text style</code>を先に実行する</td>
 </tr>
 <tr>
 <td>image assetが未登録</td>

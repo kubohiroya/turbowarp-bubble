@@ -68,7 +68,7 @@ set text align [left]
 save text style
 ```
 
-`begin`はextension全体で1個の作業中draftを作成・置換します。`save`はimmutableなnamed styleとして保存し、draftを破棄します。別draftの開始時、project開始・停止時にも未保存変更を破棄します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
+`begin`は現在のTurboWarp実行threadが所有する作業中draftを作成・置換します。並行scriptやcloneのdraftが互いに上書きされることはありません。`save`はimmutableなnamed styleとして保存し、そのthreadのdraftを破棄します。同じscriptでの別draft開始時、project開始・停止時にも未保存変更を破棄します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
 
 ## 4. Bubble styleを定義する
 
@@ -282,6 +282,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
 | `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
+| `Text style is not defined`        | 対応する`begin`・各設定・`save text style`を先に実行する                 |
 | image assetが未登録                | `register resource ... as asset ...`の完了後にBubbleを表示する           |
 | assetが画像ではない                | `MIME type of asset [NAME]`で`image/*`か確認する                         |
 | advance framesが1枚                | 2枚以上にするか、空にしてadvance表示を解除する                           |

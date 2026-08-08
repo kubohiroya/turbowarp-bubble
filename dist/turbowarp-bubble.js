@@ -47,7 +47,7 @@
         "opcode": "beginTextStyle",
         "blockType": "COMMAND",
         "text": "begin text style [STYLE]",
-        "description": "Starts a new text style draft. Starting another draft discards unsaved changes.",
+        "description": "Starts a thread-owned text style draft. Starting another draft in the same script discards its unsaved changes.",
         "arguments": { "STYLE": {
           "type": "STRING",
           "defaultValue": "default"
@@ -6928,7 +6928,8 @@
       if (disposed) throw engineError("Text engine has been released.");
     };
     const apply = (target, text, styleName) => {
-      const style = styles.get(styleName) ?? defaultStyle;
+      const style = styles.get(styleName);
+      if (!style) throw engineError(`Text style is not defined: ${styleName}`);
       const skinId = runtime.renderer.createSVGSkin(renderTextActorSvg(text, style, stageScale(runtime.renderer)));
       if (!Number.isInteger(skinId) || skinId < 0) throw engineError("TurboWarp did not create an SVG text skin.");
       try {
@@ -7907,7 +7908,18 @@
     } : null;
     const composition = createBubbleComposition({
       assetManager,
-      svgText: options.svgText ?? ownedSvgText ?? (() => {
+      svgText: (options.svgText ? {
+        defineStyle(input) {
+          options.svgText?.defineStyle(input);
+        },
+        setText(input) {
+          options.svgText?.setText(input);
+        },
+        releaseTarget(target) {
+          options.svgText?.releaseTarget(target);
+          restoreTargetCostume(target);
+        }
+      } : null) ?? ownedSvgText ?? (() => {
         throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble text engine is unavailable.");
       })(),
       createSurface({ actor, actorKey, style }) {
@@ -7947,6 +7959,7 @@
     "awaiting-advance"
   ]);
   var validPresentationModes = new Set(bubblePresentationModes);
+  var fallbackTextStyleDraftOwner = Object.freeze({});
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
   var EXTENSION_VERSION = "0.2.0";
   function extensionError(message) {
@@ -7962,9 +7975,9 @@
       _defineProperty(this, "textStyles", /* @__PURE__ */ new Map());
       _defineProperty(this, "handles", /* @__PURE__ */ new Map());
       _defineProperty(this, "waits", /* @__PURE__ */ new Map());
+      _defineProperty(this, "textStyleDrafts", /* @__PURE__ */ new Map());
       _defineProperty(this, "waitScheduler", void 0);
       _defineProperty(this, "composition", null);
-      _defineProperty(this, "textStyleDraft", null);
       _defineProperty(this, "disposed", false);
       if (!runtime) throw extensionError("TurboWarp runtime is unavailable.");
       this.runtime = runtime;
@@ -7996,33 +8009,34 @@
         menus: definitionMenus
       };
     }
-    beginTextStyle(args) {
-      this.textStyleDraft = Object.freeze({ name: this.requireName(args.STYLE, "text style") });
+    beginTextStyle(args, util) {
+      this.textStyleDrafts.set(this.textStyleDraftOwner(util), Object.freeze({ name: this.requireName(args.STYLE, "text style") }));
     }
-    setTextFont(args) {
-      this.updateTextStyleDraft({ font: this.requireName(args.FONT, "font") });
+    setTextFont(args, util) {
+      this.updateTextStyleDraft({ font: this.requireName(args.FONT, "font") }, util);
     }
-    setTextSize(args) {
+    setTextSize(args, util) {
       const fontPercent = Scratch.Cast.toNumber(args.SIZE);
       if (!Number.isFinite(fontPercent) || fontPercent < 1 || fontPercent > 1e3) throw extensionError("text size must be from 1 through 1000 percent.");
-      this.updateTextStyleDraft({ fontPercent });
+      this.updateTextStyleDraft({ fontPercent }, util);
     }
-    setTextColor(args) {
-      this.updateTextStyleDraft({ textColor: this.requireName(args.COLOR, "text color") });
+    setTextColor(args, util) {
+      this.updateTextStyleDraft({ textColor: this.requireName(args.COLOR, "text color") }, util);
     }
-    setTextBackgroundColor(args) {
-      this.updateTextStyleDraft({ backgroundColor: this.requireName(args.COLOR, "text background color") });
+    setTextBackgroundColor(args, util) {
+      this.updateTextStyleDraft({ backgroundColor: this.requireName(args.COLOR, "text background color") }, util);
     }
-    setTextAlign(args) {
+    setTextAlign(args, util) {
       const alignment = this.toString(args.ALIGN).trim().toLowerCase();
       if (alignment !== "left" && alignment !== "center" && alignment !== "right") throw extensionError("text align must be left, center, or right.");
-      this.updateTextStyleDraft({ alignment });
+      this.updateTextStyleDraft({ alignment }, util);
     }
-    saveTextStyle() {
-      const draft = this.requireTextStyleDraft();
+    saveTextStyle(_args, util) {
+      const owner = this.textStyleDraftOwner(util);
+      const draft = this.requireTextStyleDraft(owner);
       this.textStyles.set(draft.name, draft);
       this.composition?.defineTextStyle(draft);
-      this.textStyleDraft = null;
+      this.textStyleDrafts.delete(owner);
     }
     defineBubbleStyle(args) {
       const name = this.requireName(args.STYLE, "style");
@@ -8216,7 +8230,7 @@
     }
     async releaseAll() {
       this.cancelAllWaits("Bubble waits were released.");
-      this.textStyleDraft = null;
+      this.textStyleDrafts.clear();
       if (!this.composition) return;
       await this.composition.releaseAll();
       this.handles.clear();
@@ -8229,7 +8243,7 @@
       this.handles.clear();
       this.styles.clear();
       this.textStyles.clear();
-      this.textStyleDraft = null;
+      this.textStyleDrafts.clear();
     }
     toScratchBlock(block) {
       return {
@@ -8271,16 +8285,21 @@
       if (!style) throw extensionError(`bubble style is not defined: ${name}`);
       return style;
     }
-    requireTextStyleDraft() {
-      if (!this.textStyleDraft) throw extensionError("begin a text style before setting or saving it.");
-      return this.textStyleDraft;
+    textStyleDraftOwner(util) {
+      return util?.thread ?? fallbackTextStyleDraftOwner;
     }
-    updateTextStyleDraft(patch) {
-      const draft = this.requireTextStyleDraft();
-      this.textStyleDraft = Object.freeze({
+    requireTextStyleDraft(owner) {
+      const draft = this.textStyleDrafts.get(owner);
+      if (!draft) throw extensionError("begin a text style before setting or saving it.");
+      return draft;
+    }
+    updateTextStyleDraft(patch, util) {
+      const owner = this.textStyleDraftOwner(util);
+      const draft = this.requireTextStyleDraft(owner);
+      this.textStyleDrafts.set(owner, Object.freeze({
         ...draft,
         ...patch
-      });
+      }));
     }
     normalizeTransformNumber(value, normalize) {
       try {

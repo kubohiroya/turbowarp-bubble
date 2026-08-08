@@ -68,7 +68,7 @@ set text align [left]
 save text style
 ```
 
-`begin` creates or replaces the one extension-wide draft. `save` stores an immutable named style and clears that draft. Starting another draft or starting/stopping the project discards unsaved changes. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.
+`begin` creates or replaces the draft owned by the current TurboWarp execution thread. Concurrent scripts and clones therefore cannot overwrite each other's draft. `save` stores an immutable named style and clears that thread's draft. Starting another draft in the same script or starting/stopping the project discards its unsaved changes. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.
 
 ## 4. Define a Bubble style
 
@@ -282,6 +282,7 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 | Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait         |
 | Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait  |
 | `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag |
+| `Text style is not defined`          | Run the matching `begin` / decorators / `save text style` sequence first    |
 | Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble     |
 | Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                            |
 | Only one advance frame               | Supply at least two frames, or clear the setting                            |

@@ -244,6 +244,29 @@ describe("TurboWarp composition adapter", () => {
     expect(svgText.setText).toHaveBeenCalledOnce();
     expect(releaseTarget).toHaveBeenCalledOnce();
     expect(harness.destroyed).toHaveLength(2);
+
+    const updateAllDrawableProperties = vi.fn();
+    const textActor = {
+      ...actor(),
+      drawableID: 99,
+      updateAllDrawableProperties,
+    };
+    composition.defineStyle({
+      name: "title",
+      textStyle: "default",
+      presentationMode: "TEXT_ACTOR",
+    });
+    const textHandle = await composition.show({
+      actor: textActor,
+      actorKey: textActor.id,
+      kind: "say",
+      text: "Title",
+      styleName: "title",
+    });
+    await textHandle.close();
+
+    expect(releaseTarget).toHaveBeenCalledTimes(2);
+    expect(updateAllDrawableProperties).toHaveBeenCalledOnce();
   });
 });
 
@@ -418,7 +441,7 @@ describe("Bubble extension", () => {
     extension.setTextColor({ COLOR: "#ffffff" });
     extension.setTextBackgroundColor({ COLOR: "#000000" });
     extension.setTextAlign({ ALIGN: "center" });
-    extension.saveTextStyle();
+    extension.saveTextStyle({});
 
     extension.defineBubbleStyle({
       STYLE: "title",
@@ -457,6 +480,52 @@ describe("Bubble extension", () => {
     expect(() =>
       extension.setBubblePlacement({ STYLE: "title", PLACEMENT: "up" }),
     ).toThrow("TEXT_ACTOR does not accept popup-only settings: placement");
+  });
+
+  it("isolates text style drafts by TurboWarp thread", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const threadA = {};
+    const threadB = {};
+    const targetA = { ...actor(), id: "actor-a", drawableID: 90 };
+    const targetB = { ...actor(), id: "actor-b", drawableID: 91 };
+    const utilA = { target: targetA, thread: threadA };
+    const utilB = { target: targetB, thread: threadB };
+
+    extension.beginTextStyle({ STYLE: "style-a" }, utilA);
+    extension.beginTextStyle({ STYLE: "style-b" }, utilB);
+    extension.setTextFont({ FONT: "Font A" }, utilA);
+    extension.setTextFont({ FONT: "Font B" }, utilB);
+    extension.setTextColor({ COLOR: "#aa0000" }, utilA);
+    extension.setTextColor({ COLOR: "#0000bb" }, utilB);
+    extension.saveTextStyle({}, utilB);
+    extension.saveTextStyle({}, utilA);
+
+    extension.defineBubbleStyle({ STYLE: "actor-a", TEXT_STYLE: "style-a" });
+    extension.setBubblePresentationMode({
+      STYLE: "actor-a",
+      MODE: "TEXT_ACTOR",
+    });
+    extension.defineBubbleStyle({ STYLE: "actor-b", TEXT_STYLE: "style-b" });
+    extension.setBubblePresentationMode({
+      STYLE: "actor-b",
+      MODE: "TEXT_ACTOR",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "A", STYLE: "actor-a" },
+      { target: targetA },
+    );
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "B", STYLE: "actor-b" },
+      { target: targetB },
+    );
+
+    expect(harness.createdSvgSkins).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('font-family="Font A"'),
+        expect.stringContaining('font-family="Font B"'),
+      ]),
+    );
   });
 
   it("renders the selected SVG body behind actor-relative content", async () => {
@@ -588,7 +657,7 @@ describe("Bubble extension", () => {
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
-      TEXT_STYLE: "dialogue-text",
+      TEXT_STYLE: "default",
     });
     extension.setPortraitBase({ STYLE: "dialogue", ASSET: "Face" });
     extension.setBlinkFrames({
@@ -640,7 +709,7 @@ describe("Bubble extension", () => {
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
-      TEXT_STYLE: "dialogue-text",
+      TEXT_STYLE: "default",
     });
     extension.setAdvanceFrames({
       STYLE: "dialogue",
@@ -678,7 +747,7 @@ describe("Bubble extension", () => {
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
-      TEXT_STYLE: "dialogue-text",
+      TEXT_STYLE: "default",
     });
     await extension.sayWithBubbleStyle(
       { MESSAGE: "continue?", STYLE: "dialogue" },
@@ -703,7 +772,7 @@ describe("Bubble extension", () => {
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
-      TEXT_STYLE: "dialogue-text",
+      TEXT_STYLE: "default",
     });
     await extension.sayWithBubbleStyle(
       { MESSAGE: "continue?", STYLE: "dialogue" },
@@ -737,7 +806,7 @@ describe("Bubble extension", () => {
       const target = actor();
       extension.defineBubbleStyle({
         STYLE: "dialogue",
-        TEXT_STYLE: "dialogue-text",
+        TEXT_STYLE: "default",
       });
       await extension.sayWithBubbleStyle(
         { MESSAGE: "continue?", STYLE: "dialogue" },
@@ -765,7 +834,7 @@ describe("Bubble extension", () => {
     const inputExtension = new BubbleExtension(noInput.runtime);
     inputExtension.defineBubbleStyle({
       STYLE: "dialogue",
-      TEXT_STYLE: "dialogue-text",
+      TEXT_STYLE: "default",
     });
     await inputExtension.sayWithBubbleStyle(
       { MESSAGE: "continue?", STYLE: "dialogue" },
@@ -782,7 +851,7 @@ describe("Bubble extension", () => {
     const expressionExtension = new BubbleExtension(noExpression.runtime);
     expressionExtension.defineBubbleStyle({
       STYLE: "dialogue",
-      TEXT_STYLE: "dialogue-text",
+      TEXT_STYLE: "default",
     });
     await expressionExtension.sayWithBubbleStyle(
       { MESSAGE: "continue?", STYLE: "dialogue" },

@@ -180,7 +180,7 @@ set text size [100] %
 set text align [left]
 save text style
 </code></pre>
-<p><code>begin</code> creates or replaces the one extension-wide draft. <code>save</code> stores an immutable named style and clears that draft. Starting another draft or starting/stopping the project discards unsaved changes. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.</p>
+<p><code>begin</code> creates or replaces the draft owned by the current TurboWarp execution thread. Concurrent scripts and clones therefore cannot overwrite each other&#39;s draft. <code>save</code> stores an immutable named style and clears that thread&#39;s draft. Starting another draft in the same script or starting/stopping the project discards its unsaved changes. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.</p>
 <h2 id="bubble-style">4. Define a Bubble style</h2>
 <p>First associate a Bubble style name with an SVG Text style name.</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
@@ -479,6 +479,10 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td><code>bubble style is not defined</code></td>
 <td>Run <code>define bubble style</code> first, including after restarting with green flag</td>
+</tr>
+<tr>
+<td><code>Text style is not defined</code></td>
+<td>Run the matching <code>begin</code> / decorators / <code>save text style</code> sequence first</td>
 </tr>
 <tr>
 <td>Image asset is not registered</td>
