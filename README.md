@@ -31,6 +31,20 @@ const layout = wrapText({
 
 この基盤は改行位置と行幅を返します。Bubble surfaceへ`maxWidth`を渡し、SVG Textの実測値と吹き出し形状へ接続する処理は、後続の表示統合で追加します。
 
+![maxWidthの違いによる自動改行と、日本語禁則処理の例](docs/assets/width-linebreak-guide.svg)
+
+図の各行はproductionの`wrapText`を直接呼んだ結果です。図版専用の手作業改行は使っていません。
+
+## Bubble visual styleの形状
+
+形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。
+
+![10種類のBubble visual styleを同じSVG rendererで比較する図](docs/assets/bubble-style-gallery.svg)
+
+この図はBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は、tail基部の2点を実際の本体border上から求め、[platener/jsclipper](https://github.com/platener/jsclipper)で本体polygonとtail三角形の和集合を作り、単一の外周pathだけを描画します。`THINKING`／`DREAMING`の丸trailは独立形状のままです。
+
+現段階では形状rendererの基盤と仕様例であり、standalone surfaceのstyle block／APIへの接続は後続実装です。`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにせず、orientationとsegmentsも公開入力にしません。
+
 配布bundleに含まれる依存ライブラリのライセンスは、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
 
 ## インストール
@@ -55,7 +69,7 @@ https://unpkg.com/@kubohiroya/turbowarp-svg-text/dist/svg-text.js
 https://unpkg.com/@kubohiroya/turbowarp-bubble/dist/turbowarp-bubble.js
 ```
 
-Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
+Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。SVG本体、文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
 
 ### 提供ブロック
 
@@ -63,6 +77,10 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する                 |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Actor boundsからtail先端までの距離を設定する                      |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Bubble本体のSVG形状を10種類から設定する                           |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Bubble borderからtail先端までの基準長を設定する                   |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | 本体位置と、文字を含むBubble全体の拡大率を設定する                |
 | `set portrait base [ASSET] for bubble style [STYLE]`                           | 表情ベース画像を設定する。空文字でportrait全体を解除する          |
 | `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分を設定する。空リストで解除する                          |
 | `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分を設定する。空リストで解除する                          |
@@ -74,6 +92,8 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | `Bubble version`                                                               | 実装versionを返す                                                 |
 
 `ASSETS`はAsset Managerへ登録済みの画像アセット名をカンマ区切りで指定します。アセット名自体にカンマは使用できません。すべての`SECONDS`は0より大きい秒数です。
+
+visual styleを設定しない場合は`NORMAL`です。本体drawableは文字・表情より背面に生成され、close、対象停止、runtime破棄時にSVG skinとともに解放されます。
 
 ### Placement
 
@@ -97,7 +117,13 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-図中の文字パネルは、現在のstandalone Bubbleと同じ`createSvgTextComposition`のSVG生成経路で描画しています。現在のstandalone rendererは配置基準を実装済みです。背景相対は方向を持たず、後続のBubble body rendererでもtailなしとして描画します。
+図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図とTurboWarp Editorの本体drawableは、どちらも共有`renderBubbleSvg`から生成します。
+
+![Actor相対のdistance、tail length、offset、scaleを比較する図](docs/assets/actor-transform-guide.svg)
+
+Actor相対の`distance`はActorのStage座標AABB（axis-aligned bounding box。rendererの`getBoundsForBubble()`が返す上下左右）からtail先端までで、既定値は`12`です。`tail length`は通常位置における本体borderからtail先端までで、既定値は`18`です。
+
+`offset x/y/scale`の既定値は`[0, 0, 100]`です。xは右、yは上が正です。scaleはBubble外形だけでなく、SVG Textの文字（フォントサイズ）、表情画像、次へアイコン、内部余白へ一体で適用します。scaleだけを変えた場合は、拡大量の半径分だけ本体中心をActorから離し、Actor側の間隔を維持します。その後x/y offsetを加え、固定したtail先端へ向けてtailを再生成するため、offset後の実長は`tail length`から変化し得ます。Stage端では全体が画面内に収まるようクランプします。これら3設定は背景相対placementでは無視します。
 
 ### 表示phase
 
@@ -114,6 +140,10 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
 set bubble placement [up-right] for bubble style [hero-dialogue]
+set bubble distance [12] for bubble style [hero-dialogue]
+set bubble visual style [NORMAL] for bubble style [hero-dialogue]
+set bubble tail length [18] for bubble style [hero-dialogue]
+set bubble offset x [10] y [-10] scale [120] % for bubble style [hero-dialogue]
 set portrait base [HeroFace] for bubble style [hero-dialogue]
 set blink frames [HeroEyesOpen,HeroEyesClosed] every [0.4] seconds for bubble style [hero-dialogue]
 set talk frames [HeroMouthClosed,HeroMouthOpen] every [0.1] seconds for bubble style [hero-dialogue]
@@ -171,6 +201,10 @@ bubbles.defineStyle({
   name: "hero-dialogue",
   textStyle: "dialogue-text",
   placement: "north-northeast",
+  distance: 12,
+  visualStyle: "NORMAL",
+  tailLength: 18,
+  offset: [10, -10, 120],
   portrait: {
     base: "HeroFace",
     blink: {
