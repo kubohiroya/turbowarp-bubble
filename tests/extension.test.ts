@@ -190,10 +190,12 @@ describe("Bubble extension", () => {
     const extension = new BubbleExtension(harness.runtime);
     const info = extension.getInfo() as {
       blocks: Array<{ opcode: string }>;
+      docsURI: string;
       id: string;
       menus: Record<string, unknown>;
     };
     expect(info.id).toBe("kubohiroyabubble");
+    expect(info.docsURI).toBe("https://kubohiroya.github.io/turbowarp-bubble/");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
       "defineBubbleStyle",
       "setBubblePlacement",

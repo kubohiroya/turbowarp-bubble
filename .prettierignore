@@ -1,3 +1,4 @@
 dist/
+docs/index.html
 coverage/
 pnpm-lock.yaml
