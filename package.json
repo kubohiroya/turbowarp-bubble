@@ -27,6 +27,7 @@
   },
   "files": [
     "dist/",
+    "docs/",
     "README.md",
     "LICENSE"
   ],
@@ -48,11 +49,13 @@
     "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts eslint.config.mjs",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
+    "docs:render": "node scripts/render-block-manual-assets.mjs",
+    "docs:check": "node scripts/check-block-manual.mjs",
     "test": "vitest run",
     "check:dist": "pnpm build && node scripts/check-dist.mjs",
     "pack:check": "npm pack --dry-run --ignore-scripts",
     "release:check": "pnpm publish --dry-run --access public",
-    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm check:dist && pnpm types:composition:check && pnpm pack:check",
+    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm docs:check && pnpm check:dist && pnpm types:composition:check && pnpm pack:check",
     "prepack": "pnpm check"
   },
   "peerDependencies": {
