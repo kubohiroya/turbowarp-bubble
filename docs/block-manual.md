@@ -2,23 +2,28 @@
 
 This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated advance indicator.
 
-![A quick-start block sequence that prepares Asset Manager and SVG Text, then runs Bubble say, waiting, and close blocks](./assets/block-quick-start.svg)
+![A quick-start block sequence that registers Next1 and Next2 separately, prepares input listeners, then uses Bubble's integrated wait](./assets/block-quick-start.svg)
 
 ## 1. Load the required extensions
 
-Load all three extensions with **Run without sandbox** enabled. The recommended order is Asset Manager, SVG Text, then Bubble. In practice, both dependencies only need to be available before the first Bubble is shown.
+The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the five custom extensions with **Run without sandbox** enabled. Async Input and Runtime Expression must be available before a Bubble wait; Asset Manager and SVG Text must be available before the first Bubble is shown.
 
-| Order | Extension           | URL                                                                                                               |
-| ----: | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
-|     1 | Asset Manager 0.7.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
-|     2 | SVG Text 0.3.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                              |
-|     3 | Bubble 0.1.0        | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js` |
+| Order | Extension                | URL                                                                                                               |
+| ----: | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+|     1 | Temporary Variables      | Add from the TurboWarp extension library                                                                          |
+|     2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`                        |
+|     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js`          |
+|     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
+|     5 | SVG Text 0.3.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                              |
+|     6 | Bubble 0.1.0             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js` |
 
-To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if Asset Manager or SVG Text is missing when it tries to display a Bubble.
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if Asset Manager or SVG Text is missing when it displays a Bubble, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.
 
 See also:
 
 - [Asset Manager guide](https://kubohiroya.github.io/turbowarp-asset-manager/)
+- [Async Input guide](https://kubohiroya.github.io/turbowarp-async-input/)
+- [Runtime Expression guide](https://kubohiroya.github.io/turbowarp-runtime-expression/)
 - [SVG Text guide](https://kubohiroya.github.io/turbowarp-svg-text/)
 
 ## 2. Prepare portrait assets
@@ -170,34 +175,38 @@ set advance frames [Next1,Next2]
 
 ## 5. Show dialogue and wait for input
 
-`say` and `think` show a Bubble immediately, continue to the next block, and begin in the `speaking` phase.
+`say` and `think` show a Bubble immediately, continue to the next block, and begin in `talking` animation mode.
 
 ```text
+set runtime variable [input] to []
+listen for key [Space] set runtime var [input] to [pressed]
+listen for touch on this sprite set runtime var [input] to [pressed]
 say [Let's head for the sea!] with bubble style [hero-dialogue]
-set this bubble phase [waiting]
-wait until <space key pressed? or mouse down?>
+wait with this bubble until condition [input == "pressed"] or timeout after [10] seconds
 close this bubble
 ```
 
-Changing to `waiting` stops lip-sync and loops the advance indicator. Bubble does not decide when key input, a tap, or text reveal has completed. Wait with ordinary Scratch/TurboWarp blocks, then run `close this bubble` after input is accepted.
+Initialize `input` with Temporary Variables before registering the Async Input listeners. The listeners update that runtime variable when Space is pressed or the sprite is tapped. The Bubble wait delegates `input == "pressed"` to Runtime Expression immediately and once per VM frame. While waiting it automatically enters `awaiting-advance`, stops lip-sync, and loops the images configured by `set advance frames`. When the condition becomes true or the timeout expires, it enters `idle` and continues to `close this bubble`. Set the timeout to `0` to wait without a timeout.
 
-When combining Bubble with audio or a separate text-reveal system, switch to `waiting` when that process completes.
+Reset `input` to an empty string before each later wait; otherwise the previous `pressed` value makes the next condition succeed immediately. Starting another Bubble, closing it, stopping its target, restarting or stopping the project, and disposing the runtime all cancel the target-owned wait and release its listener and timer.
 
-![A say Bubble lip-syncs, shows the advance animation while waiting, then closes after input](./assets/bubble-lifecycle.gif)
+When combining Bubble with audio or a separate text-reveal system, switch to `awaiting-advance` when that process completes.
 
-If animated GIF playback is unavailable, use this static phase comparison:
+![A say Bubble lip-syncs, shows advance frames while awaiting advance, then closes after input](./assets/bubble-lifecycle.gif)
 
-![Blink, lip-sync, and advance-indicator states in speaking, waiting, and idle phases](./assets/phase-guide.svg)
+If animated GIF playback is unavailable, use this static animation-mode comparison:
 
-## 6. Bubble phases
+![Blink, lip-sync, and advance-frame states in talking, awaiting-advance, and idle modes](./assets/animation-mode-guide.svg)
 
-| Phase      | Blink | Lip-sync     | Advance indicator | Typical use                        |
-| ---------- | ----- | ------------ | ----------------- | ---------------------------------- |
-| `speaking` | Runs  | Runs         | Hidden            | Dialogue display or audio playback |
-| `waiting`  | Runs  | Stops/hidden | Loops             | Waiting for a key press or tap     |
-| `idle`     | Runs  | Stops/hidden | Stops/hidden      | Keep a Bubble visible and still    |
+## 6. Bubble animation modes
 
-`set this bubble phase [PHASE]` changes only the Bubble owned by the calling sprite, clone, or Stage. It reports an error if that target has not first run `say` or `think`.
+| Mode               | Blink | Lip-sync     | Advance frames | Typical use                         |
+| ------------------ | ----- | ------------ | -------------- | ----------------------------------- |
+| `talking`          | Runs  | Runs         | Hidden         | Dialogue display or audio playback  |
+| `awaiting-advance` | Runs  | Stops/hidden | Loops          | Await the user's request to advance |
+| `idle`             | Runs  | Stops/hidden | Stops/hidden   | Keep a Bubble visible and still     |
+
+`set this bubble animation mode [MODE]` changes only the Bubble owned by the calling sprite, clone, or Stage. It reports an error if that target has not first run `say` or `think`.
 
 ## 7. `say` and `think`
 
@@ -206,7 +215,7 @@ say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]
 ```
 
-Both blocks support the same visual styles, portrait layers, placement, and phase control. The block name does not force a shape; explicitly choose `NORMAL`, `THINKING`, or another shape with `set bubble visual style`. The Composition API surface still receives a `say`/`think` kind, so a custom host can add its own kind-dependent behavior.
+Both blocks support the same visual styles, portrait layers, placement, and animation-mode control. The block name does not force a shape; explicitly choose `NORMAL`, `THINKING`, or another shape with `set bubble visual style`. The Composition API surface still receives a `say`/`think` kind, so a custom host can add its own kind-dependent behavior.
 
 Running a new `say` or `think` on the same sprite, clone, or Stage disposes the previous Bubble and its timers/drawables before replacing it. The Stage supports stage-relative placement only.
 
@@ -216,29 +225,30 @@ Bubble style definitions are shared within the extension, but each sprite or clo
 
 1. Define assets and styles once from the original sprite when the green flag is clicked.
 2. Run `say` or `think` from each clone itself.
-3. Change the phase and close the Bubble from the same clone that displayed it.
+3. Change the animation mode and close the Bubble from the same clone that displayed it.
 
 When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables owned by that target are released automatically.
 
 ## 9. Block reference
 
-| Block                                                                          | Description                                                  |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------ |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Define or redefine a Bubble style                            |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Set an actor direction/angle or a stage-relative region      |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Set the distance from actor bounds to the tail tip           |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Select one of ten SVG body shapes                            |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Set the nominal border-to-tip tail length                    |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | Set body position and whole-Bubble scale, including text     |
-| `set portrait base [ASSET] for bubble style [STYLE]`                           | Set the portrait base image                                  |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | Set blink overlays and interval                              |
-| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | Set lip-sync overlays and interval                           |
-| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]` | Set the advance animation shown during `waiting`             |
-| `say [MESSAGE] with bubble style [STYLE]`                                      | Start or replace a `say` Bubble in the `speaking` phase      |
-| `think [MESSAGE] with bubble style [STYLE]`                                    | Start or replace a `think` Bubble in the `speaking` phase    |
-| `set this bubble phase [PHASE]`                                                | Set this target's Bubble to `speaking`, `waiting`, or `idle` |
-| `close this bubble`                                                            | Release this target's Bubble and owned resources             |
-| `Bubble version`                                                               | Report the Bubble implementation version                     |
+| Block                                                                                  | Description                                                     |
+| -------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Define or redefine a Bubble style                               |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Set an actor direction/angle or a stage-relative region         |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Set the distance from actor bounds to the tail tip              |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Select one of ten SVG body shapes                               |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Set the nominal border-to-tip tail length                       |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | Set body position and whole-Bubble scale, including text        |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                   | Set the portrait base image                                     |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | Set blink overlays and interval                                 |
+| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`            | Set lip-sync overlays and interval                              |
+| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`         | Set the animation shown during `awaiting-advance`               |
+| `say [MESSAGE] with bubble style [STYLE]`                                              | Start or replace a `say` Bubble in `talking` mode               |
+| `think [MESSAGE] with bubble style [STYLE]`                                            | Start or replace a `think` Bubble in `talking` mode             |
+| `set this bubble animation mode [MODE]`                                                | Select `talking`, `awaiting-advance`, or `idle` for this Bubble |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Await a Runtime Expression condition or optional timeout        |
+| `close this bubble`                                                                    | Release this target's Bubble and owned resources                |
+| `Bubble version`                                                                       | Report the Bubble implementation version                        |
 
 ## 10. Troubleshooting
 
@@ -246,6 +256,8 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 | ------------------------------------ | --------------------------------------------------------------------------- |
 | Asset Manager required error         | Load Asset Manager 0.7.x without sandbox                                    |
 | SVG Text required error              | Load SVG Text 0.3.x without sandbox                                         |
+| Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait         |
+| Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait  |
 | `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag |
 | Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble     |
 | Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                            |
@@ -277,4 +289,4 @@ pnpm docs:render
 pnpm docs:check
 ```
 
-`docs:check` verifies SVG viewBoxes, production-renderer and `wrapText` markers, every visual style, the GIF dimensions/frame count/loop setting, references to all images and 15 blocks in both language manuals, and that the generated GitHub Pages HTML is current.
+`docs:check` verifies SVG viewBoxes, production-renderer and `wrapText` markers, every visual style, the GIF dimensions/frame count/loop setting, references to all images and 16 blocks in both language manuals, and that the generated GitHub Pages HTML is current.

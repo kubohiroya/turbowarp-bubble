@@ -25,6 +25,14 @@ class TestScheduler implements BubbleScheduler {
   public get size(): number {
     return this.callbacks.size;
   }
+
+  public runNewest(): void {
+    const id = Math.max(...this.callbacks.keys());
+    const callback = this.callbacks.get(id);
+    if (!callback) throw new Error("no scheduled callback");
+    this.callbacks.delete(id);
+    callback();
+  }
 }
 
 function scratch(): ScratchApi {
@@ -41,7 +49,12 @@ function scratch(): ScratchApi {
 }
 
 function createRuntime(
-  options: { assetManager?: boolean; svgText?: boolean } = {},
+  options: {
+    assetManager?: boolean;
+    asyncInput?: boolean;
+    runtimeExpression?: boolean;
+    svgText?: boolean;
+  } = {},
 ) {
   let nextDrawable = 1;
   let nextSvgSkin = 200;
@@ -116,8 +129,15 @@ function createRuntime(
   );
   const releaseTextActor = vi.fn(() => true);
   const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
+  const conditionState = { value: false };
+  const runtimeExpression = {
+    runtimeCondition: vi.fn(() => conditionState.value),
+  };
   const runtime: TurboWarpBubbleRuntime & {
     on(event: string, listener: (...args: unknown[]) => void): void;
+    off(event: string, listener: (...args: unknown[]) => void): void;
+    ext_kubohiroyaasyncinput?: Record<string, never>;
+    ext_kubohiroyaruntimeexpression?: typeof runtimeExpression;
   } = {
     renderer,
     requestRedraw: vi.fn(),
@@ -126,6 +146,16 @@ function createRuntime(
       existing.push(listener);
       listeners.set(event, existing);
     },
+    off(event, listener) {
+      listeners.set(
+        event,
+        (listeners.get(event) ?? []).filter((item) => item !== listener),
+      );
+    },
+    ...((options.asyncInput ?? true) ? { ext_kubohiroyaasyncinput: {} } : {}),
+    ...((options.runtimeExpression ?? true)
+      ? { ext_kubohiroyaruntimeexpression: runtimeExpression }
+      : {}),
     ...((options.assetManager ?? true)
       ? {
           ext_kubohiroyaassetmanager: {
@@ -149,6 +179,7 @@ function createRuntime(
   };
   return {
     assets,
+    conditionState,
     created,
     createdSvgSkins,
     destroyed,
@@ -159,6 +190,7 @@ function createRuntime(
     releaseTextActor,
     renderer,
     runtime,
+    runtimeExpression,
     setText,
     visibility,
   };
@@ -185,7 +217,7 @@ afterEach(() => {
 });
 
 describe("Bubble extension", () => {
-  it("publishes the intended blocks and phase menu", () => {
+  it("publishes the intended blocks and animation mode menu", () => {
     const harness = createRuntime();
     const extension = new BubbleExtension(harness.runtime);
     const info = extension.getInfo() as {
@@ -209,13 +241,14 @@ describe("Bubble extension", () => {
       "setAdvanceFrames",
       "sayWithBubbleStyle",
       "thinkWithBubbleStyle",
-      "setBubblePhase",
+      "setBubbleAnimationMode",
+      "waitForBubbleAdvance",
       "closeBubble",
       "getVersion",
     ]);
-    expect(info.menus.phase).toEqual({
+    expect(info.menus.animationMode).toEqual({
       acceptReporters: true,
-      items: ["speaking", "waiting", "idle"],
+      items: ["talking", "awaiting-advance", "idle"],
     });
     expect(info.menus.placement).toEqual({
       acceptReporters: true,
@@ -438,7 +471,7 @@ describe("Bubble extension", () => {
       { target: stage },
     );
     expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -140]);
-    await extension.setBubblePhase({ PHASE: "idle" }, { target: stage });
+    await extension.setBubbleAnimationMode({ MODE: "idle" }, { target: stage });
     await extension.closeBubble({}, { target: stage });
   });
 
@@ -481,7 +514,10 @@ describe("Bubble extension", () => {
     expect(scheduler.size).toBe(2);
     expect([...harness.positions.values()]).not.toHaveLength(0);
 
-    await extension.setBubblePhase({ PHASE: "waiting" }, { target });
+    await extension.setBubbleAnimationMode(
+      { MODE: "awaiting-advance" },
+      { target },
+    );
     expect(scheduler.size).toBe(2);
 
     await extension.closeBubble({}, { target });
@@ -489,6 +525,169 @@ describe("Bubble extension", () => {
     expect(harness.destroyed).toHaveLength(6);
     expect(harness.destroyedSkins).toHaveLength(1);
     expect(harness.releaseTextActor).toHaveBeenCalledOnce();
+  });
+
+  it("waits in awaiting-advance mode until the expression becomes true", async () => {
+    const harness = createRuntime();
+    const scheduler = new TestScheduler();
+    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const target = actor();
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    extension.setAdvanceFrames({
+      STYLE: "dialogue",
+      ASSETS: "Next1,Next2",
+      SECONDS: 0.2,
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "continue?", STYLE: "dialogue" },
+      { target },
+    );
+
+    const waiting = extension.waitForBubbleAdvance(
+      { CONDITION: 'input == "pressed"', TIMEOUT: 0 },
+      { target },
+    );
+    await vi.waitFor(() =>
+      expect(harness.runtimeExpression.runtimeCondition).toHaveBeenCalled(),
+    );
+    harness.emit("BEFORE_EXECUTE");
+    expect(harness.runtimeExpression.runtimeCondition).toHaveBeenCalledWith({
+      EXPRESSION: 'input == "pressed"',
+    });
+
+    harness.conditionState.value = true;
+    harness.emit("BEFORE_EXECUTE");
+    await waiting;
+    await extension.closeBubble({}, { target });
+    expect(scheduler.size).toBe(0);
+  });
+
+  it("continues after the Bubble wait timeout", async () => {
+    const harness = createRuntime();
+    const scheduler = new TestScheduler();
+    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const target = actor();
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "continue?", STYLE: "dialogue" },
+      { target },
+    );
+
+    const waiting = extension.waitForBubbleAdvance(
+      { CONDITION: "false", TIMEOUT: 2 },
+      { target },
+    );
+    await vi.waitFor(() => expect(scheduler.size).toBeGreaterThan(0));
+    scheduler.runNewest();
+    await waiting;
+    await extension.closeBubble({}, { target });
+    expect(scheduler.size).toBe(0);
+  });
+
+  it("cancels a pending Bubble wait when the Bubble closes", async () => {
+    const harness = createRuntime();
+    const scheduler = new TestScheduler();
+    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const target = actor();
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "continue?", STYLE: "dialogue" },
+      { target },
+    );
+
+    const waiting = extension.waitForBubbleAdvance(
+      { CONDITION: "false", TIMEOUT: 10 },
+      { target },
+    );
+    await vi.waitFor(() => expect(scheduler.size).toBeGreaterThan(0));
+    const rejection = expect(waiting).rejects.toMatchObject({
+      name: "AbortError",
+    });
+    await extension.closeBubble({}, { target });
+
+    await rejection;
+    expect(scheduler.size).toBe(0);
+  });
+
+  it.each([
+    ["STOP_FOR_TARGET", true],
+    ["PROJECT_STOP_ALL", false],
+    ["RUNTIME_DISPOSED", false],
+  ] as const)(
+    "cancels a pending Bubble wait on %s",
+    async (event, passesTarget) => {
+      const harness = createRuntime();
+      const scheduler = new TestScheduler();
+      const extension = new BubbleExtension(harness.runtime, { scheduler });
+      const target = actor();
+      extension.defineBubbleStyle({
+        STYLE: "dialogue",
+        TEXT_STYLE: "dialogue-text",
+      });
+      await extension.sayWithBubbleStyle(
+        { MESSAGE: "continue?", STYLE: "dialogue" },
+        { target },
+      );
+
+      const waiting = extension.waitForBubbleAdvance(
+        { CONDITION: "false", TIMEOUT: 10 },
+        { target },
+      );
+      await vi.waitFor(() => expect(scheduler.size).toBeGreaterThan(0));
+      const rejection = expect(waiting).rejects.toMatchObject({
+        name: "AbortError",
+      });
+      harness.emit(event, ...(passesTarget ? [target] : []));
+
+      await rejection;
+      await vi.waitFor(() => expect(scheduler.size).toBe(0));
+    },
+  );
+
+  it("requires Async Input and Runtime Expression for Bubble waits", async () => {
+    const target = actor();
+    const noInput = createRuntime({ asyncInput: false });
+    const inputExtension = new BubbleExtension(noInput.runtime);
+    inputExtension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    await inputExtension.sayWithBubbleStyle(
+      { MESSAGE: "continue?", STYLE: "dialogue" },
+      { target },
+    );
+    await expect(
+      inputExtension.waitForBubbleAdvance(
+        { CONDITION: "true", TIMEOUT: 0 },
+        { target },
+      ),
+    ).rejects.toThrow("requires Async Input");
+
+    const noExpression = createRuntime({ runtimeExpression: false });
+    const expressionExtension = new BubbleExtension(noExpression.runtime);
+    expressionExtension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    await expressionExtension.sayWithBubbleStyle(
+      { MESSAGE: "continue?", STYLE: "dialogue" },
+      { target },
+    );
+    await expect(
+      expressionExtension.waitForBubbleAdvance(
+        { CONDITION: "true", TIMEOUT: 0 },
+        { target },
+      ),
+    ).rejects.toThrow("requires Runtime Expression");
   });
 
   it("releases a target-owned bubble when TurboWarp stops the target", async () => {

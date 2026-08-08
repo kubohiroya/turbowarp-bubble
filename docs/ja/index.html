@@ -69,9 +69,9 @@
   <main id="manual" class="manual">
 <h1>TurboWarp Bubble ブロック利用マニュアル</h1>
 <p>このマニュアルでは、<code>turbowarp-bubble</code>をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。</p>
-<p><img src="../assets/block-quick-start.svg" alt="Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に実行するブロック例"></p>
+<p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>次の3つはすべて「サンドボックスなしで実行」を許可して読み込みます。推奨順はAsset Manager、SVG Text、Bubbleです。実際には、最初のBubble表示より前に依存拡張が揃っていれば構いません。</p>
+<p>入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る5つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime ExpressionはBubbleの待機ブロックより前に、Asset ManagerとSVG Textは最初のBubble表示より前に読み込みます。</p>
 <table>
 <thead>
 <tr>
@@ -82,24 +82,41 @@
 </thead>
 <tbody><tr>
 <td align="right">1</td>
+<td>Temporary Variables</td>
+<td>TurboWarpの拡張機能ライブラリから追加</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td>Async Input 0.3.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js</code></td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>Runtime Expression 0.3.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js</code></td>
+</tr>
+<tr>
+<td align="right">4</td>
 <td>Asset Manager 0.7.0</td>
 <td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js</code></td>
 </tr>
 <tr>
-<td align="right">2</td>
+<td align="right">5</td>
 <td>SVG Text 0.3.0</td>
 <td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js</code></td>
 </tr>
 <tr>
-<td align="right">3</td>
+<td align="right">6</td>
 <td>Bubble 0.1.0</td>
 <td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。Bubbleだけを読み込んでも、表示時にAsset ManagerとSVG Textが見つからなければ明示的なエラーになります。</p>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。表示時にAsset ManagerかSVG Textが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。</p>
 <p>参考：</p>
 <ul>
 <li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
+<li><a href="https://kubohiroya.github.io/turbowarp-async-input/ja/">Async Input 日本語ガイド</a></li>
+<li><a href="https://kubohiroya.github.io/turbowarp-runtime-expression/ja/">Runtime Expression 日本語ガイド</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-svg-text/ja/">SVG Text 日本語ガイド</a></li>
 </ul>
 <h2 id="portrait">2. 表情画像を準備する</h2>
@@ -254,41 +271,44 @@ set advance frames [Next1,Next2]
 <li>表情ベースを空にするとportrait全体を解除します。</li>
 </ul>
 <h2 id="lifecycle">5. セリフを表示して入力を待つ</h2>
-<p><code>say</code>または<code>think</code>はBubbleを表示するとすぐ次のブロックへ進み、初期phaseは<code>speaking</code>になります。</p>
-<pre><code class="language-text">say [海へ出発！] with bubble style [hero-dialogue]
-set this bubble phase [waiting]
-wait until &lt;space key pressed? or mouse down?&gt;
+<p><code>say</code>または<code>think</code>はBubbleを表示するとすぐ次のブロックへ進み、初期animation modeは<code>talking</code>になります。</p>
+<pre><code class="language-text">set runtime variable [input] to []
+listen for key [Space] set runtime var [input] to [pressed]
+listen for touch on this sprite set runtime var [input] to [pressed]
+say [海へ出発！] with bubble style [hero-dialogue]
+wait with this bubble until condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 close this bubble
 </code></pre>
-<p><code>waiting</code>に変えると口パクが止まり、「次へ」アイコンがループします。Bubble自身はキー入力、タップ、文字送り完了を判定しません。<code>wait until</code>など、通常のScratch/TurboWarpブロックで待ち、入力成立後に<code>close this bubble</code>を実行してください。</p>
-<p>音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で<code>waiting</code>へ切り替えます。</p>
-<p><img src="../assets/bubble-lifecycle.gif" alt="sayで口パクし、waitingで次へアイコンを動かし、入力成立後にBubbleを閉じるアニメーション"></p>
-<p>アニメーションGIFを再生できない環境では、次の比較図で各phaseを確認できます。</p>
-<p><img src="../assets/phase-guide.svg" alt="speaking、waiting、idleの目パチ、口パク、次へアイコンの状態比較"></p>
-<h2 id="phases">6. phaseの使い分け</h2>
+<p>まずTemporary Variablesで<code>input</code>を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、<code>input == &quot;pressed&quot;</code>をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に<code>awaiting-advance</code>となり、口パクを停止して<code>set advance frames</code>の画像をループします。条件成立またはtimeout後は<code>idle</code>へ移り、次の<code>close this bubble</code>へ進みます。timeoutを<code>0</code>にすると時間制限なしです。</p>
+<p>次の待機に入る前に<code>input</code>を空文字へ戻してください。前回の<code>pressed</code>が残っていると、次の条件が直ちに成立します。別のBubble表示、close、対象targetの停止、projectの開始・停止、runtime破棄では、targetが所有する待機とlistener、timerをキャンセルして解放します。</p>
+<p>音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で<code>awaiting-advance</code>へ切り替えます。</p>
+<p><img src="../assets/bubble-lifecycle.gif" alt="sayで口パクし、awaiting-advanceでadvance framesを動かし、入力成立後にBubbleを閉じるアニメーション"></p>
+<p>アニメーションGIFを再生できない環境では、次の比較図で各animation modeを確認できます。</p>
+<p><img src="../assets/animation-mode-guide.svg" alt="talking、awaiting-advance、idleの目パチ、口パク、advance framesの状態比較"></p>
+<h2 id="animation-modes">6. Animation modeの使い分け</h2>
 <table>
 <thead>
 <tr>
-<th>phase</th>
+<th>mode</th>
 <th>目パチ</th>
 <th>口パク</th>
-<th>「次へ」アイコン</th>
+<th>advance frames</th>
 <th>主な用途</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><code>speaking</code></td>
+<td><code>talking</code></td>
 <td>実行</td>
 <td>実行</td>
 <td>非表示</td>
 <td>セリフ表示中、音声再生中</td>
 </tr>
 <tr>
-<td><code>waiting</code></td>
+<td><code>awaiting-advance</code></td>
 <td>実行</td>
 <td>停止・非表示</td>
 <td>ループ</td>
-<td>キー入力やタップ待ち</td>
+<td>ユーザによる「次へ」操作待ち</td>
 </tr>
 <tr>
 <td><code>idle</code></td>
@@ -298,19 +318,19 @@ close this bubble
 <td>Bubbleを表示したまま静止</td>
 </tr>
 </tbody></table>
-<p><code>set this bubble phase [PHASE]</code>は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に<code>say</code>または<code>think</code>を実行していない場合はエラーになります。</p>
+<p><code>set this bubble animation mode [MODE]</code>は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に<code>say</code>または<code>think</code>を実行していない場合はエラーになります。</p>
 <h2 id="say-think">7. sayとthink</h2>
 <pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]
 </code></pre>
-<p>どちらも同じvisual style、表情レイヤー、placement、phase制御を使えます。<code>say</code>／<code>think</code>だけで形状を固定せず、<code>set bubble visual style</code>で<code>NORMAL</code>、<code>THINKING</code>などを明示的に選びます。Composition APIのsurfaceには<code>say</code>／<code>think</code>のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。</p>
+<p>どちらも同じvisual style、表情レイヤー、placement、animation mode制御を使えます。<code>say</code>／<code>think</code>だけで形状を固定せず、<code>set bubble visual style</code>で<code>NORMAL</code>、<code>THINKING</code>などを明示的に選びます。Composition APIのsurfaceには<code>say</code>／<code>think</code>のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。</p>
 <p>同じsprite、clone、またはStageで新しい<code>say</code>／<code>think</code>を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。</p>
 <h2 id="clones">8. cloneで使う</h2>
 <p>Bubble styleの定義は拡張機能内で共有されますが、表示中のBubbleはsprite／cloneごとに所有されます。</p>
 <ol>
 <li>元spriteで、緑の旗が押されたときにアセットとstyleを1回定義します。</li>
 <li>各clone自身から<code>say</code>または<code>think</code>を実行します。</li>
-<li>phase変更とcloseも、表示したのと同じcloneから実行します。</li>
+<li>animation mode変更とcloseも、表示したのと同じcloneから実行します。</li>
 </ol>
 <p>cloneが停止・削除された場合は、そのtargetに属するtimer、SVG Text skin、drawableが自動解放されます。</p>
 <h2 id="reference">9. ブロック一覧</h2>
@@ -359,19 +379,23 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 <tr>
 <td><code>set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
-<td>waiting中の「次へ」アニメーションを設定する</td>
+<td><code>awaiting-advance</code>中の「次へ」アニメーションを設定する</td>
 </tr>
 <tr>
 <td><code>say [MESSAGE] with bubble style [STYLE]</code></td>
-<td>speaking phaseでsay表示を開始・置換する</td>
+<td><code>talking</code> modeでsay表示を開始・置換する</td>
 </tr>
 <tr>
 <td><code>think [MESSAGE] with bubble style [STYLE]</code></td>
-<td>speaking phaseでthink表示を開始・置換する</td>
+<td><code>talking</code> modeでthink表示を開始・置換する</td>
 </tr>
 <tr>
-<td><code>set this bubble phase [PHASE]</code></td>
-<td>自分のBubbleを<code>speaking</code>、<code>waiting</code>、<code>idle</code>へ変更する</td>
+<td><code>set this bubble animation mode [MODE]</code></td>
+<td><code>talking</code>、<code>awaiting-advance</code>、<code>idle</code>からmodeを選ぶ</td>
+</tr>
+<tr>
+<td><code>wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds</code></td>
+<td>Runtime Expressionの条件成立またはtimeoutまで待つ</td>
 </tr>
 <tr>
 <td><code>close this bubble</code></td>
@@ -397,6 +421,14 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td>SVG Textを要求するエラー</td>
 <td>SVG Text 0.3.xをサンドボックスなしで読み込む</td>
+</tr>
+<tr>
+<td>Async Inputを要求するエラー</td>
+<td>Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む</td>
+</tr>
+<tr>
+<td>Runtime Expressionを要求するエラー</td>
+<td>Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む</td>
 </tr>
 <tr>
 <td><code>bubble style is not defined</code></td>
@@ -447,7 +479,7 @@ think [MESSAGE] with bubble style [STYLE]
 <pre><code class="language-sh">pnpm docs:render
 pnpm docs:check
 </code></pre>
-<p><code>docs:check</code>は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全15ブロックへの参照、およびPages用HTMLが最新であることを検証します。</p>
+<p><code>docs:check</code>は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全16ブロックへの参照、およびPages用HTMLが最新であることを検証します。</p>
   </main>
   <footer class="site-footer">ソースコードはMPL-2.0で公開されています。</footer>
 </body>

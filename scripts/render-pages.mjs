@@ -12,7 +12,7 @@ const sectionIds = [
   "text-style",
   "bubble-style",
   "lifecycle",
-  "phases",
+  "animation-modes",
   "say-think",
   "clones",
   "reference",

@@ -71,7 +71,7 @@ export {
 } from "./bubble-svg.js";
 
 export type BubbleKind = "say" | "think";
-export type BubblePhase = "idle" | "speaking" | "waiting";
+export type BubbleAnimationMode = "idle" | "talking" | "awaiting-advance";
 export type BubbleLayer =
   "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";
 
@@ -186,14 +186,14 @@ export interface ShowBubbleInput {
   readonly kind: BubbleKind;
   readonly text: string;
   readonly styleName: string;
-  readonly phase?: BubblePhase;
+  readonly animationMode?: BubbleAnimationMode;
 }
 
 export interface BubbleHandle {
   readonly actorKey: string;
   readonly kind: BubbleKind;
-  readonly phase: BubblePhase;
-  setPhase(phase: BubblePhase): Promise<void>;
+  readonly animationMode: BubbleAnimationMode;
+  setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -243,7 +243,11 @@ interface FrameLoop {
 }
 
 const validKinds = new Set<BubbleKind>(["say", "think"]);
-const validPhases = new Set<BubblePhase>(["idle", "speaking", "waiting"]);
+const validAnimationModes = new Set<BubbleAnimationMode>([
+  "idle",
+  "talking",
+  "awaiting-advance",
+]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -677,7 +681,7 @@ function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
   requireExactKeys(
     value,
     ["actor", "actorKey", "kind", "text", "styleName"],
-    ["phase"],
+    ["animationMode"],
     "Show bubble input",
   );
   if (!validKinds.has(value.kind as BubbleKind)) {
@@ -692,11 +696,11 @@ function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
       "Bubble text must be a string.",
     );
   }
-  const phase = value.phase ?? "speaking";
-  if (!validPhases.has(phase as BubblePhase)) {
+  const animationMode = value.animationMode ?? "talking";
+  if (!validAnimationModes.has(animationMode as BubbleAnimationMode)) {
     throw new BubbleCompositionError(
       "BUBBLE-COMPOSITION-001",
-      "Bubble phase is invalid.",
+      "Bubble animation mode is invalid.",
     );
   }
   return {
@@ -705,7 +709,7 @@ function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
     kind: value.kind as BubbleKind,
     text: value.text,
     styleName: requireName(value.styleName, "Bubble style name"),
-    phase: phase as BubblePhase,
+    animationMode: animationMode as BubbleAnimationMode,
   };
 }
 
@@ -884,13 +888,15 @@ export function createBubbleComposition(
                 : { onError: options.onAnimationError }),
             });
 
-      let currentPhase: BubblePhase = "idle";
+      let currentAnimationMode: BubbleAnimationMode = "idle";
       let closed = false;
       let transitionTail = Promise.resolve();
 
-      const applyPhase = async (phase: BubblePhase): Promise<void> => {
-        if (phase === currentPhase) return;
-        if (phase === "speaking") {
+      const applyAnimationMode = async (
+        mode: BubbleAnimationMode,
+      ): Promise<void> => {
+        if (mode === currentAnimationMode) return;
+        if (mode === "talking") {
           await indicatorLoop?.stop();
           await surface?.setLayerVisible("advanceIndicator", false);
           await surface?.setLayerVisible(
@@ -898,7 +904,7 @@ export function createBubbleComposition(
             talkLoop !== undefined,
           );
           await talkLoop?.start({ primed: true });
-        } else if (phase === "waiting") {
+        } else if (mode === "awaiting-advance") {
           await talkLoop?.stop({ reset: true });
           await surface?.setLayerVisible("portraitTalk", false);
           await surface?.setLayerVisible(
@@ -916,7 +922,7 @@ export function createBubbleComposition(
             surface?.setLayerVisible("advanceIndicator", false),
           ]);
         }
-        currentPhase = phase;
+        currentAnimationMode = mode;
       };
 
       await Promise.all([
@@ -931,15 +937,15 @@ export function createBubbleComposition(
       await surface.show();
       surfaceVisible = true;
       await blinkLoop?.start({ primed: true });
-      await applyPhase(input.phase);
+      await applyAnimationMode(input.animationMode);
 
       const handle: BubbleHandle = Object.freeze({
         actorKey: input.actorKey,
         kind: input.kind,
-        get phase(): BubblePhase {
-          return currentPhase;
+        get animationMode(): BubbleAnimationMode {
+          return currentAnimationMode;
         },
-        setPhase(phase: BubblePhase): Promise<void> {
+        setAnimationMode(mode: BubbleAnimationMode): Promise<void> {
           if (closed) {
             return Promise.reject(
               new BubbleCompositionError(
@@ -948,15 +954,15 @@ export function createBubbleComposition(
               ),
             );
           }
-          if (!validPhases.has(phase)) {
+          if (!validAnimationModes.has(mode)) {
             return Promise.reject(
               new BubbleCompositionError(
                 "BUBBLE-COMPOSITION-001",
-                "Bubble phase is invalid.",
+                "Bubble animation mode is invalid.",
               ),
             );
           }
-          transitionTail = transitionTail.then(() => applyPhase(phase));
+          transitionTail = transitionTail.then(() => applyAnimationMode(mode));
           return transitionTail;
         },
         async close(): Promise<void> {

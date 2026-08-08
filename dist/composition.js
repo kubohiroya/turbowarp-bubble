@@ -3952,8 +3952,8 @@ var Z = class extends Error {
 	}
 }, Cr = /* @__PURE__ */ new Set(["say", "think"]), wr = /* @__PURE__ */ new Set([
 	"idle",
-	"speaking",
-	"waiting"
+	"talking",
+	"awaiting-advance"
 ]);
 function Q(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
@@ -4120,17 +4120,17 @@ function Br(e) {
 		"kind",
 		"text",
 		"styleName"
-	], ["phase"], "Show bubble input"), !Cr.has(e.kind)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
+	], ["animationMode"], "Show bubble input"), !Cr.has(e.kind)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
 	if (typeof e.text != "string") throw new Z("BUBBLE-COMPOSITION-001", "Bubble text must be a string.");
-	let t = e.phase ?? "speaking";
-	if (!wr.has(t)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble phase is invalid.");
+	let t = e.animationMode ?? "talking";
+	if (!wr.has(t)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid.");
 	return {
 		actor: e.actor,
 		actorKey: $(e.actorKey, "Bubble actor key"),
 		kind: e.kind,
 		text: e.text,
 		styleName: $(e.styleName, "Bubble style name"),
-		phase: t
+		animationMode: t
 	};
 }
 function Vr(e) {
@@ -4202,22 +4202,22 @@ function Vr(e) {
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
 			});
 			let l = "idle", g = !1, _ = Promise.resolve(), v = async (e) => {
-				e !== l && (e === "speaking" ? (await h?.stop(), await u?.setLayerVisible("advanceIndicator", !1), await u?.setLayerVisible("portraitTalk", m !== void 0), await m?.start({ primed: !0 })) : e === "waiting" ? (await m?.stop({ reset: !0 }), await u?.setLayerVisible("portraitTalk", !1), await u?.setLayerVisible("advanceIndicator", h !== void 0), await h?.start({ primed: !0 })) : (await Promise.all([m?.stop({ reset: !0 }), h?.stop()]), await Promise.all([u?.setLayerVisible("portraitTalk", !1), u?.setLayerVisible("advanceIndicator", !1)])), l = e);
+				e !== l && (e === "talking" ? (await h?.stop(), await u?.setLayerVisible("advanceIndicator", !1), await u?.setLayerVisible("portraitTalk", m !== void 0), await m?.start({ primed: !0 })) : e === "awaiting-advance" ? (await m?.stop({ reset: !0 }), await u?.setLayerVisible("portraitTalk", !1), await u?.setLayerVisible("advanceIndicator", h !== void 0), await h?.start({ primed: !0 })) : (await Promise.all([m?.stop({ reset: !0 }), h?.stop()]), await Promise.all([u?.setLayerVisible("portraitTalk", !1), u?.setLayerVisible("advanceIndicator", !1)])), l = e);
 			};
 			await Promise.all([
 				u.setLayerVisible("portraitBase", s.portrait !== void 0),
 				u.setLayerVisible("portraitBlink", s.portrait?.blink !== void 0),
 				u.setLayerVisible("portraitTalk", !1),
 				u.setLayerVisible("advanceIndicator", !1)
-			]), await u.show(), f = !0, await p?.start({ primed: !0 }), await v(o.phase);
+			]), await u.show(), f = !0, await p?.start({ primed: !0 }), await v(o.animationMode);
 			let y = Object.freeze({
 				actorKey: o.actorKey,
 				kind: o.kind,
-				get phase() {
+				get animationMode() {
 					return l;
 				},
-				setPhase(e) {
-					return g ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : wr.has(e) ? (_ = _.then(() => v(e)), _) : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "Bubble phase is invalid."));
+				setAnimationMode(e) {
+					return g ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : wr.has(e) ? (_ = _.then(() => v(e)), _) : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid."));
 				},
 				async close() {
 					if (g) return;

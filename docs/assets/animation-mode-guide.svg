@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title description">
-  <title id="title">Bubble phase比較</title>
-  <desc id="description">speaking、waiting、idleにおける目パチ、口パク、次へアイコンの動作比較。</desc>
+  <title id="title">Bubble animation mode比較</title>
+  <desc id="description">talking、awaiting-advance、idleにおける目パチ、口パク、advance framesの動作比較。</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
     .heading { fill: #25283a; font-size: 28px; font-weight: 700; }
@@ -13,12 +13,12 @@
   </style>
 
   <rect width="1200" height="500" fill="#f2f4f8"/>
-  <text x="32" y="47" class="heading">phaseでアニメーションを切り替える</text>
+  <text x="32" y="47" class="heading">animation modeで表示中の動きを切り替える</text>
   <text x="32" y="72" class="small">緑は実行中、灰色は停止・非表示です。目パチはBubbleが表示されている間継続します。</text>
   <g>
     <rect x="24" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
-    <rect x="44" y="106" width="116" height="34" rx="17" fill="#e8ebf2"/>
-    <text x="102" y="129" text-anchor="middle" style="fill:#25283a;font-size:15px;font-weight:700">speaking</text>
+    <rect x="44" y="106" width="170" height="34" rx="17" fill="#e8ebf2"/>
+    <text x="129" y="129" text-anchor="middle" style="fill:#25283a;font-size:15px;font-weight:700">talking</text>
     <text x="44" y="164" class="small">say／think直後</text>
     <g>
     <circle cx="100" cy="253" r="37.44" fill="#ffd5b5" stroke="#b85d63" stroke-width="2.88"/>
@@ -52,9 +52,9 @@
   </g>
   <g>
     <rect x="420" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
-    <rect x="440" y="106" width="116" height="34" rx="17" fill="#ff6680"/>
-    <text x="498" y="129" text-anchor="middle" style="fill:#ffffff;font-size:15px;font-weight:700">waiting</text>
-    <text x="440" y="164" class="small">キー入力／タップ待ち</text>
+    <rect x="440" y="106" width="170" height="34" rx="17" fill="#ff6680"/>
+    <text x="525" y="129" text-anchor="middle" style="fill:#ffffff;font-size:15px;font-weight:700">awaiting-advance</text>
+    <text x="440" y="164" class="small">ユーザの「次へ」操作待ち</text>
     <g>
     <circle cx="496" cy="253" r="37.44" fill="#ffd5b5" stroke="#b85d63" stroke-width="2.88"/>
     <path d="M 461.44 236.44 Q 496 196.84 530.56 236.44 Q 514 219.16 496 228.52 Q 478 219.16 461.44 236.44" fill="#50354f"/>
@@ -90,8 +90,8 @@
   </g>
   <g>
     <rect x="816" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
-    <rect x="836" y="106" width="116" height="34" rx="17" fill="#e8ebf2"/>
-    <text x="894" y="129" text-anchor="middle" style="fill:#25283a;font-size:15px;font-weight:700">idle</text>
+    <rect x="836" y="106" width="170" height="34" rx="17" fill="#e8ebf2"/>
+    <text x="921" y="129" text-anchor="middle" style="fill:#25283a;font-size:15px;font-weight:700">idle</text>
     <text x="836" y="164" class="small">表示したまま静止</text>
     <g>
     <circle cx="892" cy="253" r="37.44" fill="#ffd5b5" stroke="#b85d63" stroke-width="2.88"/>

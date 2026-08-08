@@ -50,6 +50,11 @@ describe("extension API manifest", () => {
           ],
         },
         {
+          opcode: "setBubbleAnimationMode",
+          blockType: "COMMAND",
+          arguments: [{ id: "MODE", type: "STRING", menu: "animationMode" }],
+        },
+        {
           opcode: "setBubbleDistance",
           blockType: "COMMAND",
           arguments: [
@@ -66,11 +71,6 @@ describe("extension API manifest", () => {
             { id: "X", type: "NUMBER" },
             { id: "Y", type: "NUMBER" },
           ],
-        },
-        {
-          opcode: "setBubblePhase",
-          blockType: "COMMAND",
-          arguments: [{ id: "PHASE", type: "STRING", menu: "phase" }],
         },
         {
           opcode: "setBubblePlacement",
@@ -125,9 +125,17 @@ describe("extension API manifest", () => {
             { id: "STYLE", type: "STRING" },
           ],
         },
+        {
+          opcode: "waitForBubbleAdvance",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "CONDITION", type: "STRING" },
+            { id: "TIMEOUT", type: "NUMBER" },
+          ],
+        },
       ],
       menus: [
-        { id: "phase", acceptReporters: true },
+        { id: "animationMode", acceptReporters: true },
         { id: "placement", acceptReporters: true },
         { id: "visualStyle", acceptReporters: true },
       ],

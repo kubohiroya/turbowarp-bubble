@@ -69,7 +69,8 @@ for (const value of [
   "setBubbleOffset",
   "https://kubohiroya.github.io/turbowarp-bubble/",
   "sayWithBubbleStyle",
-  "setBubblePhase",
+  "setBubbleAnimationMode",
+  "waitForBubbleAdvance",
   "kubohiroyaassetmanager",
   "kubohiroyasvgtext",
 ]) {
@@ -78,7 +79,7 @@ for (const value of [
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 15) {
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 16) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

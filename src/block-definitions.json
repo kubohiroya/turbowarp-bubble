@@ -107,7 +107,7 @@
       "opcode": "setAdvanceFrames",
       "blockType": "COMMAND",
       "text": "set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
-      "description": "Sets at least two comma-separated registered image assets for the waiting indicator. An empty list removes the indicator.",
+      "description": "Sets at least two comma-separated registered image assets for the awaiting-advance indicator. An empty list removes the indicator.",
       "arguments": {
         "ASSETS": { "type": "STRING", "defaultValue": "Next1,Next2" },
         "SECONDS": { "type": "NUMBER", "defaultValue": 0.2 },
@@ -118,7 +118,7 @@
       "opcode": "sayWithBubbleStyle",
       "blockType": "COMMAND",
       "text": "say [MESSAGE] with bubble style [STYLE]",
-      "description": "Shows or replaces this sprite's layered say bubble in the speaking phase.",
+      "description": "Shows or replaces this sprite's layered say bubble in talking animation mode.",
       "arguments": {
         "MESSAGE": { "type": "STRING", "defaultValue": "Hello!" },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
@@ -128,22 +128,38 @@
       "opcode": "thinkWithBubbleStyle",
       "blockType": "COMMAND",
       "text": "think [MESSAGE] with bubble style [STYLE]",
-      "description": "Shows or replaces this sprite's layered think bubble in the speaking phase.",
+      "description": "Shows or replaces this sprite's layered think bubble in talking animation mode.",
       "arguments": {
         "MESSAGE": { "type": "STRING", "defaultValue": "Hmm..." },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
       }
     },
     {
-      "opcode": "setBubblePhase",
+      "opcode": "setBubbleAnimationMode",
       "blockType": "COMMAND",
-      "text": "set this bubble phase [PHASE]",
-      "description": "Changes this sprite's bubble phase. Waiting stops talk animation and starts the advance indicator.",
+      "text": "set this bubble animation mode [MODE]",
+      "description": "Changes this sprite's bubble animation mode. Awaiting advance stops talk animation and starts the configured advance frames.",
       "arguments": {
-        "PHASE": {
+        "MODE": {
           "type": "STRING",
-          "defaultValue": "waiting",
-          "menu": "phase"
+          "defaultValue": "awaiting-advance",
+          "menu": "animationMode"
+        }
+      }
+    },
+    {
+      "opcode": "waitForBubbleAdvance",
+      "blockType": "COMMAND",
+      "text": "wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds",
+      "description": "Switches to awaiting-advance mode, evaluates a Runtime Expression condition using variables updated by Async Input, and waits until the condition is true or the timeout expires. Zero disables the timeout.",
+      "arguments": {
+        "CONDITION": {
+          "type": "STRING",
+          "defaultValue": "input == \"pressed\""
+        },
+        "TIMEOUT": {
+          "type": "NUMBER",
+          "defaultValue": 10
         }
       }
     },
@@ -202,9 +218,9 @@
         "FOOTER_LIKE"
       ]
     },
-    "phase": {
+    "animationMode": {
       "acceptReporters": true,
-      "items": ["speaking", "waiting", "idle"]
+      "items": ["talking", "awaiting-advance", "idle"]
     }
   }
 }
