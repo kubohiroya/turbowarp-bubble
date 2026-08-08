@@ -11,6 +11,9 @@ importers:
       '@cto.af/linebreak':
         specifier: 4.0.3
         version: 4.0.3
+      jsclipper:
+        specifier: github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1
+        version: https://codeload.github.com/platener/jsclipper/tar.gz/56aed19845113e1939d8971c47233054659436b1
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -510,6 +513,10 @@ packages:
 
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
+
+  jsclipper@https://codeload.github.com/platener/jsclipper/tar.gz/56aed19845113e1939d8971c47233054659436b1:
+    resolution: {gitHosted: true, integrity: sha512-mB3KrcGcEkNqEFFfqza3SyrvZ2ZAcIFOo6XGk314a06jcxSt0JvZUsyKVMLf+CJraGw5b7+IA/x3hnKmhoB0PQ==, tarball: https://codeload.github.com/platener/jsclipper/tar.gz/56aed19845113e1939d8971c47233054659436b1}
+    version: 6.1.33
 
   json-buffer@3.0.1:
     resolution: {integrity: sha512-4bV5BfR2mqfQTJm+V5tPPdf+ZpuhiIvTuAB5g8kcrXOZpTT/QwwVRWBywX1ozr6lEuPdbHxwaJlm9G6mI2sfSQ==}
@@ -1279,6 +1286,8 @@ snapshots:
       is-extglob: 2.1.1
 
   isexe@2.0.0: {}
+
+  jsclipper@https://codeload.github.com/platener/jsclipper/tar.gz/56aed19845113e1939d8971c47233054659436b1: {}
 
   json-buffer@3.0.1: {}
 

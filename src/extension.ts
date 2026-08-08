@@ -1,9 +1,19 @@
 import definitions from "./block-definitions.json";
+import {
+  normalizeBubbleDistance,
+  normalizeBubbleOffset,
+  normalizeBubblePlacement,
+  normalizeBubbleTailLength,
+  bubbleVisualStyles,
+  type BubblePlacement,
+  type BubbleVisualStyle,
+} from "./composition.js";
 import type {
   BubbleComposition,
   BubbleFrameAnimationInput,
   BubbleHandle,
   BubblePhase,
+  BubblePlacementInput,
   BubblePortraitInput,
   BubbleStyleInput,
 } from "./composition.js";
@@ -119,14 +129,93 @@ export class BubbleExtension implements TurboWarpExtension {
     const base = this.toString(args.ASSET).trim();
     const nextStyle: BubbleStyleInput = base
       ? Object.freeze({ ...style, portrait: { ...style.portrait, base } })
-      : Object.freeze({
-          name: style.name,
-          textStyle: style.textStyle,
-          ...(style.advanceIndicator
-            ? { advanceIndicator: style.advanceIndicator }
-            : {}),
-        });
+      : (() => {
+          const { portrait, ...withoutPortrait } = style;
+          void portrait;
+          return Object.freeze(withoutPortrait);
+        })();
     this.installStyle(nextStyle);
+  }
+
+  public setBubblePlacement(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    let placement: BubblePlacement;
+    try {
+      placement = normalizeBubblePlacement(args.PLACEMENT);
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error ? error.message : "placement is invalid.",
+      );
+    }
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        placement: this.placementInput(placement),
+      }),
+    );
+  }
+
+  public setBubbleDistance(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        distance: this.normalizeTransformNumber(
+          args.DISTANCE,
+          normalizeBubbleDistance,
+        ),
+      }),
+    );
+  }
+
+  public setBubbleVisualStyle(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const visualStyle = this.toString(args.VISUAL_STYLE)
+      .trim()
+      .toUpperCase() as BubbleVisualStyle;
+    if (!bubbleVisualStyles.includes(visualStyle)) {
+      throw extensionError(`unsupported Bubble visual style: ${visualStyle}`);
+    }
+    this.installStyle(Object.freeze({ ...style, visualStyle }));
+  }
+
+  public setBubbleTailLength(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        tailLength: this.normalizeTransformNumber(
+          args.LENGTH,
+          normalizeBubbleTailLength,
+        ),
+      }),
+    );
+  }
+
+  public setBubbleOffset(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    let offset;
+    try {
+      offset = normalizeBubbleOffset([
+        Scratch.Cast.toNumber(args.X),
+        Scratch.Cast.toNumber(args.Y),
+        Scratch.Cast.toNumber(args.SCALE),
+      ]);
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error ? error.message : "Bubble offset is invalid.",
+      );
+    }
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        offset: Object.freeze([
+          offset.x,
+          offset.y,
+          offset.scalePercent,
+        ] as const),
+      }),
+    );
   }
 
   public setBlinkFrames(args: BlockArguments): void {
@@ -147,10 +236,10 @@ export class BubbleExtension implements TurboWarpExtension {
       frames.length === 0
         ? undefined
         : this.animationInput(frames, args.SECONDS, "advance");
+    const { advanceIndicator: previousAdvance, ...withoutAdvance } = style;
+    void previousAdvance;
     const nextStyle: BubbleStyleInput = Object.freeze({
-      name: style.name,
-      textStyle: style.textStyle,
-      ...(style.portrait ? { portrait: style.portrait } : {}),
+      ...withoutAdvance,
       ...(advanceIndicator ? { advanceIndicator } : {}),
     });
     this.installStyle(nextStyle);
@@ -181,7 +270,7 @@ export class BubbleExtension implements TurboWarpExtension {
     }
     const handle = this.handles.get(target.id);
     if (!handle)
-      throw extensionError("this sprite does not have an active bubble.");
+      throw extensionError("this target does not have an active bubble.");
     await handle.setPhase(phase);
   }
 
@@ -244,6 +333,21 @@ export class BubbleExtension implements TurboWarpExtension {
     const style = this.styles.get(name);
     if (!style) throw extensionError(`bubble style is not defined: ${name}`);
     return style;
+  }
+
+  private normalizeTransformNumber(
+    value: unknown,
+    normalize: (value: unknown) => number,
+  ): number {
+    try {
+      return normalize(Scratch.Cast.toNumber(value));
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error
+          ? error.message
+          : "Bubble transform value is invalid.",
+      );
+    }
   }
 
   private installStyle(style: BubbleStyleInput): void {
@@ -314,16 +418,19 @@ export class BubbleExtension implements TurboWarpExtension {
     return (
       typeof value === "object" &&
       value !== null &&
-      typeof (value as { id?: unknown }).id === "string"
+      typeof (value as { id?: unknown }).id === "string" &&
+      typeof (value as { isStage?: unknown }).isStage === "boolean"
     );
   }
 
   private requireTarget(util: BlockUtility): TurboWarpBubbleTarget {
     const target = util?.target;
-    if (!this.isTarget(target) || target.isStage) {
-      throw extensionError("run this block from a sprite or clone.");
-    }
+    if (!this.isTarget(target)) throw extensionError("target is unavailable.");
     return target;
+  }
+
+  private placementInput(placement: BubblePlacement): BubblePlacementInput {
+    return placement.basis === "actor" ? placement.direction : placement.region;
   }
 
   private getComposition(): BubbleComposition {
@@ -344,8 +451,14 @@ export class BubbleExtension implements TurboWarpExtension {
     args: BlockArguments,
     util: BlockUtility,
   ): Promise<void> {
-    const target = this.requireTarget(util);
     const style = this.requireStyle(args.STYLE);
+    const target = this.requireTarget(util);
+    const placement = normalizeBubblePlacement(style.placement ?? "up-right");
+    if (target.isStage && placement.basis === "actor") {
+      throw extensionError(
+        "actor-relative bubble placement requires a sprite or clone.",
+      );
+    }
     const composition = this.getComposition();
     let handle: BubbleHandle;
     try {

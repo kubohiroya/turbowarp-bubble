@@ -12,12 +12,72 @@
       }
     },
     {
+      "opcode": "setBubblePlacement",
+      "blockType": "COMMAND",
+      "text": "set bubble placement [PLACEMENT] for bubble style [STYLE]",
+      "description": "Sets an actor-relative direction/angle or a background-relative region. Direction aliases and Scratch-style degrees from 0 through 360 are accepted.",
+      "arguments": {
+        "PLACEMENT": {
+          "type": "STRING",
+          "defaultValue": "up-right",
+          "menu": "placement"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
       "opcode": "setPortraitBase",
       "blockType": "COMMAND",
       "text": "set portrait base [ASSET] for bubble style [STYLE]",
       "description": "Sets the registered image asset used as the portrait base. An empty asset removes the complete portrait.",
       "arguments": {
         "ASSET": { "type": "STRING", "defaultValue": "HeroFace" },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleDistance",
+      "blockType": "COMMAND",
+      "text": "set bubble distance [DISTANCE] for bubble style [STYLE]",
+      "description": "Sets the distance from the actor bounds to the tail tip for actor-relative placement.",
+      "arguments": {
+        "DISTANCE": { "type": "NUMBER", "defaultValue": 12 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleVisualStyle",
+      "blockType": "COMMAND",
+      "text": "set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]",
+      "description": "Sets the SVG body shape used by this bubble style.",
+      "arguments": {
+        "VISUAL_STYLE": {
+          "type": "STRING",
+          "defaultValue": "NORMAL",
+          "menu": "visualStyle"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleTailLength",
+      "blockType": "COMMAND",
+      "text": "set bubble tail length [LENGTH] for bubble style [STYLE]",
+      "description": "Sets the nominal length from the bubble border to the tail tip for actor-relative placement.",
+      "arguments": {
+        "LENGTH": { "type": "NUMBER", "defaultValue": 18 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleOffset",
+      "blockType": "COMMAND",
+      "text": "set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]",
+      "description": "Offsets and scales the bubble body while keeping scale-only actor distance constant.",
+      "arguments": {
+        "X": { "type": "NUMBER", "defaultValue": 0 },
+        "Y": { "type": "NUMBER", "defaultValue": 0 },
+        "SCALE": { "type": "NUMBER", "defaultValue": 100 },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
       }
     },
@@ -103,6 +163,45 @@
     }
   ],
   "menus": {
+    "visualStyle": {
+      "acceptReporters": true,
+      "items": [
+        "NORMAL",
+        "THINKING",
+        "DREAMING",
+        "YELLING",
+        "OFF_PANEL",
+        "WAVY",
+        "WHISPERING",
+        "ANNOUNCEMENT",
+        "NARRATION",
+        "NO_BUBBLE"
+      ]
+    },
+    "placement": {
+      "acceptReporters": true,
+      "items": [
+        "up",
+        "up-up-right",
+        "up-right",
+        "right-up-right",
+        "right",
+        "right-down-right",
+        "down-right",
+        "down-down-right",
+        "down",
+        "down-down-left",
+        "down-left",
+        "left-down-left",
+        "left",
+        "left-up-left",
+        "up-left",
+        "up-up-left",
+        "HEADER_LIKE",
+        "CENTER",
+        "FOOTER_LIKE"
+      ]
+    },
     "phase": {
       "acceptReporters": true,
       "items": ["speaking", "waiting", "idle"]
