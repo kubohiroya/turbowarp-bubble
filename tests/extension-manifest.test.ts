@@ -13,6 +13,12 @@ describe("extension API manifest", () => {
       formatVersion: 1,
       id: "kubohiroyabubble",
       blocks: [
+        {
+          opcode: "beginTextStyle",
+          blockType: "COMMAND",
+          arguments: [{ id: "STYLE", type: "STRING" }],
+        },
+        { opcode: "clearTextActor", blockType: "COMMAND", arguments: [] },
         { opcode: "closeBubble", blockType: "COMMAND", arguments: [] },
         {
           opcode: "defineBubbleStyle",
@@ -23,6 +29,7 @@ describe("extension API manifest", () => {
           ],
         },
         { opcode: "getVersion", blockType: "REPORTER", arguments: [] },
+        { opcode: "saveTextStyle", blockType: "COMMAND", arguments: [] },
         {
           opcode: "sayWithBubbleStyle",
           blockType: "COMMAND",
@@ -81,6 +88,14 @@ describe("extension API manifest", () => {
           ],
         },
         {
+          opcode: "setBubblePresentationMode",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "MODE", type: "STRING", menu: "presentationMode" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
           opcode: "setBubbleTailLength",
           blockType: "COMMAND",
           arguments: [
@@ -118,6 +133,39 @@ describe("extension API manifest", () => {
           ],
         },
         {
+          opcode: "setTextActor",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "STYLE", type: "STRING" },
+            { id: "TEXT", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setTextAlign",
+          blockType: "COMMAND",
+          arguments: [{ id: "ALIGN", type: "STRING", menu: "textAlign" }],
+        },
+        {
+          opcode: "setTextBackgroundColor",
+          blockType: "COMMAND",
+          arguments: [{ id: "COLOR", type: "COLOR" }],
+        },
+        {
+          opcode: "setTextColor",
+          blockType: "COMMAND",
+          arguments: [{ id: "COLOR", type: "COLOR" }],
+        },
+        {
+          opcode: "setTextFont",
+          blockType: "COMMAND",
+          arguments: [{ id: "FONT", type: "STRING" }],
+        },
+        {
+          opcode: "setTextSize",
+          blockType: "COMMAND",
+          arguments: [{ id: "SIZE", type: "NUMBER" }],
+        },
+        {
           opcode: "thinkWithBubbleStyle",
           blockType: "COMMAND",
           arguments: [
@@ -137,6 +185,8 @@ describe("extension API manifest", () => {
       menus: [
         { id: "animationMode", acceptReporters: true },
         { id: "placement", acceptReporters: true },
+        { id: "presentationMode", acceptReporters: true },
+        { id: "textAlign", acceptReporters: true },
         { id: "visualStyle", acceptReporters: true },
       ],
     });

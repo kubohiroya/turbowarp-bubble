@@ -6,7 +6,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る5つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime ExpressionはBubbleの待機ブロックより前に、Asset ManagerとSVG Textは最初のBubble表示より前に読み込みます。
+入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る4つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime Expressionが必要なのは内蔵待機ブロックだけです。Asset Managerが必要なのはportraitまたはadvance-frame画像を使う場合だけです。SVG Text engineはBubbleに内蔵されるため、SVG Text拡張を別途読み込みません。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -14,17 +14,15 @@
 |    2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`               |
 |    3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
 |    4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
-|    5 | SVG Text 0.3.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                     |
-|    6 | Bubble 0.1.0             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js`    |
+|    5 | Bubble 0.2.0             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js`    |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時にAsset ManagerかSVG Textが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。画像layerを使うときにAsset Managerがない場合、または待機開始時にAsync Input／Runtime Expressionがない場合は、Bubbleが必要な拡張名を含むerrorを返します。
 
 参考：
 
 - [Asset Manager 日本語ガイド](https://kubohiroya.github.io/turbowarp-asset-manager/ja/)
 - [Async Input 日本語ガイド](https://kubohiroya.github.io/turbowarp-async-input/ja/)
 - [Runtime Expression 日本語ガイド](https://kubohiroya.github.io/turbowarp-runtime-expression/ja/)
-- [SVG Text 日本語ガイド](https://kubohiroya.github.io/turbowarp-svg-text/ja/)
 
 ## 2. 表情画像を準備する
 
@@ -58,21 +56,19 @@ URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubb
 
 ## 3. 文字styleを定義する
 
-SVG Textで、Bubbleの文字部分に使う名前付きstyleを定義します。
+BubbleのBuilderブロックを使い、巨大な単一ブロックを使わずに名前付きstyleを定義します。
 
 ```text
-define text style [dialogue-text]
-  background [#fff4cc]
-  text [#332200]
-  font [Noto Sans JP]
-  size [100]
-  align [left]
-  bubble direction [up]
+begin text style [dialogue-text]
+set text background color [#fff4cc]
+set text color [#332200]
+set text font [Noto Sans JP]
+set text size [100] %
+set text align [left]
+save text style
 ```
 
-Bubbleは`dialogue-text`という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
-
-SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていますが、Bubbleが`setText`で生成する文字drawableの配置には使われません。Bubbleの配置は次節の`set bubble placement`で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。
+`begin`はextension全体で1個の作業中draftを作成・置換します。`save`はimmutableなnamed styleとして保存し、draftを破棄します。別draftの開始時、project開始・停止時にも未保存変更を破棄します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
 
 ## 4. Bubble styleを定義する
 
@@ -80,12 +76,34 @@ SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていま�
 
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
+set presentation mode [POP_OUT_BUBBLE] for bubble style [hero-dialogue]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
 set bubble visual style [NORMAL] for bubble style [hero-dialogue]
 set bubble tail length [18] for bubble style [hero-dialogue]
 set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 ```
+
+### Presentation mode
+
+![productionのSVG rendererでpopup Bubble、枠なしpopup文字、text actorを比較する図](./assets/presentation-mode-guide.svg)
+
+`presentationMode`とSVG本体形状は別の指定です。
+
+| presentation mode | shape        | 結果                                       |
+| ----------------- | ------------ | ------------------------------------------ |
+| `POP_OUT_BUBBLE`  | `NORMAL`など | Actorを維持して別drawableの吹き出しを表示  |
+| `POP_OUT_BUBBLE`  | `NO_BUBBLE`  | 本体とtailなしで別drawableの文字だけを表示 |
+| `TEXT_ACTOR`      | 適用外       | Actor自身の表示をresponsive SVG textへ置換 |
+
+text actorはBubble styleを`TEXT_ACTOR`にして`say`／`think`を実行するか、直接ブロックで指定できます。
+
+```text
+set this sprite text [第1章] with text style [dialogue-text]
+clear this sprite text
+```
+
+`TEXT_ACTOR`にはplacement、distance、tail、offset、visual shape、portrait、advance indicatorを指定できません。Bubbleは不整合な組み合わせを無視せずerrorにします。clear時は生成SVG skinを解放し、spriteの現在のcostumeを再適用します。
 
 ### Actor相対と背景相対のplacement
 
@@ -233,7 +251,11 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 
 | ブロック                                                                               | 説明                                                   |
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `begin text style [STYLE]`                                                             | 作業中の文字style draftを開始・置換する                |
+| `set text font/size/color/background/align ...`                                        | 作業中の文字style draftへ設定を加える                  |
+| `save text style`                                                                      | named styleを保存してdraftを破棄する                   |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義または再定義する                     |
+| `set presentation mode [MODE] for bubble style [STYLE]`                                | `POP_OUT_BUBBLE`または`TEXT_ACTOR`を選ぶ               |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する      |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する           |
 | `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Bubble本体のSVG形状を10種類から設定する                |
@@ -245,6 +267,8 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`         | `awaiting-advance`中の「次へ」アニメーションを設定する |
 | `say [MESSAGE] with bubble style [STYLE]`                                              | `talking` modeでsay表示を開始・置換する                |
 | `think [MESSAGE] with bubble style [STYLE]`                                            | `talking` modeでthink表示を開始・置換する              |
+| `set this sprite text [TEXT] with text style [STYLE]`                                  | sprite自身の表示をSVG textへ置換する                   |
+| `clear this sprite text`                                                               | SVG textを解放して現在のcostumeを復元する              |
 | `set this bubble animation mode [MODE]`                                                | `talking`、`awaiting-advance`、`idle`からmodeを選ぶ    |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Runtime Expressionの条件成立またはtimeoutまで待つ      |
 | `close this bubble`                                                                    | 自分のBubbleと所有resourceを解放する                   |
@@ -255,7 +279,6 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | 状況                               | 原因と対処                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------ |
 | Asset Managerを要求するエラー      | Asset Manager 0.7.xをサンドボックスなしで読み込む                        |
-| SVG Textを要求するエラー           | SVG Text 0.3.xをサンドボックスなしで読み込む                             |
 | Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
 | `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
@@ -264,6 +287,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | advance framesが1枚                | 2枚以上にするか、空にしてadvance表示を解除する                           |
 | frame intervalエラー               | `SECONDS`を0より大きい有限値にする                                       |
 | StageからActor相対表示した         | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする                  |
+| `TEXT_ACTOR does not accept...`    | popup専用設定を除くか`POP_OUT_BUBBLE`を使う                              |
 | placementが不正                    | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する                 |
 | 目や口がずれる                     | ベースと全差分のcanvasサイズ、中心、透明領域を揃える                     |
 

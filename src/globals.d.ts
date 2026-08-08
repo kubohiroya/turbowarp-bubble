@@ -16,7 +16,7 @@ interface ScratchApi {
     register(extension: TurboWarpExtension): void;
   };
   BlockType: Record<"COMMAND" | "REPORTER", string>;
-  ArgumentType: Record<"NUMBER" | "STRING", string>;
+  ArgumentType: Record<"COLOR" | "NUMBER" | "STRING", string>;
   Cast: {
     toString(value: unknown): string;
     toNumber(value: unknown): number;

@@ -3,9 +3,10 @@ import type {
   AssetManagerCompositionTarget,
 } from "@kubohiroya/turbowarp-asset-manager/composition";
 import type {
-  SvgTextComposition,
-  SvgTextTarget,
-} from "@kubohiroya/turbowarp-svg-text/composition";
+  BubbleTextEngine,
+  BubbleTextStyleInput,
+  BubbleTextTarget,
+} from "./text-engine.js";
 import {
   defaultBubblePlacementInput,
   normalizeBubblePlacement,
@@ -69,9 +70,25 @@ export {
   type BubbleVisualStyle,
   type RenderBubbleSvgInput,
 } from "./bubble-svg.js";
+export {
+  createBubbleTextEngine,
+  renderTextActorSvg,
+  type BubbleTextActorInput,
+  type BubbleTextAlignment,
+  type BubbleTextEngine,
+  type BubbleTextEngineRenderer,
+  type BubbleTextEngineRuntime,
+  type BubbleTextStyleInput,
+  type BubbleTextTarget,
+} from "./text-engine.js";
 
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-advance";
+export const bubblePresentationModes = [
+  "POP_OUT_BUBBLE",
+  "TEXT_ACTOR",
+] as const;
+export type BubblePresentationMode = (typeof bubblePresentationModes)[number];
 export type BubbleLayer =
   "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";
 
@@ -89,6 +106,7 @@ export interface BubblePortraitInput {
 export interface BubbleStyleInput {
   readonly name: string;
   readonly textStyle: string;
+  readonly presentationMode?: BubblePresentationMode;
   readonly placement?: BubblePlacementInput;
   readonly distance?: number;
   readonly tailLength?: number;
@@ -112,6 +130,7 @@ export interface BubblePortrait {
 export interface BubbleStyle {
   readonly name: string;
   readonly textStyle: string;
+  readonly presentationMode: BubblePresentationMode;
   readonly placement: BubblePlacement;
   readonly distance: number;
   readonly tailLength: number;
@@ -127,12 +146,19 @@ export type BubbleAssetManager = Pick<
 >;
 
 export type BubbleSvgText = Pick<
-  SvgTextComposition,
-  "releaseTarget" | "setText"
+  BubbleTextEngine,
+  "defineStyle" | "releaseTarget" | "setText"
 >;
 
+export interface SetTextActorInput {
+  readonly actor: BubbleTextTarget;
+  readonly actorKey: string;
+  readonly styleName: string;
+  readonly text: string;
+}
+
 export interface BubbleSurfaceTargets {
-  readonly text: SvgTextTarget;
+  readonly text: BubbleTextTarget;
   readonly portraitBase?: AssetManagerCompositionTarget;
   readonly portraitBlink?: AssetManagerCompositionTarget;
   readonly portraitTalk?: AssetManagerCompositionTarget;
@@ -199,8 +225,10 @@ export interface BubbleHandle {
 }
 
 export interface BubbleComposition {
+  defineTextStyle(input: BubbleTextStyleInput): void;
   defineStyle(input: BubbleStyleInput): void;
   hasActiveBubble(actorKey: unknown): boolean;
+  setTextActor(input: SetTextActorInput): Promise<void>;
   show(input: ShowBubbleInput): Promise<BubbleHandle>;
   releaseTarget(actorKey: unknown): Promise<void>;
   releaseAll(): Promise<void>;
@@ -249,6 +277,9 @@ const validAnimationModes = new Set<BubbleAnimationMode>([
   "talking",
   "awaiting-advance",
 ]);
+const validPresentationModes = new Set<BubblePresentationMode>(
+  bubblePresentationModes,
+);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -354,6 +385,7 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     value,
     ["name", "textStyle"],
     [
+      "presentationMode",
       "placement",
       "distance",
       "tailLength",
@@ -364,6 +396,33 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     ],
     "Bubble style",
   );
+  const presentationMode =
+    value.presentationMode === undefined
+      ? "POP_OUT_BUBBLE"
+      : value.presentationMode;
+  if (!validPresentationModes.has(presentationMode as BubblePresentationMode)) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `Unsupported Bubble presentation mode: ${String(presentationMode)}`,
+    );
+  }
+  if (presentationMode === "TEXT_ACTOR") {
+    const incompatible = [
+      "placement",
+      "distance",
+      "tailLength",
+      "offset",
+      "visualStyle",
+      "portrait",
+      "advanceIndicator",
+    ].filter((key) => Object.prototype.hasOwnProperty.call(value, key));
+    if (incompatible.length > 0) {
+      throw new BubbleCompositionError(
+        "BUBBLE-COMPOSITION-001",
+        `TEXT_ACTOR does not accept popup-only settings: ${incompatible.join(", ")}.`,
+      );
+    }
+  }
   const portrait =
     value.portrait === undefined
       ? undefined
@@ -420,6 +479,7 @@ function normalizeStyle(value: unknown): NormalizedStyle {
   return Object.freeze({
     name: requireName(value.name, "Bubble style name"),
     textStyle: requireName(value.textStyle, "Bubble text style name"),
+    presentationMode: presentationMode as BubblePresentationMode,
     placement,
     distance,
     tailLength,
@@ -427,6 +487,33 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     visualStyle: visualStyle as BubbleVisualStyle,
     ...(portrait === undefined ? {} : { portrait }),
     ...(advanceIndicator === undefined ? {} : { advanceIndicator }),
+  });
+}
+
+function normalizeTextActorInput(value: unknown): SetTextActorInput {
+  if (!isRecord(value)) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      "Text actor input must be an object.",
+    );
+  }
+  requireExactKeys(
+    value,
+    ["actor", "actorKey", "styleName", "text"],
+    [],
+    "Text actor input",
+  );
+  if (typeof value.text !== "string") {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      "Text actor text must be a string.",
+    );
+  }
+  return Object.freeze({
+    actor: validateTextTarget(value.actor),
+    actorKey: requireName(value.actorKey, "Text actor key"),
+    styleName: requireName(value.styleName, "Text actor style name"),
+    text: value.text,
   });
 }
 
@@ -447,11 +534,12 @@ function validateAssetManager(value: unknown): BubbleAssetManager {
 function validateSvgText(value: unknown): BubbleSvgText {
   if (
     !isRecord(value) ||
+    typeof value.defineStyle !== "function" ||
     typeof value.setText !== "function" ||
     typeof value.releaseTarget !== "function"
   ) {
     throw new TypeError(
-      "Bubble SVG Text composition must provide setText and releaseTarget.",
+      "Bubble SVG Text composition must provide defineStyle, setText, and releaseTarget.",
     );
   }
   return value as unknown as BubbleSvgText;
@@ -497,7 +585,7 @@ function validateAssetTarget(
   return value as unknown as AssetManagerCompositionTarget;
 }
 
-function validateTextTarget(value: unknown): SvgTextTarget {
+function validateTextTarget(value: unknown): BubbleTextTarget {
   if (
     !isRecord(value) ||
     typeof value.drawableID !== "number" ||
@@ -509,7 +597,7 @@ function validateTextTarget(value: unknown): SvgTextTarget {
       "Bubble text target must provide a non-negative integer drawableID.",
     );
   }
-  return value as unknown as SvgTextTarget;
+  return value as unknown as BubbleTextTarget;
 }
 
 function validateSurface(
@@ -762,6 +850,86 @@ export function createBubbleComposition(
     }
   };
 
+  const showTextActorNow = async (
+    input: SetTextActorInput,
+    kind: BubbleKind,
+  ): Promise<BubbleHandle> => {
+    ensureActive();
+    const previous = active.get(input.actorKey);
+    if (previous) await previous.close();
+
+    svgText.setText({
+      styleName: input.styleName,
+      target: input.actor,
+      text: input.text,
+    });
+    let closed = false;
+    let transitionTail = Promise.resolve();
+    const handle: BubbleHandle = Object.freeze({
+      actorKey: input.actorKey,
+      kind,
+      get animationMode(): BubbleAnimationMode {
+        return "idle";
+      },
+      setText(text: string): Promise<void> {
+        if (closed) {
+          return Promise.reject(
+            new BubbleCompositionError(
+              "BUBBLE-COMPOSITION-005",
+              `Text actor is already closed: ${input.actorKey}`,
+            ),
+          );
+        }
+        if (typeof text !== "string") {
+          return Promise.reject(
+            new BubbleCompositionError(
+              "BUBBLE-COMPOSITION-001",
+              "Text actor text must be a string.",
+            ),
+          );
+        }
+        transitionTail = transitionTail.then(() => {
+          svgText.setText({
+            styleName: input.styleName,
+            target: input.actor,
+            text,
+          });
+        });
+        return transitionTail;
+      },
+      setAnimationMode(mode: BubbleAnimationMode): Promise<void> {
+        if (closed) {
+          return Promise.reject(
+            new BubbleCompositionError(
+              "BUBBLE-COMPOSITION-005",
+              `Text actor is already closed: ${input.actorKey}`,
+            ),
+          );
+        }
+        if (mode !== "idle") {
+          return Promise.reject(
+            new BubbleCompositionError(
+              "BUBBLE-COMPOSITION-001",
+              "TEXT_ACTOR does not support Bubble animation modes.",
+            ),
+          );
+        }
+        return transitionTail;
+      },
+      async close(): Promise<void> {
+        if (closed) return;
+        closed = true;
+        await transitionTail;
+        svgText.releaseTarget(input.actor);
+        if (active.get(input.actorKey) === handle) {
+          active.delete(input.actorKey);
+        }
+      },
+    });
+    active.set(input.actorKey, handle);
+    return handle;
+  };
+
   const showNow = async (
     input: Required<ShowBubbleInput>,
   ): Promise<BubbleHandle> => {
@@ -779,6 +947,18 @@ export function createBubbleComposition(
 
     const previous = active.get(input.actorKey);
     if (previous) await previous.close();
+
+    if (style.presentationMode === "TEXT_ACTOR") {
+      return showTextActorNow(
+        Object.freeze({
+          actor: validateTextTarget(input.actor),
+          actorKey: input.actorKey,
+          styleName: style.textStyle,
+          text: input.text,
+        }),
+        input.kind,
+      );
+    }
 
     let surface: BubbleSurface | undefined;
     let textOwned = false;
@@ -1075,6 +1255,10 @@ export function createBubbleComposition(
   };
 
   return Object.freeze({
+    defineTextStyle(input: BubbleTextStyleInput): void {
+      ensureActive();
+      svgText.defineStyle(input);
+    },
     defineStyle(input: BubbleStyleInput): void {
       ensureActive();
       const style = normalizeStyle(input);
@@ -1087,6 +1271,13 @@ export function createBubbleComposition(
       ensureActive();
       const normalized = normalizeShowInput(input);
       return enqueueActor(normalized.actorKey, () => showNow(normalized));
+    },
+    async setTextActor(input: SetTextActorInput): Promise<void> {
+      ensureActive();
+      const normalized = normalizeTextActorInput(input);
+      await enqueueActor(normalized.actorKey, () =>
+        showTextActorNow(normalized, "say"),
+      );
     },
     releaseTarget(actorKey: unknown): Promise<void> {
       ensureActive();

@@ -44,6 +44,74 @@
     extensionName: "Bubble",
     blocks: [
       {
+        "opcode": "beginTextStyle",
+        "blockType": "COMMAND",
+        "text": "begin text style [STYLE]",
+        "description": "Starts a new text style draft. Starting another draft discards unsaved changes.",
+        "arguments": { "STYLE": {
+          "type": "STRING",
+          "defaultValue": "default"
+        } }
+      },
+      {
+        "opcode": "setTextFont",
+        "blockType": "COMMAND",
+        "text": "set text font [FONT]",
+        "description": "Sets the font on the current text style draft.",
+        "arguments": { "FONT": {
+          "type": "STRING",
+          "defaultValue": "Helvetica"
+        } }
+      },
+      {
+        "opcode": "setTextSize",
+        "blockType": "COMMAND",
+        "text": "set text size [SIZE] %",
+        "description": "Sets the font size percentage on the current text style draft.",
+        "arguments": { "SIZE": {
+          "type": "NUMBER",
+          "defaultValue": 100
+        } }
+      },
+      {
+        "opcode": "setTextColor",
+        "blockType": "COMMAND",
+        "text": "set text color [COLOR]",
+        "description": "Sets the foreground color on the current text style draft.",
+        "arguments": { "COLOR": {
+          "type": "COLOR",
+          "defaultValue": "#575e75"
+        } }
+      },
+      {
+        "opcode": "setTextBackgroundColor",
+        "blockType": "COMMAND",
+        "text": "set text background color [COLOR]",
+        "description": "Sets the background color on the current text style draft.",
+        "arguments": { "COLOR": {
+          "type": "COLOR",
+          "defaultValue": "#ffffff"
+        } }
+      },
+      {
+        "opcode": "setTextAlign",
+        "blockType": "COMMAND",
+        "text": "set text align [ALIGN]",
+        "description": "Sets the alignment on the current text style draft.",
+        "arguments": { "ALIGN": {
+          "type": "STRING",
+          "defaultValue": "left",
+          "menu": "textAlign"
+        } }
+      },
+      {
+        "opcode": "saveTextStyle",
+        "blockType": "COMMAND",
+        "text": "save text style",
+        "description": "Saves the current text style draft as an immutable named style and clears the draft.",
+        "arguments": {}
+      },
+      {
         "opcode": "defineBubbleStyle",
         "blockType": "COMMAND",
         "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
@@ -56,6 +124,23 @@
           "TEXT_STYLE": {
             "type": "STRING",
             "defaultValue": "default"
+          }
+        }
+      },
+      {
+        "opcode": "setBubblePresentationMode",
+        "blockType": "COMMAND",
+        "text": "set presentation mode [MODE] for bubble style [STYLE]",
+        "description": "Selects a separate popup bubble or replaces the actor rendering with SVG text.",
+        "arguments": {
+          "MODE": {
+            "type": "STRING",
+            "defaultValue": "POP_OUT_BUBBLE",
+            "menu": "presentationMode"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
           }
         }
       },
@@ -258,6 +343,29 @@
         }
       },
       {
+        "opcode": "setTextActor",
+        "blockType": "COMMAND",
+        "text": "set this sprite text [TEXT] with text style [STYLE]",
+        "description": "Replaces this sprite's rendering with responsive SVG text.",
+        "arguments": {
+          "TEXT": {
+            "type": "STRING",
+            "defaultValue": "Title\\nSubtitle"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "default"
+          }
+        }
+      },
+      {
+        "opcode": "clearTextActor",
+        "blockType": "COMMAND",
+        "text": "clear this sprite text",
+        "description": "Releases this sprite's SVG text skin and restores its current costume rendering.",
+        "arguments": {}
+      },
+      {
         "opcode": "setBubbleAnimationMode",
         "blockType": "COMMAND",
         "text": "set this bubble animation mode [MODE]",
@@ -300,6 +408,18 @@
       }
     ],
     menus: {
+      "textAlign": {
+        "acceptReporters": true,
+        "items": [
+          "left",
+          "center",
+          "right"
+        ]
+      },
+      "presentationMode": {
+        "acceptReporters": true,
+        "items": ["POP_OUT_BUBBLE", "TEXT_ACTOR"]
+      },
       "visualStyle": {
         "acceptReporters": true,
         "items": [
@@ -5684,7 +5804,7 @@
     "NARRATION",
     "NO_BUBBLE"
   ]);
-  function escapeXml(value) {
+  function escapeXml$1(value) {
     return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
   }
   function requireDimension(value, fallback) {
@@ -6060,8 +6180,8 @@
       x: width / 2,
       y: height / 2
     } : transformedBodyGeometry(roundedRectanglePoints(width, height), width, height, direction, tailLength, offset).bodyCenter;
-    const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml(textColor)}" font-family="${escapeXml(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml(line)}</text>`).join("");
-    const title = escapeXml(input.title ?? `${input.style} bubble`);
+    const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml$1(textColor)}" font-family="${escapeXml$1(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml$1(line)}</text>`).join("");
+    const title = escapeXml$1(input.title ?? `${input.style} bubble`);
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border, tailLength, offset)}${text}</svg>`;
   }
   //#endregion
@@ -6676,7 +6796,199 @@
   //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/index.js
   var { AK, AL, AP, AS, B2, BA, BB, BK, CB, CL, CM, CP, CR, EB, EM, EX, GL, H2, H3, HH, HL, HY, ID, IN, IS, JL, JT, JV, LF, NU, OP, NL, NS, PO, PR, RI, SP, SY, QU, VF, VI, WJ, ZW, ZWJ } = names$1;
   //#endregion
+  //#region src/text-engine.ts
+  var defaultStyle = Object.freeze({
+    alignment: "left",
+    backgroundColor: "#ffffff",
+    font: "Helvetica",
+    fontPercent: 100,
+    name: "default",
+    textColor: "#575e75"
+  });
+  var baseFontSize = 14;
+  var baseLineHeight = 16;
+  var baseStageWidth = 480;
+  var baseStageHeight = 360;
+  var maximumFontNameLength = 128;
+  function engineError(message) {
+    const error = /* @__PURE__ */ new Error(`[Bubble Text] ${message}`);
+    Object.defineProperty(error, "code", { value: "BUBBLE-TEXT-001" });
+    return error;
+  }
+  function requireName$1(value, label) {
+    if (typeof value !== "string" || value.trim().length === 0) throw engineError(`${label} must be a non-empty string.`);
+    return value.trim();
+  }
+  function normalizeColor(value, fallback) {
+    if (value === void 0) return fallback;
+    const color = requireName$1(value, "Text color");
+    if (/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/iu.test(color)) return color;
+    if (globalThis.CSS?.supports?.("color", color)) return color;
+    throw engineError(`Unsupported text color: ${color}`);
+  }
+  function normalizeStyle$1(input) {
+    if (typeof input !== "object" || input === null || Array.isArray(input)) throw engineError("Text style must be an object.");
+    const value = input;
+    const allowed = /* @__PURE__ */ new Set([
+      "alignment",
+      "backgroundColor",
+      "font",
+      "fontPercent",
+      "name",
+      "textColor"
+    ]);
+    if (Object.keys(value).some((key) => !allowed.has(key))) throw engineError("Text style has unknown properties.");
+    const alignment = value.alignment ?? defaultStyle.alignment;
+    if (alignment !== "left" && alignment !== "center" && alignment !== "right") throw engineError("Text alignment must be left, center, or right.");
+    const font = value.font === void 0 ? defaultStyle.font : requireName$1(value.font, "Text font");
+    if (font.length > maximumFontNameLength || [...font].some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint <= 31 || codePoint === 127 || ",;{}".includes(character);
+    })) throw engineError("Text font contains unsupported characters.");
+    const fontPercent = value.fontPercent ?? defaultStyle.fontPercent;
+    if (typeof fontPercent !== "number" || !Number.isFinite(fontPercent) || fontPercent < 1 || fontPercent > 1e3) throw engineError("Text fontPercent must be from 1 through 1000.");
+    return Object.freeze({
+      alignment,
+      backgroundColor: normalizeColor(value.backgroundColor, defaultStyle.backgroundColor),
+      font,
+      fontPercent,
+      name: requireName$1(value.name, "Text style name"),
+      textColor: normalizeColor(value.textColor, defaultStyle.textColor)
+    });
+  }
+  function validateRuntime(value) {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) throw new TypeError("Bubble text engine requires a runtime.");
+    const renderer = value.renderer;
+    if (typeof renderer !== "object" || renderer === null || typeof renderer.createSVGSkin !== "function" || typeof renderer.destroySkin !== "function" || typeof renderer.updateDrawableSkinId !== "function") throw new TypeError("Bubble text engine renderer must provide SVG skin methods.");
+    return value;
+  }
+  function validateTarget(value) {
+    if (typeof value !== "object" || value === null || !Number.isInteger(value.drawableID) || Number(value.drawableID) < 0) throw engineError("Text target must provide a drawableID.");
+    return value;
+  }
+  function escapeXml(value) {
+    return value.replace(/[&<>"']/gu, (character) => {
+      if (character === "&") return "&amp;";
+      if (character === "<") return "&lt;";
+      if (character === ">") return "&gt;";
+      if (character === "\"") return "&quot;";
+      return "&apos;";
+    });
+  }
+  function formatNumber(value) {
+    return String(Math.round(value * 1e3) / 1e3);
+  }
+  function measureTextWidth(text, fontSize) {
+    let units = 0;
+    for (const character of text) {
+      if (/\p{Mark}/u.test(character)) continue;
+      if (/\s/u.test(character)) {
+        units += .35;
+        continue;
+      }
+      units += (character.codePointAt(0) ?? 0) <= 127 ? .62 : 1;
+    }
+    return units * fontSize;
+  }
+  function stageScale(renderer) {
+    const size = renderer.getNativeSize?.();
+    if (!Array.isArray(size) || size.length < 2) return 1;
+    const width = Number(size[0]);
+    const height = Number(size[1]);
+    if (!(width > 0) || !(height > 0)) return 1;
+    return Math.min(width / baseStageWidth, height / baseStageHeight);
+  }
+  function renderTextActorSvg(text, style, scale = 1) {
+    const definition = normalizeStyle$1(style);
+    if (typeof text !== "string") throw engineError("Text must be a string.");
+    if (!(scale > 0) || !Number.isFinite(scale)) throw engineError("Text stage scale must be positive and finite.");
+    const fontScale = scale * (definition.fontPercent / 100);
+    const fontSize = baseFontSize * fontScale;
+    const lineHeight = baseLineHeight * fontScale;
+    const padding = 12 * scale;
+    const cornerRadius = 8 * scale;
+    const lines = text.replace(/\\r\\n|\\n|\\r/gu, "\n").split("\n");
+    const contentWidth = Math.max(1, ...lines.map((line) => measureTextWidth(line, fontSize)));
+    const width = Math.max(1, Math.ceil(contentWidth + padding * 2));
+    const height = Math.max(1, Math.ceil(lineHeight * lines.length + padding * 2));
+    const textAnchor = definition.alignment === "center" ? "middle" : definition.alignment === "right" ? "end" : "start";
+    const x = definition.alignment === "center" ? width / 2 : definition.alignment === "right" ? width - padding : padding;
+    const tspans = lines.map((line, index) => {
+      const y = padding + fontSize + lineHeight * index;
+      return `<tspan x="${formatNumber(x)}" y="${formatNumber(y)}">${escapeXml(line)}</tspan>`;
+    }).join("");
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-presentation="TEXT_ACTOR"><title>${escapeXml(text)}</title><rect width="${width}" height="${height}" rx="${formatNumber(cornerRadius)}" fill="${escapeXml(definition.backgroundColor)}"/><text xml:space="preserve" fill="${escapeXml(definition.textColor)}" font-family="${escapeXml(definition.font)}" font-size="${formatNumber(fontSize)}" text-anchor="${textAnchor}">${tspans}</text></svg>`;
+  }
+  function createBubbleTextEngine(runtimeInput) {
+    const runtime = validateRuntime(runtimeInput);
+    const styles = /* @__PURE__ */ new Map([[defaultStyle.name, defaultStyle]]);
+    const actors = /* @__PURE__ */ new Map();
+    let disposed = false;
+    const ensureActive = () => {
+      if (disposed) throw engineError("Text engine has been released.");
+    };
+    const apply = (target, text, styleName) => {
+      const style = styles.get(styleName) ?? defaultStyle;
+      const skinId = runtime.renderer.createSVGSkin(renderTextActorSvg(text, style, stageScale(runtime.renderer)));
+      if (!Number.isInteger(skinId) || skinId < 0) throw engineError("TurboWarp did not create an SVG text skin.");
+      try {
+        runtime.renderer.updateDrawableSkinId(target.drawableID, skinId);
+      } catch (error) {
+        runtime.renderer.destroySkin(skinId);
+        throw error;
+      }
+      const previous = actors.get(target);
+      actors.set(target, {
+        skinId,
+        styleName,
+        text
+      });
+      if (previous && previous.skinId !== skinId) runtime.renderer.destroySkin(previous.skinId);
+      runtime.requestRedraw?.();
+    };
+    const rerender = () => {
+      if (disposed) return;
+      for (const [target, state] of [...actors]) apply(target, state.text, state.styleName);
+    };
+    runtime.on?.("STAGE_SIZE_CHANGED", rerender);
+    return Object.freeze({
+      defineStyle(input) {
+        ensureActive();
+        const style = normalizeStyle$1(input);
+        styles.set(style.name, style);
+        for (const [target, state] of [...actors]) if (state.styleName === style.name) apply(target, state.text, style.name);
+      },
+      setText(input) {
+        ensureActive();
+        if (typeof input !== "object" || input === null) throw engineError("Text actor input must be an object.");
+        const target = validateTarget(input.target);
+        const styleName = requireName$1(input.styleName, "Text style name");
+        if (typeof input.text !== "string") throw engineError("Text must be a string.");
+        apply(target, input.text.replace(/\\r\\n|\\n|\\r/gu, "\n"), styleName);
+      },
+      releaseTarget(value) {
+        ensureActive();
+        const target = validateTarget(value);
+        const state = actors.get(target);
+        if (!state) throw engineError("Text target is not owned by this engine.");
+        actors.delete(target);
+        runtime.renderer.destroySkin(state.skinId);
+        runtime.requestRedraw?.();
+      },
+      releaseAll() {
+        if (disposed) return;
+        disposed = true;
+        runtime.off?.("STAGE_SIZE_CHANGED", rerender);
+        for (const state of actors.values()) runtime.renderer.destroySkin(state.skinId);
+        actors.clear();
+        styles.clear();
+        runtime.requestRedraw?.();
+      }
+    });
+  }
+  //#endregion
   //#region src/composition.ts
+  var bubblePresentationModes = ["POP_OUT_BUBBLE", "TEXT_ACTOR"];
   var BubbleCompositionError = class extends Error {
     constructor(code, message) {
       super(message);
@@ -6691,6 +7003,7 @@
     "talking",
     "awaiting-advance"
   ]);
+  var validPresentationModes$1 = new Set(bubblePresentationModes);
   function isRecord$1(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
@@ -6730,6 +7043,7 @@
   function normalizeStyle(value) {
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys(value, ["name", "textStyle"], [
+      "presentationMode",
       "placement",
       "distance",
       "tailLength",
@@ -6738,6 +7052,20 @@
       "portrait",
       "advanceIndicator"
     ], "Bubble style");
+    const presentationMode = value.presentationMode === void 0 ? "POP_OUT_BUBBLE" : value.presentationMode;
+    if (!validPresentationModes$1.has(presentationMode)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `Unsupported Bubble presentation mode: ${String(presentationMode)}`);
+    if (presentationMode === "TEXT_ACTOR") {
+      const incompatible = [
+        "placement",
+        "distance",
+        "tailLength",
+        "offset",
+        "visualStyle",
+        "portrait",
+        "advanceIndicator"
+      ].filter((key) => Object.prototype.hasOwnProperty.call(value, key));
+      if (incompatible.length > 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `TEXT_ACTOR does not accept popup-only settings: ${incompatible.join(", ")}.`);
+    }
     const portrait = value.portrait === void 0 ? void 0 : normalizePortrait(value.portrait);
     const advanceIndicator = value.advanceIndicator === void 0 ? void 0 : normalizeAnimation(value.advanceIndicator, "Bubble advance indicator", 2);
     let placement;
@@ -6761,6 +7089,7 @@
     return Object.freeze({
       name: requireName(value.name, "Bubble style name"),
       textStyle: requireName(value.textStyle, "Bubble text style name"),
+      presentationMode,
       placement,
       distance,
       tailLength,
@@ -6770,12 +7099,28 @@
       ...advanceIndicator === void 0 ? {} : { advanceIndicator }
     });
   }
+  function normalizeTextActorInput(value) {
+    if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Text actor input must be an object.");
+    requireExactKeys(value, [
+      "actor",
+      "actorKey",
+      "styleName",
+      "text"
+    ], [], "Text actor input");
+    if (typeof value.text !== "string") throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Text actor text must be a string.");
+    return Object.freeze({
+      actor: validateTextTarget(value.actor),
+      actorKey: requireName(value.actorKey, "Text actor key"),
+      styleName: requireName(value.styleName, "Text actor style name"),
+      text: value.text
+    });
+  }
   function validateAssetManager(value) {
     if (!isRecord$1(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble asset manager must provide applyToTarget, getMimeType, and isRegistered.");
     return value;
   }
   function validateSvgText(value) {
-    if (!isRecord$1(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble SVG Text composition must provide setText and releaseTarget.");
+    if (!isRecord$1(value) || typeof value.defineStyle !== "function" || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble SVG Text composition must provide defineStyle, setText, and releaseTarget.");
     return value;
   }
   function defaultScheduler() {
@@ -6932,6 +7277,51 @@
         if (actorQueues.get(actorKey) === current) actorQueues.delete(actorKey);
       }
     };
+    const showTextActorNow = async (input, kind) => {
+      ensureActive();
+      const previous = active.get(input.actorKey);
+      if (previous) await previous.close();
+      svgText.setText({
+        styleName: input.styleName,
+        target: input.actor,
+        text: input.text
+      });
+      let closed = false;
+      let transitionTail = Promise.resolve();
+      const handle = Object.freeze({
+        actorKey: input.actorKey,
+        kind,
+        get animationMode() {
+          return "idle";
+        },
+        setText(text) {
+          if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Text actor is already closed: ${input.actorKey}`));
+          if (typeof text !== "string") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Text actor text must be a string."));
+          transitionTail = transitionTail.then(() => {
+            svgText.setText({
+              styleName: input.styleName,
+              target: input.actor,
+              text
+            });
+          });
+          return transitionTail;
+        },
+        setAnimationMode(mode) {
+          if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Text actor is already closed: ${input.actorKey}`));
+          if (mode !== "idle") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "TEXT_ACTOR does not support Bubble animation modes."));
+          return transitionTail;
+        },
+        async close() {
+          if (closed) return;
+          closed = true;
+          await transitionTail;
+          svgText.releaseTarget(input.actor);
+          if (active.get(input.actorKey) === handle) active.delete(input.actorKey);
+        }
+      });
+      active.set(input.actorKey, handle);
+      return handle;
+    };
     const showNow = async (input) => {
       ensureActive();
       const style = styles.get(input.styleName);
@@ -6939,6 +7329,12 @@
       for (const assetName of new Set(styleAssetNames(style))) requireImageAsset(assetManager, assetName);
       const previous = active.get(input.actorKey);
       if (previous) await previous.close();
+      if (style.presentationMode === "TEXT_ACTOR") return showTextActorNow(Object.freeze({
+        actor: validateTextTarget(input.actor),
+        actorKey: input.actorKey,
+        styleName: style.textStyle,
+        text: input.text
+      }), input.kind);
       let surface;
       let textOwned = false;
       let surfaceVisible = false;
@@ -7112,6 +7508,10 @@
       }
     };
     return Object.freeze({
+      defineTextStyle(input) {
+        ensureActive();
+        svgText.defineStyle(input);
+      },
       defineStyle(input) {
         ensureActive();
         const style = normalizeStyle(input);
@@ -7124,6 +7524,11 @@
         ensureActive();
         const normalized = normalizeShowInput(input);
         return enqueueActor(normalized.actorKey, () => showNow(normalized));
+      },
+      async setTextActor(input) {
+        ensureActive();
+        const normalized = normalizeTextActorInput(input);
+        await enqueueActor(normalized.actorKey, () => showTextActorNow(normalized, "say"));
       },
       releaseTarget(actorKey) {
         ensureActive();
@@ -7187,9 +7592,8 @@
     if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble requires Asset Manager. Load @kubohiroya/turbowarp-asset-manager before using Bubble blocks.");
     return value;
   }
-  function requireSvgText(value) {
-    if (!isRecord(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-003", "Bubble requires SVG Text. Load @kubohiroya/turbowarp-svg-text before using Bubble blocks.");
-    return value;
+  function restoreTargetCostume(target) {
+    if (isRecord(target) && typeof target.updateAllDrawableProperties === "function") target.updateAllDrawableProperties();
   }
   function targetBounds(target) {
     try {
@@ -7471,42 +7875,66 @@
     if (!isRecord(runtimeInput)) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
     const runtime = runtimeInput;
     const renderer = requireRenderer(runtime.renderer);
-    const assetExtension = options.assetManager ? null : requireAssetManager(runtime.ext_kubohiroyaassetmanager);
-    const svgTextExtension = options.svgText ? null : requireSvgText(runtime.ext_kubohiroyasvgtext);
-    return createBubbleComposition({
-      assetManager: options.assetManager ?? {
-        isRegistered(name) {
-          return assetExtension?.isLoaded({ NAME: name }) ?? false;
-        },
-        getMimeType(name) {
-          return assetExtension?.getAssetMimeType({ NAME: name }) ?? "";
-        },
-        async applyToTarget(name, target) {
-          const drawableID = target.drawableID;
-          if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
-          const skin = await assetExtension?.resolveSkin(name);
-          if (!isRecord(skin) || !Number.isInteger(skin.skinId) || skin.skinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(name)}`);
-          renderer.updateDrawableSkinId(drawableID, skin.skinId);
-          runtime.requestRedraw?.();
-        }
+    const assetExtension = options.assetManager ? null : runtime.ext_kubohiroyaassetmanager;
+    const internalSvgText = options.svgText ? null : createBubbleTextEngine(runtime);
+    const assetManager = options.assetManager ?? {
+      isRegistered(name) {
+        return requireAssetManager(assetExtension).isLoaded({ NAME: name });
       },
-      svgText: options.svgText ?? {
-        setText({ styleName, target, text }) {
-          svgTextExtension?.setText({
-            STYLE: styleName,
-            TEXT: text
-          }, { target });
-        },
-        releaseTarget(target) {
-          svgTextExtension?.releaseTextActor(target);
-        }
+      getMimeType(name) {
+        return requireAssetManager(assetExtension).getAssetMimeType({ NAME: name });
       },
+      async applyToTarget(name, target) {
+        const drawableID = target.drawableID;
+        if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
+        const skin = await requireAssetManager(assetExtension).resolveSkin(name);
+        if (!isRecord(skin) || !Number.isInteger(skin.skinId) || skin.skinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(name)}`);
+        renderer.updateDrawableSkinId(drawableID, skin.skinId);
+        runtime.requestRedraw?.();
+      }
+    };
+    const ownedSvgText = internalSvgText ? {
+      defineStyle(input) {
+        internalSvgText.defineStyle(input);
+      },
+      setText(input) {
+        internalSvgText.setText(input);
+      },
+      releaseTarget(target) {
+        internalSvgText.releaseTarget(target);
+        restoreTargetCostume(target);
+      }
+    } : null;
+    const composition = createBubbleComposition({
+      assetManager,
+      svgText: options.svgText ?? ownedSvgText ?? (() => {
+        throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble text engine is unavailable.");
+      })(),
       createSurface({ actor, actorKey, style }) {
         if (!isRecord(actor) || typeof actor.id !== "string") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
         return createSurface(runtime, actor, actorKey, style);
       },
       ...options.scheduler === void 0 ? {} : { scheduler: options.scheduler },
       ...options.onAnimationError === void 0 ? {} : { onAnimationError: options.onAnimationError }
+    });
+    if (!internalSvgText) return composition;
+    return Object.freeze({
+      ...composition,
+      async dispose() {
+        const errors = [];
+        try {
+          await composition.dispose();
+        } catch (error) {
+          errors.push(error);
+        }
+        try {
+          internalSvgText.releaseAll();
+        } catch (error) {
+          errors.push(error);
+        }
+        if (errors.length === 1) throw errors[0];
+        if (errors.length > 1) throw new AggregateError(errors, "Failed to dispose Bubble text engine.");
+      }
     });
   }
   //#endregion
@@ -7518,8 +7946,9 @@
     "talking",
     "awaiting-advance"
   ]);
+  var validPresentationModes = new Set(bubblePresentationModes);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.1.0";
+  var EXTENSION_VERSION = "0.2.0";
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
     Object.defineProperty(error, "code", { value: "BUBBLE-EXTENSION-001" });
@@ -7530,10 +7959,12 @@
       _defineProperty(this, "runtime", void 0);
       _defineProperty(this, "options", void 0);
       _defineProperty(this, "styles", /* @__PURE__ */ new Map());
+      _defineProperty(this, "textStyles", /* @__PURE__ */ new Map());
       _defineProperty(this, "handles", /* @__PURE__ */ new Map());
       _defineProperty(this, "waits", /* @__PURE__ */ new Map());
       _defineProperty(this, "waitScheduler", void 0);
       _defineProperty(this, "composition", null);
+      _defineProperty(this, "textStyleDraft", null);
       _defineProperty(this, "disposed", false);
       if (!runtime) throw extensionError("TurboWarp runtime is unavailable.");
       this.runtime = runtime;
@@ -7565,6 +7996,34 @@
         menus: definitionMenus
       };
     }
+    beginTextStyle(args) {
+      this.textStyleDraft = Object.freeze({ name: this.requireName(args.STYLE, "text style") });
+    }
+    setTextFont(args) {
+      this.updateTextStyleDraft({ font: this.requireName(args.FONT, "font") });
+    }
+    setTextSize(args) {
+      const fontPercent = Scratch.Cast.toNumber(args.SIZE);
+      if (!Number.isFinite(fontPercent) || fontPercent < 1 || fontPercent > 1e3) throw extensionError("text size must be from 1 through 1000 percent.");
+      this.updateTextStyleDraft({ fontPercent });
+    }
+    setTextColor(args) {
+      this.updateTextStyleDraft({ textColor: this.requireName(args.COLOR, "text color") });
+    }
+    setTextBackgroundColor(args) {
+      this.updateTextStyleDraft({ backgroundColor: this.requireName(args.COLOR, "text background color") });
+    }
+    setTextAlign(args) {
+      const alignment = this.toString(args.ALIGN).trim().toLowerCase();
+      if (alignment !== "left" && alignment !== "center" && alignment !== "right") throw extensionError("text align must be left, center, or right.");
+      this.updateTextStyleDraft({ alignment });
+    }
+    saveTextStyle() {
+      const draft = this.requireTextStyleDraft();
+      this.textStyles.set(draft.name, draft);
+      this.composition?.defineTextStyle(draft);
+      this.textStyleDraft = null;
+    }
     defineBubbleStyle(args) {
       const name = this.requireName(args.STYLE, "style");
       const style = Object.freeze({
@@ -7572,6 +8031,15 @@
         textStyle: this.requireName(args.TEXT_STYLE, "text style")
       });
       this.installStyle(style);
+    }
+    setBubblePresentationMode(args) {
+      const style = this.requireStyle(args.STYLE);
+      const presentationMode = this.toString(args.MODE).trim().toUpperCase();
+      if (!validPresentationModes.has(presentationMode)) throw extensionError("presentation mode must be POP_OUT_BUBBLE or TEXT_ACTOR.");
+      this.installStyle(Object.freeze({
+        ...style,
+        presentationMode
+      }));
     }
     setPortraitBase(args) {
       const style = this.requireStyle(args.STYLE);
@@ -7669,6 +8137,22 @@
     thinkWithBubbleStyle(args, util) {
       return this.show("think", args, util);
     }
+    async setTextActor(args, util) {
+      const target = this.requireTarget(util);
+      if (!Number.isInteger(target.drawableID) || Number(target.drawableID) < 0) throw extensionError("text actor target drawable is unavailable.");
+      this.cancelWait(target.id, "Bubble wait was replaced by a text actor.");
+      await this.getComposition().setTextActor({
+        actor: target,
+        actorKey: target.id,
+        styleName: this.requireName(args.STYLE, "text style"),
+        text: this.toString(args.TEXT)
+      });
+      this.handles.delete(target.id);
+    }
+    async clearTextActor(_args, util) {
+      const target = this.requireTarget(util);
+      await this.releaseOwnedTarget(target.id);
+    }
     async setBubbleAnimationMode(args, util) {
       const target = this.requireTarget(util);
       const mode = this.toString(args.MODE).trim().toLowerCase();
@@ -7732,6 +8216,7 @@
     }
     async releaseAll() {
       this.cancelAllWaits("Bubble waits were released.");
+      this.textStyleDraft = null;
       if (!this.composition) return;
       await this.composition.releaseAll();
       this.handles.clear();
@@ -7743,6 +8228,8 @@
       if (this.composition) await this.composition.dispose();
       this.handles.clear();
       this.styles.clear();
+      this.textStyles.clear();
+      this.textStyleDraft = null;
     }
     toScratchBlock(block) {
       return {
@@ -7784,6 +8271,17 @@
       if (!style) throw extensionError(`bubble style is not defined: ${name}`);
       return style;
     }
+    requireTextStyleDraft() {
+      if (!this.textStyleDraft) throw extensionError("begin a text style before setting or saving it.");
+      return this.textStyleDraft;
+    }
+    updateTextStyleDraft(patch) {
+      const draft = this.requireTextStyleDraft();
+      this.textStyleDraft = Object.freeze({
+        ...draft,
+        ...patch
+      });
+    }
     normalizeTransformNumber(value, normalize) {
       try {
         return normalize(Scratch.Cast.toNumber(value));
@@ -7792,6 +8290,18 @@
       }
     }
     installStyle(style) {
+      if (style.presentationMode === "TEXT_ACTOR") {
+        const incompatible = [
+          "placement",
+          "distance",
+          "tailLength",
+          "offset",
+          "visualStyle",
+          "portrait",
+          "advanceIndicator"
+        ].filter((key) => Object.prototype.hasOwnProperty.call(style, key));
+        if (incompatible.length > 0) throw extensionError(`TEXT_ACTOR does not accept popup-only settings: ${incompatible.join(", ")}.`);
+      }
       this.styles.set(style.name, style);
       this.composition?.defineStyle(style);
     }
@@ -7846,6 +8356,7 @@
       if (this.disposed) throw extensionError("extension is disposed.");
       if (!this.composition) {
         this.composition = createTurboWarpBubbleComposition(this.runtime, this.options);
+        for (const style of this.textStyles.values()) this.composition.defineTextStyle(style);
         for (const style of this.styles.values()) this.composition.defineStyle(style);
       }
       return this.composition;

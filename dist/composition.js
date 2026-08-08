@@ -773,7 +773,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			for (i < a && (a = i), a > 0 && (t.rShiftTo(a, t), n.rShiftTo(a, n)); t.signum() > 0;) (i = t.getLowestSetBit()) > 0 && t.rShiftTo(i, t), (i = n.getLowestSetBit()) > 0 && n.rShiftTo(i, n), t.compareTo(n) >= 0 ? (t.subTo(n, t), t.rShiftTo(1, t)) : (n.subTo(t, n), n.rShiftTo(1, n));
 			return a > 0 && n.lShiftTo(a, n), n;
 		}
-		function B(e) {
+		function xt(e) {
 			if (e <= 0) return 0;
 			var t = this.DV % e, n = this.s < 0 ? e - 1 : 0;
 			if (this.t > 0) {
@@ -782,7 +782,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			}
 			return n;
 		}
-		function xt(e) {
+		function St(e) {
 			var t = e.isEven();
 			if (this.isEven() && t || e.signum() == 0) return c.ZERO;
 			for (var n = e.clone(), r = this.clone(), i = x(1), a = x(0), o = x(0), s = x(1); n.signum() != 0;) {
@@ -796,7 +796,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			else return s;
 			return s.signum() < 0 ? s.add(e) : s;
 		}
-		var V = [
+		var B = [
 			2,
 			3,
 			5,
@@ -965,27 +965,27 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			983,
 			991,
 			997
-		], H = (1 << 26) / V[V.length - 1];
-		function St(e) {
+		], V = (1 << 26) / B[B.length - 1];
+		function Ct(e) {
 			var t, n = this.abs();
-			if (n.t == 1 && n[0] <= V[V.length - 1]) {
-				for (t = 0; t < V.length; ++t) if (n[0] == V[t]) return !0;
+			if (n.t == 1 && n[0] <= B[B.length - 1]) {
+				for (t = 0; t < B.length; ++t) if (n[0] == B[t]) return !0;
 				return !1;
 			}
 			if (n.isEven()) return !1;
-			for (t = 1; t < V.length;) {
-				for (var r = V[t], i = t + 1; i < V.length && r < H;) r *= V[i++];
-				for (r = n.modInt(r); t < i;) if (r % V[t++] == 0) return !1;
+			for (t = 1; t < B.length;) {
+				for (var r = B[t], i = t + 1; i < B.length && r < V;) r *= B[i++];
+				for (r = n.modInt(r); t < i;) if (r % B[t++] == 0) return !1;
 			}
 			return n.millerRabin(e);
 		}
-		function Ct(e) {
+		function wt(e) {
 			var t = this.subtract(c.ONE), n = t.getLowestSetBit();
 			if (n <= 0) return !1;
 			var r = t.shiftRight(n);
-			e = e + 1 >> 1, e > V.length && (e = V.length);
+			e = e + 1 >> 1, e > B.length && (e = B.length);
 			for (var i = l(), a = 0; a < e; ++a) {
-				i.fromInt(V[Math.floor(Math.random() * V.length)]);
+				i.fromInt(B[Math.floor(Math.random() * B.length)]);
 				var o = i.modPow(r, this);
 				if (o.compareTo(c.ONE) != 0 && o.compareTo(t) != 0) {
 					for (var s = 1; s++ < n && o.compareTo(t) != 0;) if (o = o.modPowInt(2, this), o.compareTo(c.ONE) == 0) return !1;
@@ -994,29 +994,29 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			}
 			return !0;
 		}
-		c.prototype.chunkSize = Oe, c.prototype.toRadix = M, c.prototype.fromRadix = N, c.prototype.fromNumber = Ae, c.prototype.bitwiseTo = Fe, c.prototype.changeBit = Ye, c.prototype.addTo = Qe, c.prototype.dMultiply = ot, c.prototype.dAddOffset = st, c.prototype.multiplyLowerTo = ft, c.prototype.multiplyUpperTo = pt, c.prototype.modInt = B, c.prototype.millerRabin = Ct, c.prototype.clone = we, c.prototype.intValue = Te, c.prototype.byteValue = Ee, c.prototype.shortValue = De, c.prototype.signum = ke, c.prototype.toByteArray = je, c.prototype.equals = Me, c.prototype.min = Ne, c.prototype.max = Pe, c.prototype.and = Le, c.prototype.or = ze, c.prototype.xor = P, c.prototype.andNot = Ve, c.prototype.not = He, c.prototype.shiftLeft = Ue, c.prototype.shiftRight = We, c.prototype.getLowestSetBit = Ke, c.prototype.bitCount = qe, c.prototype.testBit = Je, c.prototype.setBit = Xe, c.prototype.clearBit = L, c.prototype.flipBit = Ze, c.prototype.add = $e, c.prototype.subtract = et, c.prototype.multiply = tt, c.prototype.divide = rt, c.prototype.remainder = it, c.prototype.divideAndRemainder = at, c.prototype.modPow = yt, c.prototype.modInverse = xt, c.prototype.pow = dt, c.prototype.gcd = bt, c.prototype.isProbablePrime = St, c.prototype.square = nt;
-		var U = c;
-		if (U.prototype.IsNegative = function() {
-			return this.compareTo(U.ZERO) == -1;
-		}, U.op_Equality = function(e, t) {
+		c.prototype.chunkSize = Oe, c.prototype.toRadix = M, c.prototype.fromRadix = N, c.prototype.fromNumber = Ae, c.prototype.bitwiseTo = Fe, c.prototype.changeBit = Ye, c.prototype.addTo = Qe, c.prototype.dMultiply = ot, c.prototype.dAddOffset = st, c.prototype.multiplyLowerTo = ft, c.prototype.multiplyUpperTo = pt, c.prototype.modInt = xt, c.prototype.millerRabin = wt, c.prototype.clone = we, c.prototype.intValue = Te, c.prototype.byteValue = Ee, c.prototype.shortValue = De, c.prototype.signum = ke, c.prototype.toByteArray = je, c.prototype.equals = Me, c.prototype.min = Ne, c.prototype.max = Pe, c.prototype.and = Le, c.prototype.or = ze, c.prototype.xor = P, c.prototype.andNot = Ve, c.prototype.not = He, c.prototype.shiftLeft = Ue, c.prototype.shiftRight = We, c.prototype.getLowestSetBit = Ke, c.prototype.bitCount = qe, c.prototype.testBit = Je, c.prototype.setBit = Xe, c.prototype.clearBit = L, c.prototype.flipBit = Ze, c.prototype.add = $e, c.prototype.subtract = et, c.prototype.multiply = tt, c.prototype.divide = rt, c.prototype.remainder = it, c.prototype.divideAndRemainder = at, c.prototype.modPow = yt, c.prototype.modInverse = St, c.prototype.pow = dt, c.prototype.gcd = bt, c.prototype.isProbablePrime = Ct, c.prototype.square = nt;
+		var H = c;
+		if (H.prototype.IsNegative = function() {
+			return this.compareTo(H.ZERO) == -1;
+		}, H.op_Equality = function(e, t) {
 			return e.compareTo(t) == 0;
-		}, U.op_Inequality = function(e, t) {
+		}, H.op_Inequality = function(e, t) {
 			return e.compareTo(t) != 0;
-		}, U.op_GreaterThan = function(e, t) {
+		}, H.op_GreaterThan = function(e, t) {
 			return e.compareTo(t) > 0;
-		}, U.op_LessThan = function(e, t) {
+		}, H.op_LessThan = function(e, t) {
 			return e.compareTo(t) < 0;
-		}, U.op_Addition = function(e, t) {
-			return new U(e).add(new U(t));
-		}, U.op_Subtraction = function(e, t) {
-			return new U(e).subtract(new U(t));
-		}, U.Int128Mul = function(e, t) {
-			return new U(e).multiply(new U(t));
-		}, U.op_Division = function(e, t) {
+		}, H.op_Addition = function(e, t) {
+			return new H(e).add(new H(t));
+		}, H.op_Subtraction = function(e, t) {
+			return new H(e).subtract(new H(t));
+		}, H.Int128Mul = function(e, t) {
+			return new H(e).multiply(new H(t));
+		}, H.op_Division = function(e, t) {
 			return e.divide(t);
-		}, U.prototype.ToDouble = function() {
+		}, H.prototype.ToDouble = function() {
 			return parseFloat(this.toString());
-		}, wt === void 0) var wt = function(e, t) {
+		}, Tt === void 0) var Tt = function(e, t) {
 			var n;
 			if (Object.getOwnPropertyNames === void 0) {
 				for (n in t.prototype) (e.prototype[n] === void 0 || e.prototype[n] == Object.prototype[n]) && (e.prototype[n] = t.prototype[n]);
@@ -1072,7 +1072,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			return this.m_Childs.length > 0 ? this.m_Childs[0] : null;
 		}, e.PolyTree.prototype.Total = function() {
 			return this.m_AllPolys.length;
-		}, wt(e.PolyTree, e.PolyNode), e.Math_Abs_Int64 = e.Math_Abs_Int32 = e.Math_Abs_Double = function(e) {
+		}, Tt(e.PolyTree, e.PolyNode), e.Math_Abs_Int64 = e.Math_Abs_Int32 = e.Math_Abs_Double = function(e) {
 			return Math.abs(e);
 		}, e.Math_Max_Int32_Int32 = function(e, t) {
 			return Math.max(e, t);
@@ -1185,7 +1185,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			} while (r != n);
 			return !1;
 		}, e.ClipperBase.prototype.PointOnLineSegment = function(e, t, n, r) {
-			return r ? e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && U.op_Equality(U.Int128Mul(e.X - t.X, n.Y - t.Y), U.Int128Mul(n.X - t.X, e.Y - t.Y)) : e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && (e.X - t.X) * (n.Y - t.Y) == (n.X - t.X) * (e.Y - t.Y);
+			return r ? e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && H.op_Equality(H.Int128Mul(e.X - t.X, n.Y - t.Y), H.Int128Mul(n.X - t.X, e.Y - t.Y)) : e.X == t.X && e.Y == t.Y || e.X == n.X && e.Y == n.Y || e.X > t.X == e.X < n.X && e.Y > t.Y == e.Y < n.Y && (e.X - t.X) * (n.Y - t.Y) == (n.X - t.X) * (e.Y - t.Y);
 		}, e.ClipperBase.prototype.PointOnPolygon = function(e, t, n) {
 			for (var r = t;;) {
 				if (this.PointOnLineSegment(e, r.Pt, r.Next.Pt, n)) return !0;
@@ -1194,13 +1194,13 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			return !1;
 		}, e.ClipperBase.prototype.SlopesEqual = e.ClipperBase.SlopesEqual = function() {
 			var t = arguments, n = t.length, r, i, a, o, s, c, l;
-			return n == 3 ? (r = t[0], i = t[1], l = t[2], l ? U.op_Equality(U.Int128Mul(r.Delta.Y, i.Delta.X), U.Int128Mul(r.Delta.X, i.Delta.Y)) : e.Cast_Int64(r.Delta.Y * i.Delta.X) == e.Cast_Int64(r.Delta.X * i.Delta.Y)) : n == 4 ? (a = t[0], o = t[1], s = t[2], l = t[3], l ? U.op_Equality(U.Int128Mul(a.Y - o.Y, o.X - s.X), U.Int128Mul(a.X - o.X, o.Y - s.Y)) : e.Cast_Int64((a.Y - o.Y) * (o.X - s.X)) - e.Cast_Int64((a.X - o.X) * (o.Y - s.Y)) === 0) : (a = t[0], o = t[1], s = t[2], c = t[3], l = t[4], l ? U.op_Equality(U.Int128Mul(a.Y - o.Y, s.X - c.X), U.Int128Mul(a.X - o.X, s.Y - c.Y)) : e.Cast_Int64((a.Y - o.Y) * (s.X - c.X)) - e.Cast_Int64((a.X - o.X) * (s.Y - c.Y)) === 0);
+			return n == 3 ? (r = t[0], i = t[1], l = t[2], l ? H.op_Equality(H.Int128Mul(r.Delta.Y, i.Delta.X), H.Int128Mul(r.Delta.X, i.Delta.Y)) : e.Cast_Int64(r.Delta.Y * i.Delta.X) == e.Cast_Int64(r.Delta.X * i.Delta.Y)) : n == 4 ? (a = t[0], o = t[1], s = t[2], l = t[3], l ? H.op_Equality(H.Int128Mul(a.Y - o.Y, o.X - s.X), H.Int128Mul(a.X - o.X, o.Y - s.Y)) : e.Cast_Int64((a.Y - o.Y) * (o.X - s.X)) - e.Cast_Int64((a.X - o.X) * (o.Y - s.Y)) === 0) : (a = t[0], o = t[1], s = t[2], c = t[3], l = t[4], l ? H.op_Equality(H.Int128Mul(a.Y - o.Y, s.X - c.X), H.Int128Mul(a.X - o.X, s.Y - c.Y)) : e.Cast_Int64((a.Y - o.Y) * (s.X - c.X)) - e.Cast_Int64((a.X - o.X) * (s.Y - c.Y)) === 0);
 		}, e.ClipperBase.SlopesEqual3 = function(t, n, r) {
-			return r ? U.op_Equality(U.Int128Mul(t.Delta.Y, n.Delta.X), U.Int128Mul(t.Delta.X, n.Delta.Y)) : e.Cast_Int64(t.Delta.Y * n.Delta.X) == e.Cast_Int64(t.Delta.X * n.Delta.Y);
+			return r ? H.op_Equality(H.Int128Mul(t.Delta.Y, n.Delta.X), H.Int128Mul(t.Delta.X, n.Delta.Y)) : e.Cast_Int64(t.Delta.Y * n.Delta.X) == e.Cast_Int64(t.Delta.X * n.Delta.Y);
 		}, e.ClipperBase.SlopesEqual4 = function(t, n, r, i) {
-			return i ? U.op_Equality(U.Int128Mul(t.Y - n.Y, n.X - r.X), U.Int128Mul(t.X - n.X, n.Y - r.Y)) : e.Cast_Int64((t.Y - n.Y) * (n.X - r.X)) - e.Cast_Int64((t.X - n.X) * (n.Y - r.Y)) === 0;
+			return i ? H.op_Equality(H.Int128Mul(t.Y - n.Y, n.X - r.X), H.Int128Mul(t.X - n.X, n.Y - r.Y)) : e.Cast_Int64((t.Y - n.Y) * (n.X - r.X)) - e.Cast_Int64((t.X - n.X) * (n.Y - r.Y)) === 0;
 		}, e.ClipperBase.SlopesEqual5 = function(t, n, r, i, a) {
-			return a ? U.op_Equality(U.Int128Mul(t.Y - n.Y, r.X - i.X), U.Int128Mul(t.X - n.X, r.Y - i.Y)) : e.Cast_Int64((t.Y - n.Y) * (r.X - i.X)) - e.Cast_Int64((t.X - n.X) * (r.Y - i.Y)) === 0;
+			return a ? H.op_Equality(H.Int128Mul(t.Y - n.Y, r.X - i.X), H.Int128Mul(t.X - n.X, r.Y - i.Y)) : e.Cast_Int64((t.Y - n.Y) * (r.X - i.X)) - e.Cast_Int64((t.X - n.X) * (r.Y - i.Y)) === 0;
 		}, e.ClipperBase.prototype.Clear = function() {
 			this.DisposeLocalMinimaList();
 			for (var t = 0, n = this.m_edges.length; t < n; ++t) {
@@ -1878,16 +1878,16 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 			}
 			this.m_IntersectList.length = 0;
 		};
-		var Tt = function(e) {
+		var Et = function(e) {
 			return e < 0 ? Math.ceil(e - .5) : Math.round(e);
-		}, Et = function(e) {
-			return e < 0 ? Math.ceil(e - .5) : Math.floor(e + .5);
 		}, Dt = function(e) {
-			return e < 0 ? -Math.round(Math.abs(e)) : Math.round(e);
+			return e < 0 ? Math.ceil(e - .5) : Math.floor(e + .5);
 		}, Ot = function(e) {
+			return e < 0 ? -Math.round(Math.abs(e)) : Math.round(e);
+		}, kt = function(e) {
 			return e < 0 ? (e -= .5, e < -2147483648 ? Math.ceil(e) : e | 0) : (e += .5, e > 2147483647 ? Math.floor(e) : e | 0);
 		};
-		a.msie ? e.Clipper.Round = Tt : a.chromium ? e.Clipper.Round = Dt : a.safari ? e.Clipper.Round = Ot : e.Clipper.Round = Et, e.Clipper.TopX = function(t, n) {
+		a.msie ? e.Clipper.Round = Et : a.chromium ? e.Clipper.Round = Ot : a.safari ? e.Clipper.Round = kt : e.Clipper.Round = Dt, e.Clipper.TopX = function(t, n) {
 			return n == t.Top.Y ? t.Top.X : t.Bot.X + e.Clipper.Round(t.Dx * (n - t.Bot.Y));
 		}, e.Clipper.prototype.IntersectPoint = function(t, n, r) {
 			r.X = 0, r.Y = 0;
@@ -2265,7 +2265,7 @@ var ie = /* @__PURE__ */ o(((e, t) => {
 		}, e.Clipper.ClosedPathsFromPolyTree = function(t) {
 			var n = new e.Paths();
 			return e.Clipper.AddPolyNodeToPaths(t, e.Clipper.NodeType.ntClosed, n), n;
-		}, wt(e.Clipper, e.ClipperBase), e.Clipper.NodeType = {
+		}, Tt(e.Clipper, e.ClipperBase), e.Clipper.NodeType = {
 			ntAny: 0,
 			ntOpen: 1,
 			ntClosed: 2
@@ -3374,7 +3374,7 @@ function bt(e, t) {
 	}
 	return e;
 }
-var B = class {
+var xt = class {
 	cp = -Infinity;
 	cls = -1;
 	char = "";
@@ -3386,13 +3386,13 @@ var B = class {
 	[Symbol.for("nodejs.util.inspect.custom")](e, t, n) {
 		return `${yt(this.cls)}(${this.cp.toString(16).padStart(4, "0")}:${JSON.stringify(this.char)})${this.ignored ? "Ig" : ""}`;
 	}
-}, xt = class {
+}, St = class {
 	str = "";
 	len = 0;
 	prevChunk = 0;
-	prev = new B(-1, -Infinity, "", 0);
-	cur = new B(-1, -Infinity, "", 0);
-	next = new B(-1, -Infinity, "", 0);
+	prev = new xt(-1, -Infinity, "", 0);
+	cur = new xt(-1, -Infinity, "", 0);
+	next = new xt(-1, -Infinity, "", 0);
 	LB8 = !1;
 	spaces = !1;
 	RI = 0;
@@ -3405,13 +3405,13 @@ var B = class {
 		this.next.ignored ? this.cur.len = this.next.len : (this.prev = this.cur, this.cur = this.next), this.next = e;
 	}
 	pushEnd() {
-		this.push(new B(-2, Infinity, "", this.next.len));
+		this.push(new xt(-2, Infinity, "", this.next.len));
 	}
 	*codePoints(e, t = !0) {
 		if (t) for (; e < this.len;) if (e === this.cur.len && this.next.cls >= 0) yield this.next, e += this.next.char.length;
 		else {
 			let t = this.str.codePointAt(e), n = String.fromCodePoint(t), r = ct.get(t);
-			e += n.length, yield new B(bt(r, n), t, n, e);
+			e += n.length, yield new xt(bt(r, n), t, n, e);
 		}
 		else for (; e > 0;) if (e === this.cur.len) yield this.cur, e -= this.cur.char.length;
 		else if (e === this.prev.len) yield this.prev, e -= this.prev.char.length;
@@ -3419,7 +3419,7 @@ var B = class {
 			let t = e - 1, n = this.str.charCodeAt(t);
 			n >= 56320 && n <= 57343 && t--;
 			let r = this.str.codePointAt(t), i = String.fromCodePoint(r);
-			yield new B(bt(ct.get(r), i), r, i, e), e = t;
+			yield new xt(bt(ct.get(r), i), r, i, e), e = t;
 		}
 	}
 	classAfterSpaces(e) {
@@ -3437,328 +3437,326 @@ var B = class {
 		let r = `${n(this.prev)} => ${n(this.cur)} => ${n(this.next)}`;
 		return this.LB8 && (r += " LB8"), this.spaces && (r += " spaces"), this.RI > 0 && (r += ` RI: ${this.RI}`), this.props && (r += ` ${JSON.stringify(this.props)}`), r;
 	}
-}, V = class {
+}, B = class {
 	string = void 0;
 	props = void 0;
 	constructor(e, t = !1) {
 		this.position = e, this.required = t;
 	}
-}, H = R.fromBase64("AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk\n   SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY\n   753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG\n   r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3\n   1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH\n   uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE\n   /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8\n   zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6\n   H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel\n   WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO\n   ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u\n   f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8\n   If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u\n   33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA");
-Object.fromEntries(H.values.map((e, t) => [e, t]));
-var { values: St } = H, { AK: Ct, AL: U, AP: wt, AS: Tt, B2: Et, BA: Dt, BB: Ot, BK: kt, CB: At, CL: jt, CM: Mt, CP: Nt, CR: Pt, EB: Ft, EM: It, EX: Lt, GL: Rt, H2: zt, H3: Bt, HH: Vt, HL: W, HY: Ht, ID: Ut, IN: Wt, IS: G, JL: Gt, JT: Kt, JV: qt, LF: Jt, NU: K, OP: Yt, NL: Xt, NS: Zt, PO: Qt, PR: $t, RI: en, SP: q, SY: tn, QU: J, VF: nn, VI: rn, WJ: an, ZW: on, ZWJ: sn } = lt, cn = /* @__PURE__ */ new Set([
+}, V = R.fromBase64("AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk\n   SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY\n   753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG\n   r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3\n   1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH\n   uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE\n   /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8\n   zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6\n   H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel\n   WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO\n   ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u\n   f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8\n   If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u\n   33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA");
+Object.fromEntries(V.values.map((e, t) => [e, t]));
+var { values: Ct } = V, { AK: wt, AL: H, AP: Tt, AS: Et, B2: Dt, BA: Ot, BB: kt, BK: At, CB: jt, CL: Mt, CM: Nt, CP: Pt, CR: Ft, EB: It, EM: Lt, EX: Rt, GL: zt, H2: Bt, H3: Vt, HH: Ht, HL: U, HY: Ut, ID: Wt, IN: Gt, IS: Kt, JL: qt, JT: Jt, JV: Yt, LF: Xt, NU: W, OP: Zt, NL: Qt, NS: $t, PO: en, PR: tn, RI: nn, SP: G, SY: rn, QU: K, VF: an, VI: on, WJ: sn, ZW: cn, ZWJ: ln } = lt, un = /* @__PURE__ */ new Set([
+	H,
 	U,
-	W,
-	K
-]), ln = /* @__PURE__ */ new Set([
-	kt,
-	Pt,
-	Jt,
-	Xt,
-	q,
-	on
-]), un = /* @__PURE__ */ new Set([
-	Ut,
-	Ft,
-	It
+	W
 ]), dn = /* @__PURE__ */ new Set([
-	Gt,
-	qt,
-	zt,
-	Bt
-]), fn = /* @__PURE__ */ new Set([
-	Gt,
-	qt,
-	Kt,
-	zt,
-	Bt
-]), pn = /* @__PURE__ */ new Set([qt, Kt]), mn = /* @__PURE__ */ new Set([
-	q,
-	Rt,
-	an,
-	jt,
-	J,
-	Nt,
-	Lt,
+	At,
+	Ft,
+	Xt,
+	Qt,
 	G,
-	tn,
-	kt,
-	Pt,
-	Jt,
-	Xt,
-	on
-]), hn = /* @__PURE__ */ new Set([
-	-1,
-	kt,
-	Pt,
-	Jt,
-	Xt,
+	cn
+]), fn = /* @__PURE__ */ new Set([
+	Wt,
+	It,
+	Lt
+]), pn = /* @__PURE__ */ new Set([
+	qt,
 	Yt,
-	J,
+	Bt,
+	Vt
+]), mn = /* @__PURE__ */ new Set([
+	qt,
+	Yt,
+	Jt,
+	Bt,
+	Vt
+]), hn = /* @__PURE__ */ new Set([Yt, Jt]), gn = /* @__PURE__ */ new Set([
+	G,
+	zt,
+	sn,
+	Mt,
+	K,
+	Pt,
 	Rt,
-	q,
-	on
-]), Y = Symbol("PASS"), X = Symbol("NO_BREAK"), gn = Symbol("MAY_BREAK"), _n = Symbol("MUST_BREAK");
-function vn(e) {
-	return e.cur.cls === -1 && e.next.cls !== -2 ? X : Y;
-}
-function yn(e) {
-	return e.next.cls === -2 && (e.cur.len === 0 || e.cur.len !== e.prevChunk) ? _n : Y;
-}
+	Kt,
+	rn,
+	At,
+	Ft,
+	Xt,
+	Qt,
+	cn
+]), _n = /* @__PURE__ */ new Set([
+	-1,
+	At,
+	Ft,
+	Xt,
+	Qt,
+	Zt,
+	K,
+	zt,
+	G,
+	cn
+]), q = Symbol("PASS"), J = Symbol("NO_BREAK"), vn = Symbol("MAY_BREAK"), yn = Symbol("MUST_BREAK");
 function bn(e) {
-	return e.cur.cls === kt ? _n : Y;
+	return e.cur.cls === -1 && e.next.cls !== -2 ? J : q;
 }
 function xn(e) {
-	switch (e.cur.cls) {
-		case Pt: return e.next.cls === Jt ? X : _n;
-		case Jt:
-		case Xt: return _n;
-	}
-	return Y;
+	return e.next.cls === -2 && (e.cur.len === 0 || e.cur.len !== e.prevChunk) ? yn : q;
 }
 function Sn(e) {
-	switch (e.next.cls) {
-		case kt:
-		case Pt:
-		case Jt:
-		case Xt: return X;
-	}
-	return Y;
+	return e.cur.cls === At ? yn : q;
 }
 function Cn(e) {
-	return e.cur.cls !== en && (e.RI = 0), e.spaces ? (e.next.cls !== q && (e.spaces = !1), X) : Y;
+	switch (e.cur.cls) {
+		case Ft: return e.next.cls === Xt ? J : yn;
+		case Xt:
+		case Qt: return yn;
+	}
+	return q;
 }
 function wn(e) {
-	if (e.next.cls === on) return X;
-	if (e.next.cls === q) switch (e.cur.cls) {
-		case on:
-		case Yt:
-		case J:
-		case jt:
-		case Nt:
-		case Et: break;
-		default: return X;
+	switch (e.next.cls) {
+		case At:
+		case Ft:
+		case Xt:
+		case Qt: return J;
 	}
-	return Y;
+	return q;
 }
 function Tn(e) {
-	return e.LB8 ? (e.LB8 = !1, gn) : e.cur.cls === on ? e.next.cls === q ? (e.LB8 = !0, X) : gn : Y;
+	return e.cur.cls !== nn && (e.RI = 0), e.spaces ? (e.next.cls !== G && (e.spaces = !1), J) : q;
 }
 function En(e) {
-	return e.cur.cls === sn ? X : Y;
+	if (e.next.cls === cn) return J;
+	if (e.next.cls === G) switch (e.cur.cls) {
+		case cn:
+		case Zt:
+		case K:
+		case Mt:
+		case Pt:
+		case Dt: break;
+		default: return J;
+	}
+	return q;
 }
 function Dn(e) {
-	return !ln.has(e.cur.cls) && (e.next.cls === Mt || e.next.cls === sn) ? (e.next.ignored = !0, X) : Y;
+	return e.LB8 ? (e.LB8 = !1, vn) : e.cur.cls === cn ? e.next.cls === G ? (e.LB8 = !0, J) : vn : q;
 }
 function On(e) {
-	return e.cur.cls === Mt && (e.cur.cls = U), e.next.cls === Mt && (e.next.cls = U), Y;
+	return e.cur.cls === ln ? J : q;
 }
 function kn(e) {
-	return e.next.cls === an || e.cur.cls === an ? X : Y;
+	return !dn.has(e.cur.cls) && (e.next.cls === Nt || e.next.cls === ln) ? (e.next.ignored = !0, J) : q;
 }
 function An(e) {
-	return e.cur.cls === Rt ? X : Y;
+	return e.cur.cls === Nt && (e.cur.cls = H), e.next.cls === Nt && (e.next.cls = H), q;
 }
 function jn(e) {
-	if (e.next.cls === Rt) switch (e.cur.cls) {
-		case q:
-		case Dt:
-		case Ht:
-		case Vt: return Y;
-		default: return X;
-	}
-	return Y;
+	return e.next.cls === sn || e.cur.cls === sn ? J : q;
 }
 function Mn(e) {
-	switch (e.next.cls) {
-		case jt:
-		case Nt:
-		case Lt:
-		case tn: return X;
-	}
-	return Y;
+	return e.cur.cls === zt ? J : q;
 }
 function Nn(e) {
-	return e.cur.cls === Yt ? (e.next.cls === q && (e.spaces = !0), X) : Y;
+	if (e.next.cls === zt) switch (e.cur.cls) {
+		case G:
+		case Ot:
+		case Ut:
+		case Ht: return q;
+		default: return J;
+	}
+	return q;
 }
 function Pn(e) {
-	return hn.has(e.prev.cls) && /^\p{Pi}$/u.test(e.cur.char) && e.cur.cls === J ? (e.spaces = !0, X) : Y;
+	switch (e.next.cls) {
+		case Mt:
+		case Pt:
+		case Rt:
+		case rn: return J;
+	}
+	return q;
 }
 function Fn(e) {
-	if (/^\p{gc=Pf}$/u.test(e.next.char) && e.next.cls === J) {
-		let t = e.afterNext();
-		if (!t || mn.has(t.cls)) return X;
-	}
-	return Y;
+	return e.cur.cls === Zt ? (e.next.cls === G && (e.spaces = !0), J) : q;
 }
 function In(e) {
-	return e.cur.cls === q && e.next.cls === G && e.afterNext()?.cls === K ? gn : Y;
+	return _n.has(e.prev.cls) && /^\p{Pi}$/u.test(e.cur.char) && e.cur.cls === K ? (e.spaces = !0, J) : q;
 }
 function Ln(e) {
-	return e.next.cls === G ? X : Y;
+	if (/^\p{gc=Pf}$/u.test(e.next.char) && e.next.cls === K) {
+		let t = e.afterNext();
+		if (!t || gn.has(t.cls)) return J;
+	}
+	return q;
 }
 function Rn(e) {
-	if (e.cur.cls === jt || e.cur.cls === Nt) {
-		if (e.classAfterSpaces(e.cur.len) === Zt) return e.next.cls === q && (e.spaces = !0), X;
-		if (e.next.cls === q) return X;
-	}
-	return Y;
+	return e.cur.cls === G && e.next.cls === Kt && e.afterNext()?.cls === W ? vn : q;
 }
 function zn(e) {
-	if (e.cur.cls === Et) {
-		if (e.classAfterSpaces(e.cur.len) === Et) return e.next.cls === q && (e.spaces = !0), X;
-		if (e.next.cls === q) return X;
-	}
-	return Y;
+	return e.next.cls === Kt ? J : q;
 }
 function Bn(e) {
-	return e.cur.cls === q ? gn : Y;
+	if (e.cur.cls === Mt || e.cur.cls === Pt) {
+		if (e.classAfterSpaces(e.cur.len) === $t) return e.next.cls === G && (e.spaces = !0), J;
+		if (e.next.cls === G) return J;
+	}
+	return q;
 }
 function Vn(e) {
-	return e.next.cls === J && !/^\p{Pi}$/u.test(e.next.char) || e.cur.cls === J && !/^\p{Pf}$/u.test(e.cur.char) ? X : Y;
+	if (e.cur.cls === Dt) {
+		if (e.classAfterSpaces(e.cur.len) === Dt) return e.next.cls === G && (e.spaces = !0), J;
+		if (e.next.cls === G) return J;
+	}
+	return q;
 }
 function Hn(e) {
-	if (!H.get(e.cur.cp) && e.next.cls === J) return X;
-	if (e.next.cls === J) {
-		let t = e.afterNext();
-		if (!t || !H.get(t.cp)) return X;
-	}
-	return e.cur.cls === J && !H.get(e.next.cp) || (e.prev.cls === -1 || !H.get(e.prev.cp)) && e.cur.cls === J ? X : Y;
+	return e.cur.cls === G ? vn : q;
 }
 function Un(e) {
-	return e.cur.cls === At || e.next.cls === At ? gn : Y;
+	return e.next.cls === K && !/^\p{Pi}$/u.test(e.next.char) || e.cur.cls === K && !/^\p{Pf}$/u.test(e.cur.char) ? J : q;
 }
-var Wn = /* @__PURE__ */ new Set([
-	-1,
-	kt,
-	Pt,
-	Jt,
-	Xt,
-	q,
-	on,
-	At,
-	Rt
-]);
-function Gn(e) {
-	return Wn.has(e.prev.cls) && (e.cur.cls === Ht || e.cur.cls === Vt) && (e.next.cls === U || e.next.cls === W) ? X : Y;
-}
-function Kn(e) {
-	if (e.cur.cls === Ot) return X;
-	switch (e.next.cls) {
-		case Dt:
-		case Vt:
-		case Ht:
-		case Zt: return X;
+function Wn(e) {
+	if (!V.get(e.cur.cp) && e.next.cls === K) return J;
+	if (e.next.cls === K) {
+		let t = e.afterNext();
+		if (!t || !V.get(t.cp)) return J;
 	}
-	return Y;
+	return e.cur.cls === K && !V.get(e.next.cp) || (e.prev.cls === -1 || !V.get(e.prev.cp)) && e.cur.cls === K ? J : q;
 }
+function Gn(e) {
+	return e.cur.cls === jt || e.next.cls === jt ? vn : q;
+}
+var Kn = /* @__PURE__ */ new Set([
+	-1,
+	At,
+	Ft,
+	Xt,
+	Qt,
+	G,
+	cn,
+	jt,
+	zt
+]);
 function qn(e) {
-	return e.prev.cls === W && (e.cur.cls === Ht || e.cur.cls === Vt) && e.next.cls !== W ? X : Y;
+	return Kn.has(e.prev.cls) && (e.cur.cls === Ut || e.cur.cls === Ht) && (e.next.cls === H || e.next.cls === U) ? J : q;
 }
 function Jn(e) {
-	return e.cur.cls === tn && e.next.cls === W ? X : Y;
+	if (e.cur.cls === kt) return J;
+	switch (e.next.cls) {
+		case Ot:
+		case Ht:
+		case Ut:
+		case $t: return J;
+	}
+	return q;
 }
 function Yn(e) {
-	return e.next.cls === Wt ? X : Y;
+	return e.prev.cls === U && (e.cur.cls === Ut || e.cur.cls === Ht) && e.next.cls !== U ? J : q;
 }
 function Xn(e) {
-	switch (e.cur.cls) {
-		case U:
-		case W:
-			if (e.next.cls === K) return X;
-			break;
-		case K: if (e.next.cls === U || e.next.cls === W) return X;
-	}
-	return Y;
+	return e.cur.cls === rn && e.next.cls === U ? J : q;
 }
 function Zn(e) {
-	return e.cur.cls === $t && un.has(e.next.cls) || e.next.cls === Qt && un.has(e.cur.cls) ? X : Y;
+	return e.next.cls === Gt ? J : q;
 }
 function Qn(e) {
-	return (e.cur.cls === $t || e.cur.cls === Qt) && (e.next.cls === U || e.next.cls === W) || (e.cur.cls === U || e.cur.cls === W) && (e.next.cls === $t || e.next.cls === Qt) ? X : Y;
+	switch (e.cur.cls) {
+		case H:
+		case U:
+			if (e.next.cls === W) return J;
+			break;
+		case W: if (e.next.cls === H || e.next.cls === U) return J;
+	}
+	return q;
 }
-var $n = /* @__PURE__ */ new Set([Qt, $t]), er = /* @__PURE__ */ new Set([jt, Nt]);
-function tr(e) {
+function $n(e) {
+	return e.cur.cls === tn && fn.has(e.next.cls) || e.next.cls === en && fn.has(e.cur.cls) ? J : q;
+}
+function er(e) {
+	return (e.cur.cls === tn || e.cur.cls === en) && (e.next.cls === H || e.next.cls === U) || (e.cur.cls === H || e.cur.cls === U) && (e.next.cls === tn || e.next.cls === en) ? J : q;
+}
+var tr = /* @__PURE__ */ new Set([en, tn]), nr = /* @__PURE__ */ new Set([Mt, Pt]);
+function rr(e) {
 	let t = null;
-	if ($n.has(e.next.cls) ? t = er.has(e.cur.cls) ? e.prev.len : e.cur.len : e.next.cls === K && (t = e.cur.len), t !== null) SyIsLoop: for (let { cls: n } of e.codePoints(t, !1)) switch (n) {
-		case tn:
-		case G: continue;
-		case K: return X;
+	if (tr.has(e.next.cls) ? t = nr.has(e.cur.cls) ? e.prev.len : e.cur.len : e.next.cls === W && (t = e.cur.len), t !== null) SyIsLoop: for (let { cls: n } of e.codePoints(t, !1)) switch (n) {
+		case rn:
+		case Kt: continue;
+		case W: return J;
 		default: break SyIsLoop;
 	}
-	if (e.cur.cls === Qt || e.cur.cls === $t) {
-		if (e.next.cls === Yt) {
+	if (e.cur.cls === en || e.cur.cls === tn) {
+		if (e.next.cls === Zt) {
 			let t = e.afterNext();
-			if (t && (t.cls === K || t.cls === G && e.afterNext(2)?.cls === K)) return X;
-		} else if (e.next.cls === K) return X;
+			if (t && (t.cls === W || t.cls === Kt && e.afterNext(2)?.cls === W)) return J;
+		} else if (e.next.cls === W) return J;
 	}
-	return e.cur.cls === Ht && e.next.cls === K || e.cur.cls === G && e.next.cls === K ? X : Y;
-}
-function nr(e) {
-	switch (e.cur.cls) {
-		case Gt:
-			if (dn.has(e.next.cls)) return X;
-			break;
-		case qt:
-		case zt:
-			if (pn.has(e.next.cls)) return X;
-			break;
-		case Kt:
-		case Bt: if (e.next.cls === Kt) return X;
-	}
-	return Y;
-}
-function rr(e) {
-	switch (e.cur.cls) {
-		case Gt:
-		case qt:
-		case Kt:
-		case zt:
-		case Bt:
-			if (e.next.cls === Qt) return X;
-			break;
-		case $t: if (fn.has(e.next.cls)) return X;
-	}
-	return Y;
+	return e.cur.cls === Ut && e.next.cls === W || e.cur.cls === Kt && e.next.cls === W ? J : q;
 }
 function ar(e) {
-	return (e.cur.cls === U || e.cur.cls === W) && (e.next.cls === U || e.next.cls === W) ? X : Y;
+	switch (e.cur.cls) {
+		case qt:
+			if (pn.has(e.next.cls)) return J;
+			break;
+		case Yt:
+		case Bt:
+			if (hn.has(e.next.cls)) return J;
+			break;
+		case Jt:
+		case Vt: if (e.next.cls === Jt) return J;
+	}
+	return q;
 }
 function or(e) {
-	let { prev: t, cur: n, next: r } = e;
-	function i(e) {
-		return e.cls === Ct || e.char === "◌" || e.cls === Tt;
+	switch (e.cur.cls) {
+		case qt:
+		case Yt:
+		case Jt:
+		case Bt:
+		case Vt:
+			if (e.next.cls === en) return J;
+			break;
+		case tn: if (mn.has(e.next.cls)) return J;
 	}
-	return n.cls === wt && i(r) || i(n) && (r.cls === nn || r.cls === rn) || i(t) && n.cls === rn && (r.cls === Ct || r.char === "◌") || i(n) && i(r) && e.afterNext()?.cls === nn ? X : Y;
+	return q;
 }
 function sr(e) {
-	return e.cur.cls === G && (e.next.cls === U || e.next.cls === W) ? X : Y;
+	return (e.cur.cls === H || e.cur.cls === U) && (e.next.cls === H || e.next.cls === U) ? J : q;
 }
 function cr(e) {
-	switch (e.cur.cls) {
-		case U:
-		case W:
-		case K:
-			if (e.next.cls === Yt && !H.get(e.next.cp)) return X;
-			break;
-		case Nt: if (!H.get(e.cur.cp) && cn.has(e.next.cls)) return X;
+	let { prev: t, cur: n, next: r } = e;
+	function i(e) {
+		return e.cls === wt || e.char === "◌" || e.cls === Et;
 	}
-	return Y;
+	return n.cls === Tt && i(r) || i(n) && (r.cls === an || r.cls === on) || i(t) && n.cls === on && (r.cls === wt || r.char === "◌") || i(n) && i(r) && e.afterNext()?.cls === an ? J : q;
 }
 function lr(e) {
-	if (e.cur.cls === en) {
-		if (e.next.cls === en && ++e.RI % 2 != 0) return X;
-	} else e.RI = 0;
-	return Y;
+	return e.cur.cls === Kt && (e.next.cls === H || e.next.cls === U) ? J : q;
 }
 function ur(e) {
-	return e.cur.cls === Ft && e.next.cls === It || e.next.cls === It && /^\p{ExtPict}$/u.test(e.cur.char) && /^\p{gc=Cn}$/u.test(e.cur.char) ? X : Y;
+	switch (e.cur.cls) {
+		case H:
+		case U:
+		case W:
+			if (e.next.cls === Zt && !V.get(e.next.cp)) return J;
+			break;
+		case Pt: if (!V.get(e.cur.cp) && un.has(e.next.cls)) return J;
+	}
+	return q;
 }
-function dr() {
-	return gn;
+function dr(e) {
+	if (e.cur.cls === nn) {
+		if (e.next.cls === nn && ++e.RI % 2 != 0) return J;
+	} else e.RI = 0;
+	return q;
 }
-var fr = [
-	vn,
-	yn,
+function fr(e) {
+	return e.cur.cls === It && e.next.cls === Lt || e.next.cls === Lt && /^\p{ExtPict}$/u.test(e.cur.char) && /^\p{gc=Cn}$/u.test(e.cur.char) ? J : q;
+}
+function pr() {
+	return vn;
+}
+var mr = [
 	bn,
 	xn,
 	Sn,
@@ -3783,16 +3781,16 @@ var fr = [
 	Vn,
 	Hn,
 	Un,
+	Wn,
 	Gn,
 	qn,
-	Kn,
-	Jn,
 	Yn,
+	Jn,
 	Xn,
 	Zn,
 	Qn,
-	tr,
-	nr,
+	$n,
+	er,
 	rr,
 	ar,
 	or,
@@ -3800,8 +3798,10 @@ var fr = [
 	cr,
 	lr,
 	ur,
-	dr
-], pr = class {
+	dr,
+	fr,
+	pr
+], hr = class {
 	#e;
 	constructor(e = {}) {
 		if (this.#e = {
@@ -3809,8 +3809,8 @@ var fr = [
 			example7: !1,
 			verbose: !1,
 			...e
-		}, this.rules = [...fr], this.#e.example7) throw Error("'example7' flag deprecated");
-		this.#e.verbose && this.rules.unshift((e) => (console.log(e.cur.len, e), Y));
+		}, this.rules = [...mr], this.#e.example7) throw Error("'example7' flag deprecated");
+		this.#e.verbose && this.rules.unshift((e) => (console.log(e.cur.len, e), q));
 	}
 	removeRule(...e) {
 		let t = [];
@@ -3835,10 +3835,10 @@ var fr = [
 		for (let t of this.rules) {
 			let n = t.call(this, e);
 			switch (n) {
-				case Y: break;
-				case X: return this.#e.verbose && console.log(`  ${t.name}: NO_BREAK`), null;
-				case gn: return this.#e.verbose && console.log(`  ${t.name}: MAY_BREAK`), new V(e.cur.len);
-				case _n: return this.#e.verbose && console.log(`  ${t.name}: MUST_BREAK`), new V(e.cur.len, !0);
+				case q: break;
+				case J: return this.#e.verbose && console.log(`  ${t.name}: NO_BREAK`), null;
+				case vn: return this.#e.verbose && console.log(`  ${t.name}: MAY_BREAK`), new B(e.cur.len);
+				case yn: return this.#e.verbose && console.log(`  ${t.name}: MUST_BREAK`), new B(e.cur.len, !0);
 				default: throw Error(`Invalid state: "${n}"`);
 			}
 		}
@@ -3849,44 +3849,44 @@ var fr = [
 		t && (this.#e.string && (t.string = e.str.slice(e.prevChunk, e.cur.len)), e.props &&= (t.props = e.props, void 0), yield t, e.prevChunk = e.cur.len);
 	}
 	*breaks(e) {
-		let t = new xt(e);
+		let t = new St(e);
 		for (let e of t.codePoints(0)) t.push(e), yield* this.#n(t);
 		t.pushEnd(), yield* this.#n(t);
 	}
 };
 //#endregion
 //#region src/text-layout.ts
-function mr(e, t) {
+function gr(e, t) {
 	let n = new Intl.Segmenter(t, { granularity: "grapheme" }), r = /* @__PURE__ */ new Set([0]);
 	for (let t of n.segment(e)) r.add(t.index + t.segment.length);
 	return r;
 }
-var hr = class {
-	#e = new pr();
+var _r = class {
+	#e = new hr();
 	#t;
 	constructor(e = "ja") {
 		this.#t = e;
 	}
 	getBreakOpportunities(e) {
-		let t = mr(e, this.#t), n = /* @__PURE__ */ new Map();
+		let t = gr(e, this.#t), n = /* @__PURE__ */ new Map();
 		for (let r of this.#e.breaks(e)) t.has(r.position) && n.set(r.position, (n.get(r.position) ?? !1) || r.required);
 		return Object.freeze([...n].sort(([e], [t]) => e - t).map(([e, t]) => Object.freeze({
 			position: e,
 			required: t
 		})));
 	}
-}, gr = /* @__PURE__ */ new Map(), _r = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/gu;
-function vr(e) {
-	let t = gr.get(e);
+}, vr = /* @__PURE__ */ new Map(), yr = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/gu;
+function br(e) {
+	let t = vr.get(e);
 	if (t) return t;
-	let n = new hr(e);
-	return gr.set(e, n), n;
+	let n = new _r(e);
+	return vr.set(e, n), n;
 }
-function yr(e, t) {
+function xr(e, t) {
 	if (!Number.isFinite(e) || e < 0) throw TypeError(`${t} must return a non-negative finite number.`);
 	return e;
 }
-function br(e, t, n) {
+function Sr(e, t, n) {
 	let r = /* @__PURE__ */ new Map();
 	for (let i of t.getBreakOpportunities(e)) {
 		let { position: t, required: a } = i;
@@ -3897,28 +3897,28 @@ function br(e, t, n) {
 		required: t
 	}));
 }
-function xr(e, t, n, r, i) {
+function Cr(e, t, n, r, i) {
 	if (e.length === 0) return [{
 		text: "",
 		start: t,
 		end: t,
 		width: 0
 	}];
-	let a = mr(e, i), o = [...a].sort((e, t) => e - t), s = br(e, r, a), c = [], l = 0;
+	let a = gr(e, i), o = [...a].sort((e, t) => e - t), s = Sr(e, r, a), c = [], l = 0;
 	for (; l < e.length;) {
 		let r = s.find((e) => e.position > l && e.required)?.position ?? e.length, i, a = 0;
 		for (let t of s) {
 			if (t.position <= l || t.position > r) continue;
-			let o = e.slice(l, t.position), s = yr(n.measureText(o), "measureText");
+			let o = e.slice(l, t.position), s = xr(n.measureText(o), "measureText");
 			s <= n.maxWidth && (i = t.position, a = s);
 		}
 		if (i === void 0) {
 			let t = o.filter((e) => e > l && e <= r);
 			for (let r of t) {
-				let t = e.slice(l, r), o = yr(n.measureText(t), "measureText");
+				let t = e.slice(l, r), o = xr(n.measureText(t), "measureText");
 				o <= n.maxWidth && (i = r, a = o);
 			}
-			i === void 0 && (i = t[0] ?? r, a = yr(n.measureText(e.slice(l, i)), "measureText"));
+			i === void 0 && (i = t[0] ?? r, a = xr(n.measureText(e.slice(l, i)), "measureText"));
 		}
 		c.push({
 			text: e.slice(l, i),
@@ -3929,36 +3929,180 @@ function xr(e, t, n, r, i) {
 	}
 	return c;
 }
-function Sr(e) {
+function wr(e) {
 	if (typeof e.text != "string") throw TypeError("text must be a string.");
 	if (!Number.isFinite(e.maxWidth) || e.maxWidth <= 0) throw TypeError("maxWidth must be a positive finite number.");
 	if (typeof e.measureText != "function") throw TypeError("measureText must be a function.");
-	let t = e.locale ?? "ja", n = e.lineBreakProvider ?? vr(t), r = [], i = 0;
-	for (let a of e.text.matchAll(_r)) {
+	let t = e.locale ?? "ja", n = e.lineBreakProvider ?? br(t), r = [], i = 0;
+	for (let a of e.text.matchAll(yr)) {
 		let o = a.index;
-		r.push(...xr(e.text.slice(i, o), i, e, n, t)), i = o + a[0].length;
+		r.push(...Cr(e.text.slice(i, o), i, e, n, t)), i = o + a[0].length;
 	}
-	return r.push(...xr(e.text.slice(i), i, e, n, t)), Object.freeze({
+	return r.push(...Cr(e.text.slice(i), i, e, n, t)), Object.freeze({
 		lines: Object.freeze(r.map((e) => Object.freeze(e))),
 		maxLineWidth: Math.max(0, ...r.map((e) => e.width))
 	});
 }
 //#endregion
+//#region src/text-engine.ts
+var Y = Object.freeze({
+	alignment: "left",
+	backgroundColor: "#ffffff",
+	font: "Helvetica",
+	fontPercent: 100,
+	name: "default",
+	textColor: "#575e75"
+}), Tr = 14, Er = 16, Dr = 480, Or = 360, kr = 128;
+function X(e) {
+	let t = /* @__PURE__ */ Error(`[Bubble Text] ${e}`);
+	return Object.defineProperty(t, "code", { value: "BUBBLE-TEXT-001" }), t;
+}
+function Ar(e, t) {
+	if (typeof e != "string" || e.trim().length === 0) throw X(`${t} must be a non-empty string.`);
+	return e.trim();
+}
+function jr(e, t) {
+	if (e === void 0) return t;
+	let n = Ar(e, "Text color");
+	if (/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/iu.test(n) || globalThis.CSS?.supports?.("color", n)) return n;
+	throw X(`Unsupported text color: ${n}`);
+}
+function Mr(e) {
+	if (typeof e != "object" || !e || Array.isArray(e)) throw X("Text style must be an object.");
+	let t = e, n = /* @__PURE__ */ new Set([
+		"alignment",
+		"backgroundColor",
+		"font",
+		"fontPercent",
+		"name",
+		"textColor"
+	]);
+	if (Object.keys(t).some((e) => !n.has(e))) throw X("Text style has unknown properties.");
+	let r = t.alignment ?? Y.alignment;
+	if (r !== "left" && r !== "center" && r !== "right") throw X("Text alignment must be left, center, or right.");
+	let i = t.font === void 0 ? Y.font : Ar(t.font, "Text font");
+	if (i.length > kr || [...i].some((e) => {
+		let t = e.codePointAt(0) ?? 0;
+		return t <= 31 || t === 127 || ",;{}".includes(e);
+	})) throw X("Text font contains unsupported characters.");
+	let a = t.fontPercent ?? Y.fontPercent;
+	if (typeof a != "number" || !Number.isFinite(a) || a < 1 || a > 1e3) throw X("Text fontPercent must be from 1 through 1000.");
+	return Object.freeze({
+		alignment: r,
+		backgroundColor: jr(t.backgroundColor, Y.backgroundColor),
+		font: i,
+		fontPercent: a,
+		name: Ar(t.name, "Text style name"),
+		textColor: jr(t.textColor, Y.textColor)
+	});
+}
+function Nr(e) {
+	if (typeof e != "object" || !e || Array.isArray(e)) throw TypeError("Bubble text engine requires a runtime.");
+	let t = e.renderer;
+	if (typeof t != "object" || !t || typeof t.createSVGSkin != "function" || typeof t.destroySkin != "function" || typeof t.updateDrawableSkinId != "function") throw TypeError("Bubble text engine renderer must provide SVG skin methods.");
+	return e;
+}
+function Pr(e) {
+	if (typeof e != "object" || !e || !Number.isInteger(e.drawableID) || Number(e.drawableID) < 0) throw X("Text target must provide a drawableID.");
+	return e;
+}
+function Fr(e) {
+	return e.replace(/[&<>"']/gu, (e) => e === "&" ? "&amp;" : e === "<" ? "&lt;" : e === ">" ? "&gt;" : e === "\"" ? "&quot;" : "&apos;");
+}
+function Ir(e) {
+	return String(Math.round(e * 1e3) / 1e3);
+}
+function Lr(e, t) {
+	let n = 0;
+	for (let t of e) if (!/\p{Mark}/u.test(t)) {
+		if (/\s/u.test(t)) {
+			n += .35;
+			continue;
+		}
+		n += (t.codePointAt(0) ?? 0) <= 127 ? .62 : 1;
+	}
+	return n * t;
+}
+function Rr(e) {
+	let t = e.getNativeSize?.();
+	if (!Array.isArray(t) || t.length < 2) return 1;
+	let n = Number(t[0]), r = Number(t[1]);
+	return !(n > 0) || !(r > 0) ? 1 : Math.min(n / Dr, r / Or);
+}
+function zr(e, t, n = 1) {
+	let r = Mr(t);
+	if (typeof e != "string") throw X("Text must be a string.");
+	if (!(n > 0) || !Number.isFinite(n)) throw X("Text stage scale must be positive and finite.");
+	let i = n * (r.fontPercent / 100), a = Tr * i, o = Er * i, s = 12 * n, c = 8 * n, l = e.replace(/\\r\\n|\\n|\\r/gu, "\n").split("\n"), u = Math.max(1, ...l.map((e) => Lr(e, a))), d = Math.max(1, Math.ceil(u + s * 2)), f = Math.max(1, Math.ceil(o * l.length + s * 2)), p = r.alignment === "center" ? "middle" : r.alignment === "right" ? "end" : "start", m = r.alignment === "center" ? d / 2 : r.alignment === "right" ? d - s : s, h = l.map((e, t) => {
+		let n = s + a + o * t;
+		return `<tspan x="${Ir(m)}" y="${Ir(n)}">${Fr(e)}</tspan>`;
+	}).join("");
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${d}" height="${f}" viewBox="0 0 ${d} ${f}" role="img" data-bubble-presentation="TEXT_ACTOR"><title>${Fr(e)}</title><rect width="${d}" height="${f}" rx="${Ir(c)}" fill="${Fr(r.backgroundColor)}"/><text xml:space="preserve" fill="${Fr(r.textColor)}" font-family="${Fr(r.font)}" font-size="${Ir(a)}" text-anchor="${p}">${h}</text></svg>`;
+}
+function Br(e) {
+	let t = Nr(e), n = /* @__PURE__ */ new Map([[Y.name, Y]]), r = /* @__PURE__ */ new Map(), i = !1, a = () => {
+		if (i) throw X("Text engine has been released.");
+	}, o = (e, i, a) => {
+		let o = n.get(a) ?? Y, s = t.renderer.createSVGSkin(zr(i, o, Rr(t.renderer)));
+		if (!Number.isInteger(s) || s < 0) throw X("TurboWarp did not create an SVG text skin.");
+		try {
+			t.renderer.updateDrawableSkinId(e.drawableID, s);
+		} catch (e) {
+			throw t.renderer.destroySkin(s), e;
+		}
+		let c = r.get(e);
+		r.set(e, {
+			skinId: s,
+			styleName: a,
+			text: i
+		}), c && c.skinId !== s && t.renderer.destroySkin(c.skinId), t.requestRedraw?.();
+	}, s = () => {
+		if (!i) for (let [e, t] of [...r]) o(e, t.text, t.styleName);
+	};
+	return t.on?.("STAGE_SIZE_CHANGED", s), Object.freeze({
+		defineStyle(e) {
+			a();
+			let t = Mr(e);
+			n.set(t.name, t);
+			for (let [e, n] of [...r]) n.styleName === t.name && o(e, n.text, t.name);
+		},
+		setText(e) {
+			if (a(), typeof e != "object" || !e) throw X("Text actor input must be an object.");
+			let t = Pr(e.target), n = Ar(e.styleName, "Text style name");
+			if (typeof e.text != "string") throw X("Text must be a string.");
+			o(t, e.text.replace(/\\r\\n|\\n|\\r/gu, "\n"), n);
+		},
+		releaseTarget(e) {
+			a();
+			let n = Pr(e), i = r.get(n);
+			if (!i) throw X("Text target is not owned by this engine.");
+			r.delete(n), t.renderer.destroySkin(i.skinId), t.requestRedraw?.();
+		},
+		releaseAll() {
+			if (!i) {
+				i = !0, t.off?.("STAGE_SIZE_CHANGED", s);
+				for (let e of r.values()) t.renderer.destroySkin(e.skinId);
+				r.clear(), n.clear(), t.requestRedraw?.();
+			}
+		}
+	});
+}
+//#endregion
 //#region src/composition.ts
-var Z = class extends Error {
+var Vr = ["POP_OUT_BUBBLE", "TEXT_ACTOR"], Z = class extends Error {
 	code;
 	constructor(e, t) {
 		super(t), this.name = "BubbleCompositionError", this.code = e;
 	}
-}, Cr = /* @__PURE__ */ new Set(["say", "think"]), wr = /* @__PURE__ */ new Set([
+}, Hr = /* @__PURE__ */ new Set(["say", "think"]), Ur = /* @__PURE__ */ new Set([
 	"idle",
 	"talking",
 	"awaiting-advance"
-]);
+]), Wr = new Set(Vr);
 function Q(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
-function Tr(e, t, n, r) {
+function Gr(e, t, n, r) {
 	let i = /* @__PURE__ */ new Set([...t, ...n]), a = t.filter((t) => !Object.prototype.hasOwnProperty.call(e, t)), o = Object.keys(e).filter((e) => !i.has(e));
 	if (a.length > 0 || o.length > 0) throw new Z("BUBBLE-COMPOSITION-001", `${r} has missing or unknown properties.`);
 }
@@ -3966,9 +4110,9 @@ function $(e, t) {
 	if (typeof e != "string" || e.trim().length === 0) throw new Z("BUBBLE-COMPOSITION-001", `${t} must be a non-empty string.`);
 	return e.trim();
 }
-function Er(e, t, n) {
+function Kr(e, t, n) {
 	if (!Q(e)) throw new Z("BUBBLE-COMPOSITION-001", `${t} must be an object.`);
-	if (Tr(e, ["frames", "frameIntervalSeconds"], [], t), !Array.isArray(e.frames) || e.frames.length < n) throw new Z("BUBBLE-COMPOSITION-001", `${t}.frames must contain at least ${n} image asset name${n === 1 ? "" : "s"}.`);
+	if (Gr(e, ["frames", "frameIntervalSeconds"], [], t), !Array.isArray(e.frames) || e.frames.length < n) throw new Z("BUBBLE-COMPOSITION-001", `${t}.frames must contain at least ${n} image asset name${n === 1 ? "" : "s"}.`);
 	let r = Object.freeze(e.frames.map((e, n) => $(e, `${t}.frames[${n}]`))), i = e.frameIntervalSeconds;
 	if (typeof i != "number" || !Number.isFinite(i) || i <= 0) throw new Z("BUBBLE-COMPOSITION-001", `${t}.frameIntervalSeconds must be a positive finite number.`);
 	return Object.freeze({
@@ -3976,19 +4120,20 @@ function Er(e, t, n) {
 		frameIntervalSeconds: i
 	});
 }
-function Dr(e) {
+function qr(e) {
 	if (!Q(e)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
-	Tr(e, ["base"], ["blink", "talk"], "Bubble portrait");
-	let t = e.blink === void 0 ? void 0 : Er(e.blink, "Bubble portrait blink", 1), n = e.talk === void 0 ? void 0 : Er(e.talk, "Bubble portrait talk", 1);
+	Gr(e, ["base"], ["blink", "talk"], "Bubble portrait");
+	let t = e.blink === void 0 ? void 0 : Kr(e.blink, "Bubble portrait blink", 1), n = e.talk === void 0 ? void 0 : Kr(e.talk, "Bubble portrait talk", 1);
 	return Object.freeze({
 		base: $(e.base, "Bubble portrait base"),
 		...t === void 0 ? {} : { blink: t },
 		...n === void 0 ? {} : { talk: n }
 	});
 }
-function Or(e) {
+function Jr(e) {
 	if (!Q(e)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
-	Tr(e, ["name", "textStyle"], [
+	Gr(e, ["name", "textStyle"], [
+		"presentationMode",
 		"placement",
 		"distance",
 		"tailLength",
@@ -3997,87 +4142,117 @@ function Or(e) {
 		"portrait",
 		"advanceIndicator"
 	], "Bubble style");
-	let t = e.portrait === void 0 ? void 0 : Dr(e.portrait), n = e.advanceIndicator === void 0 ? void 0 : Er(e.advanceIndicator, "Bubble advance indicator", 2), r;
+	let t = e.presentationMode === void 0 ? "POP_OUT_BUBBLE" : e.presentationMode;
+	if (!Wr.has(t)) throw new Z("BUBBLE-COMPOSITION-001", `Unsupported Bubble presentation mode: ${String(t)}`);
+	if (t === "TEXT_ACTOR") {
+		let t = [
+			"placement",
+			"distance",
+			"tailLength",
+			"offset",
+			"visualStyle",
+			"portrait",
+			"advanceIndicator"
+		].filter((t) => Object.prototype.hasOwnProperty.call(e, t));
+		if (t.length > 0) throw new Z("BUBBLE-COMPOSITION-001", `TEXT_ACTOR does not accept popup-only settings: ${t.join(", ")}.`);
+	}
+	let n = e.portrait === void 0 ? void 0 : qr(e.portrait), r = e.advanceIndicator === void 0 ? void 0 : Kr(e.advanceIndicator, "Bubble advance indicator", 2), i;
 	try {
-		r = y(e.placement ?? "up-right");
+		i = y(e.placement ?? "up-right");
 	} catch (e) {
 		throw new Z("BUBBLE-COMPOSITION-001", e instanceof Error ? e.message : "Bubble placement is invalid.");
 	}
-	let i, a, o;
+	let a, o, s;
 	try {
-		i = C(e.distance ?? 12), a = ne(e.tailLength ?? 18), o = e.offset === void 0 ? te : w(e.offset);
+		a = C(e.distance ?? 12), o = ne(e.tailLength ?? 18), s = e.offset === void 0 ? te : w(e.offset);
 	} catch (e) {
 		throw new Z("BUBBLE-COMPOSITION-001", e instanceof Error ? e.message : "Bubble actor-relative transform is invalid.");
 	}
-	let s = e.visualStyle ?? "NORMAL";
-	if (typeof s != "string" || !D.includes(s)) throw new Z("BUBBLE-COMPOSITION-001", `Unsupported Bubble visual style: ${String(s)}`);
+	let c = e.visualStyle ?? "NORMAL";
+	if (typeof c != "string" || !D.includes(c)) throw new Z("BUBBLE-COMPOSITION-001", `Unsupported Bubble visual style: ${String(c)}`);
 	return Object.freeze({
 		name: $(e.name, "Bubble style name"),
 		textStyle: $(e.textStyle, "Bubble text style name"),
-		placement: r,
-		distance: i,
-		tailLength: a,
-		offset: o,
-		visualStyle: s,
-		...t === void 0 ? {} : { portrait: t },
-		...n === void 0 ? {} : { advanceIndicator: n }
+		presentationMode: t,
+		placement: i,
+		distance: a,
+		tailLength: o,
+		offset: s,
+		visualStyle: c,
+		...n === void 0 ? {} : { portrait: n },
+		...r === void 0 ? {} : { advanceIndicator: r }
 	});
 }
-function kr(e) {
+function Yr(e) {
+	if (!Q(e)) throw new Z("BUBBLE-COMPOSITION-001", "Text actor input must be an object.");
+	if (Gr(e, [
+		"actor",
+		"actorKey",
+		"styleName",
+		"text"
+	], [], "Text actor input"), typeof e.text != "string") throw new Z("BUBBLE-COMPOSITION-001", "Text actor text must be a string.");
+	return Object.freeze({
+		actor: ti(e.actor),
+		actorKey: $(e.actorKey, "Text actor key"),
+		styleName: $(e.styleName, "Text actor style name"),
+		text: e.text
+	});
+}
+function Xr(e) {
 	if (!Q(e) || typeof e.applyToTarget != "function" || typeof e.getMimeType != "function" || typeof e.isRegistered != "function") throw TypeError("Bubble asset manager must provide applyToTarget, getMimeType, and isRegistered.");
 	return e;
 }
-function Ar(e) {
-	if (!Q(e) || typeof e.setText != "function" || typeof e.releaseTarget != "function") throw TypeError("Bubble SVG Text composition must provide setText and releaseTarget.");
+function Zr(e) {
+	if (!Q(e) || typeof e.defineStyle != "function" || typeof e.setText != "function" || typeof e.releaseTarget != "function") throw TypeError("Bubble SVG Text composition must provide defineStyle, setText, and releaseTarget.");
 	return e;
 }
-function jr() {
+function Qr() {
 	return Object.freeze({
 		setTimeout: (e, t) => globalThis.setTimeout(e, t),
 		clearTimeout: (e) => globalThis.clearTimeout(e)
 	});
 }
-function Mr(e) {
+function $r(e) {
 	if (!Q(e) || typeof e.setTimeout != "function" || typeof e.clearTimeout != "function") throw TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
 	return e;
 }
-function Nr(e, t) {
+function ei(e, t) {
 	if (!Q(e) || typeof e.id != "string" || e.id.length === 0 || typeof e.isStage != "boolean") throw new Z("BUBBLE-COMPOSITION-004", `${t} must provide id and isStage.`);
 	return e;
 }
-function Pr(e) {
+function ti(e) {
 	if (!Q(e) || typeof e.drawableID != "number" || !Number.isInteger(e.drawableID) || e.drawableID < 0) throw new Z("BUBBLE-COMPOSITION-004", "Bubble text target must provide a non-negative integer drawableID.");
 	return e;
 }
-function Fr(e, t) {
+function ni(e, t) {
 	if (!Q(e) || !Q(e.targets) || typeof e.setLayerVisible != "function" || typeof e.show != "function" || typeof e.hide != "function" || typeof e.dispose != "function") throw new Z("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
 	let n = e.targets;
-	Pr(n.text);
+	ti(n.text);
 	let r = /* @__PURE__ */ new Set(), i = (e, t) => {
 		let i = n[e];
 		if (!t && i === void 0) return;
-		let a = Nr(i, `Bubble surface ${e}`);
+		let a = ei(i, `Bubble surface ${e}`);
 		if (r.has(a.id)) throw new Z("BUBBLE-COMPOSITION-004", "Bubble image layers must use distinct target IDs.");
 		r.add(a.id);
 	};
 	return i("portraitBase", t.portrait !== void 0), i("portraitBlink", t.portrait?.blink !== void 0), i("portraitTalk", t.portrait?.talk !== void 0), i("advanceIndicator", t.advanceIndicator !== void 0), e;
 }
-function Ir(e, t) {
+function ri(e, t) {
 	if (!e.isRegistered(t)) throw new Z("BUBBLE-COMPOSITION-003", `Bubble image asset is not registered: ${t}`);
 	if (!e.getMimeType(t).startsWith("image/")) throw new Z("BUBBLE-COMPOSITION-003", `Bubble asset is not an image: ${t}`);
 }
-function Lr(e) {
+function ii(e) {
 	return [...e.portrait === void 0 ? [] : [
 		e.portrait.base,
 		...e.portrait.blink?.frames ?? [],
 		...e.portrait.talk?.frames ?? []
 	], ...e.advanceIndicator?.frames ?? []];
 }
-function Rr(e, t) {
+function ai(e, t) {
 	if (e.length === 1) throw e[0];
 	if (e.length > 1) throw AggregateError(e, t);
 }
-function zr(e) {
+function oi(e) {
 	let t = !1, n = 0, r = 0, i, a = Promise.resolve(), o = async (t) => {
 		let n = e.animation.frames[t];
 		n !== void 0 && await e.assetManager.applyToTarget(n, e.target);
@@ -4112,18 +4287,18 @@ function zr(e) {
 		}
 	});
 }
-function Br(e) {
+function si(e) {
 	if (!Q(e)) throw new Z("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
-	if (Tr(e, [
+	if (Gr(e, [
 		"actor",
 		"actorKey",
 		"kind",
 		"text",
 		"styleName"
-	], ["animationMode"], "Show bubble input"), !Cr.has(e.kind)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
+	], ["animationMode"], "Show bubble input"), !Hr.has(e.kind)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
 	if (typeof e.text != "string") throw new Z("BUBBLE-COMPOSITION-001", "Bubble text must be a string.");
 	let t = e.animationMode ?? "talking";
-	if (!wr.has(t)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid.");
+	if (!Ur.has(t)) throw new Z("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid.");
 	return {
 		actor: e.actor,
 		actorKey: $(e.actorKey, "Bubble actor key"),
@@ -4133,12 +4308,12 @@ function Br(e) {
 		animationMode: t
 	};
 }
-function Vr(e) {
+function ci(e) {
 	if (!Q(e)) throw TypeError("Bubble composition options must be an object.");
-	let t = kr(e.assetManager), n = Ar(e.svgText);
+	let t = Xr(e.assetManager), n = Zr(e.svgText);
 	if (typeof e.createSurface != "function") throw TypeError("Bubble composition createSurface must be a function.");
 	if (e.onAnimationError !== void 0 && typeof e.onAnimationError != "function") throw TypeError("Bubble composition onAnimationError must be a function.");
-	let r = Mr(e.scheduler ?? jr()), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = !1, c = () => {
+	let r = $r(e.scheduler ?? Qr()), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = !1, c = () => {
 		if (s) throw new Z("BUBBLE-COMPOSITION-005", "Bubble composition has been disposed.");
 	}, l = async (e, t) => {
 		let n = (o.get(e) ?? Promise.resolve()).catch(() => void 0).then(t);
@@ -4148,68 +4323,104 @@ function Vr(e) {
 		} finally {
 			o.get(e) === n && o.delete(e);
 		}
-	}, u = async (o) => {
+	}, u = async (e, t) => {
+		c();
+		let r = a.get(e.actorKey);
+		r && await r.close(), n.setText({
+			styleName: e.styleName,
+			target: e.actor,
+			text: e.text
+		});
+		let i = !1, o = Promise.resolve(), s = Object.freeze({
+			actorKey: e.actorKey,
+			kind: t,
+			get animationMode() {
+				return "idle";
+			},
+			setText(t) {
+				return i ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Text actor is already closed: ${e.actorKey}`)) : typeof t == "string" ? (o = o.then(() => {
+					n.setText({
+						styleName: e.styleName,
+						target: e.actor,
+						text: t
+					});
+				}), o) : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "Text actor text must be a string."));
+			},
+			setAnimationMode(t) {
+				return i ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Text actor is already closed: ${e.actorKey}`)) : t === "idle" ? o : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "TEXT_ACTOR does not support Bubble animation modes."));
+			},
+			async close() {
+				i || (i = !0, await o, n.releaseTarget(e.actor), a.get(e.actorKey) === s && a.delete(e.actorKey));
+			}
+		});
+		return a.set(e.actorKey, s), s;
+	}, d = async (o) => {
 		c();
 		let s = i.get(o.styleName);
 		if (!s) throw new Z("BUBBLE-COMPOSITION-002", `Bubble style is not defined: ${o.styleName}`);
-		for (let e of new Set(Lr(s))) Ir(t, e);
+		for (let e of new Set(ii(s))) ri(t, e);
 		let l = a.get(o.actorKey);
-		l && await l.close();
-		let u, d = !1, f = !1, p, m, h;
+		if (l && await l.close(), s.presentationMode === "TEXT_ACTOR") return u(Object.freeze({
+			actor: ti(o.actor),
+			actorKey: o.actorKey,
+			styleName: s.textStyle,
+			text: o.text
+		}), o.kind);
+		let d, f = !1, p = !1, m, h, g;
 		try {
-			u = Fr(await e.createSurface(Object.freeze({
+			d = ni(await e.createSurface(Object.freeze({
 				actor: o.actor,
 				actorKey: o.actorKey,
 				kind: o.kind,
 				style: s
 			})), s), n.setText({
 				styleName: s.textStyle,
-				target: u.targets.text,
+				target: d.targets.text,
 				text: o.text
-			}), d = !0;
+			}), f = !0;
 			let i = [];
 			if (s.portrait) {
-				i.push(t.applyToTarget(s.portrait.base, u.targets.portraitBase));
+				i.push(t.applyToTarget(s.portrait.base, d.targets.portraitBase));
 				let e = s.portrait.blink?.frames[0];
-				e !== void 0 && i.push(t.applyToTarget(e, u.targets.portraitBlink));
+				e !== void 0 && i.push(t.applyToTarget(e, d.targets.portraitBlink));
 				let n = s.portrait.talk?.frames[0];
-				n !== void 0 && i.push(t.applyToTarget(n, u.targets.portraitTalk));
+				n !== void 0 && i.push(t.applyToTarget(n, d.targets.portraitTalk));
 			}
 			let c = s.advanceIndicator?.frames[0];
-			c !== void 0 && i.push(t.applyToTarget(c, u.targets.advanceIndicator)), await Promise.all(i), p = s.portrait?.blink === void 0 ? void 0 : zr({
+			c !== void 0 && i.push(t.applyToTarget(c, d.targets.advanceIndicator)), await Promise.all(i), m = s.portrait?.blink === void 0 ? void 0 : oi({
 				actorKey: o.actorKey,
 				layer: "portraitBlink",
 				animation: s.portrait.blink,
-				target: u.targets.portraitBlink,
+				target: d.targets.portraitBlink,
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
-			}), m = s.portrait?.talk === void 0 ? void 0 : zr({
+			}), h = s.portrait?.talk === void 0 ? void 0 : oi({
 				actorKey: o.actorKey,
 				layer: "portraitTalk",
 				animation: s.portrait.talk,
-				target: u.targets.portraitTalk,
+				target: d.targets.portraitTalk,
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
-			}), h = s.advanceIndicator === void 0 ? void 0 : zr({
+			}), g = s.advanceIndicator === void 0 ? void 0 : oi({
 				actorKey: o.actorKey,
 				layer: "advanceIndicator",
 				animation: s.advanceIndicator,
-				target: u.targets.advanceIndicator,
+				target: d.targets.advanceIndicator,
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
 			});
-			let l = "idle", g = !1, _ = Promise.resolve(), v = async (e) => {
-				e !== l && (e === "talking" ? (await h?.stop(), await u?.setLayerVisible("advanceIndicator", !1), await u?.setLayerVisible("portraitTalk", m !== void 0), await m?.start({ primed: !0 })) : e === "awaiting-advance" ? (await m?.stop({ reset: !0 }), await u?.setLayerVisible("portraitTalk", !1), await u?.setLayerVisible("advanceIndicator", h !== void 0), await h?.start({ primed: !0 })) : (await Promise.all([m?.stop({ reset: !0 }), h?.stop()]), await Promise.all([u?.setLayerVisible("portraitTalk", !1), u?.setLayerVisible("advanceIndicator", !1)])), l = e);
+			let l = "idle", u = !1, _ = Promise.resolve(), v = async (e) => {
+				e !== l && (e === "talking" ? (await g?.stop(), await d?.setLayerVisible("advanceIndicator", !1), await d?.setLayerVisible("portraitTalk", h !== void 0), await h?.start({ primed: !0 })) : e === "awaiting-advance" ? (await h?.stop({ reset: !0 }), await d?.setLayerVisible("portraitTalk", !1), await d?.setLayerVisible("advanceIndicator", g !== void 0), await g?.start({ primed: !0 })) : (await Promise.all([h?.stop({ reset: !0 }), g?.stop()]), await Promise.all([d?.setLayerVisible("portraitTalk", !1), d?.setLayerVisible("advanceIndicator", !1)])), l = e);
 			};
 			await Promise.all([
-				u.setLayerVisible("portraitBase", s.portrait !== void 0),
-				u.setLayerVisible("portraitBlink", s.portrait?.blink !== void 0),
-				u.setLayerVisible("portraitTalk", !1),
-				u.setLayerVisible("advanceIndicator", !1)
-			]), await u.show(), f = !0, await p?.start({ primed: !0 }), await v(o.animationMode);
+				d.setLayerVisible("portraitBase", s.portrait !== void 0),
+				d.setLayerVisible("portraitBlink", s.portrait?.blink !== void 0),
+				d.setLayerVisible("portraitTalk", !1),
+				d.setLayerVisible("advanceIndicator", !1)
+			]), await d.show(), p = !0, await m?.start({ primed: !0 }), await v(o.animationMode);
 			let y = Object.freeze({
 				actorKey: o.actorKey,
 				kind: o.kind,
@@ -4217,20 +4428,20 @@ function Vr(e) {
 					return l;
 				},
 				setText(e) {
-					return g ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : typeof e == "string" ? (_ = _.then(async () => {
-						u && (n.setText({
+					return u ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : typeof e == "string" ? (_ = _.then(async () => {
+						d && (n.setText({
 							styleName: s.textStyle,
-							target: u.targets.text,
+							target: d.targets.text,
 							text: e
-						}), await u.show());
+						}), await d.show());
 					}), _) : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "Bubble text must be a string."));
 				},
 				setAnimationMode(e) {
-					return g ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : wr.has(e) ? (_ = _.then(() => v(e)), _) : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid."));
+					return u ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : Ur.has(e) ? (_ = _.then(() => v(e)), _) : Promise.reject(new Z("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid."));
 				},
 				async close() {
-					if (g) return;
-					g = !0;
+					if (u) return;
+					u = !0;
 					let e = [];
 					try {
 						await _;
@@ -4238,43 +4449,43 @@ function Vr(e) {
 						e.push(t);
 					}
 					for (let t of [
-						() => p?.stop(),
 						() => m?.stop(),
 						() => h?.stop(),
+						() => g?.stop(),
 						async () => {
-							f && await u?.hide();
+							p && await d?.hide();
 						},
 						async () => {
-							d && u && n.releaseTarget(u.targets.text);
+							f && d && n.releaseTarget(d.targets.text);
 						},
-						async () => u?.dispose()
+						async () => d?.dispose()
 					]) try {
 						await t();
 					} catch (t) {
 						e.push(t);
 					}
-					a.get(o.actorKey) === y && a.delete(o.actorKey), Rr(e, `Failed to close bubble: ${o.actorKey}`);
+					a.get(o.actorKey) === y && a.delete(o.actorKey), ai(e, `Failed to close bubble: ${o.actorKey}`);
 				}
 			});
 			return a.set(o.actorKey, y), y;
 		} catch (e) {
 			let t = [], r = await Promise.allSettled([
-				p?.stop(),
 				m?.stop(),
-				h?.stop()
+				h?.stop(),
+				g?.stop()
 			]);
-			if (t.push(...r.flatMap((e) => e.status === "rejected" ? [e.reason] : [])), f && u) try {
-				await u.hide();
+			if (t.push(...r.flatMap((e) => e.status === "rejected" ? [e.reason] : [])), p && d) try {
+				await d.hide();
 			} catch (e) {
 				t.push(e);
 			}
-			if (d && u) try {
-				n.releaseTarget(u.targets.text);
+			if (f && d) try {
+				n.releaseTarget(d.targets.text);
 			} catch (e) {
 				t.push(e);
 			}
-			if (u) try {
-				await u.dispose();
+			if (d) try {
+				await d.dispose();
 			} catch (e) {
 				t.push(e);
 			}
@@ -4282,9 +4493,12 @@ function Vr(e) {
 		}
 	};
 	return Object.freeze({
+		defineTextStyle(e) {
+			c(), n.defineStyle(e);
+		},
 		defineStyle(e) {
 			c();
-			let t = Or(e);
+			let t = Jr(e);
 			i.set(t.name, t);
 		},
 		hasActiveBubble(e) {
@@ -4292,8 +4506,13 @@ function Vr(e) {
 		},
 		async show(e) {
 			c();
-			let t = Br(e);
-			return l(t.actorKey, () => u(t));
+			let t = si(e);
+			return l(t.actorKey, () => d(t));
+		},
+		async setTextActor(e) {
+			c();
+			let t = Yr(e);
+			await l(t.actorKey, () => u(t, "say"));
 		},
 		releaseTarget(e) {
 			c();
@@ -4303,15 +4522,15 @@ function Vr(e) {
 			});
 		},
 		async releaseAll() {
-			c(), await Promise.allSettled([...o.values()]), Rr((await Promise.allSettled([...a.values()].map((e) => e.close()))).flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to release all bubbles");
+			c(), await Promise.allSettled([...o.values()]), ai((await Promise.allSettled([...a.values()].map((e) => e.close()))).flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to release all bubbles");
 		},
 		async dispose() {
 			if (s) return;
 			s = !0, await Promise.allSettled([...o.values()]);
 			let e = await Promise.allSettled([...a.values()].map((e) => e.close()));
-			i.clear(), Rr(e.flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to dispose bubble composition");
+			i.clear(), ai(e.flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to dispose bubble composition");
 		}
 	});
 }
 //#endregion
-export { Z as BubbleCompositionError, hr as UnicodeLineBreakProvider, re as actorRelativeBubbleCenter, d as bubbleBackgroundRegions, Te as bubbleBodyCenterOffset, u as bubbleDirectionAliases, l as bubbleDirectionNames, D as bubbleVisualStyles, Vr as createBubbleComposition, ee as defaultBubbleDistance, te as defaultBubbleOffset, f as defaultBubblePlacementInput, x as defaultBubbleTailLength, C as normalizeBubbleDistance, w as normalizeBubbleOffset, y as normalizeBubblePlacement, ne as normalizeBubbleTailLength, De as renderBubbleSvg, Sr as wrapText };
+export { Z as BubbleCompositionError, _r as UnicodeLineBreakProvider, re as actorRelativeBubbleCenter, d as bubbleBackgroundRegions, Te as bubbleBodyCenterOffset, u as bubbleDirectionAliases, l as bubbleDirectionNames, Vr as bubblePresentationModes, D as bubbleVisualStyles, ci as createBubbleComposition, Br as createBubbleTextEngine, ee as defaultBubbleDistance, te as defaultBubbleOffset, f as defaultBubblePlacementInput, x as defaultBubbleTailLength, C as normalizeBubbleDistance, w as normalizeBubbleOffset, y as normalizeBubblePlacement, ne as normalizeBubbleTailLength, De as renderBubbleSvg, zr as renderTextActorSvg, wr as wrapText };

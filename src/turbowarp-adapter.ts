@@ -17,6 +17,10 @@ import {
   bubbleDirectionVector,
   type BubbleDirectionName,
 } from "./placement.js";
+import {
+  createBubbleTextEngine,
+  type BubbleTextEngine,
+} from "./text-engine.js";
 
 const spriteLayer = "sprite";
 const portraitBoxSize = 96;
@@ -40,6 +44,7 @@ export interface TurboWarpBubbleTarget {
     readonly top: number;
   };
   onTargetVisualChange?: ((target?: TurboWarpBubbleTarget) => void) | null;
+  updateAllDrawableProperties?(): void;
 }
 
 export interface TurboWarpBubbleRenderer {
@@ -69,18 +74,11 @@ export interface TurboWarpAssetManagerExtension {
   ): Readonly<{ skinId: number }> | Promise<Readonly<{ skinId: number }>>;
 }
 
-export interface TurboWarpSvgTextExtension {
-  setText(
-    args: Readonly<{ STYLE: unknown; TEXT: unknown }>,
-    util: Readonly<{ target: TurboWarpBubbleTarget }>,
-  ): void;
-  releaseTextActor(target: TurboWarpBubbleTarget): boolean;
-}
-
 export interface TurboWarpBubbleRuntime {
   readonly renderer: TurboWarpBubbleRenderer;
   readonly ext_kubohiroyaassetmanager?: TurboWarpAssetManagerExtension;
-  readonly ext_kubohiroyasvgtext?: TurboWarpSvgTextExtension;
+  on?(event: string, listener: () => void): void;
+  off?(event: string, listener: () => void): void;
   requestRedraw?(): void;
 }
 
@@ -92,7 +90,7 @@ export interface TurboWarpBubbleCompositionOptions {
 }
 
 export type BubbleRuntimeAdapterErrorCode =
-  "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002" | "BUBBLE-RUNTIME-003";
+  "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002";
 
 export class BubbleRuntimeAdapterError extends Error {
   public readonly code: BubbleRuntimeAdapterErrorCode;
@@ -160,18 +158,13 @@ function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
   return value as unknown as TurboWarpAssetManagerExtension;
 }
 
-function requireSvgText(value: unknown): TurboWarpSvgTextExtension {
+function restoreTargetCostume(target: unknown): void {
   if (
-    !isRecord(value) ||
-    typeof value.setText !== "function" ||
-    typeof value.releaseTextActor !== "function"
+    isRecord(target) &&
+    typeof target.updateAllDrawableProperties === "function"
   ) {
-    throw new BubbleRuntimeAdapterError(
-      "BUBBLE-RUNTIME-003",
-      "Bubble requires SVG Text. Load @kubohiroya/turbowarp-svg-text before using Bubble blocks.",
-    );
+    target.updateAllDrawableProperties();
   }
-  return value as unknown as TurboWarpSvgTextExtension;
 }
 
 function targetBounds(target: TurboWarpBubbleTarget) {
@@ -622,16 +615,18 @@ export function createTurboWarpBubbleComposition(
   const renderer = requireRenderer(runtime.renderer);
   const assetExtension = options.assetManager
     ? null
-    : requireAssetManager(runtime.ext_kubohiroyaassetmanager);
-  const svgTextExtension = options.svgText
+    : runtime.ext_kubohiroyaassetmanager;
+  const internalSvgText: BubbleTextEngine | null = options.svgText
     ? null
-    : requireSvgText(runtime.ext_kubohiroyasvgtext);
+    : createBubbleTextEngine(runtime);
   const assetManager: BubbleAssetManager = options.assetManager ?? {
     isRegistered(name: unknown): boolean {
-      return assetExtension?.isLoaded({ NAME: name }) ?? false;
+      return requireAssetManager(assetExtension).isLoaded({ NAME: name });
     },
     getMimeType(name: unknown): string {
-      return assetExtension?.getAssetMimeType({ NAME: name }) ?? "";
+      return requireAssetManager(assetExtension).getAssetMimeType({
+        NAME: name,
+      });
     },
     async applyToTarget(name, target): Promise<void> {
       const drawableID = (target as unknown as DrawableTarget).drawableID;
@@ -641,7 +636,7 @@ export function createTurboWarpBubbleComposition(
           "Bubble image target drawable is invalid.",
         );
       }
-      const skin = await assetExtension?.resolveSkin(name);
+      const skin = await requireAssetManager(assetExtension).resolveSkin(name);
       if (
         !isRecord(skin) ||
         !Number.isInteger(skin.skinId) ||
@@ -656,19 +651,31 @@ export function createTurboWarpBubbleComposition(
       runtime.requestRedraw?.();
     },
   };
-  const svgText: BubbleSvgText = options.svgText ?? {
-    setText({ styleName, target, text }): void {
-      svgTextExtension?.setText(
-        { STYLE: styleName, TEXT: text },
-        { target: target as TurboWarpBubbleTarget },
+  const ownedSvgText: BubbleSvgText | null = internalSvgText
+    ? {
+        defineStyle(input): void {
+          internalSvgText.defineStyle(input);
+        },
+        setText(input): void {
+          internalSvgText.setText(input);
+        },
+        releaseTarget(target): void {
+          internalSvgText.releaseTarget(target);
+          restoreTargetCostume(target);
+        },
+      }
+    : null;
+  const svgText: BubbleSvgText =
+    options.svgText ??
+    ownedSvgText ??
+    (() => {
+      throw new BubbleRuntimeAdapterError(
+        "BUBBLE-RUNTIME-001",
+        "Bubble text engine is unavailable.",
       );
-    },
-    releaseTarget(target): void {
-      svgTextExtension?.releaseTextActor(target as TurboWarpBubbleTarget);
-    },
-  };
+    })();
 
-  return createBubbleComposition({
+  const composition = createBubbleComposition({
     assetManager,
     svgText,
     createSurface({ actor, actorKey, style }) {
@@ -691,5 +698,29 @@ export function createTurboWarpBubbleComposition(
     ...(options.onAnimationError === undefined
       ? {}
       : { onAnimationError: options.onAnimationError }),
+  });
+  if (!internalSvgText) return composition;
+  return Object.freeze({
+    ...composition,
+    async dispose(): Promise<void> {
+      const errors: unknown[] = [];
+      try {
+        await composition.dispose();
+      } catch (error) {
+        errors.push(error);
+      }
+      try {
+        internalSvgText.releaseAll();
+      } catch (error) {
+        errors.push(error);
+      }
+      if (errors.length === 1) throw errors[0];
+      if (errors.length > 1) {
+        throw new AggregateError(
+          errors,
+          "Failed to dispose Bubble text engine.",
+        );
+      }
+    },
   });
 }

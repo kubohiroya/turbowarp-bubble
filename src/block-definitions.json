@@ -2,6 +2,71 @@
   "extensionName": "Bubble",
   "blocks": [
     {
+      "opcode": "beginTextStyle",
+      "blockType": "COMMAND",
+      "text": "begin text style [STYLE]",
+      "description": "Starts a new text style draft. Starting another draft discards unsaved changes.",
+      "arguments": {
+        "STYLE": { "type": "STRING", "defaultValue": "default" }
+      }
+    },
+    {
+      "opcode": "setTextFont",
+      "blockType": "COMMAND",
+      "text": "set text font [FONT]",
+      "description": "Sets the font on the current text style draft.",
+      "arguments": {
+        "FONT": { "type": "STRING", "defaultValue": "Helvetica" }
+      }
+    },
+    {
+      "opcode": "setTextSize",
+      "blockType": "COMMAND",
+      "text": "set text size [SIZE] %",
+      "description": "Sets the font size percentage on the current text style draft.",
+      "arguments": {
+        "SIZE": { "type": "NUMBER", "defaultValue": 100 }
+      }
+    },
+    {
+      "opcode": "setTextColor",
+      "blockType": "COMMAND",
+      "text": "set text color [COLOR]",
+      "description": "Sets the foreground color on the current text style draft.",
+      "arguments": {
+        "COLOR": { "type": "COLOR", "defaultValue": "#575e75" }
+      }
+    },
+    {
+      "opcode": "setTextBackgroundColor",
+      "blockType": "COMMAND",
+      "text": "set text background color [COLOR]",
+      "description": "Sets the background color on the current text style draft.",
+      "arguments": {
+        "COLOR": { "type": "COLOR", "defaultValue": "#ffffff" }
+      }
+    },
+    {
+      "opcode": "setTextAlign",
+      "blockType": "COMMAND",
+      "text": "set text align [ALIGN]",
+      "description": "Sets the alignment on the current text style draft.",
+      "arguments": {
+        "ALIGN": {
+          "type": "STRING",
+          "defaultValue": "left",
+          "menu": "textAlign"
+        }
+      }
+    },
+    {
+      "opcode": "saveTextStyle",
+      "blockType": "COMMAND",
+      "text": "save text style",
+      "description": "Saves the current text style draft as an immutable named style and clears the draft.",
+      "arguments": {}
+    },
+    {
       "opcode": "defineBubbleStyle",
       "blockType": "COMMAND",
       "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
@@ -9,6 +74,20 @@
       "arguments": {
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" },
         "TEXT_STYLE": { "type": "STRING", "defaultValue": "default" }
+      }
+    },
+    {
+      "opcode": "setBubblePresentationMode",
+      "blockType": "COMMAND",
+      "text": "set presentation mode [MODE] for bubble style [STYLE]",
+      "description": "Selects a separate popup bubble or replaces the actor rendering with SVG text.",
+      "arguments": {
+        "MODE": {
+          "type": "STRING",
+          "defaultValue": "POP_OUT_BUBBLE",
+          "menu": "presentationMode"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
       }
     },
     {
@@ -135,6 +214,23 @@
       }
     },
     {
+      "opcode": "setTextActor",
+      "blockType": "COMMAND",
+      "text": "set this sprite text [TEXT] with text style [STYLE]",
+      "description": "Replaces this sprite's rendering with responsive SVG text.",
+      "arguments": {
+        "TEXT": { "type": "STRING", "defaultValue": "Title\\nSubtitle" },
+        "STYLE": { "type": "STRING", "defaultValue": "default" }
+      }
+    },
+    {
+      "opcode": "clearTextActor",
+      "blockType": "COMMAND",
+      "text": "clear this sprite text",
+      "description": "Releases this sprite's SVG text skin and restores its current costume rendering.",
+      "arguments": {}
+    },
+    {
       "opcode": "setBubbleAnimationMode",
       "blockType": "COMMAND",
       "text": "set this bubble animation mode [MODE]",
@@ -179,6 +275,14 @@
     }
   ],
   "menus": {
+    "textAlign": {
+      "acceptReporters": true,
+      "items": ["left", "center", "right"]
+    },
+    "presentationMode": {
+      "acceptReporters": true,
+      "items": ["POP_OUT_BUBBLE", "TEXT_ACTOR"]
+    },
     "visualStyle": {
       "acceptReporters": true,
       "items": [

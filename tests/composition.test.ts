@@ -60,9 +60,14 @@ function createHarness() {
       applied.push({ assetName: String(name), targetId: target.id });
     }),
   };
+  const defineTextStyle = vi.fn();
   const setText = vi.fn();
   const releaseTarget = vi.fn();
-  const svgText: BubbleSvgText = { setText, releaseTarget };
+  const svgText: BubbleSvgText = {
+    defineStyle: defineTextStyle,
+    setText,
+    releaseTarget,
+  };
   const visibility: Array<{ layer: BubbleLayer; visible: boolean }> = [];
   const surface: BubbleSurface = {
     targets: {
@@ -116,6 +121,7 @@ function createHarness() {
     assetManager,
     composition,
     createSurface,
+    defineTextStyle,
     registered,
     releaseTarget,
     scheduler,
@@ -256,6 +262,60 @@ describe("Bubble composition", () => {
         }),
       }),
     );
+  });
+
+  it("supports text styles and TEXT_ACTOR without creating a popup surface", async () => {
+    const harness = createHarness();
+    const target = { drawableID: 42 };
+    harness.composition.defineTextStyle({
+      name: "title-text",
+      alignment: "center",
+      font: "Noto Sans JP",
+      fontPercent: 180,
+      textColor: "#ffffff",
+    });
+    harness.composition.defineStyle({
+      name: "title",
+      textStyle: "title-text",
+      presentationMode: "TEXT_ACTOR",
+    });
+
+    const handle = await harness.composition.show({
+      actor: target,
+      actorKey: "Title",
+      kind: "say",
+      text: "Chapter 1",
+      styleName: "title",
+    });
+
+    expect(harness.defineTextStyle).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "title-text", alignment: "center" }),
+    );
+    expect(harness.createSurface).not.toHaveBeenCalled();
+    expect(harness.setText).toHaveBeenLastCalledWith({
+      styleName: "title-text",
+      target,
+      text: "Chapter 1",
+    });
+    expect(handle.animationMode).toBe("idle");
+    await expect(handle.setAnimationMode("talking")).rejects.toThrow(
+      "TEXT_ACTOR does not support Bubble animation modes",
+    );
+
+    await handle.close();
+    expect(harness.releaseTarget).toHaveBeenCalledWith(target);
+  });
+
+  it("rejects popup-only settings on TEXT_ACTOR styles", () => {
+    const harness = createHarness();
+    expect(() =>
+      harness.composition.defineStyle({
+        name: "invalid-title",
+        textStyle: "default",
+        presentationMode: "TEXT_ACTOR",
+        placement: "up",
+      }),
+    ).toThrow("TEXT_ACTOR does not accept popup-only settings: placement");
   });
 
   it("stops mouth animation and loops the indicator while awaiting advance", async () => {

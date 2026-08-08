@@ -9,6 +9,10 @@ const animationModeGuideUrl = new URL(
   "../docs/assets/animation-mode-guide.svg",
   import.meta.url,
 );
+const presentationModeGuideUrl = new URL(
+  "../docs/assets/presentation-mode-guide.svg",
+  import.meta.url,
+);
 const placementGuideUrl = new URL(
   "../docs/assets/placement-guide.svg",
   import.meta.url,
@@ -104,6 +108,7 @@ function inspectGif(buffer) {
 const [
   quickStart,
   animationModeGuide,
+  presentationModeGuide,
   placementGuide,
   actorTransformGuide,
   widthLinebreakGuide,
@@ -114,6 +119,7 @@ const [
 ] = await Promise.all([
   readFile(quickStartUrl, "utf8"),
   readFile(animationModeGuideUrl, "utf8"),
+  readFile(presentationModeGuideUrl, "utf8"),
   readFile(placementGuideUrl, "utf8"),
   readFile(actorTransformGuideUrl, "utf8"),
   readFile(widthLinebreakGuideUrl, "utf8"),
@@ -125,6 +131,9 @@ const [
 
 requireText(quickStart, 'viewBox="0 0 1200 880"', "Quick-start SVG");
 requireText(quickStart, "close this bubble", "Quick-start SVG");
+requireText(quickStart, "begin text style", "Quick-start SVG");
+requireText(quickStart, "save text style", "Quick-start SVG");
+forbidText(quickStart, "define text style", "Quick-start SVG");
 requireText(
   quickStart,
   "wait with this bubble until condition",
@@ -142,6 +151,20 @@ requireText(
   'viewBox="0 0 1200 500"',
   "Animation-mode-guide SVG",
 );
+requireText(
+  presentationModeGuide,
+  'viewBox="0 0 1200 430"',
+  "Presentation-mode-guide SVG",
+);
+for (const value of [
+  "POP_OUT_BUBBLE + NORMAL",
+  "POP_OUT_BUBBLE + NO_BUBBLE",
+  "TEXT_ACTOR",
+  'data-bubble-style="NORMAL"',
+  'data-bubble-presentation="TEXT_ACTOR"',
+]) {
+  requireText(presentationModeGuide, value, "Presentation-mode-guide SVG");
+}
 requireText(placementGuide, 'viewBox="0 0 1600 1560"', "Placement-guide SVG");
 requireText(
   actorTransformGuide,

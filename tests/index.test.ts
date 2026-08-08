@@ -10,7 +10,7 @@ function createScratch(
 ): ScratchApi & { registered: TurboWarpExtension[] } {
   const registered: TurboWarpExtension[] = [];
   return {
-    ArgumentType: { NUMBER: "number", STRING: "string" },
+    ArgumentType: { COLOR: "color", NUMBER: "number", STRING: "string" },
     BlockType: { COMMAND: "command", REPORTER: "reporter" },
     Cast: {
       toNumber: (value: unknown) => Number(value),

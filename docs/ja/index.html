@@ -71,7 +71,7 @@
 <p>このマニュアルでは、<code>turbowarp-bubble</code>をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。</p>
 <p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る5つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime ExpressionはBubbleの待機ブロックより前に、Asset ManagerとSVG Textは最初のBubble表示より前に読み込みます。</p>
+<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る4つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime Expressionが必要なのは内蔵待機ブロックだけです。Asset Managerが必要なのはportraitまたはadvance-frame画像を使う場合だけです。SVG Text engineはBubbleに内蔵されるため、SVG Text拡張を別途読み込みません。</p>
 <table>
 <thead>
 <tr>
@@ -102,22 +102,16 @@
 </tr>
 <tr>
 <td align="right">5</td>
-<td>SVG Text 0.3.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js</code></td>
-</tr>
-<tr>
-<td align="right">6</td>
-<td>Bubble 0.1.0</td>
-<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.2.0</td>
+<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。表示時にAsset ManagerかSVG Textが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。</p>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。画像layerを使うときにAsset Managerがない場合、または待機開始時にAsync Input／Runtime Expressionがない場合は、Bubbleが必要な拡張名を含むerrorを返します。</p>
 <p>参考：</p>
 <ul>
 <li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-async-input/ja/">Async Input 日本語ガイド</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-runtime-expression/ja/">Runtime Expression 日本語ガイド</a></li>
-<li><a href="https://kubohiroya.github.io/turbowarp-svg-text/ja/">SVG Text 日本語ガイド</a></li>
 </ul>
 <h2 id="portrait">2. 表情画像を準備する</h2>
 <p>例では<code>Assets</code>という素材用spriteに、次のcostumeを入れます。素材用spriteは画面上で非表示でも構いません。</p>
@@ -177,26 +171,58 @@ register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
 <p>URL画像を使う場合は、<code>RESOURCE_ID</code>へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが<code>image/*</code>のアセットだけです。</p>
 <h2 id="text-style">3. 文字styleを定義する</h2>
-<p>SVG Textで、Bubbleの文字部分に使う名前付きstyleを定義します。</p>
-<pre><code class="language-text">define text style [dialogue-text]
-  background [#fff4cc]
-  text [#332200]
-  font [Noto Sans JP]
-  size [100]
-  align [left]
-  bubble direction [up]
+<p>BubbleのBuilderブロックを使い、巨大な単一ブロックを使わずに名前付きstyleを定義します。</p>
+<pre><code class="language-text">begin text style [dialogue-text]
+set text background color [#fff4cc]
+set text color [#332200]
+set text font [Noto Sans JP]
+set text size [100] %
+set text align [left]
+save text style
 </code></pre>
-<p>Bubbleは<code>dialogue-text</code>という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。</p>
-<p>SVG Text 0.3.xではblock contract上<code>bubble direction</code>入力が残っていますが、Bubbleが<code>setText</code>で生成する文字drawableの配置には使われません。Bubbleの配置は次節の<code>set bubble placement</code>で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。</p>
+<p><code>begin</code>はextension全体で1個の作業中draftを作成・置換します。<code>save</code>はimmutableなnamed styleとして保存し、draftを破棄します。別draftの開始時、project開始・停止時にも未保存変更を破棄します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。</p>
 <h2 id="bubble-style">4. Bubble styleを定義する</h2>
 <p>まず、Bubble style名とSVG Textのstyle名を関連付けます。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
+set presentation mode [POP_OUT_BUBBLE] for bubble style [hero-dialogue]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
 set bubble visual style [NORMAL] for bubble style [hero-dialogue]
 set bubble tail length [18] for bubble style [hero-dialogue]
 set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 </code></pre>
+<h3>Presentation mode</h3>
+<p><img src="../assets/presentation-mode-guide.svg" alt="productionのSVG rendererでpopup Bubble、枠なしpopup文字、text actorを比較する図"></p>
+<p><code>presentationMode</code>とSVG本体形状は別の指定です。</p>
+<table>
+<thead>
+<tr>
+<th>presentation mode</th>
+<th>shape</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>POP_OUT_BUBBLE</code></td>
+<td><code>NORMAL</code>など</td>
+<td>Actorを維持して別drawableの吹き出しを表示</td>
+</tr>
+<tr>
+<td><code>POP_OUT_BUBBLE</code></td>
+<td><code>NO_BUBBLE</code></td>
+<td>本体とtailなしで別drawableの文字だけを表示</td>
+</tr>
+<tr>
+<td><code>TEXT_ACTOR</code></td>
+<td>適用外</td>
+<td>Actor自身の表示をresponsive SVG textへ置換</td>
+</tr>
+</tbody></table>
+<p>text actorはBubble styleを<code>TEXT_ACTOR</code>にして<code>say</code>／<code>think</code>を実行するか、直接ブロックで指定できます。</p>
+<pre><code class="language-text">set this sprite text [第1章] with text style [dialogue-text]
+clear this sprite text
+</code></pre>
+<p><code>TEXT_ACTOR</code>にはplacement、distance、tail、offset、visual shape、portrait、advance indicatorを指定できません。Bubbleは不整合な組み合わせを無視せずerrorにします。clear時は生成SVG skinを解放し、spriteの現在のcostumeを再適用します。</p>
 <h3>Actor相対と背景相対のplacement</h3>
 <p><img src="../assets/placement-guide.svg" alt="Actor相対の16方向・角度指定と、背景相対の3配置を比較する図"></p>
 <p>Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。三角形tailの基部2点は実際の本体border上にあり、本体polygonとのJSClipper union後の単一pathを描くため、接合部に内部border線は残りません。</p>
@@ -342,8 +368,24 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 </thead>
 <tbody><tr>
+<td><code>begin text style [STYLE]</code></td>
+<td>作業中の文字style draftを開始・置換する</td>
+</tr>
+<tr>
+<td><code>set text font/size/color/background/align ...</code></td>
+<td>作業中の文字style draftへ設定を加える</td>
+</tr>
+<tr>
+<td><code>save text style</code></td>
+<td>named styleを保存してdraftを破棄する</td>
+</tr>
+<tr>
 <td><code>define bubble style [STYLE] using text style [TEXT_STYLE]</code></td>
 <td>Bubble styleを定義または再定義する</td>
+</tr>
+<tr>
+<td><code>set presentation mode [MODE] for bubble style [STYLE]</code></td>
+<td><code>POP_OUT_BUBBLE</code>または<code>TEXT_ACTOR</code>を選ぶ</td>
 </tr>
 <tr>
 <td><code>set bubble placement [PLACEMENT] for bubble style [STYLE]</code></td>
@@ -390,6 +432,14 @@ think [MESSAGE] with bubble style [STYLE]
 <td><code>talking</code> modeでthink表示を開始・置換する</td>
 </tr>
 <tr>
+<td><code>set this sprite text [TEXT] with text style [STYLE]</code></td>
+<td>sprite自身の表示をSVG textへ置換する</td>
+</tr>
+<tr>
+<td><code>clear this sprite text</code></td>
+<td>SVG textを解放して現在のcostumeを復元する</td>
+</tr>
+<tr>
 <td><code>set this bubble animation mode [MODE]</code></td>
 <td><code>talking</code>、<code>awaiting-advance</code>、<code>idle</code>からmodeを選ぶ</td>
 </tr>
@@ -417,10 +467,6 @@ think [MESSAGE] with bubble style [STYLE]
 <tbody><tr>
 <td>Asset Managerを要求するエラー</td>
 <td>Asset Manager 0.7.xをサンドボックスなしで読み込む</td>
-</tr>
-<tr>
-<td>SVG Textを要求するエラー</td>
-<td>SVG Text 0.3.xをサンドボックスなしで読み込む</td>
 </tr>
 <tr>
 <td>Async Inputを要求するエラー</td>
@@ -453,6 +499,10 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td>StageからActor相対表示した</td>
 <td>placementを<code>HEADER_LIKE</code>、<code>CENTER</code>、<code>FOOTER_LIKE</code>にする</td>
+</tr>
+<tr>
+<td><code>TEXT_ACTOR does not accept...</code></td>
+<td>popup専用設定を除くか<code>POP_OUT_BUBBLE</code>を使う</td>
 </tr>
 <tr>
 <td>placementが不正</td>

@@ -78,30 +78,24 @@
         <text x="312" y="302" class="small">Next2</text>
         <text x="443" y="302" class="small">次へアイコン 2枚目</text>
       </g></g>
-  <g role="group" aria-label="SVG Textでdialogue-text styleを定義">
-    <rect x="48" y="506" width="510" height="94" rx="12" fill="#9966ff" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+  <g role="group" aria-label="dialogue-text styleのdraftを開始">
+    <rect x="48" y="506" width="510" height="30" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
     <rect x="66" y="506" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="65" y="533" class="block-text" style="font-size:12px">define text style</text>
-<rect x="198.47999999999996" y="514" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="206.47999999999996" y="533" class="input-text" style="font-size:12px">dialogue-text</text>
-<text x="318.19999999999993" y="533" class="block-text" style="font-size:12px">background</text>
-<rect x="399.5999999999999" y="514" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="407.5999999999999" y="533" class="input-text" style="font-size:12px">#fff4cc</text>
-<text x="65" y="558" class="block-text" style="font-size:12px">text</text>
-<rect x="101.75999999999999" y="539" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="109.75999999999999" y="558" class="input-text" style="font-size:12px">#332200</text>
-<text x="176.83999999999997" y="558" class="block-text" style="font-size:12px">font</text>
-<rect x="213.59999999999997" y="539" width="105.27999999999999" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="221.59999999999997" y="558" class="input-text" style="font-size:12px">Noto Sans JP</text>
-<text x="325.87999999999994" y="558" class="block-text" style="font-size:12px">size</text>
-<rect x="362.63999999999993" y="539" width="38.32" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="370.63999999999993" y="558" class="input-text" style="font-size:12px">100</text>
-<text x="407.9599999999999" y="558" class="block-text" style="font-size:12px">align</text>
-<rect x="452.1599999999999" y="539" width="45.76" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="460.1599999999999" y="558" class="input-text" style="font-size:12px">left</text>
-<text x="65" y="583" class="block-text" style="font-size:12px">bubble direction</text>
-<rect x="191.03999999999996" y="564" width="34" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="199.03999999999996" y="583" class="input-text" style="font-size:12px">up</text>
+    <text x="65" y="537" class="block-text" style="font-size:11px">begin text style</text>
+<rect x="181.11999999999998" y="519" width="104.66" height="24" rx="12" fill="#ffffff" fill-opacity="0.96"/>
+<text x="189.11999999999998" y="537" class="input-text" style="font-size:11px">dialogue-text</text>
+  </g>
+  <g role="group" aria-label="dialogue-text styleへfontを設定">
+    <rect x="48" y="538" width="510" height="30" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="66" y="538" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="65" y="569" class="block-text" style="font-size:11px">set text font</text>
+<rect x="160.66" y="551" width="97.84" height="24" rx="12" fill="#ffffff" fill-opacity="0.96"/>
+<text x="168.66" y="569" class="input-text" style="font-size:11px">Noto Sans JP</text>
+  </g>
+  <g role="group" aria-label="dialogue-text styleを保存">
+    <rect x="48" y="570" width="510" height="30" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="66" y="570" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="65" y="601" class="block-text" style="font-size:11px">save text style</text>
   </g>
   <g role="group" aria-label="Bubble styleを定義">
     <rect x="48" y="612" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>

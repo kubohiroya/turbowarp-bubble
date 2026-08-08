@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { bubbleVisualStyles, renderBubbleSvg } from "../src/bubble-svg.ts";
+import { renderTextActorSvg } from "../src/text-engine.ts";
 import { wrapText } from "../src/text-layout.ts";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -68,7 +69,10 @@ function embedRenderedSvg(renderedSvg, x, y, width, height) {
     .replace(/<\/svg>\s*$/u, "");
   const rendererMatch = renderedSvg.match(/data-bubble-renderer="([^"]+)"/u);
   const styleMatch = renderedSvg.match(/data-bubble-style="([^"]+)"/u);
-  return `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${sourceWidth} ${sourceHeight}" data-bubble-renderer="${rendererMatch?.[1] ?? "unknown"}"${styleMatch ? ` data-bubble-style="${styleMatch[1]}"` : ""} overflow="visible">
+  const presentationMatch = renderedSvg.match(
+    /data-bubble-presentation="([^"]+)"/u,
+  );
+  return `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${sourceWidth} ${sourceHeight}" data-bubble-renderer="${rendererMatch?.[1] ?? "unknown"}"${styleMatch ? ` data-bubble-style="${styleMatch[1]}"` : ""}${presentationMatch ? ` data-bubble-presentation="${presentationMatch[1]}"` : ""} overflow="visible">
     ${innerSvg}
   </svg>`;
 }
@@ -78,6 +82,60 @@ function panel(x, y, width, height, title) {
     <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="20" fill="${colors.panel}" stroke="#d9deea" stroke-width="2"/>
     <text x="${x + 24}" y="${y + 38}" class="subheading">${escapeXml(title)}</text>
   </g>`;
+}
+
+function presentationModeGuideSvg() {
+  const body = renderBubbleSvg({
+    style: "NORMAL",
+    lines: [],
+    width: 250,
+    height: 105,
+    tailDirection: 225,
+    tailLength: 24,
+    title: "POP_OUT_BUBBLE body",
+  });
+  const popupText = renderTextActorSvg("Hello!", {
+    name: "guide-popup",
+    backgroundColor: "#ffffff00",
+    fontPercent: 110,
+    textColor: "#25283a",
+  });
+  const actorText = renderTextActorSvg("Chapter 1", {
+    name: "guide-actor",
+    alignment: "center",
+    backgroundColor: "#20263a",
+    font: "Noto Sans JP",
+    fontPercent: 130,
+    textColor: "#ffffff",
+  });
+  const actor = (x, label) => `<g data-guide-actor="${label}">
+    <circle cx="${x}" cy="270" r="48" fill="#ffe0bd" stroke="#704d34" stroke-width="4"/>
+    <circle cx="${x - 16}" cy="260" r="4" fill="#25283a"/><circle cx="${x + 16}" cy="260" r="4" fill="#25283a"/>
+    <path d="M ${x - 15} 286 Q ${x} 296 ${x + 15} 286" fill="none" stroke="#704d34" stroke-width="4" stroke-linecap="round"/>
+  </g>`;
+  const page = `
+  <rect width="1200" height="430" fill="${colors.page}"/>
+  <text x="30" y="48" class="heading">presentationMode と shape は別の指定</text>
+  ${panel(24, 78, 360, 320, "POP_OUT_BUBBLE + NORMAL")}
+  ${panel(420, 78, 360, 320, "POP_OUT_BUBBLE + NO_BUBBLE")}
+  ${panel(816, 78, 360, 320, "TEXT_ACTOR")}
+  ${actor(105, "popup-normal")}
+  ${embedRenderedSvg(body, 130, 130, 220, 120)}
+  ${embedRenderedSvg(popupText, 207, 168, 92, 55)}
+  ${actor(505, "popup-no-bubble")}
+  ${embedRenderedSvg(popupText, 594, 178, 110, 66)}
+  <text x="600" y="355" text-anchor="middle" class="small">Actorは残り、別drawableの文字だけを表示</text>
+  ${embedRenderedSvg(actorText, 887, 205, 220, 90)}
+  <text x="996" y="330" text-anchor="middle" class="small">Actor自身のskinをSVG textへ置換</text>
+  <text x="204" y="375" text-anchor="middle" class="small">Actor + body + tail + text</text>`;
+  return svgDocument({
+    width: 1200,
+    height: 430,
+    title: "Bubble presentation modes",
+    description:
+      "Production SVG renderers compare popup bubble, popup text without a body, and text actor presentation.",
+    body: page,
+  });
 }
 
 function estimateTextWidth(value, fontSize = 13) {
@@ -197,29 +255,31 @@ function quickStartSvg() {
     x: 48,
     y: 506,
     width: 510,
-    height: 94,
-    color: colors.svgText,
-    fontSize: 12,
-    ariaLabel: "SVG Textでdialogue-text styleを定義",
-    lines: [
-      [
-        { text: "define text style" },
-        { input: "dialogue-text" },
-        { text: "background" },
-        { input: "#fff4cc" },
-      ],
-      [
-        { text: "text" },
-        { input: "#332200" },
-        { text: "font" },
-        { input: "Noto Sans JP" },
-        { text: "size" },
-        { input: "100" },
-        { text: "align" },
-        { input: "left" },
-      ],
-      [{ text: "bubble direction" }, { input: "up" }],
-    ],
+    height: 30,
+    color: colors.bubble,
+    fontSize: 11,
+    ariaLabel: "dialogue-text styleのdraftを開始",
+    lines: [[{ text: "begin text style" }, { input: "dialogue-text" }]],
+  })}
+  ${block({
+    x: 48,
+    y: 538,
+    width: 510,
+    height: 30,
+    color: colors.bubble,
+    fontSize: 11,
+    ariaLabel: "dialogue-text styleへfontを設定",
+    lines: [[{ text: "set text font" }, { input: "Noto Sans JP" }]],
+  })}
+  ${block({
+    x: 48,
+    y: 570,
+    width: 510,
+    height: 30,
+    color: colors.bubble,
+    fontSize: 11,
+    ariaLabel: "dialogue-text styleを保存",
+    lines: [[{ text: "save text style" }]],
   })}
   ${block({
     x: 48,
@@ -1104,6 +1164,11 @@ async function main() {
   await writeFile(
     join(assetsDirectory, "animation-mode-guide.svg"),
     phaseGuideSvg(),
+    "utf8",
+  );
+  await writeFile(
+    join(assetsDirectory, "presentation-mode-guide.svg"),
+    presentationModeGuideSvg(),
     "utf8",
   );
   await writeFile(

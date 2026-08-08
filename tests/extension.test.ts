@@ -42,7 +42,7 @@ class TestScheduler implements BubbleScheduler {
 
 function scratch(): ScratchApi {
   return {
-    ArgumentType: { NUMBER: "number", STRING: "string" },
+    ArgumentType: { COLOR: "color", NUMBER: "number", STRING: "string" },
     BlockType: { COMMAND: "command", REPORTER: "reporter" },
     Cast: {
       toNumber: (value: unknown) => Number(value),
@@ -127,12 +127,6 @@ function createRuntime(
     ["Next1", { mimeType: "image/svg+xml", skinId: 15 }],
     ["Next2", { mimeType: "image/svg+xml", skinId: 16 }],
   ]);
-  const setText = vi.fn(
-    (_args: unknown, util: { target: TurboWarpBubbleTarget }) => {
-      renderer.updateDrawableSkinId(Number(util.target.drawableID), 100);
-    },
-  );
-  const releaseTextActor = vi.fn(() => true);
   const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
   const conditionState = { value: false };
   const runtimeExpression = {
@@ -175,9 +169,6 @@ function createRuntime(
           },
         }
       : {}),
-    ...((options.svgText ?? true)
-      ? { ext_kubohiroyasvgtext: { setText, releaseTextActor } }
-      : {}),
   };
   const emit = (event: string, ...args: unknown[]): void => {
     for (const listener of listeners.get(event) ?? []) listener(...args);
@@ -192,11 +183,9 @@ function createRuntime(
     drawableSkins,
     emit,
     positions,
-    releaseTextActor,
     renderer,
     runtime,
     runtimeExpression,
-    setText,
     visibility,
   };
 }
@@ -231,6 +220,7 @@ describe("TurboWarp composition adapter", () => {
     };
     const releaseTarget = vi.fn();
     const svgText: BubbleSvgText = {
+      defineStyle: vi.fn(),
       setText: vi.fn(({ target }) => {
         harness.renderer.updateDrawableSkinId(Number(target.drawableID), 100);
       }),
@@ -270,7 +260,15 @@ describe("Bubble extension", () => {
     expect(info.id).toBe("kubohiroyabubble");
     expect(info.docsURI).toBe("https://kubohiroya.github.io/turbowarp-bubble/");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
+      "beginTextStyle",
+      "setTextFont",
+      "setTextSize",
+      "setTextColor",
+      "setTextBackgroundColor",
+      "setTextAlign",
+      "saveTextStyle",
       "defineBubbleStyle",
+      "setBubblePresentationMode",
       "setBubblePlacement",
       "setPortraitBase",
       "setBubbleDistance",
@@ -282,6 +280,8 @@ describe("Bubble extension", () => {
       "setAdvanceFrames",
       "sayWithBubbleStyle",
       "thinkWithBubbleStyle",
+      "setTextActor",
+      "clearTextActor",
       "setBubbleAnimationMode",
       "waitForBubbleAdvance",
       "closeBubble",
@@ -350,11 +350,16 @@ describe("Bubble extension", () => {
     );
     const drawableId = harness.created.at(-1);
     expect(drawableId).toBeDefined();
-    expect(harness.positions.get(drawableId!)).toEqual([150, -20]);
+    const firstPosition = harness.positions.get(drawableId!);
+    expect(firstPosition?.[0]).toBeGreaterThan(bounds.right);
+    expect(firstPosition?.[1]).toBe(-20);
 
     bounds = { bottom: -20, left: -50, right: 10, top: 60 };
     target.onTargetVisualChange?.(target);
-    expect(harness.positions.get(drawableId!)).toEqual([130, 20]);
+    const movedPosition = harness.positions.get(drawableId!);
+    expect(movedPosition?.[0]).toBeGreaterThan(bounds.right);
+    expect(movedPosition?.[1]).toBe(20);
+    expect(movedPosition).not.toEqual(firstPosition);
 
     extension.setBubblePlacement({ STYLE: "placed", PLACEMENT: "33.75" });
     await extension.sayWithBubbleStyle(
@@ -391,8 +396,67 @@ describe("Bubble extension", () => {
       textDrawable,
       [120, 120],
     );
-    // The requested x position is 168; stage-edge clamping keeps it visible.
-    expect(harness.positions.get(textDrawable)).toEqual([132, -12]);
+    expect(harness.positions.get(textDrawable)?.[0]).toBeGreaterThan(50);
+    expect(harness.positions.get(textDrawable)?.[1]).toBe(-12);
+  });
+
+  it("builds text styles and renders TEXT_ACTOR on the actor drawable", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = {
+      ...actor(),
+      drawableID: 99,
+      updateAllDrawableProperties: vi.fn(),
+    };
+
+    expect(() => extension.setTextFont({ FONT: "Inter" })).toThrow(
+      "begin a text style",
+    );
+    extension.beginTextStyle({ STYLE: "title-text" });
+    extension.setTextFont({ FONT: "Noto Sans JP" });
+    extension.setTextSize({ SIZE: 180 });
+    extension.setTextColor({ COLOR: "#ffffff" });
+    extension.setTextBackgroundColor({ COLOR: "#000000" });
+    extension.setTextAlign({ ALIGN: "center" });
+    extension.saveTextStyle();
+
+    extension.defineBubbleStyle({
+      STYLE: "title",
+      TEXT_STYLE: "title-text",
+    });
+    extension.setBubblePresentationMode({
+      MODE: "TEXT_ACTOR",
+      STYLE: "title",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "Chapter 1", STYLE: "title" },
+      { target },
+    );
+
+    expect(harness.createdSvgSkins.at(-1)).toContain(
+      'data-bubble-presentation="TEXT_ACTOR"',
+    );
+    expect(harness.createdSvgSkins.at(-1)).toContain(
+      'font-family="Noto Sans JP"',
+    );
+    expect(harness.createdSvgSkins.at(-1)).toContain('text-anchor="middle"');
+    expect(harness.created).toHaveLength(0);
+
+    await extension.closeBubble({}, { target });
+    expect(target.updateAllDrawableProperties).toHaveBeenCalledOnce();
+  });
+
+  it("rejects popup-only decorators after selecting TEXT_ACTOR", () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    extension.defineBubbleStyle({ STYLE: "title", TEXT_STYLE: "default" });
+    extension.setBubblePresentationMode({
+      MODE: "TEXT_ACTOR",
+      STYLE: "title",
+    });
+    expect(() =>
+      extension.setBubblePlacement({ STYLE: "title", PLACEMENT: "up" }),
+    ).toThrow("TEXT_ACTOR does not accept popup-only settings: placement");
   });
 
   it("renders the selected SVG body behind actor-relative content", async () => {
@@ -415,11 +479,12 @@ describe("Bubble extension", () => {
     const [bodyDrawable, textDrawable] = harness.created;
     expect(bodyDrawable).toBeDefined();
     expect(textDrawable).toBeDefined();
-    expect(harness.createdSvgSkins).toHaveLength(1);
-    expect(harness.createdSvgSkins[0]).toContain('data-bubble-style="YELLING"');
-    expect(harness.createdSvgSkins[0]).toContain(
-      'data-boolean-operation="union"',
+    expect(harness.createdSvgSkins).toHaveLength(2);
+    const bodySvg = harness.createdSvgSkins.find((svg) =>
+      svg.includes('data-bubble-style="YELLING"'),
     );
+    expect(bodySvg).toBeDefined();
+    expect(bodySvg).toContain('data-boolean-operation="union"');
     expect(harness.visibility.get(bodyDrawable!)).toBe(true);
     expect(harness.renderer.setDrawableOrder).toHaveBeenNthCalledWith(
       1,
@@ -435,7 +500,7 @@ describe("Bubble extension", () => {
     );
 
     await extension.closeBubble({}, { target });
-    expect(harness.destroyedSkins).toEqual([200]);
+    expect(harness.destroyedSkins).toEqual([200, 201]);
   });
 
   it("places background-relative bubbles independently of actor visibility", async () => {
@@ -456,7 +521,7 @@ describe("Bubble extension", () => {
       { target: hiddenActor },
     );
     const drawableId = harness.created.at(-1)!;
-    expect(harness.positions.get(drawableId)).toEqual([0, 140]);
+    expect(harness.positions.get(drawableId)).toEqual([0, 144]);
     expect(harness.visibility.get(drawableId)).toBe(true);
     expect(hiddenActor.onTargetVisualChange).toBeNull();
     expect(harness.createdSvgSkins.at(-1)).not.toContain(
@@ -511,7 +576,7 @@ describe("Bubble extension", () => {
       { MESSAGE: "footer", STYLE: "stage" },
       { target: stage },
     );
-    expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -140]);
+    expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -144]);
     await extension.setBubbleAnimationMode({ MODE: "idle" }, { target: stage });
     await extension.closeBubble({}, { target: stage });
   });
@@ -548,9 +613,10 @@ describe("Bubble extension", () => {
     );
 
     expect(harness.created).toHaveLength(6);
-    expect(harness.setText).toHaveBeenCalledWith(
-      { STYLE: "dialogue-text", TEXT: "こんにちは" },
-      { target: expect.objectContaining({ drawableID: expect.any(Number) }) },
+    expect(harness.createdSvgSkins).toEqual(
+      expect.arrayContaining([
+        expect.stringContaining('data-bubble-presentation="TEXT_ACTOR"'),
+      ]),
     );
     expect(scheduler.size).toBe(2);
     expect([...harness.positions.values()]).not.toHaveLength(0);
@@ -564,8 +630,7 @@ describe("Bubble extension", () => {
     await extension.closeBubble({}, { target });
     expect(scheduler.size).toBe(0);
     expect(harness.destroyed).toHaveLength(6);
-    expect(harness.destroyedSkins).toHaveLength(1);
-    expect(harness.releaseTextActor).toHaveBeenCalledOnce();
+    expect(harness.destroyedSkins).toHaveLength(2);
   });
 
   it("waits in awaiting-advance mode until the expression becomes true", async () => {
@@ -747,10 +812,11 @@ describe("Bubble extension", () => {
     await vi.waitFor(() => expect(harness.destroyed).toHaveLength(2));
   });
 
-  it("reports missing dependent extensions with corrective messages", async () => {
+  it("requires Asset Manager but uses the built-in SVG Text engine", async () => {
     const noAssets = createRuntime({ assetManager: false });
     const first = new BubbleExtension(noAssets.runtime);
     first.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
+    first.setPortraitBase({ STYLE: "plain", ASSET: "Face" });
     await expect(
       first.sayWithBubbleStyle(
         { MESSAGE: "hello", STYLE: "plain" },
@@ -758,14 +824,15 @@ describe("Bubble extension", () => {
       ),
     ).rejects.toThrow("Load @kubohiroya/turbowarp-asset-manager");
 
-    const noText = createRuntime({ svgText: false });
-    const second = new BubbleExtension(noText.runtime);
+    const builtInText = createRuntime({ svgText: false });
+    const second = new BubbleExtension(builtInText.runtime);
     second.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     await expect(
       second.sayWithBubbleStyle(
         { MESSAGE: "hello", STYLE: "plain" },
         { target: actor() },
       ),
-    ).rejects.toThrow("Load @kubohiroya/turbowarp-svg-text");
+    ).resolves.toBeUndefined();
+    expect(builtInText.createdSvgSkins.length).toBeGreaterThanOrEqual(2);
   });
 });

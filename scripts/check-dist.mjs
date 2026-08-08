@@ -30,10 +30,12 @@ const manifest = JSON.parse(
 
 for (const name of [
   "createBubbleComposition",
+  "createBubbleTextEngine",
   "BubbleCompositionError",
   "UnicodeLineBreakProvider",
   "normalizeBubblePlacement",
   "renderBubbleSvg",
+  "renderTextActorSvg",
   "wrapText",
 ]) {
   if (!composition.includes(name)) {
@@ -69,6 +71,9 @@ for (const name of [
   "BubblePlacement",
   "BubbleBodyCenterOffsetInput",
   "BubbleVisualStyle",
+  "BubblePresentationMode",
+  "BubbleTextEngine",
+  "BubbleTextStyleInput",
   "LineBreakProvider",
   "WrappedTextLayout",
 ]) {
@@ -92,6 +97,9 @@ for (const nodeApi of ["node:", "process.", "Buffer."]) {
 for (const value of [
   "kubohiroyabubble",
   "defineBubbleStyle",
+  "beginTextStyle",
+  "saveTextStyle",
+  "setBubblePresentationMode",
   "setBubblePlacement",
   "setBubbleDistance",
   "setBubbleVisualStyle",
@@ -99,17 +107,35 @@ for (const value of [
   "setBubbleOffset",
   "https://kubohiroya.github.io/turbowarp-bubble/",
   "sayWithBubbleStyle",
+  "setTextActor",
+  "clearTextActor",
   "setBubbleAnimationMode",
   "waitForBubbleAdvance",
   "kubohiroyaassetmanager",
-  "kubohiroyasvgtext",
 ]) {
   if (!extension.includes(value)) {
     throw new Error(`dist/turbowarp-bubble.js does not contain ${value}.`);
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 16) {
+for (const forbidden of [
+  "@kubohiroya/turbowarp-svg-text",
+  "kubohiroyasvgtext",
+]) {
+  for (const [fileName, output] of [
+    ["dist/composition.js", composition],
+    ["dist/turbowarp-adapter.js", turboWarpAdapter],
+    ["dist/turbowarp-bubble.js", extension],
+  ]) {
+    if (output.includes(forbidden)) {
+      throw new Error(
+        `${fileName} contains removed SVG Text dependency: ${forbidden}`,
+      );
+    }
+  }
+}
+
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 26) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

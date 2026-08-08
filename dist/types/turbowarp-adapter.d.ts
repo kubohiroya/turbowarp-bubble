@@ -13,6 +13,7 @@ export interface TurboWarpBubbleTarget {
         readonly top: number;
     };
     onTargetVisualChange?: ((target?: TurboWarpBubbleTarget) => void) | null;
+    updateAllDrawableProperties?(): void;
 }
 export interface TurboWarpBubbleRenderer {
     createSVGSkin(svg: string): number;
@@ -40,19 +41,11 @@ export interface TurboWarpAssetManagerExtension {
         skinId: number;
     }>>;
 }
-export interface TurboWarpSvgTextExtension {
-    setText(args: Readonly<{
-        STYLE: unknown;
-        TEXT: unknown;
-    }>, util: Readonly<{
-        target: TurboWarpBubbleTarget;
-    }>): void;
-    releaseTextActor(target: TurboWarpBubbleTarget): boolean;
-}
 export interface TurboWarpBubbleRuntime {
     readonly renderer: TurboWarpBubbleRenderer;
     readonly ext_kubohiroyaassetmanager?: TurboWarpAssetManagerExtension;
-    readonly ext_kubohiroyasvgtext?: TurboWarpSvgTextExtension;
+    on?(event: string, listener: () => void): void;
+    off?(event: string, listener: () => void): void;
     requestRedraw?(): void;
 }
 export interface TurboWarpBubbleCompositionOptions {
@@ -61,7 +54,7 @@ export interface TurboWarpBubbleCompositionOptions {
     readonly scheduler?: BubbleScheduler;
     readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];
 }
-export type BubbleRuntimeAdapterErrorCode = "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002" | "BUBBLE-RUNTIME-003";
+export type BubbleRuntimeAdapterErrorCode = "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002";
 export declare class BubbleRuntimeAdapterError extends Error {
     readonly code: BubbleRuntimeAdapterErrorCode;
     constructor(code: BubbleRuntimeAdapterErrorCode, message: string);

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="430" viewBox="0 0 1200 430" role="img" aria-labelledby="title description">
+  <title id="title">Bubble presentation modes</title>
+  <desc id="description">Production SVG renderers compare popup bubble, popup text without a body, and text actor presentation.</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+    .heading { fill: #25283a; font-size: 28px; font-weight: 700; }
+    .subheading { fill: #25283a; font-size: 20px; font-weight: 700; }
+    .body { fill: #25283a; font-size: 16px; }
+    .small { fill: #667085; font-size: 13px; }
+    .block-text { fill: #ffffff; font-size: 13px; font-weight: 600; }
+    .input-text { fill: #25283a; font-size: 13px; font-weight: 500; }
+  </style>
+
+  <rect width="1200" height="430" fill="#f2f4f8"/>
+  <text x="30" y="48" class="heading">presentationMode と shape は別の指定</text>
+  <g>
+    <rect x="24" y="78" width="360" height="320" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+    <text x="48" y="116" class="subheading">POP_OUT_BUBBLE + NORMAL</text>
+  </g>
+  <g>
+    <rect x="420" y="78" width="360" height="320" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+    <text x="444" y="116" class="subheading">POP_OUT_BUBBLE + NO_BUBBLE</text>
+  </g>
+  <g>
+    <rect x="816" y="78" width="360" height="320" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+    <text x="840" y="116" class="subheading">TEXT_ACTOR</text>
+  </g>
+  <g data-guide-actor="popup-normal">
+    <circle cx="105" cy="270" r="48" fill="#ffe0bd" stroke="#704d34" stroke-width="4"/>
+    <circle cx="89" cy="260" r="4" fill="#25283a"/><circle cx="121" cy="260" r="4" fill="#25283a"/>
+    <path d="M 90 286 Q 105 296 120 286" fill="none" stroke="#704d34" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <svg x="130" y="130" width="220" height="120" viewBox="0 0 250 105" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>POP_OUT_BUBBLE body</title><path d="M 39.1842 80.7784 L 36.4377 80.1190 L 33.8282 79.0381 L 31.4199 77.5623 L 29.2721 75.7279 L 27.4377 73.5801 L 25.9619 71.1718 L 24.8810 68.5623 L 24.2216 65.8158 L 24.0000 63.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 208.0000 24.0000 L 210.8158 24.2216 L 213.5623 24.8810 L 216.1718 25.9619 L 218.5801 27.4377 L 220.7279 29.2721 L 222.5623 31.4199 L 224.0381 33.8282 L 225.1190 36.4377 L 225.7784 39.1842 L 226.0000 42.0000 L 226.0000 63.0000 L 225.7784 65.8158 L 225.1190 68.5623 L 224.0381 71.1718 L 222.5623 73.5801 L 220.7279 75.7279 L 218.5801 77.5623 L 216.1718 79.0381 L 213.5623 80.1190 L 210.8158 80.7784 L 208.0000 81.0000 L 105.5000 81.0000 L 79.5294 97.9706 L 87.5000 81.0000 L 42.0000 81.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" />
+  </svg>
+  <svg x="207" y="168" width="92" height="55" viewBox="0 0 82 42" data-bubble-renderer="unknown" data-bubble-presentation="TEXT_ACTOR" overflow="visible">
+    <title>Hello!</title><rect width="82" height="42" rx="8" fill="#ffffff00"/><text xml:space="preserve" fill="#25283a" font-family="Helvetica" font-size="15.4" text-anchor="start"><tspan x="12" y="27.4">Hello!</tspan></text>
+  </svg>
+  <g data-guide-actor="popup-no-bubble">
+    <circle cx="505" cy="270" r="48" fill="#ffe0bd" stroke="#704d34" stroke-width="4"/>
+    <circle cx="489" cy="260" r="4" fill="#25283a"/><circle cx="521" cy="260" r="4" fill="#25283a"/>
+    <path d="M 490 286 Q 505 296 520 286" fill="none" stroke="#704d34" stroke-width="4" stroke-linecap="round"/>
+  </g>
+  <svg x="594" y="178" width="110" height="66" viewBox="0 0 82 42" data-bubble-renderer="unknown" data-bubble-presentation="TEXT_ACTOR" overflow="visible">
+    <title>Hello!</title><rect width="82" height="42" rx="8" fill="#ffffff00"/><text xml:space="preserve" fill="#25283a" font-family="Helvetica" font-size="15.4" text-anchor="start"><tspan x="12" y="27.4">Hello!</tspan></text>
+  </svg>
+  <text x="600" y="355" text-anchor="middle" class="small">Actorは残り、別drawableの文字だけを表示</text>
+  <svg x="887" y="205" width="220" height="90" viewBox="0 0 121 45" data-bubble-renderer="unknown" data-bubble-presentation="TEXT_ACTOR" overflow="visible">
+    <title>Chapter 1</title><rect width="121" height="45" rx="8" fill="#20263a"/><text xml:space="preserve" fill="#ffffff" font-family="Noto Sans JP" font-size="18.2" text-anchor="middle"><tspan x="60.5" y="30.2">Chapter 1</tspan></text>
+  </svg>
+  <text x="996" y="330" text-anchor="middle" class="small">Actor自身のskinをSVG textへ置換</text>
+  <text x="204" y="375" text-anchor="middle" class="small">Actor + body + tail + text</text>
+</svg>

@@ -71,7 +71,7 @@
 <p>This manual explains how to use <code>turbowarp-bubble</code> as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated advance indicator.</p>
 <p><img src="./assets/block-quick-start.svg" alt="A quick-start block sequence that registers Next1 and Next2 separately, prepares input listeners, then uses Bubble&#39;s integrated wait"></p>
 <h2 id="requirements">1. Load the required extensions</h2>
-<p>The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp&#39;s extension library, then load the five custom extensions with <strong>Run without sandbox</strong> enabled. Async Input and Runtime Expression must be available before a Bubble wait; Asset Manager and SVG Text must be available before the first Bubble is shown.</p>
+<p>The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp&#39;s extension library, then load the four custom extensions with <strong>Run without sandbox</strong> enabled. Async Input and Runtime Expression are needed only for the integrated wait block. Asset Manager is needed only when a style uses portrait or advance-frame image assets. Bubble includes its SVG Text engine; do not load SVG Text separately.</p>
 <table>
 <thead>
 <tr>
@@ -102,22 +102,16 @@
 </tr>
 <tr>
 <td align="right">5</td>
-<td>SVG Text 0.3.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js</code></td>
-</tr>
-<tr>
-<td align="right">6</td>
-<td>Bubble 0.1.0</td>
-<td>After npm publication: <code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.2.0</td>
+<td>After npm publication: <code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>To try a development build, load this repository&#39;s <code>dist/turbowarp-bubble.js</code> as a local custom extension. Bubble reports an explicit error if Asset Manager or SVG Text is missing when it displays a Bubble, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.</p>
+<p>To try a development build, load this repository&#39;s <code>dist/turbowarp-bubble.js</code> as a local custom extension. Bubble reports an explicit error if Asset Manager is missing when an image layer is used, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.</p>
 <p>See also:</p>
 <ul>
 <li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/">Asset Manager guide</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-async-input/">Async Input guide</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-runtime-expression/">Runtime Expression guide</a></li>
-<li><a href="https://kubohiroya.github.io/turbowarp-svg-text/">SVG Text guide</a></li>
 </ul>
 <h2 id="portrait">2. Prepare portrait assets</h2>
 <p>The following example stores costumes in a hidden asset sprite named <code>Assets</code>.</p>
@@ -177,26 +171,58 @@ register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
 <p>For a remote image, pass its HTTPS URL as <code>RESOURCE_ID</code>. Bubble accepts only assets already registered with Asset Manager whose MIME type is <code>image/*</code>.</p>
 <h2 id="text-style">3. Define a text style</h2>
-<p>Use SVG Text to define the named style for the Bubble&#39;s text layer.</p>
-<pre><code class="language-text">define text style [dialogue-text]
-  background [#fff4cc]
-  text [#332200]
-  font [Noto Sans JP]
-  size [100]
-  align [left]
-  bubble direction [up]
+<p>Bubble uses Builder blocks to define a named style without a single oversized block.</p>
+<pre><code class="language-text">begin text style [dialogue-text]
+set text background color [#fff4cc]
+set text color [#332200]
+set text font [Noto Sans JP]
+set text size [100] %
+set text align [left]
+save text style
 </code></pre>
-<p>Bubble refers to this style as <code>dialogue-text</code>. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.</p>
-<p>SVG Text 0.3.x retains a <code>bubble direction</code> input in its block contract, but Bubble does not use it when creating the text drawable through <code>setText</code>. Use <code>set bubble placement</code> in the next section instead. The obsolete SVG Text direction input is intended to be removed in a later breaking release.</p>
+<p><code>begin</code> creates or replaces the one extension-wide draft. <code>save</code> stores an immutable named style and clears that draft. Starting another draft or starting/stopping the project discards unsaved changes. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.</p>
 <h2 id="bubble-style">4. Define a Bubble style</h2>
 <p>First associate a Bubble style name with an SVG Text style name.</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
+set presentation mode [POP_OUT_BUBBLE] for bubble style [hero-dialogue]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
 set bubble visual style [NORMAL] for bubble style [hero-dialogue]
 set bubble tail length [18] for bubble style [hero-dialogue]
 set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 </code></pre>
+<h3>Presentation mode</h3>
+<p><img src="./assets/presentation-mode-guide.svg" alt="Production SVG renderers compare popup Bubble, popup text without a body, and text actor rendering"></p>
+<p><code>presentationMode</code> and the SVG body shape are independent.</p>
+<table>
+<thead>
+<tr>
+<th>Presentation mode</th>
+<th>Shape</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>POP_OUT_BUBBLE</code></td>
+<td><code>NORMAL</code> or another body</td>
+<td>A separate Bubble drawable while the actor stays visible</td>
+</tr>
+<tr>
+<td><code>POP_OUT_BUBBLE</code></td>
+<td><code>NO_BUBBLE</code></td>
+<td>Separate text without a body or tail</td>
+</tr>
+<tr>
+<td><code>TEXT_ACTOR</code></td>
+<td>Not applicable</td>
+<td>Replace the actor&#39;s own rendering with responsive SVG text</td>
+</tr>
+</tbody></table>
+<p>For a text actor, either select <code>TEXT_ACTOR</code> on a Bubble style and run <code>say</code>/<code>think</code>, or use the direct blocks:</p>
+<pre><code class="language-text">set this sprite text [Chapter 1] with text style [dialogue-text]
+clear this sprite text
+</code></pre>
+<p><code>TEXT_ACTOR</code> does not accept placement, distance, tail, offset, visual shape, portrait, or advance-indicator settings. Bubble reports incompatible combinations instead of ignoring them. Clearing the text actor releases the generated SVG skin and reapplies the sprite&#39;s current costume.</p>
 <h3>Actor-relative and stage-relative placement</h3>
 <p><img src="./assets/placement-guide.svg" alt="Actor-relative 16-way and angle placement compared with three stage-relative placements"></p>
 <p>Each of the 16 actor-relative directions is shown as a complete mini-scene containing an actor, Bubble body, tail, and text. The two tail-base points lie on the body border. The renderer uses a JSClipper union to produce a single path, so no internal border remains at the join.</p>
@@ -342,8 +368,24 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 </thead>
 <tbody><tr>
+<td><code>begin text style [STYLE]</code></td>
+<td>Start or replace the current text-style draft</td>
+</tr>
+<tr>
+<td><code>set text font/size/color/background/align ...</code></td>
+<td>Decorate the current text-style draft</td>
+</tr>
+<tr>
+<td><code>save text style</code></td>
+<td>Save the named style and clear the draft</td>
+</tr>
+<tr>
 <td><code>define bubble style [STYLE] using text style [TEXT_STYLE]</code></td>
 <td>Define or redefine a Bubble style</td>
+</tr>
+<tr>
+<td><code>set presentation mode [MODE] for bubble style [STYLE]</code></td>
+<td>Select <code>POP_OUT_BUBBLE</code> or <code>TEXT_ACTOR</code></td>
 </tr>
 <tr>
 <td><code>set bubble placement [PLACEMENT] for bubble style [STYLE]</code></td>
@@ -390,6 +432,14 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Start or replace a <code>think</code> Bubble in <code>talking</code> mode</td>
 </tr>
 <tr>
+<td><code>set this sprite text [TEXT] with text style [STYLE]</code></td>
+<td>Replace this sprite&#39;s rendering with SVG text</td>
+</tr>
+<tr>
+<td><code>clear this sprite text</code></td>
+<td>Release SVG text and restore the current costume</td>
+</tr>
+<tr>
 <td><code>set this bubble animation mode [MODE]</code></td>
 <td>Select <code>talking</code>, <code>awaiting-advance</code>, or <code>idle</code> for this Bubble</td>
 </tr>
@@ -417,10 +467,6 @@ think [MESSAGE] with bubble style [STYLE]
 <tbody><tr>
 <td>Asset Manager required error</td>
 <td>Load Asset Manager 0.7.x without sandbox</td>
-</tr>
-<tr>
-<td>SVG Text required error</td>
-<td>Load SVG Text 0.3.x without sandbox</td>
 </tr>
 <tr>
 <td>Async Input required error</td>
@@ -453,6 +499,10 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td>Actor-relative Bubble from the Stage</td>
 <td>Use <code>HEADER_LIKE</code>, <code>CENTER</code>, or <code>FOOTER_LIKE</code></td>
+</tr>
+<tr>
+<td><code>TEXT_ACTOR does not accept...</code></td>
+<td>Remove popup-only decorators from that style or use <code>POP_OUT_BUBBLE</code></td>
 </tr>
 <tr>
 <td>Invalid placement</td>

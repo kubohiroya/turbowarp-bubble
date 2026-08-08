@@ -3,6 +3,21 @@
   "id": "kubohiroyabubble",
   "blocks": [
     {
+      "opcode": "beginTextStyle",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "clearTextActor",
+      "blockType": "COMMAND",
+      "arguments": []
+    },
+    {
       "opcode": "closeBubble",
       "blockType": "COMMAND",
       "arguments": []
@@ -24,6 +39,11 @@
     {
       "opcode": "getVersion",
       "blockType": "REPORTER",
+      "arguments": []
+    },
+    {
+      "opcode": "saveTextStyle",
+      "blockType": "COMMAND",
       "arguments": []
     },
     {
@@ -139,6 +159,21 @@
       ]
     },
     {
+      "opcode": "setBubblePresentationMode",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MODE",
+          "type": "STRING",
+          "menu": "presentationMode"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
       "opcode": "setBubbleTailLength",
       "blockType": "COMMAND",
       "arguments": [
@@ -200,6 +235,71 @@
       ]
     },
     {
+      "opcode": "setTextActor",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        },
+        {
+          "id": "TEXT",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "setTextAlign",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "ALIGN",
+          "type": "STRING",
+          "menu": "textAlign"
+        }
+      ]
+    },
+    {
+      "opcode": "setTextBackgroundColor",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "COLOR",
+          "type": "COLOR"
+        }
+      ]
+    },
+    {
+      "opcode": "setTextColor",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "COLOR",
+          "type": "COLOR"
+        }
+      ]
+    },
+    {
+      "opcode": "setTextFont",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "FONT",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "setTextSize",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "SIZE",
+          "type": "NUMBER"
+        }
+      ]
+    },
+    {
       "opcode": "thinkWithBubbleStyle",
       "blockType": "COMMAND",
       "arguments": [
@@ -235,6 +335,14 @@
     },
     {
       "id": "placement",
+      "acceptReporters": true
+    },
+    {
+      "id": "presentationMode",
+      "acceptReporters": true
+    },
+    {
+      "id": "textAlign",
       "acceptReporters": true
     },
     {

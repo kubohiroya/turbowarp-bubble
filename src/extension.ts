@@ -4,8 +4,11 @@ import {
   normalizeBubbleOffset,
   normalizeBubblePlacement,
   normalizeBubbleTailLength,
+  bubblePresentationModes,
   bubbleVisualStyles,
+  type BubblePresentationMode,
   type BubblePlacement,
+  type BubbleTextStyleInput,
   type BubbleVisualStyle,
 } from "./composition.js";
 import type {
@@ -27,7 +30,7 @@ import {
 } from "./turbowarp-adapter.js";
 
 type BlockTypeName = "COMMAND" | "REPORTER";
-type ArgumentTypeName = "NUMBER" | "STRING";
+type ArgumentTypeName = "COLOR" | "NUMBER" | "STRING";
 
 interface DefinitionArgument {
   readonly type: ArgumentTypeName;
@@ -79,9 +82,12 @@ const validAnimationModes = new Set<BubbleAnimationMode>([
   "talking",
   "awaiting-advance",
 ]);
+const validPresentationModes = new Set<BubblePresentationMode>(
+  bubblePresentationModes,
+);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
-export const EXTENSION_VERSION = "0.1.0";
+export const EXTENSION_VERSION = "0.2.0";
 
 function extensionError(message: string): Error {
   const error = new Error(`[Bubble] ${message}`);
@@ -93,10 +99,12 @@ export class BubbleExtension implements TurboWarpExtension {
   private readonly runtime: BubbleExtensionRuntime;
   private readonly options: BubbleExtensionOptions;
   private readonly styles = new Map<string, BubbleStyleInput>();
+  private readonly textStyles = new Map<string, BubbleTextStyleInput>();
   private readonly handles = new Map<string, BubbleHandle>();
   private readonly waits = new Map<string, PendingBubbleWait>();
   private readonly waitScheduler: BubbleScheduler;
   private composition: BubbleComposition | null = null;
+  private textStyleDraft: BubbleTextStyleInput | null = null;
   private disposed = false;
 
   public constructor(
@@ -143,6 +151,61 @@ export class BubbleExtension implements TurboWarpExtension {
     };
   }
 
+  public beginTextStyle(args: BlockArguments): void {
+    this.textStyleDraft = Object.freeze({
+      name: this.requireName(args.STYLE, "text style"),
+    });
+  }
+
+  public setTextFont(args: BlockArguments): void {
+    this.updateTextStyleDraft({
+      font: this.requireName(args.FONT, "font"),
+    });
+  }
+
+  public setTextSize(args: BlockArguments): void {
+    const fontPercent = Scratch.Cast.toNumber(args.SIZE);
+    if (
+      !Number.isFinite(fontPercent) ||
+      fontPercent < 1 ||
+      fontPercent > 1000
+    ) {
+      throw extensionError("text size must be from 1 through 1000 percent.");
+    }
+    this.updateTextStyleDraft({ fontPercent });
+  }
+
+  public setTextColor(args: BlockArguments): void {
+    this.updateTextStyleDraft({
+      textColor: this.requireName(args.COLOR, "text color"),
+    });
+  }
+
+  public setTextBackgroundColor(args: BlockArguments): void {
+    this.updateTextStyleDraft({
+      backgroundColor: this.requireName(args.COLOR, "text background color"),
+    });
+  }
+
+  public setTextAlign(args: BlockArguments): void {
+    const alignment = this.toString(args.ALIGN).trim().toLowerCase();
+    if (
+      alignment !== "left" &&
+      alignment !== "center" &&
+      alignment !== "right"
+    ) {
+      throw extensionError("text align must be left, center, or right.");
+    }
+    this.updateTextStyleDraft({ alignment });
+  }
+
+  public saveTextStyle(): void {
+    const draft = this.requireTextStyleDraft();
+    this.textStyles.set(draft.name, draft);
+    this.composition?.defineTextStyle(draft);
+    this.textStyleDraft = null;
+  }
+
   public defineBubbleStyle(args: BlockArguments): void {
     const name = this.requireName(args.STYLE, "style");
     const style = Object.freeze({
@@ -150,6 +213,19 @@ export class BubbleExtension implements TurboWarpExtension {
       textStyle: this.requireName(args.TEXT_STYLE, "text style"),
     });
     this.installStyle(style);
+  }
+
+  public setBubblePresentationMode(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const presentationMode = this.toString(args.MODE)
+      .trim()
+      .toUpperCase() as BubblePresentationMode;
+    if (!validPresentationModes.has(presentationMode)) {
+      throw extensionError(
+        "presentation mode must be POP_OUT_BUBBLE or TEXT_ACTOR.",
+      );
+    }
+    this.installStyle(Object.freeze({ ...style, presentationMode }));
   }
 
   public setPortraitBase(args: BlockArguments): void {
@@ -287,6 +363,32 @@ export class BubbleExtension implements TurboWarpExtension {
     return this.show("think", args, util);
   }
 
+  public async setTextActor(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const target = this.requireTarget(util);
+    if (!Number.isInteger(target.drawableID) || Number(target.drawableID) < 0) {
+      throw extensionError("text actor target drawable is unavailable.");
+    }
+    this.cancelWait(target.id, "Bubble wait was replaced by a text actor.");
+    await this.getComposition().setTextActor({
+      actor: target as TurboWarpBubbleTarget & { drawableID: number },
+      actorKey: target.id,
+      styleName: this.requireName(args.STYLE, "text style"),
+      text: this.toString(args.TEXT),
+    });
+    this.handles.delete(target.id);
+  }
+
+  public async clearTextActor(
+    _args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const target = this.requireTarget(util);
+    await this.releaseOwnedTarget(target.id);
+  }
+
   public async setBubbleAnimationMode(
     args: BlockArguments,
     util: BlockUtility,
@@ -402,6 +504,7 @@ export class BubbleExtension implements TurboWarpExtension {
 
   public async releaseAll(): Promise<void> {
     this.cancelAllWaits("Bubble waits were released.");
+    this.textStyleDraft = null;
     if (!this.composition) return;
     await this.composition.releaseAll();
     this.handles.clear();
@@ -414,6 +517,8 @@ export class BubbleExtension implements TurboWarpExtension {
     if (this.composition) await this.composition.dispose();
     this.handles.clear();
     this.styles.clear();
+    this.textStyles.clear();
+    this.textStyleDraft = null;
   }
 
   private toScratchBlock(block: BlockDefinition): Record<string, unknown> {
@@ -470,6 +575,20 @@ export class BubbleExtension implements TurboWarpExtension {
     return style;
   }
 
+  private requireTextStyleDraft(): BubbleTextStyleInput {
+    if (!this.textStyleDraft) {
+      throw extensionError("begin a text style before setting or saving it.");
+    }
+    return this.textStyleDraft;
+  }
+
+  private updateTextStyleDraft(
+    patch: Partial<Omit<BubbleTextStyleInput, "name">>,
+  ): void {
+    const draft = this.requireTextStyleDraft();
+    this.textStyleDraft = Object.freeze({ ...draft, ...patch });
+  }
+
   private normalizeTransformNumber(
     value: unknown,
     normalize: (value: unknown) => number,
@@ -486,6 +605,22 @@ export class BubbleExtension implements TurboWarpExtension {
   }
 
   private installStyle(style: BubbleStyleInput): void {
+    if (style.presentationMode === "TEXT_ACTOR") {
+      const incompatible = [
+        "placement",
+        "distance",
+        "tailLength",
+        "offset",
+        "visualStyle",
+        "portrait",
+        "advanceIndicator",
+      ].filter((key) => Object.prototype.hasOwnProperty.call(style, key));
+      if (incompatible.length > 0) {
+        throw extensionError(
+          `TEXT_ACTOR does not accept popup-only settings: ${incompatible.join(", ")}.`,
+        );
+      }
+    }
     this.styles.set(style.name, style);
     this.composition?.defineStyle(style);
   }
@@ -575,6 +710,8 @@ export class BubbleExtension implements TurboWarpExtension {
         this.runtime,
         this.options,
       );
+      for (const style of this.textStyles.values())
+        this.composition.defineTextStyle(style);
       for (const style of this.styles.values())
         this.composition.defineStyle(style);
     }

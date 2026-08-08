@@ -4,16 +4,15 @@
 
 ## パッケージ境界
 
-| パッケージ                                 | 責務                                                                      |
-| ------------------------------------------ | ------------------------------------------------------------------------- |
-| `@kubohiroya/turbowarp-asset-manager`      | アセット名の登録、画像種別の検証、画像targetへの適用                      |
-| `@kubohiroya/turbowarp-svg-text`           | 名前付き文字styleと、文字列からSVGスキンへの変換                          |
-| `@kubohiroya/turbowarp-async-input`        | キー入力・タップをTemporary Variablesのruntime変数へ反映                  |
-| `@kubohiroya/turbowarp-runtime-expression` | runtime変数を参照する安全な待機条件の評価                                 |
-| `@kubohiroya/turbowarp-bubble`             | 吹き出しsurface、配置、say／think、表情レイヤー、animation mode、入力待機 |
-| アプリ／host                               | 必要に応じたDSLからcomposition APIへの変換                                |
+| パッケージ                                 | 責務                                                              |
+| ------------------------------------------ | ----------------------------------------------------------------- |
+| `@kubohiroya/turbowarp-asset-manager`      | アセット名の登録、画像種別の検証、画像targetへの適用              |
+| `@kubohiroya/turbowarp-async-input`        | キー入力・タップをTemporary Variablesのruntime変数へ反映          |
+| `@kubohiroya/turbowarp-runtime-expression` | runtime変数を参照する安全な待機条件の評価                         |
+| `@kubohiroya/turbowarp-bubble`             | text actor、吹き出しsurface、配置、表情、animation mode、入力待機 |
+| アプリ／host                               | 必要に応じたDSLからcomposition APIへの変換                        |
 
-Bubbleは依存パッケージを再exportしません。このため、Asset ManagerとSVG文字ActorはBubbleを使わない画面でも従来どおり単独で利用できます。
+Bubbleは文字style、SVG生成、skin ownershipを自身で実装し、SVG文字Actorを公開surfaceとして提供します。`turbowarp-svg-text`へのruntime／peer／dev dependencyはなく、別拡張をTurboWarpへloadする必要もありません。
 
 ## 自動改行と禁則処理の基盤
 
@@ -60,22 +59,20 @@ standalone機能拡張では、`set bubble visual style`ブロックで形状を
 ```sh
 pnpm add @kubohiroya/turbowarp-bubble \
   @kubohiroya/turbowarp-asset-manager \
-  @kubohiroya/turbowarp-svg-text \
   @kubohiroya/turbowarp-async-input \
   @kubohiroya/turbowarp-runtime-expression
 ```
 
-現在のpeer dependency範囲は、Asset Manager `>=0.7.0 <1`、SVG Text、Async Input、Runtime Expressionがそれぞれ`>=0.3.0 <1`です。
+現在のpeer dependency範囲は、Asset Manager `>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。
 
 ## TurboWarp機能拡張
 
 ブロックの組み方、表情差分の準備、入力待ち、clone、エラー対処を含む手順は、ブロック利用マニュアル（[English](https://kubohiroya.github.io/turbowarp-bubble/) / [日本語](https://kubohiroya.github.io/turbowarp-bubble/ja/)）を参照してください。`talking`から`awaiting-advance`、入力成立、`close`までのアニメーション例も掲載しています。
 
-TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、「カスタム拡張機能」から次の5本をサンドボックスなしで読み込みます。Async InputとRuntime ExpressionはBubble待機より前に、Asset ManagerとSVG Textは最初のBubble表示より前にロードします。
+TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、「カスタム拡張機能」から必要な拡張をサンドボックスなしで読み込みます。Async InputとRuntime Expressionは内蔵待機を使う場合、Asset Managerは画像layerを使う場合だけ必要です。
 
 ```text
 https://unpkg.com/@kubohiroya/turbowarp-asset-manager/dist/asset-manager.js
-https://unpkg.com/@kubohiroya/turbowarp-svg-text/dist/svg-text.js
 https://unpkg.com/@kubohiroya/turbowarp-async-input/dist/async-input.js
 https://unpkg.com/@kubohiroya/turbowarp-runtime-expression/dist/runtime-expression.js
 https://unpkg.com/@kubohiroya/turbowarp-bubble/dist/turbowarp-bubble.js
@@ -87,7 +84,11 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 
 | ブロック                                                                               | 動作                                                              |
 | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `begin text style [STYLE]`                                                             | 文字style draftを開始する                                         |
+| `set text font/size/color/background/align ...`                                        | draftへ文字設定を追加する                                         |
+| `save text style`                                                                      | named styleとして保存しdraftを破棄する                            |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
+| `set presentation mode [MODE] for bubble style [STYLE]`                                | popup表示またはtext actor表示を選ぶ                               |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する                 |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する                      |
 | `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Bubble本体のSVG形状を10種類から設定する                           |
@@ -99,6 +100,8 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`         | 入力待ちアイコンを設定する。2フレーム以上必要。空リストで解除する |
 | `say [MESSAGE] with bubble style [STYLE]`                                              | `talking` modeでsay表示を開始または置換する                       |
 | `think [MESSAGE] with bubble style [STYLE]`                                            | `talking` modeでthink表示を開始または置換する                     |
+| `set this sprite text [TEXT] with text style [STYLE]`                                  | sprite自身をresponsive SVG textへ置換する                         |
+| `clear this sprite text`                                                               | SVG text skinを解放して現在のcostumeを再適用する                  |
 | `set this bubble animation mode [MODE]`                                                | `talking`／`awaiting-advance`／`idle`を切り替える                 |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | 条件成立またはtimeoutまでBubbleを表示したまま待つ                 |
 | `close this bubble`                                                                    | 呼び出し元のBubbleと所有resourceを解放する                        |
@@ -173,7 +176,7 @@ close this bubble
 
 ## Composition API
 
-TurboWarp runtimeのrenderer、Asset Manager、SVG Textへ直接接続するhostでは、公開adapterを利用できます。
+TurboWarp runtimeへ直接接続するhostでは、SVG Textを内蔵する公開adapterを利用できます。
 
 ```ts
 import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
@@ -185,20 +188,13 @@ const bubbles = createTurboWarpBubbleComposition(runtime);
 
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
-import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
-import { createBubbleComposition } from "@kubohiroya/turbowarp-bubble/composition";
+import {
+  createBubbleComposition,
+  createBubbleTextEngine,
+} from "@kubohiroya/turbowarp-bubble/composition";
 
 const assetManager = createAssetManagerComposition();
-const svgText = createSvgTextComposition({ runtime });
-
-svgText.defineStyle({
-  name: "dialogue-text",
-  backgroundColor: "#ffffff",
-  textColor: "#332200",
-  font: "Noto Sans JP",
-  fontPercent: 100,
-  alignment: "left",
-});
+const svgText = createBubbleTextEngine(runtime);
 
 const bubbles = createBubbleComposition({
   assetManager,
@@ -207,6 +203,15 @@ const bubbles = createBubbleComposition({
     // hostがActorの近くへsurfaceを配置し、各レイヤー用のtargetを返します。
     return bubbleSurfaceHost.create({ actor, actorKey, kind, style });
   },
+});
+
+bubbles.defineTextStyle({
+  name: "dialogue-text",
+  backgroundColor: "#ffffff",
+  textColor: "#332200",
+  font: "Noto Sans JP",
+  fontPercent: 100,
+  alignment: "left",
 });
 ```
 
@@ -226,6 +231,7 @@ const bubbles = createBubbleComposition({
 bubbles.defineStyle({
   name: "hero-dialogue",
   textStyle: "dialogue-text",
+  presentationMode: "POP_OUT_BUBBLE",
   placement: "north-northeast",
   distance: 12,
   visualStyle: "NORMAL",
@@ -249,6 +255,12 @@ bubbles.defineStyle({
 });
 
 bubbles.defineStyle({
+  name: "chapter-title",
+  textStyle: "dialogue-text",
+  presentationMode: "TEXT_ACTOR",
+});
+
+bubbles.defineStyle({
   name: "narration",
   textStyle: "dialogue-text",
   placement: "FOOTER_LIKE",
@@ -261,6 +273,20 @@ const bubble = await bubbles.show({
   text: "海へ出発！",
   styleName: "hero-dialogue",
 });
+```
+
+`POP_OUT_BUBBLE`はActorと別のdrawableを作ります。`visualStyle: "NO_BUBBLE"`なら枠とtailだけを隠します。`TEXT_ACTOR`はActor自身のskinをSVG textへ置換し、placement、tail、portraitなどのpopup専用設定との併用をerrorにします。
+
+汎用text actor APIも利用できます。
+
+```ts
+await bubbles.setTextActor({
+  actor: titleTarget,
+  actorKey: "Title",
+  styleName: "dialogue-text",
+  text: "第1章",
+});
+await bubbles.releaseTarget("Title");
 ```
 
 `show`の初期animation modeは`talking`です。目パチは表示中継続し、口パクが動きます。全文表示後にアプリが「次へ」操作待ちへ移るとき、modeを`awaiting-advance`へ変更します。
