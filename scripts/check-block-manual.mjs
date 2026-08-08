@@ -100,6 +100,17 @@ for (const placement of [
 ]) {
   requireText(placementGuide, placement, "Placement-guide SVG");
 }
+const productionRendererPanels = placementGuide.match(
+  /data-renderer="turbowarp-svg-text"/gu,
+);
+if (productionRendererPanels?.length !== 19) {
+  throw new Error(
+    `Placement-guide SVG must contain 19 production-rendered panels, found ${productionRendererPanels?.length ?? 0}.`,
+  );
+}
+if (placementGuide.includes('width="34" height="22" rx="9"')) {
+  throw new Error("Placement-guide SVG still contains placeholder capsules.");
+}
 for (const phase of ["speaking", "waiting", "idle"]) {
   requireText(phaseGuide, phase, "Phase-guide SVG");
 }

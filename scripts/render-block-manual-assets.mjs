@@ -3,6 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const assetsDirectory = join(projectRoot, "docs", "assets");
@@ -49,6 +50,61 @@ ${body}
 </svg>
 `;
   return source.replace(/[\t ]+$/gmu, "");
+}
+
+function renderBubbleTextSvg(message, fontPercent = 100) {
+  let renderedSvg = "";
+  const composition = createSvgTextComposition({
+    runtime: {
+      renderer: {
+        createSVGSkin(source) {
+          renderedSvg = source;
+          return 1;
+        },
+        destroySkin() {},
+        getNativeSize() {
+          return [480, 360];
+        },
+        updateDrawableSkinId() {},
+      },
+    },
+  });
+  composition.defineStyle({
+    name: "placement-guide",
+    backgroundColor: "#fff4cc",
+    textColor: colors.ink,
+    font: "Noto Sans JP",
+    fontPercent,
+    alignment: "center",
+  });
+  composition.setText({
+    styleName: "placement-guide",
+    target: { drawableID: 1 },
+    text: message,
+  });
+  composition.releaseAll();
+  if (!renderedSvg) {
+    throw new Error("SVG Text did not create a placement-guide skin.");
+  }
+  return renderedSvg;
+}
+
+function embedRenderedBubble(renderedSvg, centerX, centerY, scale = 1) {
+  const widthMatch = renderedSvg.match(/\bwidth="([0-9.]+)"/u);
+  const heightMatch = renderedSvg.match(/\bheight="([0-9.]+)"/u);
+  if (!widthMatch || !heightMatch) {
+    throw new Error("Rendered SVG Text skin has no numeric dimensions.");
+  }
+  const sourceWidth = Number(widthMatch[1]);
+  const sourceHeight = Number(heightMatch[1]);
+  const width = sourceWidth * scale;
+  const height = sourceHeight * scale;
+  const innerSvg = renderedSvg
+    .replace(/^<svg[^>]*>/u, "")
+    .replace(/<\/svg>\s*$/u, "");
+  return `<svg x="${centerX - width / 2}" y="${centerY - height / 2}" width="${width}" height="${height}" viewBox="0 0 ${sourceWidth} ${sourceHeight}" data-renderer="turbowarp-svg-text" overflow="visible">
+    ${innerSvg}
+  </svg>`;
 }
 
 function panel(x, y, width, height, title) {
@@ -385,6 +441,7 @@ function placementGuideSvg() {
   const centerX = 300;
   const centerY = 350;
   const radius = 162;
+  const directionBubble = renderBubbleTextSvg("Aa", 70);
   const directions = directionNames
     .map((name, index) => {
       const radians = ((index * 22.5) / 180) * Math.PI;
@@ -394,15 +451,13 @@ function placementGuideSvg() {
       const labelY = centerY - Math.cos(radians) * (radius + 42);
       return `<g>
         <path d="M ${centerX} ${centerY} L ${x} ${y}" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="${x - 17}" y="${y - 11}" width="34" height="22" rx="9" fill="${colors.bubble}"/>
+        ${embedRenderedBubble(directionBubble, x, y, 0.72)}
         <text x="${labelX}" y="${labelY + 4}" text-anchor="middle" style="fill:${colors.muted};font-size:9px">${name}</text>
       </g>`;
     })
     .join("\n");
-  const backgroundBubble = (y, label, fill) => `<g>
-    <rect x="710" y="${y}" width="400" height="64" rx="18" fill="${fill}" stroke="#725a42" stroke-width="2"/>
-    <text x="910" y="${y + 39}" text-anchor="middle" style="fill:${colors.ink};font-size:17px;font-weight:700">${label}</text>
-  </g>`;
+  const backgroundBubble = (centerY, label) =>
+    embedRenderedBubble(renderBubbleTextSvg(label), 910, centerY, 1.15);
   const body = `
   <rect width="1200" height="650" fill="${colors.page}"/>
   <text x="32" y="48" class="heading">Bubble placement：Actor相対と背景相対</text>
@@ -416,9 +471,9 @@ function placementGuideSvg() {
   ${panel(616, 98, 560, 520, "背景相対：方向なし")}
   <rect x="676" y="148" width="468" height="410" rx="18" fill="#dce9f7" stroke="#8fa8c4" stroke-width="3"/>
   <text x="692" y="176" class="small">Stage安全領域</text>
-  ${backgroundBubble(194, "HEADER_LIKE", "#fff4cc")}
-  ${backgroundBubble(321, "CENTER", "#ffe1e8")}
-  ${backgroundBubble(448, "FOOTER_LIKE", "#fff4cc")}
+  ${backgroundBubble(226, "HEADER_LIKE")}
+  ${backgroundBubble(353, "CENTER")}
+  ${backgroundBubble(480, "FOOTER_LIKE")}
   <text x="910" y="591" text-anchor="middle" class="small">Actor座標・bounds・可視性に依存せず、tailを持たない配置</text>`;
   return svgDocument({
     width: 1200,

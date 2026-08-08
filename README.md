@@ -97,7 +97,7 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-現在のstandalone rendererは配置基準を実装済みです。背景相対は方向を持たず、後続のBubble body rendererでもtailなしとして描画します。
+図中の文字パネルは、現在のstandalone Bubbleと同じ`createSvgTextComposition`のSVG生成経路で描画しています。現在のstandalone rendererは配置基準を実装済みです。背景相対は方向を持たず、後続のBubble body rendererでもtailなしとして描画します。
 
 ### 表示phase
 

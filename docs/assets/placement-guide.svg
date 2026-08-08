@@ -22,82 +22,114 @@
   <rect x="54" y="148" width="500" height="410" rx="18" fill="#f8f9fc" stroke="#cfd5e2" stroke-width="2"/>
   <g>
         <path d="M 300 350 L 300 188" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="283" y="177" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="286.68" y="175.04" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="300" y="150" text-anchor="middle" style="fill:#667085;font-size:9px">up</text>
       </g>
 <g>
         <path d="M 300 350 L 361.99471604314454 200.33151573317156" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="344.99471604314454" y="189.33151573317156" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="348.67471604314454" y="187.37151573317155" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="378.06742020247833" y="165.5285753676975" text-anchor="middle" style="fill:#667085;font-size:9px">up-up-right</text>
       </g>
 <g>
         <path d="M 300 350 L 414.5512985522207 235.44870144777929" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="397.5512985522207" y="224.44870144777929" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="401.2312985522207" y="222.48870144777928" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="444.2497833620557" y="209.7502166379443" text-anchor="middle" style="fill:#667085;font-size:9px">up-right</text>
       </g>
 <g>
         <path d="M 300 350 L 449.66848426682844 288.00528395685546" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="432.66848426682844" y="277.00528395685546" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="436.34848426682845" y="275.0452839568555" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="488.4714246323025" y="275.93257979752167" text-anchor="middle" style="fill:#667085;font-size:9px">right-up-right</text>
       </g>
 <g>
         <path d="M 300 350 L 462 350" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="445" y="339" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="448.68" y="337.04" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="504" y="354" text-anchor="middle" style="fill:#667085;font-size:9px">right</text>
       </g>
 <g>
         <path d="M 300 350 L 449.66848426682844 411.99471604314454" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="432.66848426682844" y="400.99471604314454" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="436.34848426682845" y="399.03471604314456" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="488.4714246323025" y="432.0674202024783" text-anchor="middle" style="fill:#667085;font-size:9px">right-down-right</text>
       </g>
 <g>
         <path d="M 300 350 L 414.5512985522207 464.5512985522207" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="397.5512985522207" y="453.5512985522207" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="401.2312985522207" y="451.59129855222074" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="444.2497833620557" y="498.2497833620557" text-anchor="middle" style="fill:#667085;font-size:9px">down-right</text>
       </g>
 <g>
         <path d="M 300 350 L 361.99471604314454 499.66848426682844" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="344.99471604314454" y="488.66848426682844" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="348.67471604314454" y="486.70848426682846" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="378.06742020247833" y="542.4714246323025" text-anchor="middle" style="fill:#667085;font-size:9px">down-down-right</text>
       </g>
 <g>
         <path d="M 300 350 L 300 512" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="283" y="501" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="286.68" y="499.04" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="300" y="558" text-anchor="middle" style="fill:#667085;font-size:9px">down</text>
       </g>
 <g>
         <path d="M 300 350 L 238.00528395685546 499.6684842668285" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="221.00528395685546" y="488.6684842668285" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="224.68528395685547" y="486.7084842668285" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="221.93257979752173" y="542.4714246323025" text-anchor="middle" style="fill:#667085;font-size:9px">down-down-left</text>
       </g>
 <g>
         <path d="M 300 350 L 185.4487014477793 464.5512985522207" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="168.4487014477793" y="453.5512985522207" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="172.12870144777932" y="451.59129855222074" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="155.7502166379443" y="498.2497833620557" text-anchor="middle" style="fill:#667085;font-size:9px">down-left</text>
       </g>
 <g>
         <path d="M 300 350 L 150.33151573317159 411.99471604314465" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="133.33151573317159" y="400.99471604314465" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="137.0115157331716" y="399.03471604314467" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="111.52857536769756" y="432.06742020247844" text-anchor="middle" style="fill:#667085;font-size:9px">left-down-left</text>
       </g>
 <g>
         <path d="M 300 350 L 138 350.00000000000006" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="121" y="339.00000000000006" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="124.68" y="337.0400000000001" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="96" y="354.00000000000006" text-anchor="middle" style="fill:#667085;font-size:9px">left</text>
       </g>
 <g>
         <path d="M 300 350 L 150.33151573317156 288.0052839568554" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="133.33151573317156" y="277.0052839568554" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="137.01151573317156" y="275.0452839568554" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="111.52857536769753" y="275.9325797975216" text-anchor="middle" style="fill:#667085;font-size:9px">left-up-left</text>
       </g>
 <g>
         <path d="M 300 350 L 185.44870144777929 235.44870144777934" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="168.44870144777929" y="224.44870144777934" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="172.1287014477793" y="222.48870144777933" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="155.75021663794428" y="209.75021663794433" text-anchor="middle" style="fill:#667085;font-size:9px">up-left</text>
       </g>
 <g>
         <path d="M 300 350 L 238.00528395685535 200.33151573317159" stroke="#f4a4b4" stroke-width="2"/>
-        <rect x="221.00528395685535" y="189.33151573317159" width="34" height="22" rx="9" fill="#ff6680"/>
+        <svg x="224.68528395685536" y="187.37151573317158" width="26.64" height="25.919999999999998" viewBox="0 0 37 36" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>Aa</title><rect width="37" height="36" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="9.8" text-anchor="middle"><tspan x="18.5" y="21.8">Aa</tspan></text>
+  </svg>
         <text x="221.93257979752156" y="165.52857536769756" text-anchor="middle" style="fill:#667085;font-size:9px">up-up-left</text>
       </g>
   <circle cx="300" cy="350" r="40" fill="#ffd5b5" stroke="#b85d63" stroke-width="3"/>
@@ -109,17 +141,14 @@
   </g>
   <rect x="676" y="148" width="468" height="410" rx="18" fill="#dce9f7" stroke="#8fa8c4" stroke-width="3"/>
   <text x="692" y="176" class="small">Stage安全領域</text>
-  <g>
-    <rect x="710" y="194" width="400" height="64" rx="18" fill="#fff4cc" stroke="#725a42" stroke-width="2"/>
-    <text x="910" y="233" text-anchor="middle" style="fill:#25283a;font-size:17px;font-weight:700">HEADER_LIKE</text>
-  </g>
-  <g>
-    <rect x="710" y="321" width="400" height="64" rx="18" fill="#ffe1e8" stroke="#725a42" stroke-width="2"/>
-    <text x="910" y="360" text-anchor="middle" style="fill:#25283a;font-size:17px;font-weight:700">CENTER</text>
-  </g>
-  <g>
-    <rect x="710" y="448" width="400" height="64" rx="18" fill="#fff4cc" stroke="#725a42" stroke-width="2"/>
-    <text x="910" y="487" text-anchor="middle" style="fill:#25283a;font-size:17px;font-weight:700">FOOTER_LIKE</text>
-  </g>
+  <svg x="841" y="203" width="138" height="46" viewBox="0 0 120 40" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>HEADER_LIKE</title><rect width="120" height="40" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="14" text-anchor="middle"><tspan x="60" y="26">HEADER_LIKE</tspan></text>
+  </svg>
+  <svg x="865.725" y="330" width="88.55" height="46" viewBox="0 0 77 40" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>CENTER</title><rect width="77" height="40" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="14" text-anchor="middle"><tspan x="38.5" y="26">CENTER</tspan></text>
+  </svg>
+  <svg x="841" y="457" width="138" height="46" viewBox="0 0 120 40" data-renderer="turbowarp-svg-text" overflow="visible">
+    <title>FOOTER_LIKE</title><rect width="120" height="40" rx="8" fill="#fff4cc"/><text xml:space="preserve" fill="#25283a" font-family="Noto Sans JP" font-size="14" text-anchor="middle"><tspan x="60" y="26">FOOTER_LIKE</tspan></text>
+  </svg>
   <text x="910" y="591" text-anchor="middle" class="small">Actor座標・bounds・可視性に依存せず、tailを持たない配置</text>
 </svg>

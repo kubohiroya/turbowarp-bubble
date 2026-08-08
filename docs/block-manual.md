@@ -82,6 +82,8 @@ set bubble placement [up-right] for bubble style [hero-dialogue]
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](./assets/placement-guide.svg)
 
+図中の文字パネルは、現在のstandalone Bubbleが実際に使う`createSvgTextComposition`のSVG生成経路から生成しています。解説専用の近似吹き出しではありません。Bubble本体の形状とtailは後続実装のため、この図でも未実装のtailは描いていません。
+
 Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
 
 ```text
