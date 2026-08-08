@@ -109,7 +109,7 @@ left / left-up-left / up-left / up-up-left
 | `CENTER`      | Stage安全領域の水平・垂直中央 |
 | `FOOTER_LIKE` | Stage安全領域下部、水平中央   |
 
-背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。将来のBubble body rendererではActorを指すtailを描画しません。
+背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。背景相対のBubble bodyにはActorを指すtailを描画しません。
 
 ### Actorとの距離、tail、本体の位置・拡大率
 
@@ -206,7 +206,7 @@ say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]
 ```
 
-どちらも同じstyle、表情レイヤー、phase制御を使えます。現在のStandalone rendererでは文字パネルとportraitの配置は共通です。Composition APIのsurfaceには`say`／`think`のkindが渡されるため、独自hostでは形や配置を区別できます。
+どちらも同じvisual style、表情レイヤー、placement、phase制御を使えます。`say`／`think`だけで形状を固定せず、`set bubble visual style`で`NORMAL`、`THINKING`などを明示的に選びます。Composition APIのsurfaceには`say`／`think`のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。
 
 同じsprite、clone、またはStageで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。
 
@@ -226,6 +226,10 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義または再定義する                    |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する     |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Actor boundsからtail先端までの距離を設定する          |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Bubble本体のSVG形状を10種類から設定する               |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Bubble borderからtail先端までの基準長を設定する       |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | 本体位置と、文字を含む全体のscaleを設定する           |
 | `set portrait base [ASSET] for bubble style [STYLE]`                           | portraitのベース画像を設定する                        |
 | `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分と間隔を設定する                            |
 | `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分と間隔を設定する                            |
@@ -273,4 +277,4 @@ pnpm docs:render
 pnpm docs:check
 ```
 
-`docs:check`は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全11ブロックへの参照を検証します。
+`docs:check`は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全15ブロックへの参照、およびPages用HTMLが最新であることを検証します。

@@ -67,6 +67,7 @@ for (const value of [
   "setBubbleVisualStyle",
   "setBubbleTailLength",
   "setBubbleOffset",
+  "https://kubohiroya.github.io/turbowarp-bubble/",
   "sayWithBubbleStyle",
   "setBubblePhase",
   "kubohiroyaassetmanager",

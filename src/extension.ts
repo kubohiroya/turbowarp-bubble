@@ -64,7 +64,7 @@ const blockDefinitions = definitions.blocks as readonly BlockDefinition[];
 const definitionMenus = definitions.menus as Record<string, DefinitionMenu>;
 const validPhases = new Set<BubblePhase>(["idle", "speaking", "waiting"]);
 export const EXTENSION_DOCS_URI =
-  "https://github.com/kubohiroya/turbowarp-bubble#readme";
+  "https://kubohiroya.github.io/turbowarp-bubble/";
 export const EXTENSION_VERSION = "0.1.0";
 
 function extensionError(message: string): Error {
