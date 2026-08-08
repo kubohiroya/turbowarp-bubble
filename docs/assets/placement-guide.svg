@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="650" viewBox="0 0 1200 650" role="img" aria-labelledby="title description">
+  <title id="title">Bubble placementの二つの基準</title>
+  <desc id="description">Actor相対の16方向および角度指定と、背景相対のHEADER_LIKE、CENTER、FOOTER_LIKEを比較する図。</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+    .heading { fill: #25283a; font-size: 28px; font-weight: 700; }
+    .subheading { fill: #25283a; font-size: 20px; font-weight: 700; }
+    .body { fill: #25283a; font-size: 16px; }
+    .small { fill: #667085; font-size: 13px; }
+    .block-text { fill: #ffffff; font-size: 13px; font-weight: 600; }
+    .input-text { fill: #25283a; font-size: 13px; font-weight: 500; }
+  </style>
+
+  <rect width="1200" height="650" fill="#f2f4f8"/>
+  <text x="32" y="48" class="heading">Bubble placement：Actor相対と背景相対</text>
+  <text x="32" y="76" class="body">同じPLACEMENT入力で、Actorからの方向またはStage内の領域を選びます。</text>
+  <g>
+    <rect x="24" y="98" width="560" height="520" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+    <text x="48" y="136" class="subheading">Actor相対：方向あり</text>
+  </g>
+  <rect x="54" y="148" width="500" height="410" rx="18" fill="#f8f9fc" stroke="#cfd5e2" stroke-width="2"/>
+  <g>
+        <path d="M 300 350 L 300 188" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="283" y="177" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="300" y="150" text-anchor="middle" style="fill:#667085;font-size:9px">up</text>
+      </g>
+<g>
+        <path d="M 300 350 L 361.99471604314454 200.33151573317156" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="344.99471604314454" y="189.33151573317156" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="378.06742020247833" y="165.5285753676975" text-anchor="middle" style="fill:#667085;font-size:9px">up-up-right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 414.5512985522207 235.44870144777929" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="397.5512985522207" y="224.44870144777929" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="444.2497833620557" y="209.7502166379443" text-anchor="middle" style="fill:#667085;font-size:9px">up-right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 449.66848426682844 288.00528395685546" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="432.66848426682844" y="277.00528395685546" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="488.4714246323025" y="275.93257979752167" text-anchor="middle" style="fill:#667085;font-size:9px">right-up-right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 462 350" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="445" y="339" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="504" y="354" text-anchor="middle" style="fill:#667085;font-size:9px">right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 449.66848426682844 411.99471604314454" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="432.66848426682844" y="400.99471604314454" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="488.4714246323025" y="432.0674202024783" text-anchor="middle" style="fill:#667085;font-size:9px">right-down-right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 414.5512985522207 464.5512985522207" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="397.5512985522207" y="453.5512985522207" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="444.2497833620557" y="498.2497833620557" text-anchor="middle" style="fill:#667085;font-size:9px">down-right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 361.99471604314454 499.66848426682844" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="344.99471604314454" y="488.66848426682844" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="378.06742020247833" y="542.4714246323025" text-anchor="middle" style="fill:#667085;font-size:9px">down-down-right</text>
+      </g>
+<g>
+        <path d="M 300 350 L 300 512" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="283" y="501" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="300" y="558" text-anchor="middle" style="fill:#667085;font-size:9px">down</text>
+      </g>
+<g>
+        <path d="M 300 350 L 238.00528395685546 499.6684842668285" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="221.00528395685546" y="488.6684842668285" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="221.93257979752173" y="542.4714246323025" text-anchor="middle" style="fill:#667085;font-size:9px">down-down-left</text>
+      </g>
+<g>
+        <path d="M 300 350 L 185.4487014477793 464.5512985522207" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="168.4487014477793" y="453.5512985522207" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="155.7502166379443" y="498.2497833620557" text-anchor="middle" style="fill:#667085;font-size:9px">down-left</text>
+      </g>
+<g>
+        <path d="M 300 350 L 150.33151573317159 411.99471604314465" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="133.33151573317159" y="400.99471604314465" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="111.52857536769756" y="432.06742020247844" text-anchor="middle" style="fill:#667085;font-size:9px">left-down-left</text>
+      </g>
+<g>
+        <path d="M 300 350 L 138 350.00000000000006" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="121" y="339.00000000000006" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="96" y="354.00000000000006" text-anchor="middle" style="fill:#667085;font-size:9px">left</text>
+      </g>
+<g>
+        <path d="M 300 350 L 150.33151573317156 288.0052839568554" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="133.33151573317156" y="277.0052839568554" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="111.52857536769753" y="275.9325797975216" text-anchor="middle" style="fill:#667085;font-size:9px">left-up-left</text>
+      </g>
+<g>
+        <path d="M 300 350 L 185.44870144777929 235.44870144777934" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="168.44870144777929" y="224.44870144777934" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="155.75021663794428" y="209.75021663794433" text-anchor="middle" style="fill:#667085;font-size:9px">up-left</text>
+      </g>
+<g>
+        <path d="M 300 350 L 238.00528395685535 200.33151573317159" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="221.00528395685535" y="189.33151573317159" width="34" height="22" rx="9" fill="#ff6680"/>
+        <text x="221.93257979752156" y="165.52857536769756" text-anchor="middle" style="fill:#667085;font-size:9px">up-up-left</text>
+      </g>
+  <circle cx="300" cy="350" r="40" fill="#ffd5b5" stroke="#b85d63" stroke-width="3"/>
+  <text x="300" y="356" text-anchor="middle" style="fill:#25283a;font-size:15px;font-weight:700">Actor</text>
+  <text x="300" y="591" text-anchor="middle" class="small">16正規方向＋16 alias／0〜360°（0=上、90=右）</text>
+  <g>
+    <rect x="616" y="98" width="560" height="520" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+    <text x="640" y="136" class="subheading">背景相対：方向なし</text>
+  </g>
+  <rect x="676" y="148" width="468" height="410" rx="18" fill="#dce9f7" stroke="#8fa8c4" stroke-width="3"/>
+  <text x="692" y="176" class="small">Stage安全領域</text>
+  <g>
+    <rect x="710" y="194" width="400" height="64" rx="18" fill="#fff4cc" stroke="#725a42" stroke-width="2"/>
+    <text x="910" y="233" text-anchor="middle" style="fill:#25283a;font-size:17px;font-weight:700">HEADER_LIKE</text>
+  </g>
+  <g>
+    <rect x="710" y="321" width="400" height="64" rx="18" fill="#ffe1e8" stroke="#725a42" stroke-width="2"/>
+    <text x="910" y="360" text-anchor="middle" style="fill:#25283a;font-size:17px;font-weight:700">CENTER</text>
+  </g>
+  <g>
+    <rect x="710" y="448" width="400" height="64" rx="18" fill="#fff4cc" stroke="#725a42" stroke-width="2"/>
+    <text x="910" y="487" text-anchor="middle" style="fill:#25283a;font-size:17px;font-weight:700">FOOTER_LIKE</text>
+  </g>
+  <text x="910" y="591" text-anchor="middle" class="small">Actor座標・bounds・可視性に依存せず、tailを持たない配置</text>
+</svg>

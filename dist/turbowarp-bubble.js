@@ -37,6 +37,23 @@
         }
       },
       {
+        "opcode": "setBubblePlacement",
+        "blockType": "COMMAND",
+        "text": "set bubble placement [PLACEMENT] for bubble style [STYLE]",
+        "description": "Sets an actor-relative direction/angle or a background-relative region. Direction aliases and Scratch-style degrees from 0 through 360 are accepted.",
+        "arguments": {
+          "PLACEMENT": {
+            "type": "STRING",
+            "defaultValue": "up-right",
+            "menu": "placement"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
         "opcode": "setPortraitBase",
         "blockType": "COMMAND",
         "text": "set portrait base [ASSET] for bubble style [STYLE]",
@@ -170,15 +187,199 @@
         "arguments": {}
       }
     ],
-    menus: { "phase": {
-      "acceptReporters": true,
-      "items": [
-        "speaking",
-        "waiting",
-        "idle"
-      ]
-    } }
+    menus: {
+      "placement": {
+        "acceptReporters": true,
+        "items": [
+          "up",
+          "up-up-right",
+          "up-right",
+          "right-up-right",
+          "right",
+          "right-down-right",
+          "down-right",
+          "down-down-right",
+          "down",
+          "down-down-left",
+          "down-left",
+          "left-down-left",
+          "left",
+          "left-up-left",
+          "up-left",
+          "up-up-left",
+          "HEADER_LIKE",
+          "CENTER",
+          "FOOTER_LIKE"
+        ]
+      },
+      "phase": {
+        "acceptReporters": true,
+        "items": [
+          "speaking",
+          "waiting",
+          "idle"
+        ]
+      }
+    }
   };
+  //#endregion
+  //#region src/placement.ts
+  var bubbleDirectionNames = [
+    "up",
+    "up-up-right",
+    "up-right",
+    "right-up-right",
+    "right",
+    "right-down-right",
+    "down-right",
+    "down-down-right",
+    "down",
+    "down-down-left",
+    "down-left",
+    "left-down-left",
+    "left",
+    "left-up-left",
+    "up-left",
+    "up-up-left"
+  ];
+  var bubbleBackgroundRegions = [
+    "HEADER_LIKE",
+    "CENTER",
+    "FOOTER_LIKE"
+  ];
+  var aliasToDirection = /* @__PURE__ */ new Map([
+    ["east", "right"],
+    ["east-northeast", "right-up-right"],
+    ["east-southeast", "right-down-right"],
+    ["north", "up"],
+    ["northeast", "up-right"],
+    ["north-northeast", "up-up-right"],
+    ["northwest", "up-left"],
+    ["north-northwest", "up-up-left"],
+    ["south", "down"],
+    ["southeast", "down-right"],
+    ["south-southeast", "down-down-right"],
+    ["southwest", "down-left"],
+    ["south-southwest", "down-down-left"],
+    ["west", "left"],
+    ["west-northwest", "left-up-left"],
+    ["west-southwest", "left-down-left"]
+  ]);
+  var directionSet = new Set(bubbleDirectionNames);
+  var backgroundRegionSet = new Set(bubbleBackgroundRegions);
+  var intermediateDirectionOffset = Math.SQRT2 - 1;
+  var directionVectors = Object.freeze({
+    down: {
+      x: 0,
+      y: -1
+    },
+    "down-down-left": {
+      x: -intermediateDirectionOffset,
+      y: -1
+    },
+    "down-down-right": {
+      x: intermediateDirectionOffset,
+      y: -1
+    },
+    "down-left": {
+      x: -1,
+      y: -1
+    },
+    "down-right": {
+      x: 1,
+      y: -1
+    },
+    left: {
+      x: -1,
+      y: 0
+    },
+    "left-down-left": {
+      x: -1,
+      y: -intermediateDirectionOffset
+    },
+    "left-up-left": {
+      x: -1,
+      y: intermediateDirectionOffset
+    },
+    right: {
+      x: 1,
+      y: 0
+    },
+    "right-down-right": {
+      x: 1,
+      y: -intermediateDirectionOffset
+    },
+    "right-up-right": {
+      x: 1,
+      y: intermediateDirectionOffset
+    },
+    up: {
+      x: 0,
+      y: 1
+    },
+    "up-left": {
+      x: -1,
+      y: 1
+    },
+    "up-right": {
+      x: 1,
+      y: 1
+    },
+    "up-up-left": {
+      x: -intermediateDirectionOffset,
+      y: 1
+    },
+    "up-up-right": {
+      x: intermediateDirectionOffset,
+      y: 1
+    }
+  });
+  function normalizedVectorComponent(value) {
+    if (Math.abs(value) < 1e-12) return 0;
+    if (Math.abs(1 - Math.abs(value)) < 1e-12) return Math.sign(value);
+    return value;
+  }
+  /** Accepts API values and numeric strings supplied by Scratch block inputs. */
+  function normalizeBubblePlacement(value) {
+    if (typeof value === "number") {
+      if (!Number.isFinite(value) || value < 0 || value > 360) throw new TypeError("Bubble placement angle must be from 0 through 360.");
+      return Object.freeze({
+        basis: "actor",
+        direction: value === 360 ? 0 : value
+      });
+    }
+    if (typeof value !== "string" || value.trim().length === 0) throw new TypeError("Bubble placement must be a direction, angle, or region.");
+    const trimmed = value.trim();
+    const region = trimmed.toUpperCase();
+    if (backgroundRegionSet.has(region)) return Object.freeze({
+      basis: "background",
+      region
+    });
+    const direction = trimmed.toLowerCase();
+    if (directionSet.has(direction)) return Object.freeze({
+      basis: "actor",
+      direction
+    });
+    const alias = aliasToDirection.get(direction);
+    if (alias) return Object.freeze({
+      basis: "actor",
+      direction: alias
+    });
+    const degrees = Number(trimmed);
+    if (Number.isFinite(degrees) && degrees >= 0 && degrees <= 360) return Object.freeze({
+      basis: "actor",
+      direction: degrees === 360 ? 0 : degrees
+    });
+    throw new TypeError("Bubble placement is invalid.");
+  }
+  function bubbleDirectionVector(direction) {
+    if (typeof direction === "string") return directionVectors[direction];
+    const radians = direction * Math.PI / 180;
+    return Object.freeze({
+      x: normalizedVectorComponent(Math.sin(radians)),
+      y: normalizedVectorComponent(Math.cos(radians))
+    });
+  }
   //#endregion
   //#region \0@oxc-project+runtime@0.143.0/helpers/esm/typeof.js
   function _typeof(o) {
@@ -844,12 +1045,23 @@
   }
   function normalizeStyle(value) {
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
-    requireExactKeys(value, ["name", "textStyle"], ["portrait", "advanceIndicator"], "Bubble style");
+    requireExactKeys(value, ["name", "textStyle"], [
+      "placement",
+      "portrait",
+      "advanceIndicator"
+    ], "Bubble style");
     const portrait = value.portrait === void 0 ? void 0 : normalizePortrait(value.portrait);
     const advanceIndicator = value.advanceIndicator === void 0 ? void 0 : normalizeAnimation(value.advanceIndicator, "Bubble advance indicator", 2);
+    let placement;
+    try {
+      placement = normalizeBubblePlacement(value.placement ?? "up-right");
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble placement is invalid.");
+    }
     return Object.freeze({
       name: requireName(value.name, "Bubble style name"),
       textStyle: requireName(value.textStyle, "Bubble text style name"),
+      placement,
       ...portrait === void 0 ? {} : { portrait },
       ...advanceIndicator === void 0 ? {} : { advanceIndicator }
     });
@@ -1224,6 +1436,7 @@
   var indicatorBoxSize = 18;
   var contentGap = 8;
   var actorGap = 12;
+  var stageSafeMargin = 16;
   var surfaceSequence = 0;
   var BubbleRuntimeAdapterError = class extends Error {
     constructor(code, message) {
@@ -1345,7 +1558,7 @@
       let surfaceVisible = false;
       let disposed = false;
       const updateVisibility = () => {
-        const actorVisible = actor.visible !== false;
+        const actorVisible = style.placement.basis === "background" || actor.visible !== false;
         renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible);
         for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false));
         runtime.requestRedraw?.();
@@ -1367,7 +1580,6 @@
         };
         const totalWidth = portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width;
         const contentHeight = Math.max(portraitSize.height, textSize.height);
-        const bounds = targetBounds(actor);
         const nativeSize = renderer.getNativeSize();
         const stageWidth = Array.isArray(nativeSize) && Number(nativeSize[0]) > 0 ? Number(nativeSize[0]) : 480;
         const stageHeight = Array.isArray(nativeSize) && Number(nativeSize[1]) > 0 ? Number(nativeSize[1]) : 360;
@@ -1375,10 +1587,30 @@
         const stageRight = stageWidth / 2;
         const stageTop = stageHeight / 2;
         const stageBottom = -stageHeight / 2;
-        const centerX = clamp((bounds.left + bounds.right) / 2, stageLeft + totalWidth / 2, stageRight - totalWidth / 2);
-        let centerY = bounds.top + actorGap + contentHeight / 2;
-        if (centerY + contentHeight / 2 > stageTop) centerY = bounds.bottom - actorGap - contentHeight / 2;
-        centerY = clamp(centerY, stageBottom + contentHeight / 2, stageTop - contentHeight / 2);
+        const minimumCenterX = stageLeft + totalWidth / 2;
+        const maximumCenterX = stageRight - totalWidth / 2;
+        const minimumCenterY = stageBottom + contentHeight / 2;
+        const maximumCenterY = stageTop - contentHeight / 2;
+        let centerX;
+        let centerY;
+        if (style.placement.basis === "background") {
+          centerX = 0;
+          if (style.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin - contentHeight / 2;
+          else if (style.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin + contentHeight / 2;
+          else centerY = 0;
+        } else {
+          const bounds = targetBounds(actor);
+          const actorCenterX = (bounds.left + bounds.right) / 2;
+          const actorCenterY = (bounds.top + bounds.bottom) / 2;
+          const vector = bubbleDirectionVector(style.placement.direction);
+          const horizontalDistance = vector.x < 0 ? actorCenterX - bounds.left + actorGap + totalWidth / 2 : bounds.right - actorCenterX + actorGap + totalWidth / 2;
+          const verticalDistance = vector.y < 0 ? actorCenterY - bounds.bottom + actorGap + contentHeight / 2 : bounds.top - actorCenterY + actorGap + contentHeight / 2;
+          const placementScale = Math.min(vector.x === 0 ? Number.POSITIVE_INFINITY : horizontalDistance / Math.abs(vector.x), vector.y === 0 ? Number.POSITIVE_INFINITY : verticalDistance / Math.abs(vector.y));
+          centerX = actorCenterX + vector.x * placementScale;
+          centerY = actorCenterY + vector.y * placementScale;
+        }
+        centerX = clamp(centerX, minimumCenterX, maximumCenterX);
+        centerY = clamp(centerY, minimumCenterY, maximumCenterY);
         const left = centerX - totalWidth / 2;
         const portraitX = left + portraitSize.width / 2;
         const textX = left + portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width / 2;
@@ -1396,7 +1628,7 @@
         originalVisualChange?.(changedTarget);
         position();
       };
-      actor.onTargetVisualChange = visualChangeHook;
+      if (style.placement.basis === "actor") actor.onTargetVisualChange = visualChangeHook;
       return Object.freeze({
         targets,
         setLayerVisible(layer, visible) {
@@ -1417,7 +1649,7 @@
         dispose() {
           if (disposed) return;
           disposed = true;
-          if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
+          if (style.placement.basis === "actor" && actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
           for (const target of [...drawables].reverse()) renderer.destroyDrawable(target.drawableID, spriteLayer);
           runtime.requestRedraw?.();
         }
@@ -1539,9 +1771,23 @@
       }) : Object.freeze({
         name: style.name,
         textStyle: style.textStyle,
+        ...style.placement === void 0 ? {} : { placement: style.placement },
         ...style.advanceIndicator ? { advanceIndicator: style.advanceIndicator } : {}
       });
       this.installStyle(nextStyle);
+    }
+    setBubblePlacement(args) {
+      const style = this.requireStyle(args.STYLE);
+      let placement;
+      try {
+        placement = normalizeBubblePlacement(args.PLACEMENT);
+      } catch (error) {
+        throw extensionError(error instanceof Error ? error.message : "placement is invalid.");
+      }
+      this.installStyle(Object.freeze({
+        ...style,
+        placement: this.placementInput(placement)
+      }));
     }
     setBlinkFrames(args) {
       this.setPortraitAnimation("blink", args);
@@ -1557,6 +1803,7 @@
       const nextStyle = Object.freeze({
         name: style.name,
         textStyle: style.textStyle,
+        ...style.placement === void 0 ? {} : { placement: style.placement },
         ...style.portrait ? { portrait: style.portrait } : {},
         ...advanceIndicator ? { advanceIndicator } : {}
       });
@@ -1573,7 +1820,7 @@
       const phase = this.toString(args.PHASE).trim().toLowerCase();
       if (!validPhases.has(phase)) throw extensionError("phase must be speaking, waiting, or idle.");
       const handle = this.handles.get(target.id);
-      if (!handle) throw extensionError("this sprite does not have an active bubble.");
+      if (!handle) throw extensionError("this target does not have an active bubble.");
       await handle.setPhase(phase);
     }
     async closeBubble(_args, util) {
@@ -1662,12 +1909,15 @@
       }));
     }
     isTarget(value) {
-      return typeof value === "object" && value !== null && typeof value.id === "string";
+      return typeof value === "object" && value !== null && typeof value.id === "string" && typeof value.isStage === "boolean";
     }
     requireTarget(util) {
       const target = util?.target;
-      if (!this.isTarget(target) || target.isStage) throw extensionError("run this block from a sprite or clone.");
+      if (!this.isTarget(target)) throw extensionError("target is unavailable.");
       return target;
+    }
+    placementInput(placement) {
+      return placement.basis === "actor" ? placement.direction : placement.region;
     }
     getComposition() {
       if (this.disposed) throw extensionError("extension is disposed.");
@@ -1678,8 +1928,10 @@
       return this.composition;
     }
     async show(kind, args, util) {
-      const target = this.requireTarget(util);
       const style = this.requireStyle(args.STYLE);
+      const target = this.requireTarget(util);
+      const placement = normalizeBubblePlacement(style.placement ?? "up-right");
+      if (target.isStage && placement.basis === "actor") throw extensionError("actor-relative bubble placement requires a sprite or clone.");
       const composition = this.getComposition();
       let handle;
       try {

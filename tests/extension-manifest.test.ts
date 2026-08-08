@@ -55,6 +55,14 @@ describe("extension API manifest", () => {
           arguments: [{ id: "PHASE", type: "STRING", menu: "phase" }],
         },
         {
+          opcode: "setBubblePlacement",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "PLACEMENT", type: "STRING", menu: "placement" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
           opcode: "setPortraitBase",
           blockType: "COMMAND",
           arguments: [
@@ -80,7 +88,10 @@ describe("extension API manifest", () => {
           ],
         },
       ],
-      menus: [{ id: "phase", acceptReporters: true }],
+      menus: [
+        { id: "phase", acceptReporters: true },
+        { id: "placement", acceptReporters: true },
+      ],
     });
     expect(serializeExtensionManifest(extensionConfig.id, definitions)).toBe(
       `${JSON.stringify(manifest, null, 2)}\n`,

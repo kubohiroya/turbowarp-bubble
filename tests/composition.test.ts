@@ -139,7 +139,14 @@ describe("Bubble composition", () => {
     });
 
     expect(harness.createSurface).toHaveBeenCalledWith(
-      expect.objectContaining({ actor, actorKey: "Hero", kind: "say" }),
+      expect.objectContaining({
+        actor,
+        actorKey: "Hero",
+        kind: "say",
+        style: expect.objectContaining({
+          placement: { basis: "actor", direction: "up-right" },
+        }),
+      }),
     );
     expect(harness.setText).toHaveBeenCalledWith({
       styleName: "dialogue-text",
@@ -165,6 +172,49 @@ describe("Bubble composition", () => {
     expect(handle.phase).toBe("speaking");
     expect(harness.composition.hasActiveBubble("Hero")).toBe(true);
     expect(harness.scheduler.size).toBe(2);
+  });
+
+  it("normalizes direction aliases and background regions in styles", async () => {
+    const harness = createHarness();
+    harness.composition.defineStyle({
+      name: "alias",
+      textStyle: "default",
+      placement: "west-northwest",
+    });
+    await harness.composition.show({
+      actor: {},
+      actorKey: "Alias",
+      kind: "say",
+      text: "alias",
+      styleName: "alias",
+    });
+    expect(harness.createSurface).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        style: expect.objectContaining({
+          placement: { basis: "actor", direction: "left-up-left" },
+        }),
+      }),
+    );
+
+    harness.composition.defineStyle({
+      name: "footer",
+      textStyle: "default",
+      placement: "FOOTER_LIKE",
+    });
+    await harness.composition.show({
+      actor: {},
+      actorKey: "Stage",
+      kind: "say",
+      text: "footer",
+      styleName: "footer",
+    });
+    expect(harness.createSurface).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        style: expect.objectContaining({
+          placement: { basis: "background", region: "FOOTER_LIKE" },
+        }),
+      }),
+    );
   });
 
   it("stops mouth animation and loops the advance indicator while waiting", async () => {
@@ -285,6 +335,13 @@ describe("Bubble composition", () => {
           frames: ["Next1"],
           frameIntervalSeconds: 0.2,
         },
+      }),
+    ).toThrowError(BubbleCompositionError);
+    expect(() =>
+      harness.composition.defineStyle({
+        name: "bad-placement",
+        textStyle: "default",
+        placement: 361,
       }),
     ).toThrowError(BubbleCompositionError);
   });

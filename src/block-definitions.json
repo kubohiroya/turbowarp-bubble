@@ -12,6 +12,20 @@
       }
     },
     {
+      "opcode": "setBubblePlacement",
+      "blockType": "COMMAND",
+      "text": "set bubble placement [PLACEMENT] for bubble style [STYLE]",
+      "description": "Sets an actor-relative direction/angle or a background-relative region. Direction aliases and Scratch-style degrees from 0 through 360 are accepted.",
+      "arguments": {
+        "PLACEMENT": {
+          "type": "STRING",
+          "defaultValue": "up-right",
+          "menu": "placement"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
       "opcode": "setPortraitBase",
       "blockType": "COMMAND",
       "text": "set portrait base [ASSET] for bubble style [STYLE]",
@@ -103,6 +117,30 @@
     }
   ],
   "menus": {
+    "placement": {
+      "acceptReporters": true,
+      "items": [
+        "up",
+        "up-up-right",
+        "up-right",
+        "right-up-right",
+        "right",
+        "right-down-right",
+        "down-right",
+        "down-down-right",
+        "down",
+        "down-down-left",
+        "down-left",
+        "left-down-left",
+        "left",
+        "left-up-left",
+        "up-left",
+        "up-up-left",
+        "HEADER_LIKE",
+        "CENTER",
+        "FOOTER_LIKE"
+      ]
+    },
     "phase": {
       "acceptReporters": true,
       "items": ["speaking", "waiting", "idle"]

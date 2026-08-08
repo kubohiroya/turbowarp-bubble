@@ -37,6 +37,7 @@ const bubbles: BubbleComposition = createBubbleComposition({
 bubbles.defineStyle({
   name: "dialogue",
   textStyle: "dialogue-text",
+  placement: "north-northeast",
   portrait: {
     base: "HeroFace",
     blink: { frames: ["EyesOpen", "EyesClosed"], frameIntervalSeconds: 0.4 },
@@ -46,6 +47,12 @@ bubbles.defineStyle({
     frames: ["Next1", "Next2"],
     frameIntervalSeconds: 0.2,
   },
+});
+
+bubbles.defineStyle({
+  name: "narration",
+  textStyle: "dialogue-text",
+  placement: "FOOTER_LIKE",
 });
 
 const handle: Promise<BubbleHandle> = bubbles.show({

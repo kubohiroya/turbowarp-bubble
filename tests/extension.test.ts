@@ -179,6 +179,7 @@ describe("Bubble extension", () => {
     expect(info.id).toBe("kubohiroyabubble");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
       "defineBubbleStyle",
+      "setBubblePlacement",
       "setPortraitBase",
       "setBlinkFrames",
       "setTalkFrames",
@@ -193,6 +194,119 @@ describe("Bubble extension", () => {
       acceptReporters: true,
       items: ["speaking", "waiting", "idle"],
     });
+    expect(info.menus.placement).toEqual({
+      acceptReporters: true,
+      items: [
+        "up",
+        "up-up-right",
+        "up-right",
+        "right-up-right",
+        "right",
+        "right-down-right",
+        "down-right",
+        "down-down-right",
+        "down",
+        "down-down-left",
+        "down-left",
+        "left-down-left",
+        "left",
+        "left-up-left",
+        "up-left",
+        "up-up-left",
+        "HEADER_LIKE",
+        "CENTER",
+        "FOOTER_LIKE",
+      ],
+    });
+  });
+
+  it("places actor-relative bubbles by aliases and continuous angles", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    let bounds = { bottom: -60, left: -10, right: 50, top: 20 };
+    target.getBoundsForBubble = () => bounds;
+    extension.defineBubbleStyle({ STYLE: "placed", TEXT_STYLE: "default" });
+    extension.setBubblePlacement({
+      STYLE: "placed",
+      PLACEMENT: "east",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "right", STYLE: "placed" },
+      { target },
+    );
+    const drawableId = harness.created.at(-1);
+    expect(drawableId).toBeDefined();
+    expect(harness.positions.get(drawableId!)).toEqual([150, -20]);
+
+    bounds = { bottom: -20, left: -50, right: 10, top: 60 };
+    target.onTargetVisualChange?.(target);
+    expect(harness.positions.get(drawableId!)).toEqual([112, 20]);
+
+    extension.setBubblePlacement({ STYLE: "placed", PLACEMENT: "33.75" });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "angle", STYLE: "placed" },
+      { target },
+    );
+    expect(harness.positions.get(harness.created.at(-1)!)).not.toEqual([
+      112, 20,
+    ]);
+  });
+
+  it("places background-relative bubbles independently of actor visibility", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const hiddenActor = { ...actor(), visible: false };
+    extension.defineBubbleStyle({
+      STYLE: "header",
+      TEXT_STYLE: "default",
+    });
+    extension.setBubblePlacement({
+      STYLE: "header",
+      PLACEMENT: "HEADER_LIKE",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "header", STYLE: "header" },
+      { target: hiddenActor },
+    );
+    const drawableId = harness.created.at(-1)!;
+    expect(harness.positions.get(drawableId)).toEqual([0, 140]);
+    expect(harness.visibility.get(drawableId)).toBe(true);
+    expect(hiddenActor.onTargetVisualChange).toBeNull();
+  });
+
+  it("allows background placement from Stage and rejects actor placement there", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const stage: TurboWarpBubbleTarget = {
+      id: "stage-id",
+      isStage: true,
+      visible: true,
+    };
+    extension.defineBubbleStyle({ STYLE: "stage", TEXT_STYLE: "default" });
+
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "bad", STYLE: "stage" },
+        { target: stage },
+      ),
+    ).rejects.toThrow(
+      "actor-relative bubble placement requires a sprite or clone",
+    );
+
+    extension.setBubblePlacement({
+      STYLE: "stage",
+      PLACEMENT: "FOOTER_LIKE",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "footer", STYLE: "stage" },
+      { target: stage },
+    );
+    expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -140]);
+    await extension.setBubblePhase({ PHASE: "idle" }, { target: stage });
+    await extension.closeBubble({}, { target: stage });
   });
 
   it("renders layered speech and changes from talk to advance animation", async () => {

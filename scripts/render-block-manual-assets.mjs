@@ -220,6 +220,22 @@ function quickStartSvg() {
     width: 510,
     color: colors.bubble,
     fontSize: 12,
+    ariaLabel: "Bubbleの配置を設定",
+    lines: [
+      [
+        { text: "set bubble placement" },
+        { input: "up-right" },
+        { text: "for bubble style" },
+        { input: "hero-dialogue" },
+      ],
+    ],
+  })}
+  ${block({
+    x: 48,
+    y: 732,
+    width: 510,
+    color: colors.bubble,
+    fontSize: 12,
     ariaLabel: "表情ベースを設定",
     lines: [
       [
@@ -230,9 +246,8 @@ function quickStartSvg() {
       ],
     ],
   })}
-  <text x="52" y="750" class="body">続けて blink・talk・advance のフレームを設定</text>
-  <text x="52" y="782" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
-  <text x="52" y="820" class="small">styleはruntime状態なので、緑の旗ごとに再定義します。</text>
+  <text x="52" y="804" class="body">続けて blink・talk・advance のフレームを設定</text>
+  <text x="52" y="832" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
   ${block({
     x: 640,
     y: 150,
@@ -344,6 +359,73 @@ function quickStartSvg() {
     title: "TurboWarp Bubbleブロックの最小構成",
     description:
       "Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に使うブロック例。",
+    body,
+  });
+}
+
+function placementGuideSvg() {
+  const directionNames = [
+    "up",
+    "up-up-right",
+    "up-right",
+    "right-up-right",
+    "right",
+    "right-down-right",
+    "down-right",
+    "down-down-right",
+    "down",
+    "down-down-left",
+    "down-left",
+    "left-down-left",
+    "left",
+    "left-up-left",
+    "up-left",
+    "up-up-left",
+  ];
+  const centerX = 300;
+  const centerY = 350;
+  const radius = 162;
+  const directions = directionNames
+    .map((name, index) => {
+      const radians = ((index * 22.5) / 180) * Math.PI;
+      const x = centerX + Math.sin(radians) * radius;
+      const y = centerY - Math.cos(radians) * radius;
+      const labelX = centerX + Math.sin(radians) * (radius + 42);
+      const labelY = centerY - Math.cos(radians) * (radius + 42);
+      return `<g>
+        <path d="M ${centerX} ${centerY} L ${x} ${y}" stroke="#f4a4b4" stroke-width="2"/>
+        <rect x="${x - 17}" y="${y - 11}" width="34" height="22" rx="9" fill="${colors.bubble}"/>
+        <text x="${labelX}" y="${labelY + 4}" text-anchor="middle" style="fill:${colors.muted};font-size:9px">${name}</text>
+      </g>`;
+    })
+    .join("\n");
+  const backgroundBubble = (y, label, fill) => `<g>
+    <rect x="710" y="${y}" width="400" height="64" rx="18" fill="${fill}" stroke="#725a42" stroke-width="2"/>
+    <text x="910" y="${y + 39}" text-anchor="middle" style="fill:${colors.ink};font-size:17px;font-weight:700">${label}</text>
+  </g>`;
+  const body = `
+  <rect width="1200" height="650" fill="${colors.page}"/>
+  <text x="32" y="48" class="heading">Bubble placement：Actor相対と背景相対</text>
+  <text x="32" y="76" class="body">同じPLACEMENT入力で、Actorからの方向またはStage内の領域を選びます。</text>
+  ${panel(24, 98, 560, 520, "Actor相対：方向あり")}
+  <rect x="54" y="148" width="500" height="410" rx="18" fill="#f8f9fc" stroke="#cfd5e2" stroke-width="2"/>
+  ${directions}
+  <circle cx="${centerX}" cy="${centerY}" r="40" fill="#ffd5b5" stroke="#b85d63" stroke-width="3"/>
+  <text x="${centerX}" y="${centerY + 6}" text-anchor="middle" style="fill:${colors.ink};font-size:15px;font-weight:700">Actor</text>
+  <text x="300" y="591" text-anchor="middle" class="small">16正規方向＋16 alias／0〜360°（0=上、90=右）</text>
+  ${panel(616, 98, 560, 520, "背景相対：方向なし")}
+  <rect x="676" y="148" width="468" height="410" rx="18" fill="#dce9f7" stroke="#8fa8c4" stroke-width="3"/>
+  <text x="692" y="176" class="small">Stage安全領域</text>
+  ${backgroundBubble(194, "HEADER_LIKE", "#fff4cc")}
+  ${backgroundBubble(321, "CENTER", "#ffe1e8")}
+  ${backgroundBubble(448, "FOOTER_LIKE", "#fff4cc")}
+  <text x="910" y="591" text-anchor="middle" class="small">Actor座標・bounds・可視性に依存せず、tailを持たない配置</text>`;
+  return svgDocument({
+    width: 1200,
+    height: 650,
+    title: "Bubble placementの二つの基準",
+    description:
+      "Actor相対の16方向および角度指定と、背景相対のHEADER_LIKE、CENTER、FOOTER_LIKEを比較する図。",
     body,
   });
 }
@@ -606,6 +688,11 @@ async function main() {
   await writeFile(
     join(assetsDirectory, "phase-guide.svg"),
     phaseGuideSvg(),
+    "utf8",
+  );
+  await writeFile(
+    join(assetsDirectory, "placement-guide.svg"),
+    placementGuideSvg(),
     "utf8",
   );
 

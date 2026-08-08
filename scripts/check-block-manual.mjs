@@ -9,6 +9,10 @@ const phaseGuideUrl = new URL(
   "../docs/assets/phase-guide.svg",
   import.meta.url,
 );
+const placementGuideUrl = new URL(
+  "../docs/assets/placement-guide.svg",
+  import.meta.url,
+);
 const lifecycleUrl = new URL(
   "../docs/assets/bubble-lifecycle.gif",
   import.meta.url,
@@ -75,16 +79,27 @@ function inspectGif(buffer) {
   return { frames, height, loops, width };
 }
 
-const [quickStart, phaseGuide, lifecycle, manual] = await Promise.all([
-  readFile(quickStartUrl, "utf8"),
-  readFile(phaseGuideUrl, "utf8"),
-  readFile(lifecycleUrl),
-  readFile(manualUrl, "utf8"),
-]);
+const [quickStart, phaseGuide, placementGuide, lifecycle, manual] =
+  await Promise.all([
+    readFile(quickStartUrl, "utf8"),
+    readFile(phaseGuideUrl, "utf8"),
+    readFile(placementGuideUrl, "utf8"),
+    readFile(lifecycleUrl),
+    readFile(manualUrl, "utf8"),
+  ]);
 
 requireText(quickStart, 'viewBox="0 0 1200 880"', "Quick-start SVG");
 requireText(quickStart, "close this bubble", "Quick-start SVG");
 requireText(phaseGuide, 'viewBox="0 0 1200 500"', "Phase-guide SVG");
+requireText(placementGuide, 'viewBox="0 0 1200 650"', "Placement-guide SVG");
+for (const placement of [
+  "up-up-right",
+  "HEADER_LIKE",
+  "CENTER",
+  "FOOTER_LIKE",
+]) {
+  requireText(placementGuide, placement, "Placement-guide SVG");
+}
 for (const phase of ["speaking", "waiting", "idle"]) {
   requireText(phaseGuide, phase, "Phase-guide SVG");
 }
@@ -101,6 +116,7 @@ if (
 
 for (const text of [
   "define bubble style",
+  "set bubble placement",
   "set portrait base",
   "set blink frames",
   "set talk frames",
@@ -113,6 +129,7 @@ for (const text of [
   "./assets/block-quick-start.svg",
   "./assets/bubble-lifecycle.gif",
   "./assets/phase-guide.svg",
+  "./assets/placement-guide.svg",
 ]) {
   requireText(manual, text, "Block manual");
 }

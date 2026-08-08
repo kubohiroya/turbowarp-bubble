@@ -88,6 +88,21 @@
       ]
     },
     {
+      "opcode": "setBubblePlacement",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "PLACEMENT",
+          "type": "STRING",
+          "menu": "placement"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
       "opcode": "setPortraitBase",
       "blockType": "COMMAND",
       "arguments": [
@@ -137,6 +152,10 @@
   "menus": [
     {
       "id": "phase",
+      "acceptReporters": true
+    },
+    {
+      "id": "placement",
       "acceptReporters": true
     }
   ]

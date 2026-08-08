@@ -67,13 +67,41 @@ define text style [dialogue-text]
 
 Bubbleは`dialogue-text`という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
 
+SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていますが、Bubbleが`setText`で生成する文字drawableの配置には使われません。Bubbleの配置は次節の`set bubble placement`で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。
+
 ## 4. Bubble styleを定義する
 
 まず、Bubble style名とSVG Textのstyle名を関連付けます。
 
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
+set bubble placement [up-right] for bubble style [hero-dialogue]
 ```
+
+### Actor相対と背景相対のplacement
+
+![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](./assets/placement-guide.svg)
+
+Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
+
+```text
+up / up-up-right / up-right / right-up-right
+right / right-down-right / down-right / down-down-right
+down / down-down-left / down-left / left-down-left
+left / left-up-left / up-left / up-up-left
+```
+
+`north`、`north-northeast`、`northeast`などのcompass aliasも直接入力またはreporterから指定できます。数値はScratch方向と同じ0〜360度で、`0`は上、`90`は右、`180`は下、`270`は左、`360`は`0`へ正規化されます。任意角度は16方向へ丸めません。placementを設定しないstyleは`up-right`になります。
+
+背景相対はActorから生える方向を持たず、Stage安全領域へ配置します。
+
+| placement     | 配置                          |
+| ------------- | ----------------------------- |
+| `HEADER_LIKE` | Stage安全領域上部、水平中央   |
+| `CENTER`      | Stage安全領域の水平・垂直中央 |
+| `FOOTER_LIKE` | Stage安全領域下部、水平中央   |
+
+背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。将来のBubble body rendererではActorを指すtailを描画しません。
 
 続けて、表情レイヤーと入力待ちアイコンを設定します。
 
@@ -127,7 +155,7 @@ close this bubble
 | `waiting`  | 実行   | 停止・非表示 | ループ           | キー入力やタップ待ち     |
 | `idle`     | 実行   | 停止・非表示 | 停止・非表示     | Bubbleを表示したまま静止 |
 
-`set this bubble phase [PHASE]`は、呼び出したspriteまたはcloneが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
+`set this bubble phase [PHASE]`は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
 
 ## 7. sayとthink
 
@@ -138,7 +166,7 @@ think [MESSAGE] with bubble style [STYLE]
 
 どちらも同じstyle、表情レイヤー、phase制御を使えます。現在のStandalone rendererでは文字パネルとportraitの配置は共通です。Composition APIのsurfaceには`say`／`think`のkindが渡されるため、独自hostでは形や配置を区別できます。
 
-同じspriteまたはcloneで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。
+同じsprite、clone、またはStageで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。
 
 ## 8. cloneで使う
 
@@ -155,6 +183,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | ブロック                                                                       | 説明                                                  |
 | ------------------------------------------------------------------------------ | ----------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義または再定義する                    |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する     |
 | `set portrait base [ASSET] for bubble style [STYLE]`                           | portraitのベース画像を設定する                        |
 | `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分と間隔を設定する                            |
 | `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分と間隔を設定する                            |
@@ -176,7 +205,8 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | assetが画像ではない           | `MIME type of asset [NAME]`で`image/*`か確認する                  |
 | advance framesが1枚           | 2枚以上にするか、空にしてadvance表示を解除する                    |
 | frame intervalエラー          | `SECONDS`を0より大きい有限値にする                                |
-| Stageから実行したエラー       | 表示、phase、closeブロックはspriteまたはcloneから実行する         |
+| StageからActor相対表示した    | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする           |
+| placementが不正               | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する          |
 | 目や口がずれる                | ベースと全差分のcanvasサイズ、中心、透明領域を揃える              |
 
 ## 11. 自動解放されるタイミング
@@ -201,4 +231,4 @@ pnpm docs:render
 pnpm docs:check
 ```
 
-`docs:check`は、SVGのviewBox、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全10ブロックへの参照を検証します。
+`docs:check`は、SVGのviewBox、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全11ブロックへの参照を検証します。

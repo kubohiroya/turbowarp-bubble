@@ -6,6 +6,12 @@ import type {
   SvgTextComposition,
   SvgTextTarget,
 } from "@kubohiroya/turbowarp-svg-text/composition";
+import {
+  defaultBubblePlacementInput,
+  normalizeBubblePlacement,
+  type BubblePlacement,
+  type BubblePlacementInput,
+} from "./placement.js";
 
 export {
   UnicodeLineBreakProvider,
@@ -17,6 +23,20 @@ export {
   type WrappedTextLine,
   type WrapTextInput,
 } from "./text-layout.js";
+export {
+  bubbleBackgroundRegions,
+  bubbleDirectionAliases,
+  bubbleDirectionNames,
+  defaultBubblePlacementInput,
+  normalizeBubblePlacement,
+  type BubbleActorPlacement,
+  type BubbleBackgroundPlacement,
+  type BubbleBackgroundRegion,
+  type BubbleDirectionAlias,
+  type BubbleDirectionName,
+  type BubblePlacement,
+  type BubblePlacementInput,
+} from "./placement.js";
 
 export type BubbleKind = "say" | "think";
 export type BubblePhase = "idle" | "speaking" | "waiting";
@@ -37,6 +57,7 @@ export interface BubblePortraitInput {
 export interface BubbleStyleInput {
   readonly name: string;
   readonly textStyle: string;
+  readonly placement?: BubblePlacementInput;
   readonly portrait?: BubblePortraitInput;
   readonly advanceIndicator?: BubbleFrameAnimationInput;
 }
@@ -55,6 +76,7 @@ export interface BubblePortrait {
 export interface BubbleStyle {
   readonly name: string;
   readonly textStyle: string;
+  readonly placement: BubblePlacement;
   readonly portrait?: BubblePortrait;
   readonly advanceIndicator?: BubbleFrameAnimation;
 }
@@ -286,7 +308,7 @@ function normalizeStyle(value: unknown): NormalizedStyle {
   requireExactKeys(
     value,
     ["name", "textStyle"],
-    ["portrait", "advanceIndicator"],
+    ["placement", "portrait", "advanceIndicator"],
     "Bubble style",
   );
   const portrait =
@@ -301,9 +323,21 @@ function normalizeStyle(value: unknown): NormalizedStyle {
           "Bubble advance indicator",
           2,
         );
+  let placement: BubblePlacement;
+  try {
+    placement = normalizeBubblePlacement(
+      value.placement ?? defaultBubblePlacementInput,
+    );
+  } catch (error) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      error instanceof Error ? error.message : "Bubble placement is invalid.",
+    );
+  }
   return Object.freeze({
     name: requireName(value.name, "Bubble style name"),
     textStyle: requireName(value.textStyle, "Bubble text style name"),
+    placement,
     ...(portrait === undefined ? {} : { portrait }),
     ...(advanceIndicator === undefined ? {} : { advanceIndicator }),
   });

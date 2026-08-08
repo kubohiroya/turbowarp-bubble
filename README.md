@@ -4,12 +4,12 @@
 
 ## パッケージ境界
 
-| パッケージ                            | 責務                                                                         |
-| ------------------------------------- | ---------------------------------------------------------------------------- |
-| `@kubohiroya/turbowarp-asset-manager` | アセット名の登録、画像種別の検証、画像targetへの適用                         |
-| `@kubohiroya/turbowarp-svg-text`      | 名前付き文字styleと、文字列からSVGスキンへの変換                             |
-| `@kubohiroya/turbowarp-bubble`        | 吹き出しsurface、say／think、表情レイヤー、表示phase、フレームアニメーション |
-| アプリ／host                          | 入力待ち、必要に応じたDSLからcomposition APIへの変換                         |
+| パッケージ                            | 責務                                                                       |
+| ------------------------------------- | -------------------------------------------------------------------------- |
+| `@kubohiroya/turbowarp-asset-manager` | アセット名の登録、画像種別の検証、画像targetへの適用                       |
+| `@kubohiroya/turbowarp-svg-text`      | 名前付き文字styleと、文字列からSVGスキンへの変換                           |
+| `@kubohiroya/turbowarp-bubble`        | 吹き出しsurface、配置、say／think、表情レイヤー、表示phase、アニメーション |
+| アプリ／host                          | 入力待ち、必要に応じたDSLからcomposition APIへの変換                       |
 
 Bubbleは依存パッケージを再exportしません。このため、Asset ManagerとSVG文字ActorはBubbleを使わない画面でも従来どおり単独で利用できます。
 
@@ -55,13 +55,14 @@ https://unpkg.com/@kubohiroya/turbowarp-svg-text/dist/svg-text.js
 https://unpkg.com/@kubohiroya/turbowarp-bubble/dist/turbowarp-bubble.js
 ```
 
-Bubbleは呼び出し元のspriteまたはcloneごとに表示を所有します。文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示ブロックを実行することはできません。
+Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
 
 ### 提供ブロック
 
 | ブロック                                                                       | 動作                                                              |
 | ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する                 |
 | `set portrait base [ASSET] for bubble style [STYLE]`                           | 表情ベース画像を設定する。空文字でportrait全体を解除する          |
 | `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分を設定する。空リストで解除する                          |
 | `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分を設定する。空リストで解除する                          |
@@ -73,6 +74,30 @@ Bubbleは呼び出し元のspriteまたはcloneごとに表示を所有します
 | `Bubble version`                                                               | 実装versionを返す                                                 |
 
 `ASSETS`はAsset Managerへ登録済みの画像アセット名をカンマ区切りで指定します。アセット名自体にカンマは使用できません。すべての`SECONDS`は0より大きい秒数です。
+
+### Placement
+
+`PLACEMENT`はActor相対と背景相対の二系統です。省略時は`up-right`です。
+
+- Actor相対：16の正規方向名、そのcompass alias、またはScratch方向と同じ0〜360度。`0`は上、`90`は右、`180`は下、`270`は左で、`360`は`0`へ正規化します。任意角度は16方向へ丸めません。
+- 背景相対：`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`。Stage安全領域の上部、中央、下部へ水平中央揃えで置き、Actor位置・bounds・可視性には依存しません。
+
+Actor相対の正規方向名は次の16個です。別名は大文字小文字を区別せず、正規名へ変換されます。
+
+| 正規名             | compass alias     | 正規名           | compass alias     |
+| ------------------ | ----------------- | ---------------- | ----------------- |
+| `up`               | `north`           | `down`           | `south`           |
+| `up-up-right`      | `north-northeast` | `down-down-left` | `south-southwest` |
+| `up-right`         | `northeast`       | `down-left`      | `southwest`       |
+| `right-up-right`   | `east-northeast`  | `left-down-left` | `west-southwest`  |
+| `right`            | `east`            | `left`           | `west`            |
+| `right-down-right` | `east-southeast`  | `left-up-left`   | `west-northwest`  |
+| `down-right`       | `southeast`       | `up-left`        | `northwest`       |
+| `down-down-right`  | `south-southeast` | `up-up-left`     | `north-northwest` |
+
+![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
+
+現在のstandalone rendererは配置基準を実装済みです。背景相対は方向を持たず、後続のBubble body rendererでもtailなしとして描画します。
 
 ### 表示phase
 
@@ -88,6 +113,7 @@ Bubbleは呼び出し元のspriteまたはcloneごとに表示を所有します
 
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
+set bubble placement [up-right] for bubble style [hero-dialogue]
 set portrait base [HeroFace] for bubble style [hero-dialogue]
 set blink frames [HeroEyesOpen,HeroEyesClosed] every [0.4] seconds for bubble style [hero-dialogue]
 set talk frames [HeroMouthClosed,HeroMouthOpen] every [0.1] seconds for bubble style [hero-dialogue]
@@ -144,6 +170,7 @@ const bubbles = createBubbleComposition({
 bubbles.defineStyle({
   name: "hero-dialogue",
   textStyle: "dialogue-text",
+  placement: "north-northeast",
   portrait: {
     base: "HeroFace",
     blink: {
@@ -159,6 +186,12 @@ bubbles.defineStyle({
     frames: ["Next1", "Next2"],
     frameIntervalSeconds: 0.2,
   },
+});
+
+bubbles.defineStyle({
+  name: "narration",
+  textStyle: "dialogue-text",
+  placement: "FOOTER_LIKE",
 });
 
 const bubble = await bubbles.show({
@@ -186,7 +219,7 @@ await bubble.close();
 
 ## DSL 4.0との関係
 
-このパッケージは`bubbleStyles`を含むDSLを解析しません。紙芝居アプリ側のadapterがDSLの値を`defineStyle`へ変換し、`Actor.say`／`Actor.think`のライフサイクルに合わせて`show`、`setPhase`、`close`を呼び出します。
+このパッケージは`bubbleStyles`を含むDSLを解析しません。紙芝居アプリ側のadapterが、例えば`placement: north-northeast`、`placement: 33.75`、`placement: FOOTER_LIKE`を`defineStyle`へ渡し、表示ライフサイクルに合わせて`show`、`setPhase`、`close`を呼び出します。
 
 アプリ統合は起動時固定・既定OFFのfeature flagで段階導入します。ロールバック時はflagをOFFにし、既存のTurboWarp say／think経路へ戻します。
 

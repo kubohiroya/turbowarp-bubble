@@ -1,9 +1,14 @@
 import definitions from "./block-definitions.json";
+import {
+  normalizeBubblePlacement,
+  type BubblePlacement,
+} from "./composition.js";
 import type {
   BubbleComposition,
   BubbleFrameAnimationInput,
   BubbleHandle,
   BubblePhase,
+  BubblePlacementInput,
   BubblePortraitInput,
   BubbleStyleInput,
 } from "./composition.js";
@@ -122,11 +127,32 @@ export class BubbleExtension implements TurboWarpExtension {
       : Object.freeze({
           name: style.name,
           textStyle: style.textStyle,
+          ...(style.placement === undefined
+            ? {}
+            : { placement: style.placement }),
           ...(style.advanceIndicator
             ? { advanceIndicator: style.advanceIndicator }
             : {}),
         });
     this.installStyle(nextStyle);
+  }
+
+  public setBubblePlacement(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    let placement: BubblePlacement;
+    try {
+      placement = normalizeBubblePlacement(args.PLACEMENT);
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error ? error.message : "placement is invalid.",
+      );
+    }
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        placement: this.placementInput(placement),
+      }),
+    );
   }
 
   public setBlinkFrames(args: BlockArguments): void {
@@ -150,6 +176,7 @@ export class BubbleExtension implements TurboWarpExtension {
     const nextStyle: BubbleStyleInput = Object.freeze({
       name: style.name,
       textStyle: style.textStyle,
+      ...(style.placement === undefined ? {} : { placement: style.placement }),
       ...(style.portrait ? { portrait: style.portrait } : {}),
       ...(advanceIndicator ? { advanceIndicator } : {}),
     });
@@ -181,7 +208,7 @@ export class BubbleExtension implements TurboWarpExtension {
     }
     const handle = this.handles.get(target.id);
     if (!handle)
-      throw extensionError("this sprite does not have an active bubble.");
+      throw extensionError("this target does not have an active bubble.");
     await handle.setPhase(phase);
   }
 
@@ -314,16 +341,19 @@ export class BubbleExtension implements TurboWarpExtension {
     return (
       typeof value === "object" &&
       value !== null &&
-      typeof (value as { id?: unknown }).id === "string"
+      typeof (value as { id?: unknown }).id === "string" &&
+      typeof (value as { isStage?: unknown }).isStage === "boolean"
     );
   }
 
   private requireTarget(util: BlockUtility): TurboWarpBubbleTarget {
     const target = util?.target;
-    if (!this.isTarget(target) || target.isStage) {
-      throw extensionError("run this block from a sprite or clone.");
-    }
+    if (!this.isTarget(target)) throw extensionError("target is unavailable.");
     return target;
+  }
+
+  private placementInput(placement: BubblePlacement): BubblePlacementInput {
+    return placement.basis === "actor" ? placement.direction : placement.region;
   }
 
   private getComposition(): BubbleComposition {
@@ -344,8 +374,14 @@ export class BubbleExtension implements TurboWarpExtension {
     args: BlockArguments,
     util: BlockUtility,
   ): Promise<void> {
-    const target = this.requireTarget(util);
     const style = this.requireStyle(args.STYLE);
+    const target = this.requireTarget(util);
+    const placement = normalizeBubblePlacement(style.placement ?? "up-right");
+    if (target.isStage && placement.basis === "actor") {
+      throw extensionError(
+        "actor-relative bubble placement requires a sprite or clone.",
+      );
+    }
     const composition = this.getComposition();
     let handle: BubbleHandle;
     try {

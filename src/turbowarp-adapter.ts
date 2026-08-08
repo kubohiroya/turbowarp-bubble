@@ -8,12 +8,14 @@ import {
   type BubbleSurface,
   type BubbleSurfaceTargets,
 } from "./composition.js";
+import { bubbleDirectionVector } from "./placement.js";
 
 const spriteLayer = "sprite";
 const portraitBoxSize = 96;
 const indicatorBoxSize = 18;
 const contentGap = 8;
 const actorGap = 12;
+const stageSafeMargin = 16;
 let surfaceSequence = 0;
 
 export interface TurboWarpBubbleTarget {
@@ -272,7 +274,8 @@ function createSurface(
     let disposed = false;
 
     const updateVisibility = (): void => {
-      const actorVisible = actor.visible !== false;
+      const actorVisible =
+        style.placement.basis === "background" || actor.visible !== false;
       renderer.updateDrawableVisible(
         text.drawableID,
         surfaceVisible && actorVisible,
@@ -303,7 +306,6 @@ function createSurface(
       const totalWidth =
         portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const bounds = targetBounds(actor);
       const nativeSize = renderer.getNativeSize();
       const stageWidth =
         Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
@@ -317,21 +319,49 @@ function createSurface(
       const stageRight = stageWidth / 2;
       const stageTop = stageHeight / 2;
       const stageBottom = -stageHeight / 2;
-      const actorCenter = (bounds.left + bounds.right) / 2;
-      const centerX = clamp(
-        actorCenter,
-        stageLeft + totalWidth / 2,
-        stageRight - totalWidth / 2,
-      );
-      let centerY = bounds.top + actorGap + contentHeight / 2;
-      if (centerY + contentHeight / 2 > stageTop) {
-        centerY = bounds.bottom - actorGap - contentHeight / 2;
+      const minimumCenterX = stageLeft + totalWidth / 2;
+      const maximumCenterX = stageRight - totalWidth / 2;
+      const minimumCenterY = stageBottom + contentHeight / 2;
+      const maximumCenterY = stageTop - contentHeight / 2;
+      let centerX: number;
+      let centerY: number;
+
+      if (style.placement.basis === "background") {
+        centerX = 0;
+        if (style.placement.region === "HEADER_LIKE") {
+          centerY = stageTop - stageSafeMargin - contentHeight / 2;
+        } else if (style.placement.region === "FOOTER_LIKE") {
+          centerY = stageBottom + stageSafeMargin + contentHeight / 2;
+        } else {
+          centerY = 0;
+        }
+      } else {
+        const bounds = targetBounds(actor);
+        const actorCenterX = (bounds.left + bounds.right) / 2;
+        const actorCenterY = (bounds.top + bounds.bottom) / 2;
+        const vector = bubbleDirectionVector(style.placement.direction);
+        const horizontalDistance =
+          vector.x < 0
+            ? actorCenterX - bounds.left + actorGap + totalWidth / 2
+            : bounds.right - actorCenterX + actorGap + totalWidth / 2;
+        const verticalDistance =
+          vector.y < 0
+            ? actorCenterY - bounds.bottom + actorGap + contentHeight / 2
+            : bounds.top - actorCenterY + actorGap + contentHeight / 2;
+        const placementScale = Math.min(
+          vector.x === 0
+            ? Number.POSITIVE_INFINITY
+            : horizontalDistance / Math.abs(vector.x),
+          vector.y === 0
+            ? Number.POSITIVE_INFINITY
+            : verticalDistance / Math.abs(vector.y),
+        );
+        centerX = actorCenterX + vector.x * placementScale;
+        centerY = actorCenterY + vector.y * placementScale;
       }
-      centerY = clamp(
-        centerY,
-        stageBottom + contentHeight / 2,
-        stageTop - contentHeight / 2,
-      );
+
+      centerX = clamp(centerX, minimumCenterX, maximumCenterX);
+      centerY = clamp(centerY, minimumCenterY, maximumCenterY);
       const left = centerX - totalWidth / 2;
       const portraitX = left + portraitSize.width / 2;
       const textX =
@@ -362,7 +392,9 @@ function createSurface(
       originalVisualChange?.(changedTarget);
       position();
     };
-    actor.onTargetVisualChange = visualChangeHook;
+    if (style.placement.basis === "actor") {
+      actor.onTargetVisualChange = visualChangeHook;
+    }
 
     return Object.freeze({
       targets,
@@ -384,7 +416,10 @@ function createSurface(
       dispose(): void {
         if (disposed) return;
         disposed = true;
-        if (actor.onTargetVisualChange === visualChangeHook) {
+        if (
+          style.placement.basis === "actor" &&
+          actor.onTargetVisualChange === visualChangeHook
+        ) {
           actor.onTargetVisualChange = originalVisualChange ?? null;
         }
         for (const target of [...drawables].reverse()) {
