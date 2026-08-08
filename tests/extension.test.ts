@@ -1,11 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BubbleExtension } from "../src/extension.js";
-import type { BubbleScheduler } from "../src/composition.js";
+import type {
+  BubbleAssetManager,
+  BubbleScheduler,
+  BubbleSvgText,
+} from "../src/composition.js";
 import type {
   TurboWarpBubbleRenderer,
   TurboWarpBubbleRuntime,
   TurboWarpBubbleTarget,
 } from "../src/turbowarp-adapter.js";
+import { createTurboWarpBubbleComposition } from "../src/turbowarp-adapter.js";
 
 class TestScheduler implements BubbleScheduler {
   private nextId = 1;
@@ -214,6 +219,42 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("TurboWarp composition adapter", () => {
+  it("accepts host-owned Asset Manager and SVG Text compositions", async () => {
+    const harness = createRuntime({ assetManager: false, svgText: false });
+    const assetManager: BubbleAssetManager = {
+      isRegistered: () => false,
+      getMimeType: () => "",
+      applyToTarget: vi.fn(),
+    };
+    const releaseTarget = vi.fn();
+    const svgText: BubbleSvgText = {
+      setText: vi.fn(({ target }) => {
+        harness.renderer.updateDrawableSkinId(Number(target.drawableID), 100);
+      }),
+      releaseTarget,
+    };
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      assetManager,
+      svgText,
+    });
+    composition.defineStyle({ name: "dialogue", textStyle: "dialogue" });
+
+    const handle = await composition.show({
+      actor: actor(),
+      actorKey: "Hero",
+      kind: "say",
+      text: "Hello",
+      styleName: "dialogue",
+    });
+    await handle.close();
+
+    expect(svgText.setText).toHaveBeenCalledOnce();
+    expect(releaseTarget).toHaveBeenCalledOnce();
+    expect(harness.destroyed).toHaveLength(2);
+  });
 });
 
 describe("Bubble extension", () => {

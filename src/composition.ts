@@ -193,6 +193,7 @@ export interface BubbleHandle {
   readonly actorKey: string;
   readonly kind: BubbleKind;
   readonly animationMode: BubbleAnimationMode;
+  setText(text: string): Promise<void>;
   setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
   close(): Promise<void>;
 }
@@ -944,6 +945,34 @@ export function createBubbleComposition(
         kind: input.kind,
         get animationMode(): BubbleAnimationMode {
           return currentAnimationMode;
+        },
+        setText(text: string): Promise<void> {
+          if (closed) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-005",
+                `Bubble is already closed: ${input.actorKey}`,
+              ),
+            );
+          }
+          if (typeof text !== "string") {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-001",
+                "Bubble text must be a string.",
+              ),
+            );
+          }
+          transitionTail = transitionTail.then(async () => {
+            if (!surface) return;
+            svgText.setText({
+              styleName: style.textStyle,
+              target: surface.targets.text,
+              text,
+            });
+            await surface.show();
+          });
+          return transitionTail;
         },
         setAnimationMode(mode: BubbleAnimationMode): Promise<void> {
           if (closed) {

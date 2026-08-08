@@ -8,6 +8,13 @@ import {
   type BubbleHandle,
   type WrappedTextLayout,
 } from "@kubohiroya/turbowarp-bubble/composition";
+import {
+  BubbleRuntimeAdapterError,
+  createTurboWarpBubbleComposition,
+  type TurboWarpBubbleCompositionOptions,
+  type TurboWarpBubbleRuntime,
+  type TurboWarpBubbleTarget,
+} from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 
 declare const runtime: Parameters<
   typeof createSvgTextComposition
@@ -84,3 +91,22 @@ const bubbleSvg: string = renderBubbleSvg({
   tailDirection: 225,
 });
 void bubbleSvg;
+
+declare const turboWarpRuntime: TurboWarpBubbleRuntime;
+const turboWarpOptions: TurboWarpBubbleCompositionOptions = {};
+const turboWarpBubbles: BubbleComposition = createTurboWarpBubbleComposition(
+  turboWarpRuntime,
+  turboWarpOptions,
+);
+const turboWarpTarget: TurboWarpBubbleTarget = {
+  id: "hero",
+  isStage: false,
+  drawableID: 1,
+};
+const turboWarpError: Error = new BubbleRuntimeAdapterError(
+  "BUBBLE-RUNTIME-001",
+  "invalid runtime",
+);
+void turboWarpBubbles;
+void turboWarpTarget;
+void turboWarpError;

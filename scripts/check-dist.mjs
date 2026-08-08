@@ -9,6 +9,14 @@ const declaration = await readFile(
   new URL("../dist/types/composition.d.ts", import.meta.url),
   "utf8",
 );
+const turboWarpAdapter = await readFile(
+  new URL("../dist/turbowarp-adapter.js", import.meta.url),
+  "utf8",
+);
+const turboWarpAdapterDeclaration = await readFile(
+  new URL("../dist/types/turbowarp-adapter.d.ts", import.meta.url),
+  "utf8",
+);
 const extension = await readFile(
   new URL("../dist/turbowarp-bubble.js", import.meta.url),
   "utf8",
@@ -34,6 +42,27 @@ for (const name of [
 }
 
 for (const name of [
+  "createTurboWarpBubbleComposition",
+  "BubbleRuntimeAdapterError",
+]) {
+  if (!turboWarpAdapter.includes(name)) {
+    throw new Error(`dist/turbowarp-adapter.js does not export ${name}.`);
+  }
+}
+
+for (const name of [
+  "TurboWarpBubbleCompositionOptions",
+  "TurboWarpBubbleRuntime",
+  "TurboWarpBubbleTarget",
+]) {
+  if (!turboWarpAdapterDeclaration.includes(name)) {
+    throw new Error(
+      `dist/types/turbowarp-adapter.d.ts does not declare ${name}.`,
+    );
+  }
+}
+
+for (const name of [
   "BubbleComposition",
   "BubbleHandle",
   "BubbleStyleInput",
@@ -51,6 +80,7 @@ for (const name of [
 for (const nodeApi of ["node:", "process.", "Buffer."]) {
   for (const [fileName, output] of [
     ["dist/composition.js", composition],
+    ["dist/turbowarp-adapter.js", turboWarpAdapter],
     ["dist/turbowarp-bubble.js", extension],
   ]) {
     if (output.includes(nodeApi)) {

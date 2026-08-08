@@ -101,6 +101,7 @@ export interface BubbleHandle {
     readonly actorKey: string;
     readonly kind: BubbleKind;
     readonly animationMode: BubbleAnimationMode;
+    setText(text: string): Promise<void>;
     setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
     close(): Promise<void>;
 }

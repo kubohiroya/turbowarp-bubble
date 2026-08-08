@@ -22,6 +22,10 @@
       "types": "./dist/types/composition.d.ts",
       "import": "./dist/composition.js"
     },
+    "./turbowarp-adapter": {
+      "types": "./dist/types/turbowarp-adapter.d.ts",
+      "import": "./dist/turbowarp-adapter.js"
+    },
     "./dist/turbowarp-bubble.js": "./dist/turbowarp-bubble.js",
     "./package.json": "./package.json"
   },
@@ -42,12 +46,13 @@
   "packageManager": "pnpm@11.18.0",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "pnpm build:extension && pnpm build:composition && pnpm build:types",
+    "build": "pnpm build:extension && pnpm build:composition && pnpm build:turbowarp-adapter && pnpm build:types",
     "build:extension": "vite build",
     "build:composition": "vite build --config vite.composition.config.ts",
+    "build:turbowarp-adapter": "vite build --config vite.turbowarp-adapter.config.ts",
     "build:types": "tsc --project tsconfig.build.json",
     "types:composition:check": "tsc --project tsconfig.composition-consumer.json",
-    "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts eslint.config.mjs",
+    "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts vite.turbowarp-adapter.config.ts eslint.config.mjs",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "docs:render": "node scripts/render-block-manual-assets.mjs && pnpm docs:pages",

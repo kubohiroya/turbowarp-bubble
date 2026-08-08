@@ -7033,6 +7033,20 @@
           get animationMode() {
             return currentAnimationMode;
           },
+          setText(text) {
+            if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
+            if (typeof text !== "string") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string."));
+            transitionTail = transitionTail.then(async () => {
+              if (!surface) return;
+              svgText.setText({
+                styleName: style.textStyle,
+                target: surface.targets.text,
+                text
+              });
+              await surface.show();
+            });
+            return transitionTail;
+          },
           setAnimationMode(mode) {
             if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
             if (!validAnimationModes$1.has(mode)) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid."));
@@ -7457,34 +7471,34 @@
     if (!isRecord(runtimeInput)) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
     const runtime = runtimeInput;
     const renderer = requireRenderer(runtime.renderer);
-    const assetExtension = requireAssetManager(runtime.ext_kubohiroyaassetmanager);
-    const svgTextExtension = requireSvgText(runtime.ext_kubohiroyasvgtext);
+    const assetExtension = options.assetManager ? null : requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+    const svgTextExtension = options.svgText ? null : requireSvgText(runtime.ext_kubohiroyasvgtext);
     return createBubbleComposition({
-      assetManager: {
+      assetManager: options.assetManager ?? {
         isRegistered(name) {
-          return assetExtension.isLoaded({ NAME: name });
+          return assetExtension?.isLoaded({ NAME: name }) ?? false;
         },
         getMimeType(name) {
-          return assetExtension.getAssetMimeType({ NAME: name });
+          return assetExtension?.getAssetMimeType({ NAME: name }) ?? "";
         },
         async applyToTarget(name, target) {
           const drawableID = target.drawableID;
           if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
-          const skin = await assetExtension.resolveSkin(name);
+          const skin = await assetExtension?.resolveSkin(name);
           if (!isRecord(skin) || !Number.isInteger(skin.skinId) || skin.skinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(name)}`);
           renderer.updateDrawableSkinId(drawableID, skin.skinId);
           runtime.requestRedraw?.();
         }
       },
-      svgText: {
+      svgText: options.svgText ?? {
         setText({ styleName, target, text }) {
-          svgTextExtension.setText({
+          svgTextExtension?.setText({
             STYLE: styleName,
             TEXT: text
           }, { target });
         },
         releaseTarget(target) {
-          svgTextExtension.releaseTextActor(target);
+          svgTextExtension?.releaseTextActor(target);
         }
       },
       createSurface({ actor, actorKey, style }) {
