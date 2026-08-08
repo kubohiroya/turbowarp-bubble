@@ -29,7 +29,8 @@
     "dist/",
     "docs/",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
   ],
   "main": "./dist/composition.js",
   "unpkg": "./dist/turbowarp-bubble.js",
@@ -83,5 +84,8 @@
     "portrait",
     "lip-sync",
     "advance-indicator"
-  ]
+  ],
+  "dependencies": {
+    "@cto.af/linebreak": "4.0.3"
+  }
 }

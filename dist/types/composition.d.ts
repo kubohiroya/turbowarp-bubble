@@ -1,5 +1,6 @@
 import type { AssetManagerComposition, AssetManagerCompositionTarget } from "@kubohiroya/turbowarp-asset-manager/composition";
 import type { SvgTextComposition, SvgTextTarget } from "@kubohiroya/turbowarp-svg-text/composition";
+export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type LineBreakProvider, type TextWidthMeasurer, type WrappedTextLayout, type WrappedTextLine, type WrapTextInput, } from "./text-layout.js";
 export type BubbleKind = "say" | "think";
 export type BubblePhase = "idle" | "speaking" | "waiting";
 export type BubbleLayer = "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";

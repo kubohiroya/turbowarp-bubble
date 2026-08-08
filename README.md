@@ -13,6 +13,26 @@
 
 Bubbleは依存パッケージを再exportしません。このため、Asset ManagerとSVG文字ActorはBubbleを使わない画面でも従来どおり単独で利用できます。
 
+## 自動改行と禁則処理の基盤
+
+Bubbleの任意`maxWidth`による自動改行では、`@cto.af/linebreak`を利用してUnicode UAX #14準拠の改行可能位置を求めます。依存は`LineBreakProvider` interfaceの内側へ閉じ込め、実際のフォントで測った幅から、上限内に収まる最も後ろの候補をBubble側で選びます。
+
+`UnicodeLineBreakProvider`はUAX #14の候補を`Intl.Segmenter`の書記素境界で絞るため、句読点や小書き仮名の禁則に加え、結合文字や絵文字の途中分割も避けます。明示改行は維持し、URLなど分割可能な候補がない文字列だけを書記素境界でfallback分割します。
+
+```ts
+import { wrapText } from "@kubohiroya/turbowarp-bubble/composition";
+
+const layout = wrapText({
+  text: "これは長いセリフです。",
+  maxWidth: 320,
+  measureText: (text) => textRenderer.measure(text),
+});
+```
+
+この基盤は改行位置と行幅を返します。Bubble surfaceへ`maxWidth`を渡し、SVG Textの実測値と吹き出し形状へ接続する処理は、後続の表示統合で追加します。
+
+配布bundleに含まれる依存ライブラリのライセンスは、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
+
 ## インストール
 
 ```sh

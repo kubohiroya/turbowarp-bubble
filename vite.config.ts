@@ -5,6 +5,9 @@ import { extensionConfig } from "./src/config.js";
 import { extensionManifestPlugin } from "./src/extension-manifest.js";
 
 export default defineConfig({
+  define: {
+    Buffer: "undefined",
+  },
   plugins: [
     turboWarpExtension({
       id: extensionConfig.id,

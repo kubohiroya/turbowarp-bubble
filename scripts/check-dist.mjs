@@ -20,15 +20,37 @@ const manifest = JSON.parse(
   ),
 );
 
-for (const name of ["createBubbleComposition", "BubbleCompositionError"]) {
+for (const name of [
+  "createBubbleComposition",
+  "BubbleCompositionError",
+  "UnicodeLineBreakProvider",
+  "wrapText",
+]) {
   if (!composition.includes(name)) {
     throw new Error(`dist/composition.js does not export ${name}.`);
   }
 }
 
-for (const name of ["BubbleComposition", "BubbleHandle", "BubbleStyleInput"]) {
+for (const name of [
+  "BubbleComposition",
+  "BubbleHandle",
+  "BubbleStyleInput",
+  "LineBreakProvider",
+  "WrappedTextLayout",
+]) {
   if (!declaration.includes(name)) {
     throw new Error(`dist/types/composition.d.ts does not declare ${name}.`);
+  }
+}
+
+for (const nodeApi of ["node:", "process.", "Buffer."]) {
+  for (const [fileName, output] of [
+    ["dist/composition.js", composition],
+    ["dist/turbowarp-bubble.js", extension],
+  ]) {
+    if (output.includes(nodeApi)) {
+      throw new Error(`${fileName} contains Node.js API: ${nodeApi}`);
+    }
   }
 }
 

@@ -2,8 +2,10 @@ import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manag
 import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createBubbleComposition,
+  wrapText,
   type BubbleComposition,
   type BubbleHandle,
+  type WrappedTextLayout,
 } from "@kubohiroya/turbowarp-bubble/composition";
 
 declare const runtime: Parameters<
@@ -54,3 +56,10 @@ const handle: Promise<BubbleHandle> = bubbles.show({
   styleName: "dialogue",
 });
 void handle;
+
+const wrapped: WrappedTextLayout = wrapText({
+  text: "これは長いセリフです。",
+  maxWidth: 320,
+  measureText: (text) => text.length * 16,
+});
+void wrapped;
