@@ -11,9 +11,6 @@ importers:
       '@cto.af/linebreak':
         specifier: 4.0.3
         version: 4.0.3
-      jsclipper:
-        specifier: github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1
-        version: https://codeload.github.com/platener/jsclipper/tar.gz/56aed19845113e1939d8971c47233054659436b1
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -39,6 +36,9 @@ importers:
       eslint:
         specifier: ^10.8.0
         version: 10.8.0
+      jsclipper:
+        specifier: github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1
+        version: https://codeload.github.com/platener/jsclipper/tar.gz/56aed19845113e1939d8971c47233054659436b1
       marked:
         specifier: 18.0.9
         version: 18.0.9
