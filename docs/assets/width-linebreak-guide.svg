@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="950" viewBox="0 0 1600 950" role="img" aria-labelledby="title description">
+  <title id="title">Bubble幅と禁則処理の例</title>
+  <desc id="description">三つのmaxWidthによる自動改行と、行頭禁則、行末禁則、小書き仮名、絵文字書記素clusterの保護を示す図。</desc>
+  <style>
+    text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
+    .heading { fill: #25283a; font-size: 28px; font-weight: 700; }
+    .subheading { fill: #25283a; font-size: 20px; font-weight: 700; }
+    .body { fill: #25283a; font-size: 16px; }
+    .small { fill: #667085; font-size: 13px; }
+    .block-text { fill: #ffffff; font-size: 13px; font-weight: 600; }
+    .input-text { fill: #25283a; font-size: 13px; font-weight: 500; }
+  </style>
+
+  <rect width="1600" height="950" fill="#f2f4f8"/>
+  <text x="32" y="48" class="heading">Bubble幅とUnicode禁則処理</text>
+  <text x="32" y="78" class="body">同じセリフでもmaxWidthに応じて高さを自動計算し、最後に収まる合法な改行候補を選びます。</text>
+  <text x="32" y="112" class="subheading">1. maxWidthによる自動改行</text>
+  <g data-layout-engine="wrapText" data-max-width="128">
+        <rect x="32" y="130" width="504" height="390" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="52" y="166" style="fill:#25283a;font-size:19px;font-weight:700">maxWidth = 128px</text>
+        <text x="516" y="165" text-anchor="end" class="small">4 lines</text>
+        <svg x="194" y="212" width="176" height="152" viewBox="0 0 176 152" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>maxWidth 128 wrapping example</title><polygon points="56.97,123.62 56.61,143.31 71.47,130.38" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="128" height="104" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" /><text x="88" y="52.55" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">新しいキャラク</text><text x="88" y="71.45" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">ターが、静かな夜</text><text x="88" y="90.35" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">の港へ歩いてきま</text><text x="88" y="109.25" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">した。</text>
+  </svg>
+        <line x1="218" y1="468" x2="346" y2="468" stroke="#ef476f" stroke-width="2"/>
+        <path d="M 224 463 L 218 468 L 224 473 M 340 463 L 346 468 L 340 473" fill="none" stroke="#ef476f" stroke-width="2"/>
+        <text x="284" y="500" text-anchor="middle" class="small">文字領域の上限 128px（padding・tailは別）</text>
+      </g>
+<g data-layout-engine="wrapText" data-max-width="224">
+        <rect x="552" y="130" width="504" height="390" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="572" y="166" style="fill:#25283a;font-size:19px;font-weight:700">maxWidth = 224px</text>
+        <text x="1036" y="165" text-anchor="end" class="small">2 lines</text>
+        <svg x="666" y="212" width="272" height="108" viewBox="0 0 272 108" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>maxWidth 224 wrapping example</title><polygon points="115.23,79.62 114.87,99.31 129.73,86.38" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="224" height="60" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" /><text x="136" y="49.449999999999996" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">新しいキャラクターが、静かな</text><text x="136" y="68.35" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">夜の港へ歩いてきました。</text>
+  </svg>
+        <line x1="690" y1="468" x2="914" y2="468" stroke="#ef476f" stroke-width="2"/>
+        <path d="M 696 463 L 690 468 L 696 473 M 908 463 L 914 468 L 908 473" fill="none" stroke="#ef476f" stroke-width="2"/>
+        <text x="804" y="500" text-anchor="middle" class="small">文字領域の上限 224px（padding・tailは別）</text>
+      </g>
+<g data-layout-engine="wrapText" data-max-width="320">
+        <rect x="1072" y="130" width="504" height="390" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="1092" y="166" style="fill:#25283a;font-size:19px;font-weight:700">maxWidth = 320px</text>
+        <text x="1556" y="165" text-anchor="end" class="small">2 lines</text>
+        <svg x="1138" y="212" width="368" height="108" viewBox="0 0 368 108" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>maxWidth 320 wrapping example</title><polygon points="163.23,79.62 162.87,99.31 177.73,86.38" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="24" width="320" height="60" rx="18" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" /><text x="184" y="49.449999999999996" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">新しいキャラクターが、静かな夜の港へ歩い</text><text x="184" y="68.35" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="14">てきました。</text>
+  </svg>
+        <line x1="1162" y1="468" x2="1482" y2="468" stroke="#ef476f" stroke-width="2"/>
+        <path d="M 1168 463 L 1162 468 L 1168 473 M 1476 463 L 1482 468 L 1476 473" fill="none" stroke="#ef476f" stroke-width="2"/>
+        <text x="1324" y="500" text-anchor="middle" class="small">文字領域の上限 320px（padding・tailは別）</text>
+      </g>
+  <text x="32" y="572" class="subheading">2. 禁則と書記素cluster保護（実際のwrapText出力）</text>
+  <g data-layout-engine="wrapText" data-kinsoku-example="行頭禁則">
+        <rect x="32" y="610" width="376" height="306" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="50" y="644" style="fill:#25283a;font-size:18px;font-weight:700">行頭禁則</text>
+        <rect x="50" y="666" width="340" height="154" rx="13" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/>
+        <text x="220" y="701" text-anchor="middle" style="fill:#25283a;font-size:16px">これは、</text>
+<text x="220" y="728" text-anchor="middle" style="fill:#25283a;font-size:16px">とても重</text>
+<text x="220" y="755" text-anchor="middle" style="fill:#25283a;font-size:16px">要です。</text>
+        <text x="220" y="850" text-anchor="middle" class="body" style="font-weight:700">✓ 、。）」を次行の先頭にしない</text>
+        <text x="220" y="880" text-anchor="middle" class="small">@cto.af/linebreak → UAX #14候補</text>
+        <text x="220" y="900" text-anchor="middle" class="small">Intl.Segmenter → 書記素境界で絞り込み</text>
+      </g>
+<g data-layout-engine="wrapText" data-kinsoku-example="行末禁則">
+        <rect x="424" y="610" width="376" height="306" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="442" y="644" style="fill:#25283a;font-size:18px;font-weight:700">行末禁則</text>
+        <rect x="442" y="666" width="340" height="154" rx="13" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/>
+        <text x="612" y="701" text-anchor="middle" style="fill:#25283a;font-size:16px">次は「新</text>
+<text x="612" y="728" text-anchor="middle" style="fill:#25283a;font-size:16px">しい場</text>
+<text x="612" y="755" text-anchor="middle" style="fill:#25283a;font-size:16px">面」で</text>
+<text x="612" y="782" text-anchor="middle" style="fill:#25283a;font-size:16px">す。</text>
+        <text x="612" y="850" text-anchor="middle" class="body" style="font-weight:700">✓ （「を行末に残さない</text>
+        <text x="612" y="880" text-anchor="middle" class="small">@cto.af/linebreak → UAX #14候補</text>
+        <text x="612" y="900" text-anchor="middle" class="small">Intl.Segmenter → 書記素境界で絞り込み</text>
+      </g>
+<g data-layout-engine="wrapText" data-kinsoku-example="小書き・長音">
+        <rect x="816" y="610" width="376" height="306" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="834" y="644" style="fill:#25283a;font-size:18px;font-weight:700">小書き・長音</text>
+        <rect x="834" y="666" width="340" height="154" rx="13" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/>
+        <text x="1004" y="701" text-anchor="middle" style="fill:#25283a;font-size:16px">新しい</text>
+<text x="1004" y="728" text-anchor="middle" style="fill:#25283a;font-size:16px">キャラク</text>
+<text x="1004" y="755" text-anchor="middle" style="fill:#25283a;font-size:16px">ターで</text>
+<text x="1004" y="782" text-anchor="middle" style="fill:#25283a;font-size:16px">す。</text>
+        <text x="1004" y="850" text-anchor="middle" class="body" style="font-weight:700">✓ ゃゅょっーの直前で改行しない</text>
+        <text x="1004" y="880" text-anchor="middle" class="small">@cto.af/linebreak → UAX #14候補</text>
+        <text x="1004" y="900" text-anchor="middle" class="small">Intl.Segmenter → 書記素境界で絞り込み</text>
+      </g>
+<g data-layout-engine="wrapText" data-kinsoku-example="書記素cluster">
+        <rect x="1208" y="610" width="376" height="306" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="1226" y="644" style="fill:#25283a;font-size:18px;font-weight:700">書記素cluster</text>
+        <rect x="1226" y="666" width="340" height="154" rx="13" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/>
+        <text x="1396" y="701" text-anchor="middle" style="fill:#25283a;font-size:16px">家族👨‍👩‍👧‍👦で</text>
+<text x="1396" y="728" text-anchor="middle" style="fill:#25283a;font-size:16px">出発しま</text>
+<text x="1396" y="755" text-anchor="middle" style="fill:#25283a;font-size:16px">す。</text>
+        <text x="1396" y="850" text-anchor="middle" class="body" style="font-weight:700">✓ 結合emojiの途中を分割しない</text>
+        <text x="1396" y="880" text-anchor="middle" class="small">@cto.af/linebreak → UAX #14候補</text>
+        <text x="1396" y="900" text-anchor="middle" class="small">Intl.Segmenter → 書記素境界で絞り込み</text>
+      </g>
+</svg>

@@ -37,6 +37,12 @@ export {
   type BubblePlacement,
   type BubblePlacementInput,
 } from "./placement.js";
+export {
+  bubbleVisualStyles,
+  renderBubbleSvg,
+  type BubbleVisualStyle,
+  type RenderBubbleSvgInput,
+} from "./bubble-svg.js";
 
 export type BubbleKind = "say" | "think";
 export type BubblePhase = "idle" | "speaking" | "waiting";

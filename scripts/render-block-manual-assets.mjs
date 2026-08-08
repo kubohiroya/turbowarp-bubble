@@ -3,7 +3,8 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
+import { bubbleVisualStyles, renderBubbleSvg } from "../src/bubble-svg.ts";
+import { wrapText } from "../src/text-layout.ts";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const assetsDirectory = join(projectRoot, "docs", "assets");
@@ -52,44 +53,7 @@ ${body}
   return source.replace(/[\t ]+$/gmu, "");
 }
 
-function renderBubbleTextSvg(message, fontPercent = 100) {
-  let renderedSvg = "";
-  const composition = createSvgTextComposition({
-    runtime: {
-      renderer: {
-        createSVGSkin(source) {
-          renderedSvg = source;
-          return 1;
-        },
-        destroySkin() {},
-        getNativeSize() {
-          return [480, 360];
-        },
-        updateDrawableSkinId() {},
-      },
-    },
-  });
-  composition.defineStyle({
-    name: "placement-guide",
-    backgroundColor: "#fff4cc",
-    textColor: colors.ink,
-    font: "Noto Sans JP",
-    fontPercent,
-    alignment: "center",
-  });
-  composition.setText({
-    styleName: "placement-guide",
-    target: { drawableID: 1 },
-    text: message,
-  });
-  composition.releaseAll();
-  if (!renderedSvg) {
-    throw new Error("SVG Text did not create a placement-guide skin.");
-  }
-  return renderedSvg;
-}
-
-function embedRenderedBubble(renderedSvg, centerX, centerY, scale = 1) {
+function embedRenderedSvg(renderedSvg, x, y, width, height) {
   const widthMatch = renderedSvg.match(/\bwidth="([0-9.]+)"/u);
   const heightMatch = renderedSvg.match(/\bheight="([0-9.]+)"/u);
   if (!widthMatch || !heightMatch) {
@@ -97,12 +61,12 @@ function embedRenderedBubble(renderedSvg, centerX, centerY, scale = 1) {
   }
   const sourceWidth = Number(widthMatch[1]);
   const sourceHeight = Number(heightMatch[1]);
-  const width = sourceWidth * scale;
-  const height = sourceHeight * scale;
   const innerSvg = renderedSvg
     .replace(/^<svg[^>]*>/u, "")
     .replace(/<\/svg>\s*$/u, "");
-  return `<svg x="${centerX - width / 2}" y="${centerY - height / 2}" width="${width}" height="${height}" viewBox="0 0 ${sourceWidth} ${sourceHeight}" data-renderer="turbowarp-svg-text" overflow="visible">
+  const rendererMatch = renderedSvg.match(/data-bubble-renderer="([^"]+)"/u);
+  const styleMatch = renderedSvg.match(/data-bubble-style="([^"]+)"/u);
+  return `<svg x="${x}" y="${y}" width="${width}" height="${height}" viewBox="0 0 ${sourceWidth} ${sourceHeight}" data-bubble-renderer="${rendererMatch?.[1] ?? "unknown"}"${styleMatch ? ` data-bubble-style="${styleMatch[1]}"` : ""} overflow="visible">
     ${innerSvg}
   </svg>`;
 }
@@ -438,49 +402,333 @@ function placementGuideSvg() {
     "up-left",
     "up-up-left",
   ];
-  const centerX = 300;
-  const centerY = 350;
-  const radius = 162;
-  const directionBubble = renderBubbleTextSvg("Aa", 70);
-  const directions = directionNames
+  const actorScenes = directionNames
     .map((name, index) => {
-      const radians = ((index * 22.5) / 180) * Math.PI;
-      const x = centerX + Math.sin(radians) * radius;
-      const y = centerY - Math.cos(radians) * radius;
-      const labelX = centerX + Math.sin(radians) * (radius + 42);
-      const labelY = centerY - Math.cos(radians) * (radius + 42);
-      return `<g>
-        <path d="M ${centerX} ${centerY} L ${x} ${y}" stroke="#f4a4b4" stroke-width="2"/>
-        ${embedRenderedBubble(directionBubble, x, y, 0.72)}
-        <text x="${labelX}" y="${labelY + 4}" text-anchor="middle" style="fill:${colors.muted};font-size:9px">${name}</text>
+      const column = index % 4;
+      const row = Math.floor(index / 4);
+      const cardX = 32 + column * 392;
+      const cardY = 146 + row * 218;
+      const stageX = cardX + 12;
+      const stageY = cardY + 42;
+      const stageWidth = 356;
+      const stageHeight = 158;
+      const sceneCenterX = stageX + stageWidth / 2;
+      const sceneCenterY = stageY + stageHeight / 2;
+      const direction = index * 22.5;
+      const radians = (direction * Math.PI) / 180;
+      const dx = Math.sin(radians);
+      const dy = -Math.cos(radians);
+      const bubbleCenterX = sceneCenterX + dx * 54;
+      const bubbleCenterY = sceneCenterY + dy * 48;
+      const actorX = sceneCenterX - dx * 55;
+      const actorY = sceneCenterY - dy * 48;
+      const bubbleWidth = 166;
+      const bubbleHeight = 94;
+      const bubbleSvg = renderBubbleSvg({
+        style: "NORMAL",
+        lines: ["こんにちは"],
+        width: bubbleWidth,
+        height: bubbleHeight,
+        tailDirection: direction + 180,
+        fontSize: 12,
+        title: `${name} placement preview`,
+      });
+      return `<g data-placement-scene="${name}">
+        <rect x="${cardX}" y="${cardY}" width="380" height="208" rx="16" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="${cardX + 14}" y="${cardY + 27}" style="fill:${colors.ink};font-size:15px;font-weight:700">${name}</text>
+        <text x="${cardX + 366}" y="${cardY + 27}" text-anchor="end" class="small">${direction}°</text>
+        <rect x="${stageX}" y="${stageY}" width="${stageWidth}" height="${stageHeight}" rx="10" fill="#edf3fa" stroke="#aebdd0"/>
+        <path d="M ${actorX} ${actorY} L ${bubbleCenterX} ${bubbleCenterY}" stroke="#ff9bad" stroke-width="2" stroke-dasharray="4 4"/>
+        ${embedRenderedSvg(
+          bubbleSvg,
+          bubbleCenterX - bubbleWidth / 2,
+          bubbleCenterY - bubbleHeight / 2,
+          bubbleWidth,
+          bubbleHeight,
+        )}
+        <circle cx="${actorX}" cy="${actorY}" r="21" fill="#ffd5b5" stroke="#b85d63" stroke-width="2"/>
+        <circle cx="${actorX - 7}" cy="${actorY - 4}" r="2" fill="#3b2d3c"/>
+        <circle cx="${actorX + 7}" cy="${actorY - 4}" r="2" fill="#3b2d3c"/>
+        <path d="M ${actorX - 7} ${actorY + 7} Q ${actorX} ${actorY + 12} ${actorX + 7} ${actorY + 7}" fill="none" stroke="#7c2945" stroke-width="2" stroke-linecap="round"/>
       </g>`;
     })
     .join("\n");
-  const backgroundBubble = (centerY, label) =>
-    embedRenderedBubble(renderBubbleTextSvg(label), 910, centerY, 1.15);
+  const backgroundPlacements = [
+    {
+      name: "HEADER_LIKE",
+      height: 96,
+      lines: ["章タイトル", "上端を基準に配置"],
+      rule: "外形上端 = safe top",
+    },
+    {
+      name: "CENTER",
+      height: 132,
+      lines: ["場面の説明を", "画面中央へ表示", "高さが変わっても中心維持"],
+      rule: "外形中心 = Stage中心",
+    },
+    {
+      name: "FOOTER_LIKE",
+      height: 110,
+      lines: ["字幕のような説明", "下端を基準に配置"],
+      rule: "外形下端 = safe bottom",
+    },
+  ];
+  const backgroundScenes = backgroundPlacements
+    .map(({ name, height, lines, rule }, index) => {
+      const cardX = 32 + index * 520;
+      const cardY = 1100;
+      const stageX = cardX + 24;
+      const stageY = cardY + 58;
+      const stageWidth = 472;
+      const stageHeight = 300;
+      const safeInset = 18;
+      const safeTop = stageY + safeInset;
+      const safeBottom = stageY + stageHeight - safeInset;
+      const stageCenterY = stageY + stageHeight / 2;
+      const bubbleWidth = 290;
+      const bubbleX = stageX + stageWidth / 2 - bubbleWidth / 2;
+      const bubbleY =
+        name === "HEADER_LIKE"
+          ? safeTop - 24
+          : name === "CENTER"
+            ? stageCenterY - height / 2
+            : safeBottom - height + 24;
+      const referenceY =
+        name === "HEADER_LIKE"
+          ? safeTop
+          : name === "CENTER"
+            ? stageCenterY
+            : safeBottom;
+      const bubbleSvg = renderBubbleSvg({
+        style: "NORMAL",
+        lines,
+        width: bubbleWidth,
+        height,
+        tailDirection: null,
+        fontSize: 12,
+        title: `${name} background placement preview`,
+      });
+      return `<g data-background-placement-scene="${name}">
+        <rect x="${cardX}" y="${cardY}" width="504" height="428" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="${cardX + 18}" y="${cardY + 32}" style="fill:${colors.ink};font-size:17px;font-weight:700">${name}</text>
+        <text x="${cardX + 486}" y="${cardY + 31}" text-anchor="end" class="small">safe margin = 16px相当</text>
+        <rect x="${stageX}" y="${stageY}" width="${stageWidth}" height="${stageHeight}" rx="8" fill="#dce9f7" stroke="#7895b5" stroke-width="3"/>
+        <rect x="${stageX + safeInset}" y="${safeTop}" width="${stageWidth - safeInset * 2}" height="${stageHeight - safeInset * 2}" fill="none" stroke="#4f78a4" stroke-width="1.5" stroke-dasharray="6 4"/>
+        <line x1="${stageX + stageWidth / 2}" y1="${stageY}" x2="${stageX + stageWidth / 2}" y2="${stageY + stageHeight}" stroke="#7f93aa" stroke-dasharray="4 4"/>
+        <line x1="${stageX + safeInset}" y1="${referenceY}" x2="${stageX + stageWidth - safeInset}" y2="${referenceY}" stroke="#ef476f" stroke-width="2"/>
+        ${embedRenderedSvg(bubbleSvg, bubbleX, bubbleY, bubbleWidth, height)}
+        <line x1="${stageX + 9}" y1="${stageY}" x2="${stageX + 9}" y2="${safeTop}" stroke="#25283a"/>
+        <path d="M ${stageX + 5} ${stageY + 5} L ${stageX + 9} ${stageY} L ${stageX + 13} ${stageY + 5} M ${stageX + 5} ${safeTop - 5} L ${stageX + 9} ${safeTop} L ${stageX + 13} ${safeTop - 5}" fill="none" stroke="#25283a"/>
+        <text x="${cardX + 252}" y="${cardY + 386}" text-anchor="middle" style="fill:#ef476f;font-size:14px;font-weight:700">${rule}</text>
+        <text x="${cardX + 252}" y="${cardY + 410}" text-anchor="middle" class="small">外形 ${bubbleWidth - 48} × ${height - 48}px相当／水平中央</text>
+      </g>`;
+    })
+    .join("\n");
   const body = `
-  <rect width="1200" height="650" fill="${colors.page}"/>
+  <rect width="1600" height="1560" fill="${colors.page}"/>
   <text x="32" y="48" class="heading">Bubble placement：Actor相対と背景相対</text>
-  <text x="32" y="76" class="body">同じPLACEMENT入力で、Actorからの方向またはStage内の領域を選びます。</text>
-  ${panel(24, 98, 560, 520, "Actor相対：方向あり")}
-  <rect x="54" y="148" width="500" height="410" rx="18" fill="#f8f9fc" stroke="#cfd5e2" stroke-width="2"/>
-  ${directions}
-  <circle cx="${centerX}" cy="${centerY}" r="40" fill="#ffd5b5" stroke="#b85d63" stroke-width="3"/>
-  <text x="${centerX}" y="${centerY + 6}" text-anchor="middle" style="fill:${colors.ink};font-size:15px;font-weight:700">Actor</text>
-  <text x="300" y="591" text-anchor="middle" class="small">16正規方向＋16 alias／0〜360°（0=上、90=右）</text>
-  ${panel(616, 98, 560, 520, "背景相対：方向なし")}
-  <rect x="676" y="148" width="468" height="410" rx="18" fill="#dce9f7" stroke="#8fa8c4" stroke-width="3"/>
-  <text x="692" y="176" class="small">Stage安全領域</text>
-  ${backgroundBubble(226, "HEADER_LIKE")}
-  ${backgroundBubble(353, "CENTER")}
-  ${backgroundBubble(480, "FOOTER_LIKE")}
-  <text x="910" y="591" text-anchor="middle" class="small">Actor座標・bounds・可視性に依存せず、tailを持たない配置</text>`;
+  <text x="32" y="76" class="body">各ミニシーンは、Actor、実際のBubble外形、tail、文字を同じ縮尺で表示します。</text>
+  <text x="32" y="114" class="subheading">Actor相対：ActorからBubble中心への16方向</text>
+  ${actorScenes}
+  <text x="32" y="1058" class="subheading">背景相対：Stage縁・安全領域・Bubble外形の配置関係</text>
+  ${backgroundScenes}`;
   return svgDocument({
-    width: 1200,
-    height: 650,
+    width: 1600,
+    height: 1560,
     title: "Bubble placementの二つの基準",
     description:
-      "Actor相対の16方向および角度指定と、背景相対のHEADER_LIKE、CENTER、FOOTER_LIKEを比較する図。",
+      "Actorと実際の吹き出し外形による16方向のミニシーン、およびStage安全領域と背景相対配置の寸法関係。",
+    body,
+  });
+}
+
+const guideSegmenter = new Intl.Segmenter("ja", { granularity: "grapheme" });
+
+function measureGuideText(text) {
+  return [...guideSegmenter.segment(text)].reduce((width, { segment }) => {
+    if (/^[\x20-\x7e]+$/u.test(segment)) return width + 8;
+    return width + 16;
+  }, 0);
+}
+
+function wrapGuideText(text, maxWidth) {
+  return wrapText({ text, maxWidth, measureText: measureGuideText }).lines.map(
+    ({ text: line }) => line,
+  );
+}
+
+function widthLinebreakGuideSvg() {
+  const sample = "新しいキャラクターが、静かな夜の港へ歩いてきました。";
+  const widths = [128, 224, 320];
+  const widthCards = widths
+    .map((maxWidth, index) => {
+      const cardX = 32 + index * 520;
+      const cardY = 130;
+      const lines = wrapGuideText(sample, maxWidth);
+      const bubbleWidth = maxWidth + 48;
+      const bubbleHeight = Math.max(106, 64 + lines.length * 22);
+      const bubbleSvg = renderBubbleSvg({
+        style: "NORMAL",
+        lines,
+        width: bubbleWidth,
+        height: bubbleHeight,
+        tailDirection: 205,
+        fontSize: 14,
+        title: `maxWidth ${maxWidth} wrapping example`,
+      });
+      const bubbleX = cardX + 250 - bubbleWidth / 2;
+      const bubbleY = cardY + 82;
+      return `<g data-layout-engine="wrapText" data-max-width="${maxWidth}">
+        <rect x="${cardX}" y="${cardY}" width="504" height="390" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="${cardX + 20}" y="${cardY + 36}" style="fill:${colors.ink};font-size:19px;font-weight:700">maxWidth = ${maxWidth}px</text>
+        <text x="${cardX + 484}" y="${cardY + 35}" text-anchor="end" class="small">${lines.length} lines</text>
+        ${embedRenderedSvg(bubbleSvg, bubbleX, bubbleY, bubbleWidth, bubbleHeight)}
+        <line x1="${bubbleX + 24}" y1="${cardY + 338}" x2="${bubbleX + bubbleWidth - 24}" y2="${cardY + 338}" stroke="#ef476f" stroke-width="2"/>
+        <path d="M ${bubbleX + 30} ${cardY + 333} L ${bubbleX + 24} ${cardY + 338} L ${bubbleX + 30} ${cardY + 343} M ${bubbleX + bubbleWidth - 30} ${cardY + 333} L ${bubbleX + bubbleWidth - 24} ${cardY + 338} L ${bubbleX + bubbleWidth - 30} ${cardY + 343}" fill="none" stroke="#ef476f" stroke-width="2"/>
+        <text x="${cardX + 252}" y="${cardY + 370}" text-anchor="middle" class="small">文字領域の上限 ${maxWidth}px（padding・tailは別）</text>
+      </g>`;
+    })
+    .join("\n");
+  const kinsokuExamples = [
+    {
+      title: "行頭禁則",
+      text: "これは、とても重要です。",
+      maxWidth: 64,
+      note: "、。）」を次行の先頭にしない",
+    },
+    {
+      title: "行末禁則",
+      text: "次は「新しい場面」です。",
+      maxWidth: 64,
+      note: "（「を行末に残さない",
+    },
+    {
+      title: "小書き・長音",
+      text: "新しいキャラクターです。",
+      maxWidth: 72,
+      note: "ゃゅょっーの直前で改行しない",
+    },
+    {
+      title: "書記素cluster",
+      text: "家族👨‍👩‍👧‍👦で出発します。",
+      maxWidth: 64,
+      note: "結合emojiの途中を分割しない",
+    },
+  ];
+  const kinsokuCards = kinsokuExamples
+    .map(({ title, text, maxWidth, note }, index) => {
+      const cardX = 32 + index * 392;
+      const cardY = 610;
+      const lines = wrapGuideText(text, maxWidth);
+      return `<g data-layout-engine="wrapText" data-kinsoku-example="${title}">
+        <rect x="${cardX}" y="${cardY}" width="376" height="306" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="${cardX + 18}" y="${cardY + 34}" style="fill:${colors.ink};font-size:18px;font-weight:700">${title}</text>
+        <rect x="${cardX + 18}" y="${cardY + 56}" width="340" height="154" rx="13" fill="#fff4cc" stroke="#6f5b45" stroke-width="2"/>
+        ${lines
+          .map(
+            (line, lineIndex) =>
+              `<text x="${cardX + 188}" y="${cardY + 91 + lineIndex * 27}" text-anchor="middle" style="fill:${colors.ink};font-size:16px">${escapeXml(line)}</text>`,
+          )
+          .join("\n")}
+        <text x="${cardX + 188}" y="${cardY + 240}" text-anchor="middle" class="body" style="font-weight:700">✓ ${note}</text>
+        <text x="${cardX + 188}" y="${cardY + 270}" text-anchor="middle" class="small">@cto.af/linebreak → UAX #14候補</text>
+        <text x="${cardX + 188}" y="${cardY + 290}" text-anchor="middle" class="small">Intl.Segmenter → 書記素境界で絞り込み</text>
+      </g>`;
+    })
+    .join("\n");
+  const body = `
+  <rect width="1600" height="950" fill="${colors.page}"/>
+  <text x="32" y="48" class="heading">Bubble幅とUnicode禁則処理</text>
+  <text x="32" y="78" class="body">同じセリフでもmaxWidthに応じて高さを自動計算し、最後に収まる合法な改行候補を選びます。</text>
+  <text x="32" y="112" class="subheading">1. maxWidthによる自動改行</text>
+  ${widthCards}
+  <text x="32" y="572" class="subheading">2. 禁則と書記素cluster保護（実際のwrapText出力）</text>
+  ${kinsokuCards}`;
+  return svgDocument({
+    width: 1600,
+    height: 950,
+    title: "Bubble幅と禁則処理の例",
+    description:
+      "三つのmaxWidthによる自動改行と、行頭禁則、行末禁則、小書き仮名、絵文字書記素clusterの保護を示す図。",
+    body,
+  });
+}
+
+function bubbleStyleGallerySvg() {
+  const descriptions = Object.freeze({
+    NORMAL: ["通常の会話", "丸い本体＋話者を指すtail"],
+    THINKING: ["思考", "雲形本体＋小さな丸のtrail"],
+    DREAMING: ["夢・回想", "柔らかな雲形＋長い丸trail"],
+    YELLING: ["叫び", "鋭いburst輪郭で強調"],
+    OFF_PANEL: ["画面外の話者", "tailを画面端方向へ伸ばす"],
+    WAVY: ["不安・弱り", "揺れる輪郭"],
+    WHISPERING: ["ささやき", "破線の弱い輪郭"],
+    ANNOUNCEMENT: ["放送・告知", "二重の強い輪郭"],
+    NARRATION: ["地の文", "tailなしの矩形panel"],
+    NO_BUBBLE: ["本体もtailも描かず", "文字だけ表示"],
+  });
+  const examples = Object.freeze({
+    NORMAL: ["今日はいい天気だね"],
+    THINKING: ["どうしようかな…"],
+    DREAMING: ["いつか空の向こうへ"],
+    YELLING: ["危ない！"],
+    OFF_PANEL: ["こっちだよ！"],
+    WAVY: ["なんだか不安…"],
+    WHISPERING: ["静かにしてね"],
+    ANNOUNCEMENT: ["まもなく開演します"],
+    NARRATION: ["その夜、港は静かだった。"],
+    NO_BUBBLE: ["吹き出しなしの文字表示"],
+  });
+  const cards = bubbleVisualStyles
+    .map((style, index) => {
+      const column = index % 5;
+      const row = Math.floor(index / 5);
+      const cardX = 32 + column * 312;
+      const cardY = 118 + row * 300;
+      const bubbleWidth = 280;
+      const bubbleHeight = 170;
+      const tailDirection =
+        style === "NARRATION" || style === "NO_BUBBLE"
+          ? null
+          : style === "OFF_PANEL"
+            ? 270
+            : 215;
+      const svg = renderBubbleSvg({
+        style,
+        lines: examples[style],
+        width: bubbleWidth,
+        height: bubbleHeight,
+        tailDirection,
+        fontSize: 14,
+        title: `${style} visual style example`,
+      });
+      return `<g data-style-gallery-card="${style}">
+        <rect x="${cardX}" y="${cardY}" width="296" height="280" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="${cardX + 16}" y="${cardY + 32}" style="fill:${colors.ink};font-size:18px;font-weight:700">${style}</text>
+        ${embedRenderedSvg(svg, cardX + 8, cardY + 44, bubbleWidth, bubbleHeight)}
+        ${descriptions[style]
+          .map(
+            (line, lineIndex) =>
+              `<text x="${cardX + 148}" y="${cardY + 232 + lineIndex * 18}" text-anchor="middle" class="small">${line}</text>`,
+          )
+          .join("\n")}
+        <text x="${cardX + 148}" y="${cardY + 270}" text-anchor="middle" class="small">fill／border色は別指定</text>
+      </g>`;
+    })
+    .join("\n");
+  const body = `
+  <rect width="1600" height="750" fill="${colors.page}"/>
+  <text x="32" y="48" class="heading">Bubble visual style：形状の使い分け</text>
+  <text x="32" y="78" class="body">すべてBubble側の共有SVG形状rendererから生成。NEGATIVEは色指定で表現するため独立styleにしません。</text>
+  <text x="32" y="101" class="small">形状renderer基盤の仕様例です。standalone surfaceへのstyle block/API接続は後続実装です。</text>
+  ${cards}
+  <text x="32" y="724" class="small">orientation／segmentsは指定せず、幅・フォント・改行後の行数から外形寸法を自動計算します。</text>`;
+  return svgDocument({
+    width: 1600,
+    height: 750,
+    title: "Bubble visual style一覧",
+    description:
+      "NORMAL、THINKING、DREAMING、YELLING、OFF_PANEL、WAVY、WHISPERING、ANNOUNCEMENT、NARRATION、NO_BUBBLEのSVG形状例。",
     body,
   });
 }
@@ -748,6 +996,16 @@ async function main() {
   await writeFile(
     join(assetsDirectory, "placement-guide.svg"),
     placementGuideSvg(),
+    "utf8",
+  );
+  await writeFile(
+    join(assetsDirectory, "width-linebreak-guide.svg"),
+    widthLinebreakGuideSvg(),
+    "utf8",
+  );
+  await writeFile(
+    join(assetsDirectory, "bubble-style-gallery.svg"),
+    bubbleStyleGallerySvg(),
     "utf8",
   );
 

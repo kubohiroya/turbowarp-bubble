@@ -2,6 +2,7 @@ import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manag
 import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createBubbleComposition,
+  renderBubbleSvg,
   wrapText,
   type BubbleComposition,
   type BubbleHandle,
@@ -70,3 +71,12 @@ const wrapped: WrappedTextLayout = wrapText({
   measureText: (text) => text.length * 16,
 });
 void wrapped;
+
+const bubbleSvg: string = renderBubbleSvg({
+  style: "NORMAL",
+  lines: wrapped.lines.map(({ text }) => text),
+  width: 368,
+  height: 120,
+  tailDirection: 225,
+});
+void bubbleSvg;

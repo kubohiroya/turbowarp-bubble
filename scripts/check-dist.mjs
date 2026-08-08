@@ -25,6 +25,7 @@ for (const name of [
   "BubbleCompositionError",
   "UnicodeLineBreakProvider",
   "normalizeBubblePlacement",
+  "renderBubbleSvg",
   "wrapText",
 ]) {
   if (!composition.includes(name)) {
@@ -37,6 +38,7 @@ for (const name of [
   "BubbleHandle",
   "BubbleStyleInput",
   "BubblePlacement",
+  "BubbleVisualStyle",
   "LineBreakProvider",
   "WrappedTextLayout",
 ]) {

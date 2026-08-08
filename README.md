@@ -31,6 +31,18 @@ const layout = wrapText({
 
 この基盤は改行位置と行幅を返します。Bubble surfaceへ`maxWidth`を渡し、SVG Textの実測値と吹き出し形状へ接続する処理は、後続の表示統合で追加します。
 
+![maxWidthの違いによる自動改行と、日本語禁則処理の例](docs/assets/width-linebreak-guide.svg)
+
+図の各行はproductionの`wrapText`を直接呼んだ結果です。図版専用の手作業改行は使っていません。
+
+## Bubble visual styleの形状
+
+形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。
+
+![10種類のBubble visual styleを同じSVG rendererで比較する図](docs/assets/bubble-style-gallery.svg)
+
+この図はBubble側の共有`renderBubbleSvg`から生成しています。現段階では形状rendererの基盤と仕様例であり、standalone surfaceのstyle block／APIへの接続は後続実装です。`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにせず、orientationとsegmentsも公開入力にしません。
+
 配布bundleに含まれる依存ライブラリのライセンスは、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
 
 ## インストール
@@ -97,7 +109,7 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-図中の文字パネルは、現在のstandalone Bubbleと同じ`createSvgTextComposition`のSVG生成経路で描画しています。現在のstandalone rendererは配置基準を実装済みです。背景相対は方向を持たず、後続のBubble body rendererでもtailなしとして描画します。
+図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図の外形は共有`renderBubbleSvg`から生成しています。現在のstandalone rendererは配置基準を実装済みですが、この形状rendererのsurface接続は後続実装です。
 
 ### 表示phase
 

@@ -82,7 +82,7 @@ set bubble placement [up-right] for bubble style [hero-dialogue]
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](./assets/placement-guide.svg)
 
-図中の文字パネルは、現在のstandalone Bubbleが実際に使う`createSvgTextComposition`のSVG生成経路から生成しています。解説専用の近似吹き出しではありません。Bubble本体の形状とtailは後続実装のため、この図でも未実装のtailは描いていません。
+Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、図専用の近似図形ではありません。形状rendererのstandalone surface接続は後続実装です。
 
 Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
 
@@ -104,6 +104,20 @@ left / left-up-left / up-left / up-up-left
 | `FOOTER_LIKE` | Stage安全領域下部、水平中央   |
 
 背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。将来のBubble body rendererではActorを指すtailを描画しません。
+
+### 幅・自動改行・禁則処理
+
+![maxWidthの違いによる自動改行と、日本語禁則処理の例](./assets/width-linebreak-guide.svg)
+
+図の改行結果はproductionの`wrapText`を直接実行して生成しています。`@cto.af/linebreak`がUnicode UAX #14の改行候補を返し、`Intl.Segmenter`の書記素境界で絞り込んだ後、実測幅の上限に収まる最後の候補を選びます。句読点、閉じ括弧、小書き仮名、長音、結合emojiの途中で不自然に分割しません。
+
+### Bubble visual styleの形状例
+
+![10種類のBubble visual styleを同じSVG rendererで比較する図](./assets/bubble-style-gallery.svg)
+
+形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。図はBubble側の共有`renderBubbleSvg`から生成しています。現段階では形状renderer基盤の仕様例であり、styleを選ぶblock／APIとstandalone surfaceへの接続は後続実装です。
+
+`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。
 
 続けて、表情レイヤーと入力待ちアイコンを設定します。
 
@@ -233,4 +247,4 @@ pnpm docs:render
 pnpm docs:check
 ```
 
-`docs:check`は、SVGのviewBox、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全11ブロックへの参照を検証します。
+`docs:check`は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全11ブロックへの参照を検証します。
