@@ -979,6 +979,7 @@ export function createBubbleComposition(
         style,
       );
       svgText.setText({
+        scaleToStage: false,
         styleName: style.textStyle,
         target: surface.targets.text,
         text: input.text,
@@ -1146,6 +1147,7 @@ export function createBubbleComposition(
           transitionTail = transitionTail.then(async () => {
             if (!surface) return;
             svgText.setText({
+              scaleToStage: false,
               styleName: style.textStyle,
               target: surface.targets.text,
               text,

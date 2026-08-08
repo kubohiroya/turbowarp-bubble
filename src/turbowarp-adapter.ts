@@ -28,6 +28,8 @@ const indicatorBoxSize = 18;
 const contentGap = 8;
 const bubblePadding = 24;
 const stageSafeMargin = 16;
+const baseStageWidth = 480;
+const baseStageHeight = 360;
 let surfaceSequence = 0;
 
 export interface TurboWarpBubbleTarget {
@@ -199,6 +201,27 @@ function readSize(
   return { width, height };
 }
 
+function readStageMetrics(renderer: TurboWarpBubbleRenderer): {
+  readonly height: number;
+  readonly scale: number;
+  readonly width: number;
+} {
+  const nativeSize = renderer.getNativeSize();
+  const width =
+    Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
+      ? Number(nativeSize[0])
+      : baseStageWidth;
+  const height =
+    Array.isArray(nativeSize) && Number(nativeSize[1]) > 0
+      ? Number(nativeSize[1])
+      : baseStageHeight;
+  return {
+    height,
+    scale: Math.min(width / baseStageWidth, height / baseStageHeight),
+    width,
+  };
+}
+
 function fitDrawable(
   renderer: TurboWarpBubbleRenderer,
   target: DrawableTarget,
@@ -343,56 +366,66 @@ function createSurface(
 
     const position = (): void => {
       if (disposed) return;
+      const {
+        height: stageHeight,
+        scale: stageScale,
+        width: stageWidth,
+      } = readStageMetrics(renderer);
       const scaleMultiplier =
         style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+      const textDrawableScale = stageScale * scaleMultiplier;
       const nativeTextSize = readSize(renderer, text, {
         width: 180,
         height: 48,
       });
       renderer.updateDrawableScale(text.drawableID, [
-        scaleMultiplier * 100,
-        scaleMultiplier * 100,
+        textDrawableScale * 100,
+        textDrawableScale * 100,
       ]);
       const textSize = {
-        width: nativeTextSize.width * scaleMultiplier,
-        height: nativeTextSize.height * scaleMultiplier,
+        width: nativeTextSize.width * textDrawableScale,
+        height: nativeTextSize.height * textDrawableScale,
       };
       const portraitSize = portraitBase
-        ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier)
+        ? fitDrawable(
+            renderer,
+            portraitBase,
+            portraitBoxSize * stageScale,
+            scaleMultiplier,
+          )
         : { width: 0, height: 0 };
       for (const target of [portraitBlink, portraitTalk]) {
         if (target)
-          fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
+          fitDrawable(
+            renderer,
+            target,
+            portraitBoxSize * stageScale,
+            scaleMultiplier,
+          );
       }
       const indicatorSize = advanceIndicator
         ? fitDrawable(
             renderer,
             advanceIndicator,
-            indicatorBoxSize,
+            indicatorBoxSize * stageScale,
             scaleMultiplier,
           )
         : { width: 0, height: 0 };
+      const scaledContentGap = contentGap * stageScale * scaleMultiplier;
       const totalWidth =
         portraitSize.width +
-        (portraitBase ? contentGap * scaleMultiplier : 0) +
+        (portraitBase ? scaledContentGap : 0) +
         textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const baseBubbleWidth = totalWidth / scaleMultiplier + bubblePadding * 2;
+      const scaledBubblePadding = bubblePadding * stageScale;
+      const baseBubbleWidth =
+        totalWidth / scaleMultiplier + scaledBubblePadding * 2;
       const baseBubbleHeight =
-        contentHeight / scaleMultiplier + bubblePadding * 2;
+        contentHeight / scaleMultiplier + scaledBubblePadding * 2;
       // The SVG viewport includes padding for the tail. Placement and clamping
       // use the visible body border, whose dimensions match the content box.
       const bubbleWidth = totalWidth;
       const bubbleHeight = contentHeight;
-      const nativeSize = renderer.getNativeSize();
-      const stageWidth =
-        Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
-          ? Number(nativeSize[0])
-          : 480;
-      const stageHeight =
-        Array.isArray(nativeSize) && Number(nativeSize[1]) > 0
-          ? Number(nativeSize[1])
-          : 360;
       const stageLeft = -stageWidth / 2;
       const stageRight = stageWidth / 2;
       const stageTop = stageHeight / 2;
@@ -407,9 +440,10 @@ function createSurface(
       if (style.placement.basis === "background") {
         centerX = 0;
         if (style.placement.region === "HEADER_LIKE") {
-          centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
+          centerY = stageTop - stageSafeMargin * stageScale - bubbleHeight / 2;
         } else if (style.placement.region === "FOOTER_LIKE") {
-          centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
+          centerY =
+            stageBottom + stageSafeMargin * stageScale + bubbleHeight / 2;
         } else {
           centerY = 0;
         }
@@ -420,9 +454,13 @@ function createSurface(
           bubbleWidth,
           bubbleHeight,
           direction: style.placement.direction,
-          distance: style.distance,
-          tailLength: style.tailLength,
-          offset: style.offset,
+          distance: style.distance * stageScale,
+          tailLength: style.tailLength * stageScale,
+          offset: {
+            x: style.offset.x * stageScale,
+            y: style.offset.y * stageScale,
+            scalePercent: style.offset.scalePercent,
+          },
         });
         centerX = center.x;
         centerY = center.y;
@@ -434,11 +472,12 @@ function createSurface(
         style.placement.basis === "actor"
           ? tailDirectionForPlacement(style.placement.direction)
           : null;
+      const scaledTailLength = style.tailLength * stageScale;
       const bodyOffset =
         style.placement.basis === "actor"
           ? ([
-              style.offset.x,
-              style.offset.y,
+              style.offset.x * stageScale,
+              style.offset.y * stageScale,
               style.offset.scalePercent,
             ] as const)
           : ([0, 0, 100] as const);
@@ -450,25 +489,25 @@ function createSurface(
               width: baseBubbleWidth,
               height: baseBubbleHeight,
               tailDirection,
-              tailLength: style.tailLength,
+              tailLength: scaledTailLength,
               offset: bodyOffset,
             });
       const viewportExtraX =
         Math.abs(bodyOffset[0]) +
         baseBubbleWidth * Math.abs(scaleMultiplier - 1) +
-        Math.max(0, style.tailLength - defaultBubbleTailLength) +
-        8;
+        Math.max(0, scaledTailLength - defaultBubbleTailLength * stageScale) +
+        8 * stageScale;
       const viewportExtraY =
         Math.abs(bodyOffset[1]) +
         baseBubbleHeight * Math.abs(scaleMultiplier - 1) +
-        Math.max(0, style.tailLength - defaultBubbleTailLength) +
-        8;
+        Math.max(0, scaledTailLength - defaultBubbleTailLength * stageScale) +
+        8 * stageScale;
       const nextBodySkinSignature = JSON.stringify({
         baseBubbleHeight,
         baseBubbleWidth,
         bodyOffset,
         tailDirection,
-        tailLength: style.tailLength,
+        tailLength: scaledTailLength,
         viewportExtraX,
         viewportExtraY,
         visualStyle: style.visualStyle,
@@ -480,7 +519,7 @@ function createSurface(
           width: baseBubbleWidth,
           height: baseBubbleHeight,
           tailDirection,
-          tailLength: style.tailLength,
+          tailLength: scaledTailLength,
           offset: bodyOffset,
           title: `${style.name} Bubble body`,
         });
@@ -521,7 +560,7 @@ function createSurface(
       const textX =
         left +
         portraitSize.width +
-        (portraitBase ? contentGap * scaleMultiplier : 0) +
+        (portraitBase ? scaledContentGap : 0) +
         textSize.width / 2;
       for (const target of [portraitBase, portraitBlink, portraitTalk]) {
         if (target) {
@@ -537,11 +576,11 @@ function createSurface(
           textX +
             textSize.width / 2 -
             indicatorSize.width / 2 -
-            contentGap * scaleMultiplier,
+            scaledContentGap,
           centerY -
             textSize.height / 2 +
             indicatorSize.height / 2 +
-            contentGap * scaleMultiplier,
+            scaledContentGap,
         ]);
       }
       updateVisibility();
@@ -555,6 +594,8 @@ function createSurface(
     if (style.placement.basis === "actor") {
       actor.onTargetVisualChange = visualChangeHook;
     }
+    const stageSizeChangeHook = (): void => position();
+    runtime.on?.("STAGE_SIZE_CHANGED", stageSizeChangeHook);
 
     return Object.freeze({
       targets,
@@ -576,6 +617,7 @@ function createSurface(
       dispose(): void {
         if (disposed) return;
         disposed = true;
+        runtime.off?.("STAGE_SIZE_CHANGED", stageSizeChangeHook);
         if (
           style.placement.basis === "actor" &&
           actor.onTargetVisualChange === visualChangeHook

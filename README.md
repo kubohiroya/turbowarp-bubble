@@ -141,6 +141,8 @@ Actor相対の`distance`はActorのStage座標AABB（axis-aligned bounding box�
 
 `offset x/y/scale`の既定値は`[0, 0, 100]`です。xは右、yは上が正です。scaleはBubble外形だけでなく、SVG Textの文字（フォントサイズ）、表情画像、次へアイコン、内部余白へ一体で適用します。scaleだけを変えた場合は、拡大量の半径分だけ本体中心をActorから離し、Actor側の間隔を維持します。その後x/y offsetを加え、固定したtail先端へ向けてtailを再生成するため、offset後の実長は`tail length`から変化し得ます。Stage端では全体が画面内に収まるようクランプします。これら3設定は背景相対placementでは無視します。
 
+論理Stage sizeの変更時は、`POP_OUT_BUBBLE`を再layoutし、文字、表情画像、次へアイコン、padding、distance、tail、offset、安全余白を`min(Stage幅 / 480, Stage高さ / 360)`で一体拡大します。`TEXT_ACTOR`も同じ倍率を使うため、縦横比が異なるStageでも表示が歪みません。
+
 ### Animation mode
 
 | mode               | 目パチ | 口パク       | advance frames |

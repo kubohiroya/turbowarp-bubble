@@ -159,6 +159,7 @@ describe("Bubble composition", () => {
       }),
     );
     expect(harness.setText).toHaveBeenCalledWith({
+      scaleToStage: false,
       styleName: "dialogue-text",
       target: harness.surface.targets.text,
       text: "こんにちは",
@@ -185,6 +186,7 @@ describe("Bubble composition", () => {
 
     await handle.setText("こんにちは、浦島太郎です");
     expect(harness.setText).toHaveBeenLastCalledWith({
+      scaleToStage: false,
       styleName: "dialogue-text",
       target: harness.surface.targets.text,
       text: "こんにちは、浦島太郎です",

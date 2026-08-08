@@ -4042,37 +4042,39 @@ function zr(e, t, n = 1) {
 function Br(e) {
 	let t = Nr(e), n = /* @__PURE__ */ new Map([[wr.name, wr]]), r = /* @__PURE__ */ new Map(), i = !1, a = () => {
 		if (i) throw X("Text engine has been released.");
-	}, o = (e, i, a) => {
-		let o = n.get(a);
-		if (!o) throw X(`Text style is not defined: ${a}`);
-		let s = t.renderer.createSVGSkin(zr(i, o, Rr(t.renderer)));
-		if (!Number.isInteger(s) || s < 0) throw X("TurboWarp did not create an SVG text skin.");
+	}, o = (e, i, a, o) => {
+		let s = n.get(a);
+		if (!s) throw X(`Text style is not defined: ${a}`);
+		let c = t.renderer.createSVGSkin(zr(i, s, o ? Rr(t.renderer) : 1));
+		if (!Number.isInteger(c) || c < 0) throw X("TurboWarp did not create an SVG text skin.");
 		try {
-			t.renderer.updateDrawableSkinId(e.drawableID, s);
+			t.renderer.updateDrawableSkinId(e.drawableID, c);
 		} catch (e) {
-			throw t.renderer.destroySkin(s), e;
+			throw t.renderer.destroySkin(c), e;
 		}
-		let c = r.get(e);
+		let l = r.get(e);
 		r.set(e, {
-			skinId: s,
+			scaleToStage: o,
+			skinId: c,
 			styleName: a,
 			text: i
-		}), c && c.skinId !== s && t.renderer.destroySkin(c.skinId), t.requestRedraw?.();
+		}), l && l.skinId !== c && t.renderer.destroySkin(l.skinId), t.requestRedraw?.();
 	}, s = () => {
-		if (!i) for (let [e, t] of [...r]) o(e, t.text, t.styleName);
+		if (!i) for (let [e, t] of [...r]) o(e, t.text, t.styleName, t.scaleToStage);
 	};
 	return t.on?.("STAGE_SIZE_CHANGED", s), Object.freeze({
 		defineStyle(e) {
 			a();
 			let t = Mr(e);
 			n.set(t.name, t);
-			for (let [e, n] of [...r]) n.styleName === t.name && o(e, n.text, t.name);
+			for (let [e, n] of [...r]) n.styleName === t.name && o(e, n.text, t.name, n.scaleToStage);
 		},
 		setText(e) {
 			if (a(), typeof e != "object" || !e) throw X("Text actor input must be an object.");
 			let t = Pr(e.target), n = Ar(e.styleName, "Text style name");
 			if (typeof e.text != "string") throw X("Text must be a string.");
-			o(t, e.text.replace(/\\r\\n|\\n|\\r/gu, "\n"), n);
+			if (e.scaleToStage !== void 0 && typeof e.scaleToStage != "boolean") throw X("Text scaleToStage must be a boolean.");
+			o(t, e.text.replace(/\\r\\n|\\n|\\r/gu, "\n"), n, e.scaleToStage !== !1);
 		},
 		releaseTarget(e) {
 			a();
@@ -4376,6 +4378,7 @@ function ci(e) {
 				kind: o.kind,
 				style: s
 			})), s), n.setText({
+				scaleToStage: !1,
 				styleName: s.textStyle,
 				target: d.targets.text,
 				text: o.text
@@ -4432,6 +4435,7 @@ function ci(e) {
 				setText(e) {
 					return u ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : typeof e == "string" ? (_ = _.then(async () => {
 						d && (n.setText({
+							scaleToStage: !1,
 							styleName: s.textStyle,
 							target: d.targets.text,
 							text: e

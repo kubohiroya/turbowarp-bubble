@@ -264,6 +264,7 @@ left / left-up-left / up-left / up-up-left
 <li><code>offset x/y/scale</code>（既定<code>[0, 0, 100]</code>）は、xが右正、yが上正、scaleが百分率です。<code>[10, -10, 120]</code>なら、本体を右10・下10へ補正し、120%にします。</li>
 </ul>
 <p>scaleは外形だけでなく、SVG Textの文字、表情ベース・目パチ・口パク、次へアイコン、内部余白へ一体で適用されるため、表示上のフォントサイズも同じ比率で変わります。scaleだけを変更すると、本体中心を拡大半径分だけActorから離してActor側の間隔を維持します。x/y offsetはその後に加算し、tail先端を固定したまま本体borderとのunionを再生成するため、offset後のtail実長は基準値から変化します。</p>
+<p>TurboWarpの論理Stage sizeが変わると、表示中の<code>POP_OUT_BUBBLE</code>を再layoutします。文字、表情画像、次へアイコン、padding、distance、tail length、offset、安全余白のすべてへ同じStage倍率を適用します。倍率は<code>Stage width / 480</code>と<code>Stage height / 360</code>の小さい方であり、縦横比が異なるStageでも表示を歪ませません。<code>TEXT_ACTOR</code>も同じ規則を使います。</p>
 <p>Stage端では、拡大後のBubble全体を画面内へ収めるクランプが優先されるため、指定距離を保てない場合があります。背景相対の<code>HEADER_LIKE</code>／<code>CENTER</code>／<code>FOOTER_LIKE</code>では、これらのActor相対設定を使用しません。</p>
 <h3>幅・自動改行・禁則処理</h3>
 <p><img src="../assets/width-linebreak-guide.svg" alt="maxWidthの違いによる自動改行と、日本語禁則処理の例"></p>

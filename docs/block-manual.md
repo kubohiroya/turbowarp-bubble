@@ -144,6 +144,8 @@ These placements do not depend on actor coordinates, bounds, or visibility. Use 
 
 Scale applies to the body, SVG Text, portrait base, blink/lip-sync layers, advance indicator, and internal padding as one unit, so the displayed font size scales by the same factor. When scale alone changes, the body center moves away from the actor by the increase in radius, preserving the actor-side gap. The x/y offset is added afterward. The tail tip remains fixed and the union with the body border is regenerated, so an offset can change the effective tail length.
 
+When TurboWarp changes the logical Stage size, an open `POP_OUT_BUBBLE` is laid out again. Bubble applies the same Stage scale to text, portraits, the advance indicator, padding, distance, tail length, offsets, and safe margins. The scale is the smaller of `Stage width / 480` and `Stage height / 360`, preserving aspect ratio on non-proportional Stage sizes. `TEXT_ACTOR` uses the same rule.
+
 Near a Stage edge, keeping the scaled Bubble on-screen takes priority and can reduce the requested distance. Actor-relative distance, tail, offset, and scale settings do not apply to `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`.
 
 ### Width, automatic wrapping, and Japanese line-breaking rules

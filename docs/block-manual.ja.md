@@ -144,6 +144,8 @@ left / left-up-left / up-left / up-up-left
 
 scaleは外形だけでなく、SVG Textの文字、表情ベース・目パチ・口パク、次へアイコン、内部余白へ一体で適用されるため、表示上のフォントサイズも同じ比率で変わります。scaleだけを変更すると、本体中心を拡大半径分だけActorから離してActor側の間隔を維持します。x/y offsetはその後に加算し、tail先端を固定したまま本体borderとのunionを再生成するため、offset後のtail実長は基準値から変化します。
 
+TurboWarpの論理Stage sizeが変わると、表示中の`POP_OUT_BUBBLE`を再layoutします。文字、表情画像、次へアイコン、padding、distance、tail length、offset、安全余白のすべてへ同じStage倍率を適用します。倍率は`Stage width / 480`と`Stage height / 360`の小さい方であり、縦横比が異なるStageでも表示を歪ませません。`TEXT_ACTOR`も同じ規則を使います。
+
 Stage端では、拡大後のBubble全体を画面内へ収めるクランプが優先されるため、指定距離を保てない場合があります。背景相対の`HEADER_LIKE`／`CENTER`／`FOOTER_LIKE`では、これらのActor相対設定を使用しません。
 
 ### 幅・自動改行・禁則処理

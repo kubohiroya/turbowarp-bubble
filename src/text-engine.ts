@@ -14,6 +14,7 @@ export interface BubbleTextTarget {
 }
 
 export interface BubbleTextActorInput {
+  readonly scaleToStage?: boolean;
   readonly styleName: string;
   readonly target: BubbleTextTarget;
   readonly text: string;
@@ -50,6 +51,7 @@ interface NormalizedTextStyle {
 }
 
 interface TextActorState {
+  readonly scaleToStage: boolean;
   readonly skinId: number;
   readonly styleName: string;
   readonly text: string;
@@ -278,11 +280,16 @@ export function createBubbleTextEngine(
     target: BubbleTextTarget,
     text: string,
     styleName: string,
+    scaleToStage: boolean,
   ): void => {
     const style = styles.get(styleName);
     if (!style) throw engineError(`Text style is not defined: ${styleName}`);
     const skinId = runtime.renderer.createSVGSkin(
-      renderTextActorSvg(text, style, stageScale(runtime.renderer)),
+      renderTextActorSvg(
+        text,
+        style,
+        scaleToStage ? stageScale(runtime.renderer) : 1,
+      ),
     );
     if (!Number.isInteger(skinId) || skinId < 0) {
       throw engineError("TurboWarp did not create an SVG text skin.");
@@ -294,7 +301,7 @@ export function createBubbleTextEngine(
       throw error;
     }
     const previous = actors.get(target);
-    actors.set(target, { skinId, styleName, text });
+    actors.set(target, { scaleToStage, skinId, styleName, text });
     if (previous && previous.skinId !== skinId) {
       runtime.renderer.destroySkin(previous.skinId);
     }
@@ -303,7 +310,7 @@ export function createBubbleTextEngine(
   const rerender = (): void => {
     if (disposed) return;
     for (const [target, state] of [...actors]) {
-      apply(target, state.text, state.styleName);
+      apply(target, state.text, state.styleName, state.scaleToStage);
     }
   };
   runtime.on?.("STAGE_SIZE_CHANGED", rerender);
@@ -315,7 +322,7 @@ export function createBubbleTextEngine(
       styles.set(style.name, style);
       for (const [target, state] of [...actors]) {
         if (state.styleName === style.name)
-          apply(target, state.text, style.name);
+          apply(target, state.text, style.name, state.scaleToStage);
       }
     },
     setText(input: BubbleTextActorInput): void {
@@ -327,7 +334,18 @@ export function createBubbleTextEngine(
       const styleName = requireName(input.styleName, "Text style name");
       if (typeof input.text !== "string")
         throw engineError("Text must be a string.");
-      apply(target, input.text.replace(/\\r\\n|\\n|\\r/gu, "\n"), styleName);
+      if (
+        input.scaleToStage !== undefined &&
+        typeof input.scaleToStage !== "boolean"
+      ) {
+        throw engineError("Text scaleToStage must be a boolean.");
+      }
+      apply(
+        target,
+        input.text.replace(/\\r\\n|\\n|\\r/gu, "\n"),
+        styleName,
+        input.scaleToStage !== false,
+      );
     },
     releaseTarget(value: BubbleTextTarget): void {
       ensureActive();

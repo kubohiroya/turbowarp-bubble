@@ -79,6 +79,7 @@ function createRuntime(
   const createdSvgSkins: string[] = [];
   const visibility = new Map<number, boolean>();
   const positions = new Map<number, [number, number]>();
+  const stageSize: [number, number] = [480, 360];
   const renderer: TurboWarpBubbleRenderer = {
     createSVGSkin: vi.fn((svg) => {
       const skinId = nextSvgSkin;
@@ -105,7 +106,7 @@ function createRuntime(
       const skinId = drawableSkins.get(id);
       return skinId === undefined ? [1, 1] : (skinSizes.get(skinId) ?? [1, 1]);
     }),
-    getNativeSize: vi.fn(() => [480, 360]),
+    getNativeSize: vi.fn(() => [...stageSize]),
     updateDrawablePosition: vi.fn((id, position) => {
       positions.set(id, position);
     }),
@@ -186,6 +187,10 @@ function createRuntime(
     renderer,
     runtime,
     runtimeExpression,
+    setStageSize(width: number, height: number): void {
+      stageSize[0] = width;
+      stageSize[1] = height;
+    },
     visibility,
   };
 }
@@ -423,6 +428,85 @@ describe("Bubble extension", () => {
     expect(harness.positions.get(textDrawable)?.[1]).toBe(-12);
   });
 
+  it("keeps POP_OUT_BUBBLE appearance proportional after a Stage resize", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = {
+      ...actor(),
+      x: 0,
+      y: 0,
+      getBoundsForBubble: () => ({ bottom: 0, left: 0, right: 0, top: 0 }),
+    };
+    extension.defineBubbleStyle({ STYLE: "responsive", TEXT_STYLE: "default" });
+    extension.setBubblePlacement({ STYLE: "responsive", PLACEMENT: "right" });
+    extension.setBubbleDistance({ STYLE: "responsive", DISTANCE: 10 });
+    extension.setBubbleTailLength({ STYLE: "responsive", LENGTH: 20 });
+    extension.setPortraitBase({ STYLE: "responsive", ASSET: "Face" });
+    extension.setAdvanceFrames({
+      STYLE: "responsive",
+      ASSETS: "Next1, Next2",
+      SECONDS: 0.2,
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "responsive", STYLE: "responsive" },
+      { target },
+    );
+
+    const [bodyDrawable, portraitDrawable, textDrawable, indicatorDrawable] =
+      harness.created;
+    const initialTextPosition = harness.positions.get(textDrawable!);
+    const initialBodySvg = harness.createdSvgSkins
+      .filter((svg) => svg.includes('data-bubble-renderer="canonical"'))
+      .at(-1)!;
+    const initialBodyWidth = Number(
+      initialBodySvg.match(/\bwidth="([0-9.]+)"/u)?.[1],
+    );
+
+    harness.setStageSize(960, 720);
+    harness.emit("STAGE_SIZE_CHANGED");
+
+    const resizedTextPosition = harness.positions.get(textDrawable!);
+    const resizedBodySvg = harness.createdSvgSkins
+      .filter((svg) => svg.includes('data-bubble-renderer="canonical"'))
+      .at(-1)!;
+    const resizedTextSvg = harness.createdSvgSkins
+      .filter((svg) => svg.includes('data-bubble-presentation="TEXT_ACTOR"'))
+      .at(-1)!;
+    const resizedBodyWidth = Number(
+      resizedBodySvg.match(/\bwidth="([0-9.]+)"/u)?.[1],
+    );
+    expect(harness.renderer.updateDrawableScale).toHaveBeenCalledWith(
+      portraitDrawable,
+      [200, 200],
+    );
+    expect(harness.renderer.updateDrawableScale).toHaveBeenCalledWith(
+      textDrawable,
+      [200, 200],
+    );
+    expect(harness.renderer.updateDrawableScale).toHaveBeenCalledWith(
+      indicatorDrawable,
+      [200, 200],
+    );
+    expect(resizedBodyWidth).toBeCloseTo(initialBodyWidth * 2);
+    expect(resizedTextSvg).toContain('font-size="14"');
+    expect(resizedTextPosition?.[0]).toBeCloseTo(
+      (initialTextPosition?.[0] ?? 0) * 2,
+    );
+    expect(resizedTextPosition?.[1]).toBeCloseTo(
+      (initialTextPosition?.[1] ?? 0) * 2,
+    );
+
+    await extension.releaseAll();
+    const scaleCallCount = vi.mocked(harness.renderer.updateDrawableScale).mock
+      .calls.length;
+    harness.emit("STAGE_SIZE_CHANGED");
+    expect(harness.renderer.updateDrawableScale).toHaveBeenCalledTimes(
+      scaleCallCount,
+    );
+    expect(harness.destroyed).toContain(bodyDrawable);
+  });
+
   it("builds text styles and renders TEXT_ACTOR on the actor drawable", async () => {
     const harness = createRuntime();
     const extension = new BubbleExtension(harness.runtime);
@@ -596,6 +680,10 @@ describe("Bubble extension", () => {
     expect(harness.createdSvgSkins.at(-1)).not.toContain(
       'data-boolean-operation="union"',
     );
+
+    harness.setStageSize(960, 720);
+    harness.emit("STAGE_SIZE_CHANGED");
+    expect(harness.positions.get(drawableId)).toEqual([0, 288]);
   });
 
   it("keeps text visible without creating a visible body for NO_BUBBLE", async () => {

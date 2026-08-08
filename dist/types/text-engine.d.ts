@@ -11,6 +11,7 @@ export interface BubbleTextTarget {
     readonly drawableID: number;
 }
 export interface BubbleTextActorInput {
+    readonly scaleToStage?: boolean;
     readonly styleName: string;
     readonly target: BubbleTextTarget;
     readonly text: string;
