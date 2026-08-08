@@ -991,6 +991,18 @@
   //#endregion
   //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/index.js
   var { AK, AL, AP, AS, B2, BA, BB, BK, CB, CL, CM, CP, CR, EB, EM, EX, GL, H2, H3, HH, HL, HY, ID, IN, IS, JL, JT, JV, LF, NU, OP, NL, NS, PO, PR, RI, SP, SY, QU, VF, VI, WJ, ZW, ZWJ } = names$1;
+  Object.freeze([
+    "NORMAL",
+    "THINKING",
+    "DREAMING",
+    "YELLING",
+    "OFF_PANEL",
+    "WAVY",
+    "WHISPERING",
+    "ANNOUNCEMENT",
+    "NARRATION",
+    "NO_BUBBLE"
+  ]);
   //#endregion
   //#region src/composition.ts
   var BubbleCompositionError = class extends Error {
