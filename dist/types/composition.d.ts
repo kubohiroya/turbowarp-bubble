@@ -1,9 +1,12 @@
 import type { AssetManagerComposition, AssetManagerCompositionTarget } from "@kubohiroya/turbowarp-asset-manager/composition";
 import type { SvgTextComposition, SvgTextTarget } from "@kubohiroya/turbowarp-svg-text/composition";
 import { type BubblePlacement, type BubblePlacementInput } from "./placement.js";
+import { type BubbleOffset, type BubbleOffsetInput } from "./actor-transform.js";
+import { type BubbleVisualStyle } from "./bubble-svg.js";
 export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type LineBreakProvider, type TextWidthMeasurer, type WrappedTextLayout, type WrappedTextLine, type WrapTextInput, } from "./text-layout.js";
 export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, defaultBubblePlacementInput, normalizeBubblePlacement, type BubbleActorPlacement, type BubbleBackgroundPlacement, type BubbleBackgroundRegion, type BubbleDirectionAlias, type BubbleDirectionName, type BubblePlacement, type BubblePlacementInput, } from "./placement.js";
-export { bubbleVisualStyles, renderBubbleSvg, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
+export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
+export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
 export type BubbleKind = "say" | "think";
 export type BubblePhase = "idle" | "speaking" | "waiting";
 export type BubbleLayer = "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";
@@ -20,6 +23,10 @@ export interface BubbleStyleInput {
     readonly name: string;
     readonly textStyle: string;
     readonly placement?: BubblePlacementInput;
+    readonly distance?: number;
+    readonly tailLength?: number;
+    readonly offset?: BubbleOffsetInput;
+    readonly visualStyle?: BubbleVisualStyle;
     readonly portrait?: BubblePortraitInput;
     readonly advanceIndicator?: BubbleFrameAnimationInput;
 }
@@ -36,6 +43,10 @@ export interface BubbleStyle {
     readonly name: string;
     readonly textStyle: string;
     readonly placement: BubblePlacement;
+    readonly distance: number;
+    readonly tailLength: number;
+    readonly offset: BubbleOffset;
+    readonly visualStyle: BubbleVisualStyle;
     readonly portrait?: BubblePortrait;
     readonly advanceIndicator?: BubbleFrameAnimation;
 }

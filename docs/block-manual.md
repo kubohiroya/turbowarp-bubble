@@ -1,6 +1,6 @@
 # TurboWarp Bubble ブロック利用マニュアル
 
-このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
+このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
 
 ![Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に実行するブロック例](./assets/block-quick-start.svg)
 
@@ -76,6 +76,10 @@ SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていま�
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
 set bubble placement [up-right] for bubble style [hero-dialogue]
+set bubble distance [12] for bubble style [hero-dialogue]
+set bubble visual style [NORMAL] for bubble style [hero-dialogue]
+set bubble tail length [18] for bubble style [hero-dialogue]
+set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 ```
 
 ### Actor相対と背景相対のplacement
@@ -84,7 +88,7 @@ set bubble placement [up-right] for bubble style [hero-dialogue]
 
 Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。三角形tailの基部2点は実際の本体border上にあり、本体polygonとのJSClipper union後の単一pathを描くため、接合部に内部border線は残りません。
 
-背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、図専用の近似図形ではありません。形状rendererのstandalone surface接続は後続実装です。
+背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、TurboWarp Editorで本体drawableを生成するrendererと同じです。
 
 Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
 
@@ -107,6 +111,18 @@ left / left-up-left / up-left / up-up-left
 
 背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。将来のBubble body rendererではActorを指すtailを描画しません。
 
+### Actorとの距離、tail、本体の位置・拡大率
+
+![Actor相対のdistance、tail length、offset、scaleを実際のBubble SVGで比較する図](./assets/actor-transform-guide.svg)
+
+- `distance`（既定`12`）はActor boundsからtail先端までの距離です。Actor boundsとは、描画済みActorをStage座標で囲むAABB（上下左右のbounding box）です。
+- `tail length`（既定`18`）は通常位置におけるBubble borderからtail先端までの基準長です。
+- `offset x/y/scale`（既定`[0, 0, 100]`）は、xが右正、yが上正、scaleが百分率です。`[10, -10, 120]`なら、本体を右10・下10へ補正し、120%にします。
+
+scaleは外形だけでなく、SVG Textの文字、表情ベース・目パチ・口パク、次へアイコン、内部余白へ一体で適用されるため、表示上のフォントサイズも同じ比率で変わります。scaleだけを変更すると、本体中心を拡大半径分だけActorから離してActor側の間隔を維持します。x/y offsetはその後に加算し、tail先端を固定したまま本体borderとのunionを再生成するため、offset後のtail実長は基準値から変化します。
+
+Stage端では、拡大後のBubble全体を画面内へ収めるクランプが優先されるため、指定距離を保てない場合があります。背景相対の`HEADER_LIKE`／`CENTER`／`FOOTER_LIKE`では、これらのActor相対設定を使用しません。
+
 ### 幅・自動改行・禁則処理
 
 ![maxWidthの違いによる自動改行と、日本語禁則処理の例](./assets/width-linebreak-guide.svg)
@@ -117,7 +133,15 @@ left / left-up-left / up-left / up-up-left
 
 ![10種類のBubble visual styleを同じSVG rendererで比較する図](./assets/bubble-style-gallery.svg)
 
-形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。図はBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は[platener/jsclipper](https://github.com/platener/jsclipper)による本体との和集合です。`THINKING`／`DREAMING`は丸trailのためunion対象外です。現段階では形状renderer基盤の仕様例であり、styleを選ぶblock／APIとstandalone surfaceへの接続は後続実装です。
+形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。次のblockでBubble styleごとに選択します。
+
+```text
+set bubble visual style [YELLING] for bubble style [hero-dialogue]
+```
+
+図とTurboWarp Editorの本体drawableはBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は[platener/jsclipper](https://github.com/platener/jsclipper)による本体との和集合です。`THINKING`／`DREAMING`は丸trailのためunion対象外です。Actor相対ではActorを向くtailを生成し、背景相対ではtailを付けません。`NO_BUBBLE`では本体drawableを非表示にして文字・表情などだけを表示します。
+
+visual styleを省略した場合は`NORMAL`です。本体drawableは文字・portraitより先に生成して背面へ置きます。`close this bubble`、対象sprite／cloneの停止、runtime破棄時には、本体drawableとBubbleが所有するSVG skinも解放します。
 
 `NEGATIVE`はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。
 

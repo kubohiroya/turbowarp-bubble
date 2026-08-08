@@ -7,7 +7,28 @@
 (function (Scratch) {
   'use strict';
 
+  //#region \0rolldown/runtime.js
+  var __create = Object.create;
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __getProtoOf = Object.getPrototypeOf;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") for (var keys = __getOwnPropNames(from), i = 0, n = keys.length, key; i < n; i++) {
+      key = keys[i];
+      if (!__hasOwnProp.call(to, key) && key !== except) __defProp(to, key, {
+        get: ((k) => from[k]).bind(null, key),
+        enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable
+      });
+    }
+    return to;
+  };
+  var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(isNodeMode || !mod || !mod.__esModule || !__hasOwnProp.call(mod, "default") ? __defProp(target, "default", {
+    value: mod,
+    enumerable: true
+  }) : target, mod));
   //#endregion
   //#region src/config.ts
   var extensionConfig = {
@@ -64,6 +85,79 @@
           "ASSET": {
             "type": "STRING",
             "defaultValue": "HeroFace"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleDistance",
+        "blockType": "COMMAND",
+        "text": "set bubble distance [DISTANCE] for bubble style [STYLE]",
+        "description": "Sets the distance from the actor bounds to the tail tip for actor-relative placement.",
+        "arguments": {
+          "DISTANCE": {
+            "type": "NUMBER",
+            "defaultValue": 12
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleVisualStyle",
+        "blockType": "COMMAND",
+        "text": "set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]",
+        "description": "Sets the SVG body shape used by this bubble style.",
+        "arguments": {
+          "VISUAL_STYLE": {
+            "type": "STRING",
+            "defaultValue": "NORMAL",
+            "menu": "visualStyle"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleTailLength",
+        "blockType": "COMMAND",
+        "text": "set bubble tail length [LENGTH] for bubble style [STYLE]",
+        "description": "Sets the nominal length from the bubble border to the tail tip for actor-relative placement.",
+        "arguments": {
+          "LENGTH": {
+            "type": "NUMBER",
+            "defaultValue": 18
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleOffset",
+        "blockType": "COMMAND",
+        "text": "set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]",
+        "description": "Offsets and scales the bubble body while keeping scale-only actor distance constant.",
+        "arguments": {
+          "X": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "Y": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "SCALE": {
+            "type": "NUMBER",
+            "defaultValue": 100
           },
           "STYLE": {
             "type": "STRING",
@@ -190,6 +284,21 @@
       }
     ],
     menus: {
+      "visualStyle": {
+        "acceptReporters": true,
+        "items": [
+          "NORMAL",
+          "THINKING",
+          "DREAMING",
+          "YELLING",
+          "OFF_PANEL",
+          "WAVY",
+          "WHISPERING",
+          "ANNOUNCEMENT",
+          "NARRATION",
+          "NO_BUBBLE"
+        ]
+      },
       "placement": {
         "acceptReporters": true,
         "items": [
@@ -383,616 +492,51 @@
     });
   }
   //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/typeof.js
-  function _typeof(o) {
-    "@babel/helpers - typeof";
-    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
-      return typeof o;
-    } : function(o) {
-      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
-    }, _typeof(o);
-  }
-  //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPrimitive.js
-  function toPrimitive(t, r) {
-    if ("object" != _typeof(t) || !t) return t;
-    var e = t[Symbol.toPrimitive];
-    if (void 0 !== e) {
-      var i = e.call(t, r || "default");
-      if ("object" != _typeof(i)) return i;
-      throw new TypeError("@@toPrimitive must return a primitive value.");
-    }
-    return ("string" === r ? String : Number)(t);
-  }
-  //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPropertyKey.js
-  function toPropertyKey(t) {
-    var i = toPrimitive(t, "string");
-    return "symbol" == _typeof(i) ? i : i + "";
-  }
-  //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/defineProperty.js
-  function _defineProperty(e, r, t) {
-    return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
-      value: t,
-      enumerable: !0,
-      configurable: !0,
-      writable: !0
-    }) : e[r] = t, e;
-  }
-  //#endregion
-  //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
-  var LSCP_INDEX_2_OFFSET = 2048;
-  var INDEX_1_OFFSET = 2112;
-  //#endregion
-  //#region node_modules/.pnpm/fflate@0.8.3/node_modules/fflate/esm/browser.js
-  var u8 = Uint8Array;
-  var u16 = Uint16Array;
-  var i32 = Int32Array;
-  var fleb = new u8([
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    1,
-    1,
-    2,
-    2,
-    2,
-    2,
-    3,
-    3,
-    3,
-    3,
-    4,
-    4,
-    4,
-    4,
-    5,
-    5,
-    5,
-    5,
-    0,
-    0,
-    0,
-    0
-  ]);
-  var fdeb = new u8([
-    0,
-    0,
-    0,
-    0,
-    1,
-    1,
-    2,
-    2,
-    3,
-    3,
-    4,
-    4,
-    5,
-    5,
-    6,
-    6,
-    7,
-    7,
-    8,
-    8,
-    9,
-    9,
-    10,
-    10,
-    11,
-    11,
-    12,
-    12,
-    13,
-    13,
-    0,
-    0
-  ]);
-  var clim = new u8([
-    16,
-    17,
-    18,
-    0,
-    8,
-    7,
-    9,
-    6,
-    10,
-    5,
-    11,
-    4,
-    12,
-    3,
-    13,
-    2,
-    14,
-    1,
-    15
-  ]);
-  var freb = function(eb, start) {
-    var b = new u16(31);
-    for (var i = 0; i < 31; ++i) b[i] = start += 1 << eb[i - 1];
-    var r = new i32(b[30]);
-    for (var i = 1; i < 30; ++i) for (var j = b[i]; j < b[i + 1]; ++j) r[j] = j - b[i] << 5 | i;
-    return {
-      b,
-      r
-    };
-  };
-  var _a = freb(fleb, 2);
-  var fl = _a.b;
-  var revfl = _a.r;
-  fl[28] = 258, revfl[258] = 28;
-  var _b = freb(fdeb, 0);
-  var fd = _b.b;
-  _b.r;
-  var rev = new u16(32768);
-  for (var i = 0; i < 32768; ++i) {
-    var x = (i & 43690) >> 1 | (i & 21845) << 1;
-    x = (x & 52428) >> 2 | (x & 13107) << 2;
-    x = (x & 61680) >> 4 | (x & 3855) << 4;
-    rev[i] = ((x & 65280) >> 8 | (x & 255) << 8) >> 1;
-  }
-  var hMap = (function(cd, mb, r) {
-    var s = cd.length;
-    var i = 0;
-    var l = new u16(mb);
-    for (; i < s; ++i) if (cd[i]) ++l[cd[i] - 1];
-    var le = new u16(mb);
-    for (i = 1; i < mb; ++i) le[i] = le[i - 1] + l[i - 1] << 1;
-    var co;
-    if (r) {
-      co = new u16(1 << mb);
-      var rvb = 15 - mb;
-      for (i = 0; i < s; ++i) if (cd[i]) {
-        var sv = i << 4 | cd[i];
-        var r_1 = mb - cd[i];
-        var v = le[cd[i] - 1]++ << r_1;
-        for (var m = v | (1 << r_1) - 1; v <= m; ++v) co[rev[v] >> rvb] = sv;
-      }
-    } else {
-      co = new u16(s);
-      for (i = 0; i < s; ++i) if (cd[i]) co[i] = rev[le[cd[i] - 1]++] >> 15 - cd[i];
-    }
-    return co;
+  //#region src/actor-transform.ts
+  var defaultBubbleOffset = Object.freeze({
+    x: 0,
+    y: 0,
+    scalePercent: 100
   });
-  var flt = new u8(288);
-  for (var i = 0; i < 144; ++i) flt[i] = 8;
-  for (var i = 144; i < 256; ++i) flt[i] = 9;
-  for (var i = 256; i < 280; ++i) flt[i] = 7;
-  for (var i = 280; i < 288; ++i) flt[i] = 8;
-  var fdt = new u8(32);
-  for (var i = 0; i < 32; ++i) fdt[i] = 5;
-  var flrm = /*#__PURE__*/ hMap(flt, 9, 1);
-  var fdrm = /*#__PURE__*/ hMap(fdt, 5, 1);
-  var max = function(a) {
-    var m = a[0];
-    for (var i = 1; i < a.length; ++i) if (a[i] > m) m = a[i];
-    return m;
-  };
-  var bits = function(d, p, m) {
-    var o = p / 8 | 0;
-    return (d[o] | d[o + 1] << 8) >> (p & 7) & m;
-  };
-  var bits16 = function(d, p) {
-    var o = p / 8 | 0;
-    return (d[o] | d[o + 1] << 8 | d[o + 2] << 16) >> (p & 7);
-  };
-  var shft = function(p) {
-    return (p + 7) / 8 | 0;
-  };
-  var slc = function(v, s, e) {
-    if (s == null || s < 0) s = 0;
-    if (e == null || e > v.length) e = v.length;
-    return new u8(v.subarray(s, e));
-  };
-  var ec = [
-    "unexpected EOF",
-    "invalid block type",
-    "invalid length/literal",
-    "invalid distance",
-    "stream finished",
-    "no stream handler",
-    ,
-    "no callback",
-    "invalid UTF-8 data",
-    "extra field too long",
-    "date not in range 1980-2099",
-    "filename too long",
-    "stream finishing",
-    "invalid zip data"
-  ];
-  var err = function(ind, msg, nt) {
-    var e = new Error(msg || ec[ind]);
-    e.code = ind;
-    if (Error.captureStackTrace) Error.captureStackTrace(e, err);
-    if (!nt) throw e;
-    return e;
-  };
-  var inflt = function(dat, st, buf, dict) {
-    var sl = dat.length, dl = dict ? dict.length : 0;
-    if (!sl || st.f && !st.l) return buf || new u8(0);
-    var noBuf = !buf;
-    var resize = noBuf || st.i != 2;
-    var noSt = st.i;
-    if (noBuf) buf = new u8(sl * 3);
-    var cbuf = function(l) {
-      var bl = buf.length;
-      if (l > bl) {
-        var nbuf = new u8(Math.max(bl * 2, l));
-        nbuf.set(buf);
-        buf = nbuf;
-      }
-    };
-    var final = st.f || 0, pos = st.p || 0, bt = st.b || 0, lm = st.l, dm = st.d, lbt = st.m, dbt = st.n;
-    var tbts = sl * 8;
-    do {
-      if (!lm) {
-        final = bits(dat, pos, 1);
-        var type = bits(dat, pos + 1, 3);
-        pos += 3;
-        if (!type) {
-          var s = shft(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t = s + l;
-          if (t > sl) {
-            if (noSt) err(0);
-            break;
-          }
-          if (resize) cbuf(bt + l);
-          buf.set(dat.subarray(s, t), bt);
-          st.b = bt += l, st.p = pos = t * 8, st.f = final;
-          continue;
-        } else if (type == 1) lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
-        else if (type == 2) {
-          var hLit = bits(dat, pos, 31) + 257, hcLen = bits(dat, pos + 10, 15) + 4;
-          var tl = hLit + bits(dat, pos + 5, 31) + 1;
-          pos += 14;
-          var ldt = new u8(tl);
-          var clt = new u8(19);
-          for (var i = 0; i < hcLen; ++i) clt[clim[i]] = bits(dat, pos + i * 3, 7);
-          pos += hcLen * 3;
-          var clb = max(clt), clbmsk = (1 << clb) - 1;
-          var clm = hMap(clt, clb, 1);
-          for (var i = 0; i < tl;) {
-            var r = clm[bits(dat, pos, clbmsk)];
-            pos += r & 15;
-            var s = r >> 4;
-            if (s < 16) ldt[i++] = s;
-            else {
-              var c = 0, n = 0;
-              if (s == 16) n = 3 + bits(dat, pos, 3), pos += 2, c = ldt[i - 1];
-              else if (s == 17) n = 3 + bits(dat, pos, 7), pos += 3;
-              else if (s == 18) n = 11 + bits(dat, pos, 127), pos += 7;
-              while (n--) ldt[i++] = c;
-            }
-          }
-          var lt = ldt.subarray(0, hLit), dt = ldt.subarray(hLit);
-          lbt = max(lt);
-          dbt = max(dt);
-          lm = hMap(lt, lbt, 1);
-          dm = hMap(dt, dbt, 1);
-        } else err(1);
-        if (pos > tbts) {
-          if (noSt) err(0);
-          break;
-        }
-      }
-      if (resize) cbuf(bt + 131072);
-      var lms = (1 << lbt) - 1, dms = (1 << dbt) - 1;
-      var lpos = pos;
-      for (;; lpos = pos) {
-        var c = lm[bits16(dat, pos) & lms], sym = c >> 4;
-        pos += c & 15;
-        if (pos > tbts) {
-          if (noSt) err(0);
-          break;
-        }
-        if (!c) err(2);
-        if (sym < 256) buf[bt++] = sym;
-        else if (sym == 256) {
-          lpos = pos, lm = null;
-          break;
-        } else {
-          var add = sym - 254;
-          if (sym > 264) {
-            var i = sym - 257, b = fleb[i];
-            add = bits(dat, pos, (1 << b) - 1) + fl[i];
-            pos += b;
-          }
-          var d = dm[bits16(dat, pos) & dms], dsym = d >> 4;
-          if (!d) err(3);
-          pos += d & 15;
-          var dt = fd[dsym];
-          if (dsym > 3) {
-            var b = fdeb[dsym];
-            dt += bits16(dat, pos) & (1 << b) - 1, pos += b;
-          }
-          if (pos > tbts) {
-            if (noSt) err(0);
-            break;
-          }
-          if (resize) cbuf(bt + 131072);
-          var end = bt + add;
-          if (bt < dt) {
-            var shift = dl - dt, dend = Math.min(dt, end);
-            if (shift + bt < 0) err(3);
-            for (; bt < dend; ++bt) buf[bt] = dict[shift + bt];
-          }
-          for (; bt < end; ++bt) buf[bt] = buf[bt - dt];
-        }
-      }
-      st.l = lm, st.p = lpos, st.b = bt, st.f = final;
-      if (lm) final = 1, st.m = lbt, st.d = dm, st.n = dbt;
-    } while (!final);
-    return bt != buf.length && noBuf ? slc(buf, 0, bt) : buf.subarray(0, bt);
-  };
-  var et = /*#__PURE__*/ new u8(0);
-  var gzs = function(d) {
-    if (d[0] != 31 || d[1] != 139 || d[2] != 8) err(6, "invalid gzip data");
-    var flg = d[3];
-    var st = 10;
-    if (flg & 4) st += (d[10] | d[11] << 8) + 2;
-    for (var zs = (flg >> 3 & 1) + (flg >> 4 & 1); zs > 0; zs -= !d[st++]);
-    return st + (flg & 2);
-  };
-  var gzl = function(d) {
-    var l = d.length;
-    return (d[l - 4] | d[l - 3] << 8 | d[l - 2] << 16 | d[l - 1] << 24) >>> 0;
-  };
-  function gunzipSync(data, opts) {
-    var st = gzs(data);
-    if (st + 8 > data.length) err(6, "invalid gzip data");
-    return inflt(data.subarray(st, -8), { i: 2 }, opts && opts.out || new u8(gzl(data)), opts && opts.dictionary);
+  function requireFinite(value, label) {
+    if (typeof value !== "number" || !Number.isFinite(value)) throw new TypeError(`${label} must be a finite number.`);
+    return value;
   }
-  var td = typeof TextDecoder != "undefined" && /*#__PURE__*/ new TextDecoder();
-  try {
-    td.decode(et, { stream: true });
-  } catch (e) {}
-  //#endregion
-  //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/swap.js
-  var isBigEndian = new Uint8Array(new Uint32Array([305419896]).buffer)[0] === 18;
-  /**
-  * Exported for testing
-  * @param {Uint8Array} array
-  * @private
-  */
-  function swap32(array) {
-    const len = array.length;
-    for (let i = 0; i < len; i += 4) [array[i], array[i + 1], array[i + 2], array[i + 3]] = [
-      array[i + 3],
-      array[i + 2],
-      array[i + 1],
-      array[i]
-    ];
+  function normalizeBubbleDistance(value) {
+    const distance = requireFinite(value, "Bubble distance");
+    if (distance < 0) throw new TypeError("Bubble distance must be zero or greater.");
+    return distance;
   }
-  /**
-  * No-op.
-  *
-  * @param {Uint8Array} _array Ingored
-  * @private
-  */
-  function noOp(_array) {}
-  var swap32LE = isBigEndian ? swap32 : noOp;
-  //#endregion
-  //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/index.js
-  var DECODER = new TextDecoder();
-  /**
-  * @typedef {object} TrieValues
-  * @prop {Int32Array} data
-  * @prop {number} highStart
-  * @prop {number} errorValue
-  * @prop {string[]} [values]
-  */
-  var UnicodeTrie = class UnicodeTrie {
-    /**
-    * Creates a trie, either from compressed data or pre-parsed values.
-    *
-    * @param {Uint8Array|TrieValues} data
-    */
-    constructor(data) {
-      if (data instanceof Uint8Array) {
-        let uncompressedLength = 0;
-        const view = new DataView(data.buffer);
-        this.highStart = view.getUint32(0, true);
-        this.errorValue = view.getUint32(4, true);
-        uncompressedLength = view.getUint32(8, true);
-        if (uncompressedLength !== 4294967295) throw new Error("Trie created with old version of @cto.af/unicode-trie.");
-        uncompressedLength = view.getUint32(12, true);
-        if (16 + uncompressedLength > data.byteLength) throw new RangeError("Invalid input length");
-        const values = data.subarray(16 + uncompressedLength);
-        /**
-        * @type{string[]}
-        */
-        this.values = values.length ? JSON.parse(DECODER.decode(gunzipSync(values))) : [];
-        data = gunzipSync(data.subarray(16, 16 + uncompressedLength));
-        swap32LE(data);
-        /**
-        * @type {Int32Array}
-        */
-        this.data = new Int32Array(data.buffer);
-      } else ({data: this.data, highStart: this.highStart, errorValue: this.errorValue, values: this.values = []} = data);
-    }
-    /**
-    * Creates a trie from a base64-encoded string.
-    * @param {string} base64 The base64-encoded trie to initialize.
-    * @returns {UnicodeTrie} The decoded Unicode trie.
-    */
-    static fromBase64(base64) {
-      return new UnicodeTrie(new Uint8Array(atob(base64).split("").map((c) => c.charCodeAt(0))));
-    }
-    /**
-    * Get the value associated with a codepoint, or the default value, or the
-    * error value if codePoint is out of range.
-    *
-    * @param {number} codePoint
-    * @returns {number}
-    */
-    get(codePoint) {
-      let val = this.errorValue;
-      if (codePoint < 0 || codePoint > 1114111) val = this.errorValue;
-      else if (codePoint < 55296 || codePoint > 56319 && codePoint <= 65535) {
-        const index = (this.data[codePoint >> 5] << 2) + (codePoint & 31);
-        val = this.data[index];
-      } else if (codePoint <= 65535) {
-        const index = (this.data[LSCP_INDEX_2_OFFSET + (codePoint - 55296 >> 5)] << 2) + (codePoint & 31);
-        val = this.data[index];
-      } else if (codePoint < this.highStart) {
-        let index = this.data[INDEX_1_OFFSET - 32 + (codePoint >> 11)];
-        index = this.data[index + (codePoint >> 5 & 63)];
-        index = (index << 2) + (codePoint & 31);
-        val = this.data[index];
-      } else val = this.data[this.data.length - 4];
-      return val;
-    }
-    /**
-    * Get the value associated with the codePoint, stringified if possible.
-    *
-    * @param {number} codePoint
-    * @returns {number|string}
-    */
-    getString(codePoint) {
-      const val = this.get(codePoint);
-      return this.values[val] ?? val;
-    }
-  };
-  //#endregion
-  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/LineBreak.js
-  var LineBreak = UnicodeTrie.fromBase64(`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
-     v6Y9S0rqHMbaN8j3flUbVIdpnonTleaP+JsiapunntfVOer7WUdXNw+jCyvNYxE6P9Ix+7Mu
-     TCa3uM3mb9JUmfLe1q59N19yulXnD5dfU/yRyn/8vR2Cr9H8JB/btsm29undfCw/56tbVmVX
-     d53nXtV0+Iw4rjNTk8udOvdtwl13j1B1YuT5b04HMpsW/7HCr8t/dF0Of846J3W9HPtdNnUf
-     x7UvpdsiV1mJjawiFLWODEm73G1mLF1J2/GB7X7UtvqhJeeTfPc4T7mPtLpuWqWJ66malIZV
-     Oq6uerCp9Oh1dlzCzrpIudKf92/hsZbP+hIbHa0Q/fQYe/v4lmd5T5s6veq6vYViyzJT69KV
-     2t/FlN451zKFrm3i9U0264J0fQOX9U5Vfe6S+xPRL8VaHJe8rK69qpNJqe92jX81XX3X2fr8
-     XPaHsq1PdPWWa12Sag1GaXmwT98pZ/2vy8+h7e8gsHdGcrvn+ou5l5j6K7GfmPobXJiY4xLb
-     d9C3GKnM2H7Xkd7j+z1I03X5ftWxjd9KwDLy0mNPV/fUtSCh4wyeF5DXS8nzWnSd9Jqrfrye
-     UWfa3NP1O131E9TnTDItvs/rn9Qwm9y3lS/yuiSdDK2J32LmH61l4/l7DpMcFl0cy/HpKvNU
-     5Z6yuzmgsPj4PZX78jydfMzx1BFk7Gr61smlU9yXf7w+UL7Pa5Fc9pe3lTntI+YJYvTvQ9Y9
-     x9gbNOU66lxyYJPsuqPtBRpjvW7uX6n9Y3LpfMUe8+fYy6sJ+99x2QyVR1TJrEvlz9Lxmzq8
-     Kct+jO8mpnIrV35pYv3rso+6j2w1RzkxpWeOslpV38Xey7lJ7XVVnDdFVyDn2o2m7A1s871r
-     U3+hbp661LfjbL6l6vL9O5v5uiqdcd/9mG3sVrlrktHl3m+5Ln46Qply/f51rDq2afV3U92P
-     9Z2CVPu71+kExf4uhm265Mpfcrjl9S+p/WGjb9FEeYmrHlhsXTLb772b2v3U8bKvoAk6VaQ3
-     ZdqvWf2FytNd9g1W/c57VNf9+JuMuXT+ZJ1tnZ6T7U+un1PXpSm/BxKiZ+b6nUC5P+bybdoU
-     3wWR9zP1WcOrrtc06dG7rA9gf6lzCCVlQKl1cKvW16r7MjdxPqHue3m55l5M6yRy1q8p6i+d
-     GzbfR5Dtqeeu1D2rulVlp+67ulXfzlDPqS/AP52us+kb5aoetdp226wrqOtHuvxc9InlsMrX
-     5HCkgvtULt80VtPB5tvHlLbU51R1leQ+nW0ftknjClM7Ktf7Pt9n161FKfULHbeU/P5brO/5
-     8PeveZ2l+s31OpmmizxP5z/VrssvNP7Vb9XbUGr+LWSdWKr4c/lemct7U/1KfJcs5nfiXNcz
-     Va3lCf2OXi75c+gaSd/4SyH/pmds+8G2fWCbvmwMeZapf6v2g9hU16vF7l/65K8cc6uh7bIs
-     W8jdLyyxp4BPPOru6+Qx8rd8beIyhew8xjoMtU8l90dcyldseUOJPpPLevpc7ZnvL8f4oaRO
-     ad34WVeefPYVSdG+27T7vPdESj0VV5leyvXoufQvffKZTpZmGy+27UNKfYCc5dWmj2fbp44Z
-     P6G/WN9X1cl8beoieS7ad7+PGP14nz1ATO1q3Xx2jHnpWO1xR1uPovumYQndrFD9uyrdvpD4
-     b9L8Yaz9wxl5bbVu/XlT9j2X/Rr6Hl7brYPd0V1jM5bOk+84oUn7xpeeH7IhVJ7j25+IrU9s
-     ig+XOi7lGMtGj9pGB903/kuMQVPuORpjv7+c35AvvYYkNO1CviFvU4/HkF+qe2ZTG+VTn1bt
-     fV7y5/PtqNR76oeuy4zlH3n/9ND3qPuxu7xb3cuj7heahiXq4ljrC1R5vm5M39HGFz7yzRLr
-     k1PoMMfcPzeGvDPWPssxw6Rzo8QcXmp3XGSSHX2/Et08k67f5dtmuupKN2FvMpOsKObeDnVx
-     k3ofp1h6VrFIVVdV7T2fYm9013l7k/5rbNlKaBuXso7LLV+K1d67uuWiJ19ShhcjvUP97FsO
-     Q+V7pdfDpy5rtv2qEPkU7XFY0v3Q+Oc8FpqHdHV9Xf415XFbPTPfPk7qNWsufow9vkqlz6v+
-     eA4udH9l3XxtiA5ZyN5XpvxSNzdetRdQlWnKjzbP695Xt9+WTz/bJk5y6tDVlYHUe0Crv9Bv
-     vMf+bnzq79DHenfs/ZD3y4TO7b0S7vPM8Z5yL2mTG1XXKcyMLh5093OzvwbVfzr/1hHDby7u
-     ufhH5z/Vrm1YZPsheUtn2pQh+RnfMmCqy3PN7aSeN0oRtrp8m6oONOXflHVfrnj0ccdU1lVS
-     yYu7Ssjz96ZwxEgz13rX1c3Y+Sp2vJve7eN+zP3nYsojYunAhMq1cs2vM1X9J99+Q2g+d+1z
-     5OznpXJD1zcKcc/U33KN39TzgCnr4lz95Fz1cW79kxT6SDF00UruT5ZDZ8Xl9x83MV0I0CwB
-     AB+LCAC4xcFoAgMdjksWhCAMBO/CelYzJ4gMCqiI4t/n/a9hyk29JN3p5DL7bj7GTQrbKypR
-     dDVVywyhZCz4xkUhnSIj5EExoFoQisIfbICE2WJOoAESSK7wecCscDJSxRXMbBAlfLCyIbTh
-     T8tr5/YikvVFSYq3dURbKo/gf+Q3zBCELycCXW/uB2mPjCb8AAAA`);
-  /**
-  * @type {Record<string, number>}
-  */
-  var names$1 = Object.fromEntries(LineBreak.values.map((v, i) => [v, i]));
-  var { values: values$1 } = LineBreak;
-  var { AI, AL: AL$1, CJ, CM: CM$1, NS: NS$1, SA, SG, SP: SP$1, XX } = names$1;
-  //#endregion
-  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/EastAsianWidth.js
-  var EastAsianWidth = UnicodeTrie.fromBase64(`AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk
-     SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY
-     753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG
-     r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3
-     1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH
-     uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE
-     /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8
-     zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6
-     H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel
-     WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO
-     ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u
-     f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8
-     If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u
-     33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA`);
-  Object.fromEntries(EastAsianWidth.values.map((v, i) => [v, i]));
-  var { values } = EastAsianWidth;
-  //#endregion
-  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/index.js
-  var { AK, AL, AP, AS, B2, BA, BB, BK, CB, CL, CM, CP, CR, EB, EM, EX, GL, H2, H3, HH, HL, HY, ID, IN, IS, JL, JT, JV, LF, NU, OP, NL, NS, PO, PR, RI, SP, SY, QU, VF, VI, WJ, ZW, ZWJ } = names$1;
+  function normalizeBubbleTailLength(value) {
+    const length = requireFinite(value, "Bubble tail length");
+    if (length <= 0) throw new TypeError("Bubble tail length must be greater than zero.");
+    return length;
+  }
+  function normalizeBubbleOffset(value) {
+    if (!Array.isArray(value) || value.length !== 2 && value.length !== 3) throw new TypeError("Bubble offset must be [x, y] or [x, y, scale].");
+    const x = requireFinite(value[0], "Bubble offset x");
+    const y = requireFinite(value[1], "Bubble offset y");
+    const scalePercent = requireFinite(value.length === 3 ? value[2] : 100, "Bubble offset scale");
+    if (scalePercent <= 0) throw new TypeError("Bubble offset scale must be greater than zero.");
+    return Object.freeze({
+      x,
+      y,
+      scalePercent
+    });
+  }
+  function actorRelativeBubbleCenter(input) {
+    const actorCenterX = (input.bounds.left + input.bounds.right) / 2;
+    const actorCenterY = (input.bounds.top + input.bounds.bottom) / 2;
+    const vector = bubbleDirectionVector(input.direction);
+    const gap = input.distance + input.tailLength;
+    const horizontalDistance = vector.x < 0 ? actorCenterX - input.bounds.left + gap + input.bubbleWidth / 2 : input.bounds.right - actorCenterX + gap + input.bubbleWidth / 2;
+    const verticalDistance = vector.y < 0 ? actorCenterY - input.bounds.bottom + gap + input.bubbleHeight / 2 : input.bounds.top - actorCenterY + gap + input.bubbleHeight / 2;
+    const placementScale = Math.min(vector.x === 0 ? Number.POSITIVE_INFINITY : horizontalDistance / Math.abs(vector.x), vector.y === 0 ? Number.POSITIVE_INFINITY : verticalDistance / Math.abs(vector.y));
+    return Object.freeze({
+      x: actorCenterX + vector.x * placementScale + input.offset.x,
+      y: actorCenterY + vector.y * placementScale + input.offset.y
+    });
+  }
   //#endregion
   //#region node_modules/.pnpm/jsclipper@https+++codeload.github.com+platener+jsclipper+tar.gz+56aed19845113e1939d8971c47233054659436b1/node_modules/jsclipper/jsclipper.js
   var require_jsclipper = /* @__PURE__ */ __commonJSMin(((exports, module) => {
@@ -5829,7 +5373,9 @@
       };
     })();
   }));
-  (/* @__PURE__ */ __commonJSMin(((exports, module) => {
+  //#endregion
+  //#region src/bubble-svg.ts
+  var import_jsclipper_adapter = /* @__PURE__ */ __toESM((/* @__PURE__ */ __commonJSMin(((exports, module) => {
     var ClipperLib = require_jsclipper();
     var DEFAULT_SCALE = Math.pow(10, 5);
     function arrayToObjectNotation(arrayOfPoints) {
@@ -6085,8 +5631,32 @@
       Polygon,
       ClipperLib
     };
-  })))();
-  Object.freeze([
+  })))(), 1);
+  var svgDefaultTailLength = 18;
+  var svgDefaultOffset = Object.freeze({
+    x: 0,
+    y: 0,
+    scalePercent: 100
+  });
+  function normalizeSvgTailLength(value) {
+    if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) throw new TypeError("Bubble tail length must be greater than zero.");
+    return value;
+  }
+  function normalizeSvgOffset(value) {
+    if (value.length !== 2 && value.length !== 3) throw new TypeError("Bubble offset must be [x, y] or [x, y, scale].");
+    const [x, y, scalePercent = 100] = value;
+    if (![
+      x,
+      y,
+      scalePercent
+    ].every(Number.isFinite) || scalePercent <= 0) throw new TypeError("Bubble offset values must be finite and scale positive.");
+    return Object.freeze({
+      x,
+      y,
+      scalePercent
+    });
+  }
+  var bubbleVisualStyles = Object.freeze([
     "NORMAL",
     "THINKING",
     "DREAMING",
@@ -6098,6 +5668,997 @@
     "NARRATION",
     "NO_BUBBLE"
   ]);
+  function escapeXml(value) {
+    return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
+  }
+  function requireDimension(value, fallback) {
+    const normalized = value ?? fallback;
+    if (!Number.isFinite(normalized) || normalized <= 0) throw new TypeError("Bubble SVG dimensions must be positive and finite.");
+    return normalized;
+  }
+  function normalizeDirection(value) {
+    if (value === null) return null;
+    const direction = value ?? 180;
+    if (!Number.isFinite(direction)) throw new TypeError("tailDirection must be finite.");
+    return (direction % 360 + 360) % 360;
+  }
+  function roundedRectanglePoints(width, height, radius = 18) {
+    const left = 24;
+    const top = 24;
+    const right = width - 24;
+    const bottom = height - 24;
+    const segmentsPerCorner = 10;
+    return [
+      {
+        centerX: right - radius,
+        centerY: top + radius,
+        start: -90
+      },
+      {
+        centerX: right - radius,
+        centerY: bottom - radius,
+        start: 0
+      },
+      {
+        centerX: left + radius,
+        centerY: bottom - radius,
+        start: 90
+      },
+      {
+        centerX: left + radius,
+        centerY: top + radius,
+        start: 180
+      }
+    ].flatMap(({ centerX, centerY, start }) => Array.from({ length: 11 }, (_, index) => {
+      const radians = (start + index * 90 / segmentsPerCorner) * Math.PI / 180;
+      return {
+        x: centerX + Math.cos(radians) * radius,
+        y: centerY + Math.sin(radians) * radius
+      };
+    }));
+  }
+  function cross(left, right) {
+    return left.x * right.y - left.y * right.x;
+  }
+  function subtract(left, right) {
+    return {
+      x: left.x - right.x,
+      y: left.y - right.y
+    };
+  }
+  function distance(left, right) {
+    return Math.hypot(left.x - right.x, left.y - right.y);
+  }
+  function walkPath(points, startIndex, step, requestedDistance) {
+    let currentIndex = startIndex;
+    let remaining = requestedDistance;
+    while (remaining > 0) {
+      const nextIndex = (currentIndex + step + points.length) % points.length;
+      const current = points[currentIndex];
+      const next = points[nextIndex];
+      if (!current || !next) throw new Error("Bubble border path is invalid.");
+      const segmentLength = distance(current, next);
+      if (remaining <= segmentLength) {
+        const ratio = remaining / segmentLength;
+        return {
+          x: current.x + (next.x - current.x) * ratio,
+          y: current.y + (next.y - current.y) * ratio
+        };
+      }
+      remaining -= segmentLength;
+      currentIndex = nextIndex;
+    }
+    const result = points[currentIndex];
+    if (!result) throw new Error("Bubble border path is empty.");
+    return result;
+  }
+  function tailGeometryForPolygon(body, center, ray, tipDistance, fixedTip) {
+    let selected;
+    for (let edgeIndex = 0; edgeIndex < body.length; edgeIndex += 1) {
+      const edgeStart = body[edgeIndex];
+      const edgeEnd = body[(edgeIndex + 1) % body.length];
+      if (!edgeStart || !edgeEnd) continue;
+      const segment = subtract(edgeEnd, edgeStart);
+      const denominator = cross(ray, segment);
+      if (Math.abs(denominator) < 1e-9) continue;
+      const fromCenter = subtract(edgeStart, center);
+      const rayScale = cross(fromCenter, segment) / denominator;
+      const segmentScale = cross(fromCenter, ray) / denominator;
+      if (rayScale < 0 || segmentScale < -1e-9 || segmentScale > 1 + 1e-9 || selected && rayScale >= selected.rayScale) continue;
+      selected = {
+        edgeIndex,
+        point: {
+          x: center.x + ray.x * rayScale,
+          y: center.y + ray.y * rayScale
+        },
+        rayScale
+      };
+    }
+    if (!selected) throw new Error("Tail ray does not intersect Bubble border.");
+    const borderWithIntersection = [
+      ...body.slice(0, selected.edgeIndex + 1),
+      selected.point,
+      ...body.slice(selected.edgeIndex + 1)
+    ];
+    const intersectionIndex = selected.edgeIndex + 1;
+    return {
+      borderPoint: selected.point,
+      base: [walkPath(borderWithIntersection, intersectionIndex, -1, 9), walkPath(borderWithIntersection, intersectionIndex, 1, 9)],
+      tip: {
+        x: fixedTip?.x ?? center.x + ray.x * (selected.rayScale + tipDistance),
+        y: fixedTip?.y ?? center.y + ray.y * (selected.rayScale + tipDistance)
+      }
+    };
+  }
+  function directionRay(direction) {
+    const radians = direction * Math.PI / 180;
+    return {
+      x: Math.sin(radians),
+      y: -Math.cos(radians)
+    };
+  }
+  function transformPoint(point, center, bodyCenter, scale) {
+    return {
+      x: bodyCenter.x + (point.x - center.x) * scale,
+      y: bodyCenter.y + (point.y - center.y) * scale
+    };
+  }
+  function transformedBodyGeometry(body, width, height, direction, tailLength, offset) {
+    const center = {
+      x: width / 2,
+      y: height / 2
+    };
+    const ray = directionRay(direction);
+    const baseline = tailGeometryForPolygon(body, center, ray, tailLength);
+    const borderRadius = distance(center, baseline.borderPoint);
+    const scale = offset.scalePercent / 100;
+    const bodyCenter = {
+      x: center.x - ray.x * borderRadius * (scale - 1) + offset.x,
+      y: center.y - ray.y * borderRadius * (scale - 1) - offset.y
+    };
+    return {
+      body: body.map((point) => transformPoint(point, center, bodyCenter, scale)),
+      bodyCenter,
+      tip: baseline.tip
+    };
+  }
+  function polygonPath(points) {
+    const first = points[0];
+    if (!first) throw new Error("Bubble polygon is empty.");
+    return `M ${first.x.toFixed(4)} ${first.y.toFixed(4)} ${points.slice(1).map(({ x, y }) => `L ${x.toFixed(4)} ${y.toFixed(4)}`).join(" ")} Z`;
+  }
+  function polygonArea(points) {
+    return Math.abs(points.reduce((area, point, index) => {
+      const next = points[(index + 1) % points.length];
+      if (!next) return area;
+      return area + point.x * next.y - next.x * point.y;
+    }, 0) / 2);
+  }
+  function bodyPath(points, fill, border, extra = "") {
+    return `<path d="${polygonPath(points)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round" ${extra}/>`;
+  }
+  function unionBodyAndTail(body, bodyCenter, tip, fill, border, extra = "") {
+    const tipVector = subtract(tip, bodyCenter);
+    const tipDistance = Math.hypot(tipVector.x, tipVector.y);
+    if (!(tipDistance > 0)) throw new TypeError("Bubble body center and tail tip must differ.");
+    const geometry = tailGeometryForPolygon(body, bodyCenter, {
+      x: tipVector.x / tipDistance,
+      y: tipVector.y / tipDistance
+    }, 0, tip);
+    const toClipperPath = (points) => points.map(({ x, y }) => [x, y]);
+    const solution = import_jsclipper_adapter.default.union([toClipperPath(body)], [[toClipperPath([
+      geometry.base[0],
+      geometry.tip,
+      geometry.base[1]
+    ])]]);
+    if (!solution || solution.length === 0) throw new Error("JSClipper failed to union Bubble body and tail.");
+    const outer = solution.map((path) => path.map(([x, y]) => ({
+      x,
+      y
+    }))).sort((left, right) => polygonArea(right) - polygonArea(left))[0];
+    if (!outer) throw new Error("JSClipper returned an empty Bubble outline.");
+    return `<path d="${polygonPath(outer)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" ${extra}/>`;
+  }
+  function cloudBody(width, height, fill, border) {
+    const y = 24;
+    const right = width - 24;
+    const bottom = height - 24;
+    const midX = width / 2;
+    const midY = height / 2;
+    return `<path d="M 42 ${midY}
+      C 22 ${midY - 20}, 32 42, 60 44
+      C 68 22, ${midX - 18} 19, ${midX} 37
+      C ${midX + 24} 16, ${right - 28} ${y}, ${right - 30} 48
+      C ${right + 2} 42, ${right + 7} ${midY - 3}, ${right - 3} ${midY + 15}
+      C ${right + 8} ${bottom - 10}, ${right - 20} ${bottom + 7}, ${right - 42} ${bottom - 7}
+      C ${right - 55} ${bottom + 12}, ${midX + 12} ${bottom + 7}, ${midX} ${bottom - 7}
+      C ${midX - 24} ${bottom + 12}, 66 ${bottom + 7}, 62 ${bottom - 12}
+      C 31 ${bottom + 2}, 17 ${midY + 20}, 42 ${midY} Z"
+      fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
+  }
+  function thoughtTrail(body, bodyCenter, tip, fill, border, dreaming) {
+    const tipVector = subtract(tip, bodyCenter);
+    const tipDistance = Math.hypot(tipVector.x, tipVector.y);
+    const geometry = tailGeometryForPolygon(body, bodyCenter, {
+      x: tipVector.x / tipDistance,
+      y: tipVector.y / tipDistance
+    }, 0, tip);
+    const center = {
+      x: (geometry.base[0].x + geometry.base[1].x) / 2,
+      y: (geometry.base[0].y + geometry.base[1].y) / 2
+    };
+    return (dreaming ? [
+      {
+        ratio: .45,
+        radius: 7
+      },
+      {
+        ratio: .78,
+        radius: 4.5
+      },
+      {
+        ratio: 1,
+        radius: 3
+      }
+    ] : [{
+      ratio: .5,
+      radius: 5
+    }, {
+      ratio: .82,
+      radius: 3.5
+    }]).map(({ ratio, radius }) => {
+      return `<circle cx="${center.x + (geometry.tip.x - center.x) * ratio}" cy="${center.y + (geometry.tip.y - center.y) * ratio}" r="${radius}" fill="${fill}" stroke="${border}" stroke-width="2"/>`;
+    }).join("");
+  }
+  function burstBodyPoints(width, height) {
+    const centerX = width / 2;
+    const centerY = height / 2;
+    return Array.from({ length: 28 }, (_, index) => {
+      const radians = index * Math.PI * 2 / 28 - Math.PI / 2;
+      const outer = index % 2 === 0;
+      const radiusX = outer ? width / 2 - 6 : width / 2 - 22;
+      const radiusY = outer ? height / 2 - 6 : height / 2 - 22;
+      return {
+        x: centerX + Math.cos(radians) * radiusX,
+        y: centerY + Math.sin(radians) * radiusY
+      };
+    });
+  }
+  function wavyBodyPoints(width, height) {
+    const left = 24;
+    const top = 24;
+    const right = width - 24;
+    const bottom = height - 24;
+    const steps = 20;
+    const horizontal = Array.from({ length: 21 }, (_, index) => {
+      const ratio = index / steps;
+      return {
+        ratio,
+        wave: Math.sin(ratio * Math.PI * 8) * 4
+      };
+    });
+    const vertical = Array.from({ length: 9 }, (_, index) => {
+      const ratio = (index + 1) / 10;
+      return {
+        ratio,
+        wave: Math.sin(ratio * Math.PI * 4) * 4
+      };
+    });
+    return [
+      ...horizontal.map(({ ratio, wave }) => ({
+        x: left + ratio * (right - left),
+        y: top + wave
+      })),
+      ...vertical.map(({ ratio, wave }) => ({
+        x: right + wave,
+        y: top + ratio * (bottom - top)
+      })),
+      ...[...horizontal].reverse().map(({ ratio, wave }) => ({
+        x: left + ratio * (right - left),
+        y: bottom + wave
+      })),
+      ...[...vertical].reverse().map(({ ratio, wave }) => ({
+        x: left + wave,
+        y: top + ratio * (bottom - top)
+      }))
+    ];
+  }
+  function transformReferenceBody(style, width, height) {
+    if (style === "YELLING") return burstBodyPoints(width, height);
+    if (style === "WAVY") return wavyBodyPoints(width, height);
+    return roundedRectanglePoints(width, height);
+  }
+  function bubbleBodyCenterOffset(input) {
+    const width = requireDimension(input.width, 220);
+    const height = requireDimension(input.height, 112);
+    const direction = normalizeDirection(input.tailDirection);
+    if (direction === null) throw new TypeError("Bubble body center offset requires a tail direction.");
+    const tailLength = normalizeSvgTailLength(input.tailLength ?? svgDefaultTailLength);
+    const offset = normalizeSvgOffset(input.offset);
+    const center = {
+      x: width / 2,
+      y: height / 2
+    };
+    const transformed = transformedBodyGeometry(transformReferenceBody(input.style, width, height), width, height, direction, tailLength, offset);
+    return Object.freeze({
+      x: transformed.bodyCenter.x - center.x,
+      y: transformed.bodyCenter.y - center.y
+    });
+  }
+  function renderBody(style, width, height, direction, fill, border, tailLength, offset) {
+    const rounded = roundedRectanglePoints(width, height);
+    const transformWithoutTail = (body) => {
+      if (direction === null) return body;
+      return transformedBodyGeometry(body, width, height, direction, tailLength, offset).body;
+    };
+    const withTail = (body, extra = "") => {
+      if (direction === null) return bodyPath(body, fill, border, extra);
+      const transformed = transformedBodyGeometry(body, width, height, direction, tailLength, offset);
+      return unionBodyAndTail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, extra);
+    };
+    switch (style) {
+      case "NO_BUBBLE": return "";
+      case "THINKING":
+      case "DREAMING": {
+        if (direction === null) return cloudBody(width, height, fill, border);
+        const transformed = transformedBodyGeometry(rounded, width, height, direction, tailLength, offset);
+        const scale = offset.scalePercent / 100;
+        const center = {
+          x: width / 2,
+          y: height / 2
+        };
+        const translateX = transformed.bodyCenter.x - center.x * scale;
+        const translateY = transformed.bodyCenter.y - center.y * scale;
+        return `${thoughtTrail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, style === "DREAMING")}<g transform="translate(${translateX} ${translateY}) scale(${scale})">${cloudBody(width, height, fill, border)}</g>`;
+      }
+      case "YELLING": return withTail(burstBodyPoints(width, height));
+      case "WAVY": return withTail(wavyBodyPoints(width, height));
+      case "WHISPERING": return withTail(rounded, "stroke-dasharray=\"5 5\"");
+      case "ANNOUNCEMENT": return `${withTail(rounded)}<rect x="30" y="30" width="${width - 60}" height="${height - 60}" rx="13" fill="none" stroke="${border}" stroke-width="1.5"/>`;
+      case "NARRATION": return bodyPath(transformWithoutTail(rounded), fill, border);
+      case "OFF_PANEL": return withTail(rounded);
+      case "NORMAL": return withTail(rounded);
+    }
+  }
+  /**
+  * Renders the canonical Bubble body preview as a standalone SVG document.
+  * The function is pure so documentation and runtime adapters can share it.
+  */
+  function renderBubbleSvg(input) {
+    if (!bubbleVisualStyles.includes(input.style)) throw new TypeError(`Unsupported Bubble visual style: ${String(input.style)}`);
+    if (!Array.isArray(input.lines) || input.lines.some((line) => typeof line !== "string")) throw new TypeError("lines must be an array of strings.");
+    const width = requireDimension(input.width, 220);
+    const height = requireDimension(input.height, 112);
+    const fontSize = requireDimension(input.fontSize, 15);
+    const direction = normalizeDirection(input.tailDirection);
+    const tailLength = normalizeSvgTailLength(input.tailLength ?? svgDefaultTailLength);
+    const offset = input.offset === void 0 ? svgDefaultOffset : normalizeSvgOffset(input.offset);
+    const fill = input.fillColor ?? "#fff4cc";
+    const border = input.borderColor ?? "#6f5b45";
+    const textColor = input.textColor ?? "#25283a";
+    const fontFamily = input.fontFamily ?? "Noto Sans JP, sans-serif";
+    const lineHeight = fontSize * 1.35;
+    const firstBaseline = height / 2 - (input.lines.length - 1) * lineHeight / 2 + fontSize * .35;
+    const textScale = direction === null ? 1 : offset.scalePercent / 100;
+    const textCenter = direction === null ? {
+      x: width / 2,
+      y: height / 2
+    } : transformedBodyGeometry(roundedRectanglePoints(width, height), width, height, direction, tailLength, offset).bodyCenter;
+    const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml(textColor)}" font-family="${escapeXml(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml(line)}</text>`).join("");
+    const title = escapeXml(input.title ?? `${input.style} bubble`);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border, tailLength, offset)}${text}</svg>`;
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/typeof.js
+  function _typeof(o) {
+    "@babel/helpers - typeof";
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+      return typeof o;
+    } : function(o) {
+      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+    }, _typeof(o);
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPrimitive.js
+  function toPrimitive(t, r) {
+    if ("object" != _typeof(t) || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+      var i = e.call(t, r || "default");
+      if ("object" != _typeof(i)) return i;
+      throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return ("string" === r ? String : Number)(t);
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPropertyKey.js
+  function toPropertyKey(t) {
+    var i = toPrimitive(t, "string");
+    return "symbol" == _typeof(i) ? i : i + "";
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/defineProperty.js
+  function _defineProperty(e, r, t) {
+    return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+      value: t,
+      enumerable: !0,
+      configurable: !0,
+      writable: !0
+    }) : e[r] = t, e;
+  }
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
+  var LSCP_INDEX_2_OFFSET = 2048;
+  var INDEX_1_OFFSET = 2112;
+  //#endregion
+  //#region node_modules/.pnpm/fflate@0.8.3/node_modules/fflate/esm/browser.js
+  var u8 = Uint8Array;
+  var u16 = Uint16Array;
+  var i32 = Int32Array;
+  var fleb = new u8([
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2,
+    3,
+    3,
+    3,
+    3,
+    4,
+    4,
+    4,
+    4,
+    5,
+    5,
+    5,
+    5,
+    0,
+    0,
+    0,
+    0
+  ]);
+  var fdeb = new u8([
+    0,
+    0,
+    0,
+    0,
+    1,
+    1,
+    2,
+    2,
+    3,
+    3,
+    4,
+    4,
+    5,
+    5,
+    6,
+    6,
+    7,
+    7,
+    8,
+    8,
+    9,
+    9,
+    10,
+    10,
+    11,
+    11,
+    12,
+    12,
+    13,
+    13,
+    0,
+    0
+  ]);
+  var clim = new u8([
+    16,
+    17,
+    18,
+    0,
+    8,
+    7,
+    9,
+    6,
+    10,
+    5,
+    11,
+    4,
+    12,
+    3,
+    13,
+    2,
+    14,
+    1,
+    15
+  ]);
+  var freb = function(eb, start) {
+    var b = new u16(31);
+    for (var i = 0; i < 31; ++i) b[i] = start += 1 << eb[i - 1];
+    var r = new i32(b[30]);
+    for (var i = 1; i < 30; ++i) for (var j = b[i]; j < b[i + 1]; ++j) r[j] = j - b[i] << 5 | i;
+    return {
+      b,
+      r
+    };
+  };
+  var _a = freb(fleb, 2);
+  var fl = _a.b;
+  var revfl = _a.r;
+  fl[28] = 258, revfl[258] = 28;
+  var _b = freb(fdeb, 0);
+  var fd = _b.b;
+  _b.r;
+  var rev = new u16(32768);
+  for (var i = 0; i < 32768; ++i) {
+    var x = (i & 43690) >> 1 | (i & 21845) << 1;
+    x = (x & 52428) >> 2 | (x & 13107) << 2;
+    x = (x & 61680) >> 4 | (x & 3855) << 4;
+    rev[i] = ((x & 65280) >> 8 | (x & 255) << 8) >> 1;
+  }
+  var hMap = (function(cd, mb, r) {
+    var s = cd.length;
+    var i = 0;
+    var l = new u16(mb);
+    for (; i < s; ++i) if (cd[i]) ++l[cd[i] - 1];
+    var le = new u16(mb);
+    for (i = 1; i < mb; ++i) le[i] = le[i - 1] + l[i - 1] << 1;
+    var co;
+    if (r) {
+      co = new u16(1 << mb);
+      var rvb = 15 - mb;
+      for (i = 0; i < s; ++i) if (cd[i]) {
+        var sv = i << 4 | cd[i];
+        var r_1 = mb - cd[i];
+        var v = le[cd[i] - 1]++ << r_1;
+        for (var m = v | (1 << r_1) - 1; v <= m; ++v) co[rev[v] >> rvb] = sv;
+      }
+    } else {
+      co = new u16(s);
+      for (i = 0; i < s; ++i) if (cd[i]) co[i] = rev[le[cd[i] - 1]++] >> 15 - cd[i];
+    }
+    return co;
+  });
+  var flt = new u8(288);
+  for (var i = 0; i < 144; ++i) flt[i] = 8;
+  for (var i = 144; i < 256; ++i) flt[i] = 9;
+  for (var i = 256; i < 280; ++i) flt[i] = 7;
+  for (var i = 280; i < 288; ++i) flt[i] = 8;
+  var fdt = new u8(32);
+  for (var i = 0; i < 32; ++i) fdt[i] = 5;
+  var flrm = /*#__PURE__*/ hMap(flt, 9, 1);
+  var fdrm = /*#__PURE__*/ hMap(fdt, 5, 1);
+  var max = function(a) {
+    var m = a[0];
+    for (var i = 1; i < a.length; ++i) if (a[i] > m) m = a[i];
+    return m;
+  };
+  var bits = function(d, p, m) {
+    var o = p / 8 | 0;
+    return (d[o] | d[o + 1] << 8) >> (p & 7) & m;
+  };
+  var bits16 = function(d, p) {
+    var o = p / 8 | 0;
+    return (d[o] | d[o + 1] << 8 | d[o + 2] << 16) >> (p & 7);
+  };
+  var shft = function(p) {
+    return (p + 7) / 8 | 0;
+  };
+  var slc = function(v, s, e) {
+    if (s == null || s < 0) s = 0;
+    if (e == null || e > v.length) e = v.length;
+    return new u8(v.subarray(s, e));
+  };
+  var ec = [
+    "unexpected EOF",
+    "invalid block type",
+    "invalid length/literal",
+    "invalid distance",
+    "stream finished",
+    "no stream handler",
+    ,
+    "no callback",
+    "invalid UTF-8 data",
+    "extra field too long",
+    "date not in range 1980-2099",
+    "filename too long",
+    "stream finishing",
+    "invalid zip data"
+  ];
+  var err = function(ind, msg, nt) {
+    var e = new Error(msg || ec[ind]);
+    e.code = ind;
+    if (Error.captureStackTrace) Error.captureStackTrace(e, err);
+    if (!nt) throw e;
+    return e;
+  };
+  var inflt = function(dat, st, buf, dict) {
+    var sl = dat.length, dl = dict ? dict.length : 0;
+    if (!sl || st.f && !st.l) return buf || new u8(0);
+    var noBuf = !buf;
+    var resize = noBuf || st.i != 2;
+    var noSt = st.i;
+    if (noBuf) buf = new u8(sl * 3);
+    var cbuf = function(l) {
+      var bl = buf.length;
+      if (l > bl) {
+        var nbuf = new u8(Math.max(bl * 2, l));
+        nbuf.set(buf);
+        buf = nbuf;
+      }
+    };
+    var final = st.f || 0, pos = st.p || 0, bt = st.b || 0, lm = st.l, dm = st.d, lbt = st.m, dbt = st.n;
+    var tbts = sl * 8;
+    do {
+      if (!lm) {
+        final = bits(dat, pos, 1);
+        var type = bits(dat, pos + 1, 3);
+        pos += 3;
+        if (!type) {
+          var s = shft(pos) + 4, l = dat[s - 4] | dat[s - 3] << 8, t = s + l;
+          if (t > sl) {
+            if (noSt) err(0);
+            break;
+          }
+          if (resize) cbuf(bt + l);
+          buf.set(dat.subarray(s, t), bt);
+          st.b = bt += l, st.p = pos = t * 8, st.f = final;
+          continue;
+        } else if (type == 1) lm = flrm, dm = fdrm, lbt = 9, dbt = 5;
+        else if (type == 2) {
+          var hLit = bits(dat, pos, 31) + 257, hcLen = bits(dat, pos + 10, 15) + 4;
+          var tl = hLit + bits(dat, pos + 5, 31) + 1;
+          pos += 14;
+          var ldt = new u8(tl);
+          var clt = new u8(19);
+          for (var i = 0; i < hcLen; ++i) clt[clim[i]] = bits(dat, pos + i * 3, 7);
+          pos += hcLen * 3;
+          var clb = max(clt), clbmsk = (1 << clb) - 1;
+          var clm = hMap(clt, clb, 1);
+          for (var i = 0; i < tl;) {
+            var r = clm[bits(dat, pos, clbmsk)];
+            pos += r & 15;
+            var s = r >> 4;
+            if (s < 16) ldt[i++] = s;
+            else {
+              var c = 0, n = 0;
+              if (s == 16) n = 3 + bits(dat, pos, 3), pos += 2, c = ldt[i - 1];
+              else if (s == 17) n = 3 + bits(dat, pos, 7), pos += 3;
+              else if (s == 18) n = 11 + bits(dat, pos, 127), pos += 7;
+              while (n--) ldt[i++] = c;
+            }
+          }
+          var lt = ldt.subarray(0, hLit), dt = ldt.subarray(hLit);
+          lbt = max(lt);
+          dbt = max(dt);
+          lm = hMap(lt, lbt, 1);
+          dm = hMap(dt, dbt, 1);
+        } else err(1);
+        if (pos > tbts) {
+          if (noSt) err(0);
+          break;
+        }
+      }
+      if (resize) cbuf(bt + 131072);
+      var lms = (1 << lbt) - 1, dms = (1 << dbt) - 1;
+      var lpos = pos;
+      for (;; lpos = pos) {
+        var c = lm[bits16(dat, pos) & lms], sym = c >> 4;
+        pos += c & 15;
+        if (pos > tbts) {
+          if (noSt) err(0);
+          break;
+        }
+        if (!c) err(2);
+        if (sym < 256) buf[bt++] = sym;
+        else if (sym == 256) {
+          lpos = pos, lm = null;
+          break;
+        } else {
+          var add = sym - 254;
+          if (sym > 264) {
+            var i = sym - 257, b = fleb[i];
+            add = bits(dat, pos, (1 << b) - 1) + fl[i];
+            pos += b;
+          }
+          var d = dm[bits16(dat, pos) & dms], dsym = d >> 4;
+          if (!d) err(3);
+          pos += d & 15;
+          var dt = fd[dsym];
+          if (dsym > 3) {
+            var b = fdeb[dsym];
+            dt += bits16(dat, pos) & (1 << b) - 1, pos += b;
+          }
+          if (pos > tbts) {
+            if (noSt) err(0);
+            break;
+          }
+          if (resize) cbuf(bt + 131072);
+          var end = bt + add;
+          if (bt < dt) {
+            var shift = dl - dt, dend = Math.min(dt, end);
+            if (shift + bt < 0) err(3);
+            for (; bt < dend; ++bt) buf[bt] = dict[shift + bt];
+          }
+          for (; bt < end; ++bt) buf[bt] = buf[bt - dt];
+        }
+      }
+      st.l = lm, st.p = lpos, st.b = bt, st.f = final;
+      if (lm) final = 1, st.m = lbt, st.d = dm, st.n = dbt;
+    } while (!final);
+    return bt != buf.length && noBuf ? slc(buf, 0, bt) : buf.subarray(0, bt);
+  };
+  var et = /*#__PURE__*/ new u8(0);
+  var gzs = function(d) {
+    if (d[0] != 31 || d[1] != 139 || d[2] != 8) err(6, "invalid gzip data");
+    var flg = d[3];
+    var st = 10;
+    if (flg & 4) st += (d[10] | d[11] << 8) + 2;
+    for (var zs = (flg >> 3 & 1) + (flg >> 4 & 1); zs > 0; zs -= !d[st++]);
+    return st + (flg & 2);
+  };
+  var gzl = function(d) {
+    var l = d.length;
+    return (d[l - 4] | d[l - 3] << 8 | d[l - 2] << 16 | d[l - 1] << 24) >>> 0;
+  };
+  function gunzipSync(data, opts) {
+    var st = gzs(data);
+    if (st + 8 > data.length) err(6, "invalid gzip data");
+    return inflt(data.subarray(st, -8), { i: 2 }, opts && opts.out || new u8(gzl(data)), opts && opts.dictionary);
+  }
+  var td = typeof TextDecoder != "undefined" && /*#__PURE__*/ new TextDecoder();
+  try {
+    td.decode(et, { stream: true });
+  } catch (e) {}
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/swap.js
+  var isBigEndian = new Uint8Array(new Uint32Array([305419896]).buffer)[0] === 18;
+  /**
+  * Exported for testing
+  * @param {Uint8Array} array
+  * @private
+  */
+  function swap32(array) {
+    const len = array.length;
+    for (let i = 0; i < len; i += 4) [array[i], array[i + 1], array[i + 2], array[i + 3]] = [
+      array[i + 3],
+      array[i + 2],
+      array[i + 1],
+      array[i]
+    ];
+  }
+  /**
+  * No-op.
+  *
+  * @param {Uint8Array} _array Ingored
+  * @private
+  */
+  function noOp(_array) {}
+  var swap32LE = isBigEndian ? swap32 : noOp;
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/index.js
+  var DECODER = new TextDecoder();
+  /**
+  * @typedef {object} TrieValues
+  * @prop {Int32Array} data
+  * @prop {number} highStart
+  * @prop {number} errorValue
+  * @prop {string[]} [values]
+  */
+  var UnicodeTrie = class UnicodeTrie {
+    /**
+    * Creates a trie, either from compressed data or pre-parsed values.
+    *
+    * @param {Uint8Array|TrieValues} data
+    */
+    constructor(data) {
+      if (data instanceof Uint8Array) {
+        let uncompressedLength = 0;
+        const view = new DataView(data.buffer);
+        this.highStart = view.getUint32(0, true);
+        this.errorValue = view.getUint32(4, true);
+        uncompressedLength = view.getUint32(8, true);
+        if (uncompressedLength !== 4294967295) throw new Error("Trie created with old version of @cto.af/unicode-trie.");
+        uncompressedLength = view.getUint32(12, true);
+        if (16 + uncompressedLength > data.byteLength) throw new RangeError("Invalid input length");
+        const values = data.subarray(16 + uncompressedLength);
+        /**
+        * @type{string[]}
+        */
+        this.values = values.length ? JSON.parse(DECODER.decode(gunzipSync(values))) : [];
+        data = gunzipSync(data.subarray(16, 16 + uncompressedLength));
+        swap32LE(data);
+        /**
+        * @type {Int32Array}
+        */
+        this.data = new Int32Array(data.buffer);
+      } else ({data: this.data, highStart: this.highStart, errorValue: this.errorValue, values: this.values = []} = data);
+    }
+    /**
+    * Creates a trie from a base64-encoded string.
+    * @param {string} base64 The base64-encoded trie to initialize.
+    * @returns {UnicodeTrie} The decoded Unicode trie.
+    */
+    static fromBase64(base64) {
+      return new UnicodeTrie(new Uint8Array(atob(base64).split("").map((c) => c.charCodeAt(0))));
+    }
+    /**
+    * Get the value associated with a codepoint, or the default value, or the
+    * error value if codePoint is out of range.
+    *
+    * @param {number} codePoint
+    * @returns {number}
+    */
+    get(codePoint) {
+      let val = this.errorValue;
+      if (codePoint < 0 || codePoint > 1114111) val = this.errorValue;
+      else if (codePoint < 55296 || codePoint > 56319 && codePoint <= 65535) {
+        const index = (this.data[codePoint >> 5] << 2) + (codePoint & 31);
+        val = this.data[index];
+      } else if (codePoint <= 65535) {
+        const index = (this.data[LSCP_INDEX_2_OFFSET + (codePoint - 55296 >> 5)] << 2) + (codePoint & 31);
+        val = this.data[index];
+      } else if (codePoint < this.highStart) {
+        let index = this.data[INDEX_1_OFFSET - 32 + (codePoint >> 11)];
+        index = this.data[index + (codePoint >> 5 & 63)];
+        index = (index << 2) + (codePoint & 31);
+        val = this.data[index];
+      } else val = this.data[this.data.length - 4];
+      return val;
+    }
+    /**
+    * Get the value associated with the codePoint, stringified if possible.
+    *
+    * @param {number} codePoint
+    * @returns {number|string}
+    */
+    getString(codePoint) {
+      const val = this.get(codePoint);
+      return this.values[val] ?? val;
+    }
+  };
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/LineBreak.js
+  var LineBreak = UnicodeTrie.fromBase64(`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
+     v6Y9S0rqHMbaN8j3flUbVIdpnonTleaP+JsiapunntfVOer7WUdXNw+jCyvNYxE6P9Ix+7Mu
+     TCa3uM3mb9JUmfLe1q59N19yulXnD5dfU/yRyn/8vR2Cr9H8JB/btsm29undfCw/56tbVmVX
+     d53nXtV0+Iw4rjNTk8udOvdtwl13j1B1YuT5b04HMpsW/7HCr8t/dF0Of846J3W9HPtdNnUf
+     x7UvpdsiV1mJjawiFLWODEm73G1mLF1J2/GB7X7UtvqhJeeTfPc4T7mPtLpuWqWJ66malIZV
+     Oq6uerCp9Oh1dlzCzrpIudKf92/hsZbP+hIbHa0Q/fQYe/v4lmd5T5s6veq6vYViyzJT69KV
+     2t/FlN451zKFrm3i9U0264J0fQOX9U5Vfe6S+xPRL8VaHJe8rK69qpNJqe92jX81XX3X2fr8
+     XPaHsq1PdPWWa12Sag1GaXmwT98pZ/2vy8+h7e8gsHdGcrvn+ou5l5j6K7GfmPobXJiY4xLb
+     d9C3GKnM2H7Xkd7j+z1I03X5ftWxjd9KwDLy0mNPV/fUtSCh4wyeF5DXS8nzWnSd9Jqrfrye
+     UWfa3NP1O131E9TnTDItvs/rn9Qwm9y3lS/yuiSdDK2J32LmH61l4/l7DpMcFl0cy/HpKvNU
+     5Z6yuzmgsPj4PZX78jydfMzx1BFk7Gr61smlU9yXf7w+UL7Pa5Fc9pe3lTntI+YJYvTvQ9Y9
+     x9gbNOU66lxyYJPsuqPtBRpjvW7uX6n9Y3LpfMUe8+fYy6sJ+99x2QyVR1TJrEvlz9Lxmzq8
+     Kct+jO8mpnIrV35pYv3rso+6j2w1RzkxpWeOslpV38Xey7lJ7XVVnDdFVyDn2o2m7A1s871r
+     U3+hbp661LfjbL6l6vL9O5v5uiqdcd/9mG3sVrlrktHl3m+5Ln46Qply/f51rDq2afV3U92P
+     9Z2CVPu71+kExf4uhm265Mpfcrjl9S+p/WGjb9FEeYmrHlhsXTLb772b2v3U8bKvoAk6VaQ3
+     ZdqvWf2FytNd9g1W/c57VNf9+JuMuXT+ZJ1tnZ6T7U+un1PXpSm/BxKiZ+b6nUC5P+bybdoU
+     3wWR9zP1WcOrrtc06dG7rA9gf6lzCCVlQKl1cKvW16r7MjdxPqHue3m55l5M6yRy1q8p6i+d
+     GzbfR5Dtqeeu1D2rulVlp+67ulXfzlDPqS/AP52us+kb5aoetdp226wrqOtHuvxc9InlsMrX
+     5HCkgvtULt80VtPB5tvHlLbU51R1leQ+nW0ftknjClM7Ktf7Pt9n161FKfULHbeU/P5brO/5
+     8PeveZ2l+s31OpmmizxP5z/VrssvNP7Vb9XbUGr+LWSdWKr4c/lemct7U/1KfJcs5nfiXNcz
+     Va3lCf2OXi75c+gaSd/4SyH/pmds+8G2fWCbvmwMeZapf6v2g9hU16vF7l/65K8cc6uh7bIs
+     W8jdLyyxp4BPPOru6+Qx8rd8beIyhew8xjoMtU8l90dcyldseUOJPpPLevpc7ZnvL8f4oaRO
+     ad34WVeefPYVSdG+27T7vPdESj0VV5leyvXoufQvffKZTpZmGy+27UNKfYCc5dWmj2fbp44Z
+     P6G/WN9X1cl8beoieS7ad7+PGP14nz1ATO1q3Xx2jHnpWO1xR1uPovumYQndrFD9uyrdvpD4
+     b9L8Yaz9wxl5bbVu/XlT9j2X/Rr6Hl7brYPd0V1jM5bOk+84oUn7xpeeH7IhVJ7j25+IrU9s
+     ig+XOi7lGMtGj9pGB903/kuMQVPuORpjv7+c35AvvYYkNO1CviFvU4/HkF+qe2ZTG+VTn1bt
+     fV7y5/PtqNR76oeuy4zlH3n/9ND3qPuxu7xb3cuj7heahiXq4ljrC1R5vm5M39HGFz7yzRLr
+     k1PoMMfcPzeGvDPWPssxw6Rzo8QcXmp3XGSSHX2/Et08k67f5dtmuupKN2FvMpOsKObeDnVx
+     k3ofp1h6VrFIVVdV7T2fYm9013l7k/5rbNlKaBuXso7LLV+K1d67uuWiJ19ShhcjvUP97FsO
+     Q+V7pdfDpy5rtv2qEPkU7XFY0v3Q+Oc8FpqHdHV9Xf415XFbPTPfPk7qNWsufow9vkqlz6v+
+     eA4udH9l3XxtiA5ZyN5XpvxSNzdetRdQlWnKjzbP695Xt9+WTz/bJk5y6tDVlYHUe0Crv9Bv
+     vMf+bnzq79DHenfs/ZD3y4TO7b0S7vPM8Z5yL2mTG1XXKcyMLh5093OzvwbVfzr/1hHDby7u
+     ufhH5z/Vrm1YZPsheUtn2pQh+RnfMmCqy3PN7aSeN0oRtrp8m6oONOXflHVfrnj0ccdU1lVS
+     yYu7Ssjz96ZwxEgz13rX1c3Y+Sp2vJve7eN+zP3nYsojYunAhMq1cs2vM1X9J99+Q2g+d+1z
+     5OznpXJD1zcKcc/U33KN39TzgCnr4lz95Fz1cW79kxT6SDF00UruT5ZDZ8Xl9x83MV0I0CwB
+     AB+LCAC4xcFoAgMdjksWhCAMBO/CelYzJ4gMCqiI4t/n/a9hyk29JN3p5DL7bj7GTQrbKypR
+     dDVVywyhZCz4xkUhnSIj5EExoFoQisIfbICE2WJOoAESSK7wecCscDJSxRXMbBAlfLCyIbTh
+     T8tr5/YikvVFSYq3dURbKo/gf+Q3zBCELycCXW/uB2mPjCb8AAAA`);
+  /**
+  * @type {Record<string, number>}
+  */
+  var names$1 = Object.fromEntries(LineBreak.values.map((v, i) => [v, i]));
+  var { values: values$1 } = LineBreak;
+  var { AI, AL: AL$1, CJ, CM: CM$1, NS: NS$1, SA, SG, SP: SP$1, XX } = names$1;
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/EastAsianWidth.js
+  var EastAsianWidth = UnicodeTrie.fromBase64(`AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk
+     SUgR7OySTrHxdVoIYqUg2AgqFhYWFhYidpYqKDaClVZaqJWF2qj/xT1cjjtv772Z3T1uHvzY
+     753d2b252ds3+1SpRbAMVkGSrlMo5LNjIfqoB/uEfR2Ao5yy4zb7PgUX4Brcgo6GUi9AF+gG
+     r0EPeAc+AN3mM8KvJu6DH0bWb08yeyEneV77rHia/yjbMvEBxJum7mCqzQjSo1beuBWfRFy3
+     1fHpR2QJgiAIgiAIgiAIQpoZc45c8HhGd2WJYUyy5oIgCP5oRPhuEQQh7vvPVuAe34q5x1lH
+     uJFh15J7HRt9Z7MJ9iKwg1fP72kG4osqz3ynUlNPHjhC2i5/9UypX8DOa6bSa0hfAbsf33zE
+     /EPLr7NtOYj4zlTfD+v7dG0r8uzhXM39qEPH9TtBvTNwUXK9dyv0frzE3DSxje8mZ0yNjuz8
+     zlT+S6T1OnQh7M5oo+f+Bvk67EGY/OfiPeKfTL5+hr6ZuM13k/cT4R/QC86tMfdZbf4a2Un6
+     H9L9OXNIGCoo12yDYdR7mzG+tP8yhjoTpt607tuh/6r7b1VG7yv5ya/OP7iZQXEdYyi9UNel
+     WKM83YTQE/f8qftudz9y7G/OdWlXLxTPYRm9cu+ZMutMaYuK2tnjyqpb5jnPa8+xH7n3eJFO
+     ivRGbTNC6su3PeHYM0V7OxZ/hUtWLP5ZFfzDmMYQSieU8qj78rF3fMsI+axX5fwWYvw+5t9u
+     f0VnNR964yh31bdLOce8qfYb11ndVWeUvibHfCj8tZD2LNZvTRyyW/GfQr1/OM8gob/LcPn8
+     If3iVmVT23Iu/69KaxHzOYn6XenTNw1551DW/3V5X7v6c9Tfh7jPX9TrFtqOhjgPttqeW28u
+     33192kvqs2vW7w7BeyuJcEoAAB+LCAC1xcFoAgOLVvJT0lGKVIoFANHfAiwJAAAA`);
+  Object.fromEntries(EastAsianWidth.values.map((v, i) => [v, i]));
+  var { values } = EastAsianWidth;
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/index.js
+  var { AK, AL, AP, AS, B2, BA, BB, BK, CB, CL, CM, CP, CR, EB, EM, EX, GL, H2, H3, HH, HL, HY, ID, IN, IS, JL, JT, JV, LF, NU, OP, NL, NS, PO, PR, RI, SP, SY, QU, VF, VI, WJ, ZW, ZWJ } = names$1;
   //#endregion
   //#region src/composition.ts
   var BubbleCompositionError = class extends Error {
@@ -6154,6 +6715,10 @@
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys(value, ["name", "textStyle"], [
       "placement",
+      "distance",
+      "tailLength",
+      "offset",
+      "visualStyle",
       "portrait",
       "advanceIndicator"
     ], "Bubble style");
@@ -6165,10 +6730,26 @@
     } catch (error) {
       throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble placement is invalid.");
     }
+    let distance;
+    let tailLength;
+    let offset;
+    try {
+      distance = normalizeBubbleDistance(value.distance ?? 12);
+      tailLength = normalizeBubbleTailLength(value.tailLength ?? 18);
+      offset = value.offset === void 0 ? defaultBubbleOffset : normalizeBubbleOffset(value.offset);
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble actor-relative transform is invalid.");
+    }
+    const visualStyle = value.visualStyle ?? "NORMAL";
+    if (typeof visualStyle !== "string" || !bubbleVisualStyles.includes(visualStyle)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `Unsupported Bubble visual style: ${String(visualStyle)}`);
     return Object.freeze({
       name: requireName(value.name, "Bubble style name"),
       textStyle: requireName(value.textStyle, "Bubble text style name"),
       placement,
+      distance,
+      tailLength,
+      offset,
+      visualStyle,
       ...portrait === void 0 ? {} : { portrait },
       ...advanceIndicator === void 0 ? {} : { advanceIndicator }
     });
@@ -6542,7 +7123,6 @@
   var portraitBoxSize = 96;
   var indicatorBoxSize = 18;
   var contentGap = 8;
-  var actorGap = 12;
   var stageSafeMargin = 16;
   var surfaceSequence = 0;
   var BubbleRuntimeAdapterError = class extends Error {
@@ -6559,8 +7139,10 @@
   function requireRenderer(value) {
     if (!isRecord(value)) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp renderer.");
     const methods = [
+      "createSVGSkin",
       "createDrawable",
       "destroyDrawable",
+      "destroySkin",
       "getCurrentSkinSize",
       "getNativeSize",
       "updateDrawablePosition",
@@ -6609,27 +7191,37 @@
       height
     };
   }
-  function fitDrawable(renderer, target, boxSize) {
+  function fitDrawable(renderer, target, boxSize, scaleMultiplier = 1) {
     const native = readSize(renderer, target, {
       width: boxSize,
       height: boxSize
     });
-    const scale = Math.min(boxSize / native.width, boxSize / native.height);
-    renderer.updateDrawableScale(target.drawableID, [scale * 100, scale * 100]);
+    const effectiveScale = Math.min(boxSize / native.width, boxSize / native.height) * scaleMultiplier;
+    renderer.updateDrawableScale(target.drawableID, [effectiveScale * 100, effectiveScale * 100]);
     return {
-      width: native.width * scale,
-      height: native.height * scale
+      width: native.width * effectiveScale,
+      height: native.height * effectiveScale
     };
   }
   function clamp(value, minimum, maximum) {
     if (maximum < minimum) return (minimum + maximum) / 2;
     return Math.min(maximum, Math.max(minimum, value));
   }
+  function expandSvgViewport(svg, width, height, extraX, extraY) {
+    const expandedWidth = width + extraX * 2;
+    const expandedHeight = height + extraY * 2;
+    return svg.replace(/<svg\b[^>]*>/u, (root) => root.replace(/\bwidth="[^"]*"/u, `width="${expandedWidth}"`).replace(/\bheight="[^"]*"/u, `height="${expandedHeight}"`).replace(/\bviewBox="[^"]*"/u, `viewBox="${-extraX} ${-extraY} ${expandedWidth} ${expandedHeight}"`));
+  }
+  function tailDirectionForPlacement(direction) {
+    const vector = bubbleDirectionVector(direction);
+    return (Math.atan2(-vector.x, -vector.y) * 180 / Math.PI % 360 + 360) % 360;
+  }
   function createSurface(runtime, actor, actorKey, style) {
     const renderer = runtime.renderer;
     const sequence = surfaceSequence;
     surfaceSequence += 1;
     const drawables = [];
+    let bodySkinId;
     const createTarget = (layer) => {
       const drawableID = renderer.createDrawable(spriteLayer);
       if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", `TurboWarp did not create the Bubble ${layer} drawable.`);
@@ -6644,6 +7236,7 @@
       return target;
     };
     try {
+      const body = createTarget("body");
       const portraitBase = style.portrait ? createTarget("portrait-base") : void 0;
       const portraitBlink = style.portrait?.blink ? createTarget("portrait-blink") : void 0;
       const portraitTalk = style.portrait?.talk ? createTarget("portrait-talk") : void 0;
@@ -6664,29 +7257,41 @@
       const layerVisibility = /* @__PURE__ */ new Map();
       let surfaceVisible = false;
       let disposed = false;
+      let cachedBodySkinSignature = "";
       const updateVisibility = () => {
         const actorVisible = style.placement.basis === "background" || actor.visible !== false;
+        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && style.visualStyle !== "NO_BUBBLE");
         renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible);
         for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false));
         runtime.requestRedraw?.();
       };
       const position = () => {
         if (disposed) return;
-        const textSize = readSize(renderer, text, {
+        const scaleMultiplier = style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+        const nativeTextSize = readSize(renderer, text, {
           width: 180,
           height: 48
         });
-        const portraitSize = portraitBase ? fitDrawable(renderer, portraitBase, portraitBoxSize) : {
+        renderer.updateDrawableScale(text.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        const textSize = {
+          width: nativeTextSize.width * scaleMultiplier,
+          height: nativeTextSize.height * scaleMultiplier
+        };
+        const portraitSize = portraitBase ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier) : {
           width: 0,
           height: 0
         };
-        for (const target of [portraitBlink, portraitTalk]) if (target) fitDrawable(renderer, target, portraitBoxSize);
-        const indicatorSize = advanceIndicator ? fitDrawable(renderer, advanceIndicator, indicatorBoxSize) : {
+        for (const target of [portraitBlink, portraitTalk]) if (target) fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
+        const indicatorSize = advanceIndicator ? fitDrawable(renderer, advanceIndicator, indicatorBoxSize, scaleMultiplier) : {
           width: 0,
           height: 0
         };
-        const totalWidth = portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width;
+        const totalWidth = portraitSize.width + (portraitBase ? contentGap * scaleMultiplier : 0) + textSize.width;
         const contentHeight = Math.max(portraitSize.height, textSize.height);
+        const baseBubbleWidth = totalWidth / scaleMultiplier + 48;
+        const baseBubbleHeight = contentHeight / scaleMultiplier + 48;
+        const bubbleWidth = totalWidth;
+        const bubbleHeight = contentHeight;
         const nativeSize = renderer.getNativeSize();
         const stageWidth = Array.isArray(nativeSize) && Number(nativeSize[0]) > 0 ? Number(nativeSize[0]) : 480;
         const stageHeight = Array.isArray(nativeSize) && Number(nativeSize[1]) > 0 ? Number(nativeSize[1]) : 360;
@@ -6694,40 +7299,101 @@
         const stageRight = stageWidth / 2;
         const stageTop = stageHeight / 2;
         const stageBottom = -stageHeight / 2;
-        const minimumCenterX = stageLeft + totalWidth / 2;
-        const maximumCenterX = stageRight - totalWidth / 2;
-        const minimumCenterY = stageBottom + contentHeight / 2;
-        const maximumCenterY = stageTop - contentHeight / 2;
+        const minimumCenterX = stageLeft + bubbleWidth / 2;
+        const maximumCenterX = stageRight - bubbleWidth / 2;
+        const minimumCenterY = stageBottom + bubbleHeight / 2;
+        const maximumCenterY = stageTop - bubbleHeight / 2;
         let centerX;
         let centerY;
         if (style.placement.basis === "background") {
           centerX = 0;
-          if (style.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin - contentHeight / 2;
-          else if (style.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin + contentHeight / 2;
+          if (style.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
+          else if (style.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
           else centerY = 0;
         } else {
-          const bounds = targetBounds(actor);
-          const actorCenterX = (bounds.left + bounds.right) / 2;
-          const actorCenterY = (bounds.top + bounds.bottom) / 2;
-          const vector = bubbleDirectionVector(style.placement.direction);
-          const horizontalDistance = vector.x < 0 ? actorCenterX - bounds.left + actorGap + totalWidth / 2 : bounds.right - actorCenterX + actorGap + totalWidth / 2;
-          const verticalDistance = vector.y < 0 ? actorCenterY - bounds.bottom + actorGap + contentHeight / 2 : bounds.top - actorCenterY + actorGap + contentHeight / 2;
-          const placementScale = Math.min(vector.x === 0 ? Number.POSITIVE_INFINITY : horizontalDistance / Math.abs(vector.x), vector.y === 0 ? Number.POSITIVE_INFINITY : verticalDistance / Math.abs(vector.y));
-          centerX = actorCenterX + vector.x * placementScale;
-          centerY = actorCenterY + vector.y * placementScale;
+          const center = actorRelativeBubbleCenter({
+            bounds: targetBounds(actor),
+            bubbleWidth,
+            bubbleHeight,
+            direction: style.placement.direction,
+            distance: style.distance,
+            tailLength: style.tailLength,
+            offset: style.offset
+          });
+          centerX = center.x;
+          centerY = center.y;
         }
         centerX = clamp(centerX, minimumCenterX, maximumCenterX);
         centerY = clamp(centerY, minimumCenterY, maximumCenterY);
+        const tailDirection = style.placement.basis === "actor" ? tailDirectionForPlacement(style.placement.direction) : null;
+        const bodyOffset = style.placement.basis === "actor" ? [
+          style.offset.x,
+          style.offset.y,
+          style.offset.scalePercent
+        ] : [
+          0,
+          0,
+          100
+        ];
+        const bodyCenterOffset = tailDirection === null ? {
+          x: 0,
+          y: 0
+        } : bubbleBodyCenterOffset({
+          style: style.visualStyle,
+          width: baseBubbleWidth,
+          height: baseBubbleHeight,
+          tailDirection,
+          tailLength: style.tailLength,
+          offset: bodyOffset
+        });
+        const viewportExtraX = Math.abs(bodyOffset[0]) + baseBubbleWidth * Math.abs(scaleMultiplier - 1) + Math.max(0, style.tailLength - 18) + 8;
+        const viewportExtraY = Math.abs(bodyOffset[1]) + baseBubbleHeight * Math.abs(scaleMultiplier - 1) + Math.max(0, style.tailLength - 18) + 8;
+        const nextBodySkinSignature = JSON.stringify({
+          baseBubbleHeight,
+          baseBubbleWidth,
+          bodyOffset,
+          tailDirection,
+          tailLength: style.tailLength,
+          viewportExtraX,
+          viewportExtraY,
+          visualStyle: style.visualStyle
+        });
+        if (nextBodySkinSignature !== cachedBodySkinSignature) {
+          const expanded = expandSvgViewport(renderBubbleSvg({
+            style: style.visualStyle,
+            lines: [],
+            width: baseBubbleWidth,
+            height: baseBubbleHeight,
+            tailDirection,
+            tailLength: style.tailLength,
+            offset: bodyOffset,
+            title: `${style.name} Bubble body`
+          }), baseBubbleWidth, baseBubbleHeight, viewportExtraX, viewportExtraY);
+          const nextSkinId = renderer.createSVGSkin(expanded);
+          if (!Number.isInteger(nextSkinId) || nextSkinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "TurboWarp did not create the Bubble body SVG skin.");
+          try {
+            renderer.updateDrawableSkinId(body.drawableID, nextSkinId);
+          } catch (error) {
+            renderer.destroySkin(nextSkinId);
+            throw error;
+          }
+          const previousBodySkinId = bodySkinId;
+          bodySkinId = nextSkinId;
+          cachedBodySkinSignature = nextBodySkinSignature;
+          if (previousBodySkinId !== void 0) renderer.destroySkin(previousBodySkinId);
+        }
+        renderer.updateDrawableScale(body.drawableID, [100, 100]);
+        renderer.updateDrawablePosition(body.drawableID, [centerX - bodyCenterOffset.x, centerY + bodyCenterOffset.y]);
         const left = centerX - totalWidth / 2;
         const portraitX = left + portraitSize.width / 2;
-        const textX = left + portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width / 2;
+        const textX = left + portraitSize.width + (portraitBase ? contentGap * scaleMultiplier : 0) + textSize.width / 2;
         for (const target of [
           portraitBase,
           portraitBlink,
           portraitTalk
         ]) if (target) renderer.updateDrawablePosition(target.drawableID, [portraitX, centerY]);
         renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
-        if (advanceIndicator) renderer.updateDrawablePosition(advanceIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap]);
+        if (advanceIndicator) renderer.updateDrawablePosition(advanceIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
         updateVisibility();
       };
       const originalVisualChange = actor.onTargetVisualChange;
@@ -6758,11 +7424,16 @@
           disposed = true;
           if (style.placement.basis === "actor" && actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
           for (const target of [...drawables].reverse()) renderer.destroyDrawable(target.drawableID, spriteLayer);
+          if (bodySkinId !== void 0) {
+            renderer.destroySkin(bodySkinId);
+            bodySkinId = void 0;
+          }
           runtime.requestRedraw?.();
         }
       });
     } catch (error) {
       for (const target of [...drawables].reverse()) renderer.destroyDrawable(target.drawableID, spriteLayer);
+      if (bodySkinId !== void 0) renderer.destroySkin(bodySkinId);
       throw error;
     }
   }
@@ -6875,12 +7546,10 @@
           ...style.portrait,
           base
         }
-      }) : Object.freeze({
-        name: style.name,
-        textStyle: style.textStyle,
-        ...style.placement === void 0 ? {} : { placement: style.placement },
-        ...style.advanceIndicator ? { advanceIndicator: style.advanceIndicator } : {}
-      });
+      }) : (() => {
+        const { portrait, ...withoutPortrait } = style;
+        return Object.freeze(withoutPortrait);
+      })();
       this.installStyle(nextStyle);
     }
     setBubblePlacement(args) {
@@ -6896,6 +7565,50 @@
         placement: this.placementInput(placement)
       }));
     }
+    setBubbleDistance(args) {
+      const style = this.requireStyle(args.STYLE);
+      this.installStyle(Object.freeze({
+        ...style,
+        distance: this.normalizeTransformNumber(args.DISTANCE, normalizeBubbleDistance)
+      }));
+    }
+    setBubbleVisualStyle(args) {
+      const style = this.requireStyle(args.STYLE);
+      const visualStyle = this.toString(args.VISUAL_STYLE).trim().toUpperCase();
+      if (!bubbleVisualStyles.includes(visualStyle)) throw extensionError(`unsupported Bubble visual style: ${visualStyle}`);
+      this.installStyle(Object.freeze({
+        ...style,
+        visualStyle
+      }));
+    }
+    setBubbleTailLength(args) {
+      const style = this.requireStyle(args.STYLE);
+      this.installStyle(Object.freeze({
+        ...style,
+        tailLength: this.normalizeTransformNumber(args.LENGTH, normalizeBubbleTailLength)
+      }));
+    }
+    setBubbleOffset(args) {
+      const style = this.requireStyle(args.STYLE);
+      let offset;
+      try {
+        offset = normalizeBubbleOffset([
+          Scratch.Cast.toNumber(args.X),
+          Scratch.Cast.toNumber(args.Y),
+          Scratch.Cast.toNumber(args.SCALE)
+        ]);
+      } catch (error) {
+        throw extensionError(error instanceof Error ? error.message : "Bubble offset is invalid.");
+      }
+      this.installStyle(Object.freeze({
+        ...style,
+        offset: Object.freeze([
+          offset.x,
+          offset.y,
+          offset.scalePercent
+        ])
+      }));
+    }
     setBlinkFrames(args) {
       this.setPortraitAnimation("blink", args);
     }
@@ -6907,11 +7620,9 @@
       const frames = this.parseFrames(args.ASSETS);
       if (frames.length === 1) throw extensionError("advance frames must contain at least two assets.");
       const advanceIndicator = frames.length === 0 ? void 0 : this.animationInput(frames, args.SECONDS, "advance");
+      const { advanceIndicator: previousAdvance, ...withoutAdvance } = style;
       const nextStyle = Object.freeze({
-        name: style.name,
-        textStyle: style.textStyle,
-        ...style.placement === void 0 ? {} : { placement: style.placement },
-        ...style.portrait ? { portrait: style.portrait } : {},
+        ...withoutAdvance,
         ...advanceIndicator ? { advanceIndicator } : {}
       });
       this.installStyle(nextStyle);
@@ -6974,6 +7685,13 @@
       const style = this.styles.get(name);
       if (!style) throw extensionError(`bubble style is not defined: ${name}`);
       return style;
+    }
+    normalizeTransformNumber(value, normalize) {
+      try {
+        return normalize(Scratch.Cast.toNumber(value));
+      } catch (error) {
+        throw extensionError(error instanceof Error ? error.message : "Bubble transform value is invalid.");
+      }
     }
     installStyle(style) {
       this.styles.set(style.name, style);

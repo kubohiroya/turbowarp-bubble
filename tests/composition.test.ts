@@ -145,6 +145,10 @@ describe("Bubble composition", () => {
         kind: "say",
         style: expect.objectContaining({
           placement: { basis: "actor", direction: "up-right" },
+          distance: 12,
+          tailLength: 18,
+          offset: { x: 0, y: 0, scalePercent: 100 },
+          visualStyle: "NORMAL",
         }),
       }),
     );
@@ -212,6 +216,35 @@ describe("Bubble composition", () => {
       expect.objectContaining({
         style: expect.objectContaining({
           placement: { basis: "background", region: "FOOTER_LIKE" },
+        }),
+      }),
+    );
+  });
+
+  it("normalizes actor-relative transform settings", async () => {
+    const harness = createHarness();
+    harness.composition.defineStyle({
+      name: "transform",
+      textStyle: "default",
+      distance: 6,
+      tailLength: 24,
+      offset: [10, -10, 120],
+      visualStyle: "WAVY",
+    });
+    await harness.composition.show({
+      actor: {},
+      actorKey: "Transform",
+      kind: "say",
+      text: "transform",
+      styleName: "transform",
+    });
+    expect(harness.createSurface).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        style: expect.objectContaining({
+          distance: 6,
+          tailLength: 24,
+          offset: { x: 10, y: -10, scalePercent: 120 },
+          visualStyle: "WAVY",
         }),
       }),
     );
@@ -335,6 +368,27 @@ describe("Bubble composition", () => {
           frames: ["Next1"],
           frameIntervalSeconds: 0.2,
         },
+      }),
+    ).toThrowError(BubbleCompositionError);
+    expect(() =>
+      harness.composition.defineStyle({
+        name: "bad-visual-style",
+        textStyle: "default",
+        visualStyle: "ROUND" as "NORMAL",
+      }),
+    ).toThrowError(BubbleCompositionError);
+    expect(() =>
+      harness.composition.defineStyle({
+        name: "bad-transform",
+        textStyle: "default",
+        distance: -1,
+      }),
+    ).toThrowError(BubbleCompositionError);
+    expect(() =>
+      harness.composition.defineStyle({
+        name: "bad-offset",
+        textStyle: "default",
+        offset: [0, 0, 0],
       }),
     ).toThrowError(BubbleCompositionError);
     expect(() =>

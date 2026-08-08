@@ -1,3 +1,4 @@
+import type { BubbleOffsetInput } from "./actor-transform.js";
 export declare const bubbleVisualStyles: readonly ["NORMAL", "THINKING", "DREAMING", "YELLING", "OFF_PANEL", "WAVY", "WHISPERING", "ANNOUNCEMENT", "NARRATION", "NO_BUBBLE"];
 export type BubbleVisualStyle = (typeof bubbleVisualStyles)[number];
 export interface RenderBubbleSvgInput {
@@ -7,6 +8,8 @@ export interface RenderBubbleSvgInput {
     readonly height?: number;
     /** Scratch direction: 0 is up, 90 is right. */
     readonly tailDirection?: number | null;
+    readonly tailLength?: number;
+    readonly offset?: BubbleOffsetInput;
     readonly fillColor?: string;
     readonly borderColor?: string;
     readonly textColor?: string;
@@ -14,6 +17,18 @@ export interface RenderBubbleSvgInput {
     readonly fontSize?: number;
     readonly title?: string;
 }
+export interface BubbleBodyCenterOffsetInput {
+    readonly style: BubbleVisualStyle;
+    readonly width: number;
+    readonly height: number;
+    readonly tailDirection: number;
+    readonly tailLength?: number;
+    readonly offset: BubbleOffsetInput;
+}
+export declare function bubbleBodyCenterOffset(input: BubbleBodyCenterOffsetInput): Readonly<{
+    x: number;
+    y: number;
+}>;
 /**
  * Renders the canonical Bubble body preview as a standalone SVG document.
  * The function is pure so documentation and runtime adapters can share it.

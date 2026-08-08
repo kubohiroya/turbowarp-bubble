@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { bubbleVisualStyles, renderBubbleSvg } from "../src/bubble-svg.js";
+import {
+  bubbleBodyCenterOffset,
+  bubbleVisualStyles,
+  renderBubbleSvg,
+} from "../src/bubble-svg.js";
 
 describe("renderBubbleSvg", () => {
   it.each(bubbleVisualStyles)("renders the canonical %s SVG", (style) => {
@@ -57,6 +61,40 @@ describe("renderBubbleSvg", () => {
       expect(svg).not.toContain('data-boolean-operation="union"');
       expect(svg).toContain("<circle");
     }
+  });
+
+  it("applies tail length, body offset, scale, and scaled text", () => {
+    const baseline = renderBubbleSvg({
+      style: "NORMAL",
+      lines: ["拡大"],
+      tailDirection: 90,
+    });
+    const transformed = renderBubbleSvg({
+      style: "NORMAL",
+      lines: ["拡大"],
+      tailDirection: 90,
+      tailLength: 30,
+      offset: [10, -10, 120],
+      fontSize: 15,
+    });
+
+    expect(transformed).not.toEqual(baseline);
+    expect(transformed).toContain('font-size="18"');
+    expect(transformed).toContain('data-boolean-operation="union"');
+  });
+
+  it("reports the body-center shift used to align runtime content", () => {
+    const shift = bubbleBodyCenterOffset({
+      style: "NORMAL",
+      width: 220,
+      height: 112,
+      tailDirection: 270,
+      tailLength: 18,
+      offset: [10, -10, 120],
+    });
+
+    expect(shift.x).toBeCloseTo(27.2);
+    expect(shift.y).toBeCloseTo(10);
   });
 
   it("escapes text and rejects invalid dimensions", () => {

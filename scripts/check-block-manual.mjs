@@ -13,6 +13,10 @@ const placementGuideUrl = new URL(
   "../docs/assets/placement-guide.svg",
   import.meta.url,
 );
+const actorTransformGuideUrl = new URL(
+  "../docs/assets/actor-transform-guide.svg",
+  import.meta.url,
+);
 const widthLinebreakGuideUrl = new URL(
   "../docs/assets/width-linebreak-guide.svg",
   import.meta.url,
@@ -91,6 +95,7 @@ const [
   quickStart,
   phaseGuide,
   placementGuide,
+  actorTransformGuide,
   widthLinebreakGuide,
   bubbleStyleGallery,
   lifecycle,
@@ -99,6 +104,7 @@ const [
   readFile(quickStartUrl, "utf8"),
   readFile(phaseGuideUrl, "utf8"),
   readFile(placementGuideUrl, "utf8"),
+  readFile(actorTransformGuideUrl, "utf8"),
   readFile(widthLinebreakGuideUrl, "utf8"),
   readFile(bubbleStyleGalleryUrl, "utf8"),
   readFile(lifecycleUrl),
@@ -109,6 +115,21 @@ requireText(quickStart, 'viewBox="0 0 1200 880"', "Quick-start SVG");
 requireText(quickStart, "close this bubble", "Quick-start SVG");
 requireText(phaseGuide, 'viewBox="0 0 1200 500"', "Phase-guide SVG");
 requireText(placementGuide, 'viewBox="0 0 1600 1560"', "Placement-guide SVG");
+requireText(
+  actorTransformGuide,
+  'viewBox="0 0 1532 486"',
+  "Actor-transform-guide SVG",
+);
+for (const value of [
+  'data-actor-transform-scene="distance-tail"',
+  'data-actor-transform-scene="offset"',
+  'data-actor-transform-scene="scale"',
+  'data-actor-bounds="true"',
+  'data-boolean-operation="union"',
+  'font-size="18"',
+]) {
+  requireText(actorTransformGuide, value, "Actor-transform-guide SVG");
+}
 for (const placement of [
   "up-up-right",
   "HEADER_LIKE",
@@ -215,6 +236,10 @@ if (
 for (const text of [
   "define bubble style",
   "set bubble placement",
+  "set bubble distance",
+  "set bubble visual style",
+  "set bubble tail length",
+  "set bubble offset x",
   "set portrait base",
   "set blink frames",
   "set talk frames",
@@ -228,6 +253,7 @@ for (const text of [
   "./assets/bubble-lifecycle.gif",
   "./assets/phase-guide.svg",
   "./assets/placement-guide.svg",
+  "./assets/actor-transform-guide.svg",
   "./assets/width-linebreak-guide.svg",
   "./assets/bubble-style-gallery.svg",
 ]) {
