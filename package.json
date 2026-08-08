@@ -1,0 +1,92 @@
+{
+  "name": "@kubohiroya/turbowarp-bubble",
+  "version": "0.1.0",
+  "description": "Composable say and think bubbles with portrait layers and animated advance indicators for TurboWarp.",
+  "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
+  "type": "module",
+  "license": "MPL-2.0",
+  "homepage": "https://github.com/kubohiroya/turbowarp-bubble#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kubohiroya/turbowarp-bubble.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kubohiroya/turbowarp-bubble/issues"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/types/composition.d.ts",
+      "import": "./dist/composition.js"
+    },
+    "./composition": {
+      "types": "./dist/types/composition.d.ts",
+      "import": "./dist/composition.js"
+    },
+    "./dist/turbowarp-bubble.js": "./dist/turbowarp-bubble.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist/",
+    "docs/",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md"
+  ],
+  "main": "./dist/composition.js",
+  "unpkg": "./dist/turbowarp-bubble.js",
+  "jsdelivr": "./dist/turbowarp-bubble.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "packageManager": "pnpm@11.18.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "pnpm build:extension && pnpm build:composition && pnpm build:types",
+    "build:extension": "vite build",
+    "build:composition": "vite build --config vite.composition.config.ts",
+    "build:types": "tsc --project tsconfig.build.json",
+    "types:composition:check": "tsc --project tsconfig.composition-consumer.json",
+    "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts eslint.config.mjs",
+    "format": "prettier --check .",
+    "format:write": "prettier --write .",
+    "docs:render": "node scripts/render-block-manual-assets.mjs",
+    "docs:check": "node scripts/check-block-manual.mjs",
+    "test": "vitest run",
+    "check:dist": "pnpm build && node scripts/check-dist.mjs",
+    "pack:check": "npm pack --dry-run --ignore-scripts",
+    "release:check": "pnpm publish --dry-run --access public",
+    "check": "pnpm typecheck && pnpm lint && pnpm format && pnpm test && pnpm docs:check && pnpm check:dist && pnpm types:composition:check && pnpm pack:check",
+    "prepack": "pnpm check"
+  },
+  "peerDependencies": {
+    "@kubohiroya/turbowarp-asset-manager": ">=0.7.0 <1",
+    "@kubohiroya/turbowarp-svg-text": ">=0.3.0 <1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@kubohiroya/turbowarp-asset-manager": "0.7.0",
+    "@kubohiroya/turbowarp-svg-text": "0.3.0",
+    "@kubohiroya/vite-plugin-turbowarp-extension": "0.1.1",
+    "@types/node": "^26.1.2",
+    "eslint": "^10.8.0",
+    "prettier": "^3.9.6",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.66.0",
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
+  },
+  "keywords": [
+    "turbowarp",
+    "scratch",
+    "extension",
+    "speech-bubble",
+    "portrait",
+    "lip-sync",
+    "advance-indicator"
+  ],
+  "dependencies": {
+    "@cto.af/linebreak": "4.0.3",
+    "jsclipper": "github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1"
+  }
+}
