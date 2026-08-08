@@ -65,7 +65,7 @@ pnpm add @kubohiroya/turbowarp-bubble \
 
 ## TurboWarp機能拡張
 
-ブロックの組み方、表情差分の準備、入力待ち、clone、エラー対処を含む手順は、[ブロック利用マニュアル](docs/block-manual.md)を参照してください。`speaking`から`waiting`、入力成立、`close`までのアニメーション例も掲載しています。
+ブロックの組み方、表情差分の準備、入力待ち、clone、エラー対処を含む手順は、ブロック利用マニュアル（[English](https://kubohiroya.github.io/turbowarp-bubble/) / [日本語](https://kubohiroya.github.io/turbowarp-bubble/ja/)）を参照してください。`speaking`から`waiting`、入力成立、`close`までのアニメーション例も掲載しています。
 
 TurboWarpの「カスタム拡張機能」から、次の3本を読み込みます。Asset ManagerとSVG Textは、最初のBubble表示より前にロードされていれば、読み込み順は問いません。
 

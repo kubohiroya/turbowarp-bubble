@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="TurboWarp Bubble機能拡張のブロック利用マニュアル。吹き出し形状、配置、表情、目パチ、口パク、入力待ちアイコンを図解します。">
+  <title>TurboWarp Bubble ブロック利用マニュアル</title>
+  <style>
+    :root { color-scheme: light dark; --ink: #25283a; --muted: #667085; --accent: #d94b68; --accent-strong: #b83255; --accent-soft: #fff0f4; --line: #d9deea; --panel: #fff; --page: #f2f4f8; --code: #25283a; }
+    @media (prefers-color-scheme: dark) { :root { --ink: #f7edf1; --muted: #c8bcc2; --accent: #ff8ca3; --accent-strong: #ffb2c1; --accent-soft: #48252f; --line: #50434a; --panel: #211c20; --page: #151215; --code: #100d10; } }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 6rem; }
+    body { margin: 0; color: var(--ink); background: radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 28rem), var(--page); font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Noto Sans JP", sans-serif; line-height: 1.75; }
+    a { color: var(--accent-strong); text-underline-offset: .18em; }
+    a:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: .2rem; }
+    .skip-link { position: absolute; top: -5rem; left: 1rem; z-index: 20; padding: .65rem .9rem; color: var(--ink); background: var(--panel); border-radius: .5rem; }
+    .skip-link:focus { top: 1rem; }
+    .site-header { position: sticky; top: 0; z-index: 10; border-bottom: 1px solid color-mix(in srgb, var(--line) 80%, transparent); background: color-mix(in srgb, var(--page) 86%, transparent); backdrop-filter: blur(16px); box-shadow: 0 2px 10px #25283a14; }
+    .header-inner { display: flex; width: min(70rem, calc(100% - 2rem)); min-height: 4.25rem; margin-inline: auto; align-items: center; gap: 1rem; }
+    .brand { display: inline-flex; align-items: center; gap: .65rem; color: var(--ink); font-weight: 800; text-decoration: none; white-space: nowrap; }
+    .brand-mark { display: grid; width: 2rem; height: 2rem; place-items: center; color: #fff; background: linear-gradient(145deg, #ff6680, #b83255); border-radius: .7rem .7rem .7rem .25rem; box-shadow: 0 7px 18px #b8325559; }
+    .primary-nav { display: flex; align-items: center; gap: 1rem; margin-left: auto; font-size: .9rem; }
+    .primary-nav a, .github-link { color: var(--muted); text-decoration: none; }
+    .primary-nav a:hover, .github-link:hover { color: var(--ink); }
+    .github-link { padding: .38rem .55rem; border-radius: .6rem; font-size: .84rem; font-weight: 750; }
+    .language-switch { display: inline-flex; flex: 0 0 auto; padding: .2rem; border: 1px solid var(--line); border-radius: 99rem; background: var(--panel); white-space: nowrap; }
+    .language-switch a { padding: .26rem .58rem; border-radius: 99rem; color: var(--muted); font-size: .82rem; font-weight: 750; text-decoration: none; }
+    .language-switch a[aria-current="page"] { color: var(--ink); background: var(--accent-soft); }
+    .manual { width: min(1080px, calc(100% - 2rem)); margin: 2rem auto 4rem; padding: clamp(1rem, 4vw, 3.5rem); background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 12px 36px #25283a12; }
+    h1, h2, h3 { line-height: 1.35; scroll-margin-top: 5rem; }
+    h1 { margin-top: 0; font-size: clamp(1.9rem, 4vw, 2.8rem); }
+    h2 { margin-top: 2.8rem; padding-bottom: .4rem; border-bottom: 2px solid var(--accent); font-size: clamp(1.45rem, 3vw, 2rem); }
+    h3 { margin-top: 2rem; font-size: 1.25rem; }
+    img { display: block; max-width: 100%; height: auto; margin: 1.5rem auto; border-radius: 12px; }
+    table { display: block; width: 100%; overflow-x: auto; border-collapse: collapse; margin: 1.2rem 0; }
+    th, td { padding: .65rem .8rem; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: var(--accent-soft); }
+    pre { overflow-x: auto; padding: 1rem 1.1rem; color: #f8fafc; background: var(--code); border-radius: 12px; line-height: 1.55; }
+    code { padding: .12em .35em; background: var(--accent-soft); border-radius: 5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+    pre code { padding: 0; color: inherit; background: transparent; }
+    blockquote { margin-left: 0; padding: .25rem 1rem; color: var(--muted); border-left: 4px solid var(--accent); }
+    .site-footer { padding: 0 1rem 3rem; color: var(--muted); text-align: center; font-size: .9rem; }
+    @media (max-width: 850px) { .primary-nav { display: none; } .github-link { margin-left: auto; } }
+    @media (max-width: 620px) { .brand-text { display: none; } .header-inner { gap: .4rem; } .github-link { padding-inline: .3rem; } .language-switch a { padding-inline: .45rem; } .manual { width: 100%; margin-top: 0; border-width: 0; border-radius: 0; box-shadow: none; } }
+    @media print { .site-header, .skip-link { display: none; } body { background: #fff; } }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#manual">マニュアル本文へ移動</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="./" aria-label="Bubble日本語マニュアルの先頭">
+        <span class="brand-mark" aria-hidden="true">B</span>
+        <span class="brand-text">TurboWarp Bubble</span>
+      </a>
+      <nav class="primary-nav" aria-label="マニュアルの章">
+        <a href="#requirements">使い始める</a>
+          <a href="#bubble-style">スタイル</a>
+          <a href="#lifecycle">表示と待機</a>
+          <a href="#reference">ブロック一覧</a>
+      </nav>
+      <a class="github-link" href="https://github.com/kubohiroya/turbowarp-bubble">GitHub</a>
+      <nav class="language-switch" aria-label="言語">
+        <a href="../" lang="en" hreflang="en">English</a>
+        <a href="./" lang="ja" hreflang="ja" aria-current="page">日本語</a>
+      </nav>
+    </div>
+  </header>
+  <main id="manual" class="manual">
+<h1>TurboWarp Bubble ブロック利用マニュアル</h1>
+<p>このマニュアルでは、<code>turbowarp-bubble</code>をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。</p>
+<p><img src="../assets/block-quick-start.svg" alt="Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に実行するブロック例"></p>
+<h2 id="requirements">1. 必要な拡張機能</h2>
+<p>次の3つはすべて「サンドボックスなしで実行」を許可して読み込みます。推奨順はAsset Manager、SVG Text、Bubbleです。実際には、最初のBubble表示より前に依存拡張が揃っていれば構いません。</p>
+<table>
+<thead>
+<tr>
+<th align="right">順番</th>
+<th>拡張機能</th>
+<th>読み込み先</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="right">1</td>
+<td>Asset Manager 0.7.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js</code></td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td>SVG Text 0.3.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js</code></td>
+</tr>
+<tr>
+<td align="right">3</td>
+<td>Bubble 0.1.0</td>
+<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js</code></td>
+</tr>
+</tbody></table>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。Bubbleだけを読み込んでも、表示時にAsset ManagerとSVG Textが見つからなければ明示的なエラーになります。</p>
+<p>参考：</p>
+<ul>
+<li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
+<li><a href="https://kubohiroya.github.io/turbowarp-svg-text/ja/">SVG Text 日本語ガイド</a></li>
+</ul>
+<h2 id="portrait">2. 表情画像を準備する</h2>
+<p>例では<code>Assets</code>という素材用spriteに、次のcostumeを入れます。素材用spriteは画面上で非表示でも構いません。</p>
+<table>
+<thead>
+<tr>
+<th>costume</th>
+<th>Asset Managerへ登録する名前</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>HeroFace</code></td>
+<td><code>HeroFace</code></td>
+<td>顔、髪、輪郭などのベース。動かす目と口は含めない</td>
+</tr>
+<tr>
+<td><code>HeroEyesOpen</code></td>
+<td><code>HeroEyesOpen</code></td>
+<td>開いた目だけを描いた透明差分</td>
+</tr>
+<tr>
+<td><code>HeroEyesClosed</code></td>
+<td><code>HeroEyesClosed</code></td>
+<td>閉じた目だけを描いた透明差分</td>
+</tr>
+<tr>
+<td><code>HeroMouthClosed</code></td>
+<td><code>HeroMouthClosed</code></td>
+<td>閉じた口だけを描いた透明差分</td>
+</tr>
+<tr>
+<td><code>HeroMouthOpen</code></td>
+<td><code>HeroMouthOpen</code></td>
+<td>開いた口だけを描いた透明差分</td>
+</tr>
+<tr>
+<td><code>Next1</code></td>
+<td><code>Next1</code></td>
+<td>「次へ」アイコンの1枚目</td>
+</tr>
+<tr>
+<td><code>Next2</code></td>
+<td><code>Next2</code></td>
+<td>「次へ」アイコンの2枚目</td>
+</tr>
+</tbody></table>
+<p>ベース、目、口の画像は同じcanvasサイズと同じ中心位置で作ります。差分画像の背景は透明にしてください。位置やcanvasサイズが異なると、レイヤーを重ねたときに目や口がずれます。</p>
+<p>Asset Managerのブロックで各costumeを登録します。</p>
+<pre><code class="language-text">register resource [costume:Assets:HeroFace] as asset [HeroFace]
+register resource [costume:Assets:HeroEyesOpen] as asset [HeroEyesOpen]
+register resource [costume:Assets:HeroEyesClosed] as asset [HeroEyesClosed]
+register resource [costume:Assets:HeroMouthClosed] as asset [HeroMouthClosed]
+register resource [costume:Assets:HeroMouthOpen] as asset [HeroMouthOpen]
+register resource [costume:Assets:Next1] as asset [Next1]
+register resource [costume:Assets:Next2] as asset [Next2]
+</code></pre>
+<p>URL画像を使う場合は、<code>RESOURCE_ID</code>へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが<code>image/*</code>のアセットだけです。</p>
+<h2 id="text-style">3. 文字styleを定義する</h2>
+<p>SVG Textで、Bubbleの文字部分に使う名前付きstyleを定義します。</p>
+<pre><code class="language-text">define text style [dialogue-text]
+  background [#fff4cc]
+  text [#332200]
+  font [Noto Sans JP]
+  size [100]
+  align [left]
+  bubble direction [up]
+</code></pre>
+<p>Bubbleは<code>dialogue-text</code>という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。</p>
+<p>SVG Text 0.3.xではblock contract上<code>bubble direction</code>入力が残っていますが、Bubbleが<code>setText</code>で生成する文字drawableの配置には使われません。Bubbleの配置は次節の<code>set bubble placement</code>で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。</p>
+<h2 id="bubble-style">4. Bubble styleを定義する</h2>
+<p>まず、Bubble style名とSVG Textのstyle名を関連付けます。</p>
+<pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
+set bubble placement [up-right] for bubble style [hero-dialogue]
+set bubble distance [12] for bubble style [hero-dialogue]
+set bubble visual style [NORMAL] for bubble style [hero-dialogue]
+set bubble tail length [18] for bubble style [hero-dialogue]
+set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
+</code></pre>
+<h3>Actor相対と背景相対のplacement</h3>
+<p><img src="../assets/placement-guide.svg" alt="Actor相対の16方向・角度指定と、背景相対の3配置を比較する図"></p>
+<p>Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。三角形tailの基部2点は実際の本体border上にあり、本体polygonとのJSClipper union後の単一pathを描くため、接合部に内部border線は残りません。</p>
+<p>背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有<code>renderBubbleSvg</code>で生成しており、TurboWarp Editorで本体drawableを生成するrendererと同じです。</p>
+<p>Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。</p>
+<pre><code class="language-text">up / up-up-right / up-right / right-up-right
+right / right-down-right / down-right / down-down-right
+down / down-down-left / down-left / left-down-left
+left / left-up-left / up-left / up-up-left
+</code></pre>
+<p><code>north</code>、<code>north-northeast</code>、<code>northeast</code>などのcompass aliasも直接入力またはreporterから指定できます。数値はScratch方向と同じ0〜360度で、<code>0</code>は上、<code>90</code>は右、<code>180</code>は下、<code>270</code>は左、<code>360</code>は<code>0</code>へ正規化されます。任意角度は16方向へ丸めません。placementを設定しないstyleは<code>up-right</code>になります。</p>
+<p>背景相対はActorから生える方向を持たず、Stage安全領域へ配置します。</p>
+<table>
+<thead>
+<tr>
+<th>placement</th>
+<th>配置</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>HEADER_LIKE</code></td>
+<td>Stage安全領域上部、水平中央</td>
+</tr>
+<tr>
+<td><code>CENTER</code></td>
+<td>Stage安全領域の水平・垂直中央</td>
+</tr>
+<tr>
+<td><code>FOOTER_LIKE</code></td>
+<td>Stage安全領域下部、水平中央</td>
+</tr>
+</tbody></table>
+<p>背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから<code>say</code>／<code>think</code>を実行する場合も、この3値のいずれかを設定します。背景相対のBubble bodyにはActorを指すtailを描画しません。</p>
+<h3>Actorとの距離、tail、本体の位置・拡大率</h3>
+<p><img src="../assets/actor-transform-guide.svg" alt="Actor相対のdistance、tail length、offset、scaleを実際のBubble SVGで比較する図"></p>
+<ul>
+<li><code>distance</code>（既定<code>12</code>）はActor boundsからtail先端までの距離です。Actor boundsとは、描画済みActorをStage座標で囲むAABB（上下左右のbounding box）です。</li>
+<li><code>tail length</code>（既定<code>18</code>）は通常位置におけるBubble borderからtail先端までの基準長です。</li>
+<li><code>offset x/y/scale</code>（既定<code>[0, 0, 100]</code>）は、xが右正、yが上正、scaleが百分率です。<code>[10, -10, 120]</code>なら、本体を右10・下10へ補正し、120%にします。</li>
+</ul>
+<p>scaleは外形だけでなく、SVG Textの文字、表情ベース・目パチ・口パク、次へアイコン、内部余白へ一体で適用されるため、表示上のフォントサイズも同じ比率で変わります。scaleだけを変更すると、本体中心を拡大半径分だけActorから離してActor側の間隔を維持します。x/y offsetはその後に加算し、tail先端を固定したまま本体borderとのunionを再生成するため、offset後のtail実長は基準値から変化します。</p>
+<p>Stage端では、拡大後のBubble全体を画面内へ収めるクランプが優先されるため、指定距離を保てない場合があります。背景相対の<code>HEADER_LIKE</code>／<code>CENTER</code>／<code>FOOTER_LIKE</code>では、これらのActor相対設定を使用しません。</p>
+<h3>幅・自動改行・禁則処理</h3>
+<p><img src="../assets/width-linebreak-guide.svg" alt="maxWidthの違いによる自動改行と、日本語禁則処理の例"></p>
+<p>図の改行結果はproductionの<code>wrapText</code>を直接実行して生成しています。<code>@cto.af/linebreak</code>がUnicode UAX #14の改行候補を返し、<code>Intl.Segmenter</code>の書記素境界で絞り込んだ後、実測幅の上限に収まる最後の候補を選びます。句読点、閉じ括弧、小書き仮名、長音、結合emojiの途中で不自然に分割しません。</p>
+<h3>Bubble visual styleの形状例</h3>
+<p><img src="../assets/bubble-style-gallery.svg" alt="10種類のBubble visual styleを同じSVG rendererで比較する図"></p>
+<p>形状候補は<code>NORMAL</code>、<code>THINKING</code>、<code>DREAMING</code>、<code>YELLING</code>、<code>OFF_PANEL</code>、<code>WAVY</code>、<code>WHISPERING</code>、<code>ANNOUNCEMENT</code>、<code>NARRATION</code>、<code>NO_BUBBLE</code>です。次のblockでBubble styleごとに選択します。</p>
+<pre><code class="language-text">set bubble visual style [YELLING] for bubble style [hero-dialogue]
+</code></pre>
+<p>図とTurboWarp Editorの本体drawableはBubble側の共有<code>renderBubbleSvg</code>から生成しています。三角形tailを持つ形状は<a href="https://github.com/platener/jsclipper">platener/jsclipper</a>による本体との和集合です。<code>THINKING</code>／<code>DREAMING</code>は丸trailのためunion対象外です。Actor相対ではActorを向くtailを生成し、背景相対ではtailを付けません。<code>NO_BUBBLE</code>では本体drawableを非表示にして文字・表情などだけを表示します。</p>
+<p>visual styleを省略した場合は<code>NORMAL</code>です。本体drawableは文字・portraitより先に生成して背面へ置きます。<code>close this bubble</code>、対象sprite／cloneの停止、runtime破棄時には、本体drawableとBubbleが所有するSVG skinも解放します。</p>
+<p><code>NEGATIVE</code>はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。</p>
+<p>続けて、表情レイヤーと入力待ちアイコンを設定します。</p>
+<pre><code class="language-text">set portrait base [HeroFace] for bubble style [hero-dialogue]
+
+set blink frames [HeroEyesOpen,HeroEyesClosed]
+  every [0.4] seconds for bubble style [hero-dialogue]
+
+set talk frames [HeroMouthClosed,HeroMouthOpen]
+  every [0.1] seconds for bubble style [hero-dialogue]
+
+set advance frames [Next1,Next2]
+  every [0.2] seconds for bubble style [hero-dialogue]
+</code></pre>
+<p><code>ASSETS</code>はカンマ区切りのAsset Managerアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。</p>
+<ul>
+<li>目パチと口パクは1枚以上指定できます。1枚だけなら表示は固定されます。</li>
+<li>「次へ」はループが分かるよう2枚以上必要です。</li>
+<li><code>SECONDS</code>は0より大きい秒数です。</li>
+<li><code>ASSETS</code>を空にすると、そのアニメーション設定を解除します。</li>
+<li>表情ベースを空にするとportrait全体を解除します。</li>
+</ul>
+<h2 id="lifecycle">5. セリフを表示して入力を待つ</h2>
+<p><code>say</code>または<code>think</code>はBubbleを表示するとすぐ次のブロックへ進み、初期phaseは<code>speaking</code>になります。</p>
+<pre><code class="language-text">say [海へ出発！] with bubble style [hero-dialogue]
+set this bubble phase [waiting]
+wait until &lt;space key pressed? or mouse down?&gt;
+close this bubble
+</code></pre>
+<p><code>waiting</code>に変えると口パクが止まり、「次へ」アイコンがループします。Bubble自身はキー入力、タップ、文字送り完了を判定しません。<code>wait until</code>など、通常のScratch/TurboWarpブロックで待ち、入力成立後に<code>close this bubble</code>を実行してください。</p>
+<p>音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で<code>waiting</code>へ切り替えます。</p>
+<p><img src="../assets/bubble-lifecycle.gif" alt="sayで口パクし、waitingで次へアイコンを動かし、入力成立後にBubbleを閉じるアニメーション"></p>
+<p>アニメーションGIFを再生できない環境では、次の比較図で各phaseを確認できます。</p>
+<p><img src="../assets/phase-guide.svg" alt="speaking、waiting、idleの目パチ、口パク、次へアイコンの状態比較"></p>
+<h2 id="phases">6. phaseの使い分け</h2>
+<table>
+<thead>
+<tr>
+<th>phase</th>
+<th>目パチ</th>
+<th>口パク</th>
+<th>「次へ」アイコン</th>
+<th>主な用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>speaking</code></td>
+<td>実行</td>
+<td>実行</td>
+<td>非表示</td>
+<td>セリフ表示中、音声再生中</td>
+</tr>
+<tr>
+<td><code>waiting</code></td>
+<td>実行</td>
+<td>停止・非表示</td>
+<td>ループ</td>
+<td>キー入力やタップ待ち</td>
+</tr>
+<tr>
+<td><code>idle</code></td>
+<td>実行</td>
+<td>停止・非表示</td>
+<td>停止・非表示</td>
+<td>Bubbleを表示したまま静止</td>
+</tr>
+</tbody></table>
+<p><code>set this bubble phase [PHASE]</code>は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に<code>say</code>または<code>think</code>を実行していない場合はエラーになります。</p>
+<h2 id="say-think">7. sayとthink</h2>
+<pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
+think [MESSAGE] with bubble style [STYLE]
+</code></pre>
+<p>どちらも同じvisual style、表情レイヤー、placement、phase制御を使えます。<code>say</code>／<code>think</code>だけで形状を固定せず、<code>set bubble visual style</code>で<code>NORMAL</code>、<code>THINKING</code>などを明示的に選びます。Composition APIのsurfaceには<code>say</code>／<code>think</code>のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。</p>
+<p>同じsprite、clone、またはStageで新しい<code>say</code>／<code>think</code>を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。</p>
+<h2 id="clones">8. cloneで使う</h2>
+<p>Bubble styleの定義は拡張機能内で共有されますが、表示中のBubbleはsprite／cloneごとに所有されます。</p>
+<ol>
+<li>元spriteで、緑の旗が押されたときにアセットとstyleを1回定義します。</li>
+<li>各clone自身から<code>say</code>または<code>think</code>を実行します。</li>
+<li>phase変更とcloseも、表示したのと同じcloneから実行します。</li>
+</ol>
+<p>cloneが停止・削除された場合は、そのtargetに属するtimer、SVG Text skin、drawableが自動解放されます。</p>
+<h2 id="reference">9. ブロック一覧</h2>
+<table>
+<thead>
+<tr>
+<th>ブロック</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>define bubble style [STYLE] using text style [TEXT_STYLE]</code></td>
+<td>Bubble styleを定義または再定義する</td>
+</tr>
+<tr>
+<td><code>set bubble placement [PLACEMENT] for bubble style [STYLE]</code></td>
+<td>Actor相対方向・角度、または背景相対領域を設定する</td>
+</tr>
+<tr>
+<td><code>set bubble distance [DISTANCE] for bubble style [STYLE]</code></td>
+<td>Actor boundsからtail先端までの距離を設定する</td>
+</tr>
+<tr>
+<td><code>set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]</code></td>
+<td>Bubble本体のSVG形状を10種類から設定する</td>
+</tr>
+<tr>
+<td><code>set bubble tail length [LENGTH] for bubble style [STYLE]</code></td>
+<td>Bubble borderからtail先端までの基準長を設定する</td>
+</tr>
+<tr>
+<td><code>set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]</code></td>
+<td>本体位置と、文字を含む全体のscaleを設定する</td>
+</tr>
+<tr>
+<td><code>set portrait base [ASSET] for bubble style [STYLE]</code></td>
+<td>portraitのベース画像を設定する</td>
+</tr>
+<tr>
+<td><code>set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td>目パチ差分と間隔を設定する</td>
+</tr>
+<tr>
+<td><code>set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td>口パク差分と間隔を設定する</td>
+</tr>
+<tr>
+<td><code>set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td>waiting中の「次へ」アニメーションを設定する</td>
+</tr>
+<tr>
+<td><code>say [MESSAGE] with bubble style [STYLE]</code></td>
+<td>speaking phaseでsay表示を開始・置換する</td>
+</tr>
+<tr>
+<td><code>think [MESSAGE] with bubble style [STYLE]</code></td>
+<td>speaking phaseでthink表示を開始・置換する</td>
+</tr>
+<tr>
+<td><code>set this bubble phase [PHASE]</code></td>
+<td>自分のBubbleを<code>speaking</code>、<code>waiting</code>、<code>idle</code>へ変更する</td>
+</tr>
+<tr>
+<td><code>close this bubble</code></td>
+<td>自分のBubbleと所有resourceを解放する</td>
+</tr>
+<tr>
+<td><code>Bubble version</code></td>
+<td>Bubble実装versionを返す</td>
+</tr>
+</tbody></table>
+<h2 id="troubleshooting">10. よくあるエラー</h2>
+<table>
+<thead>
+<tr>
+<th>状況</th>
+<th>原因と対処</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Asset Managerを要求するエラー</td>
+<td>Asset Manager 0.7.xをサンドボックスなしで読み込む</td>
+</tr>
+<tr>
+<td>SVG Textを要求するエラー</td>
+<td>SVG Text 0.3.xをサンドボックスなしで読み込む</td>
+</tr>
+<tr>
+<td><code>bubble style is not defined</code></td>
+<td><code>define bubble style</code>を先に実行する。緑の旗の再実行時も再定義する</td>
+</tr>
+<tr>
+<td>image assetが未登録</td>
+<td><code>register resource ... as asset ...</code>の完了後にBubbleを表示する</td>
+</tr>
+<tr>
+<td>assetが画像ではない</td>
+<td><code>MIME type of asset [NAME]</code>で<code>image/*</code>か確認する</td>
+</tr>
+<tr>
+<td>advance framesが1枚</td>
+<td>2枚以上にするか、空にしてadvance表示を解除する</td>
+</tr>
+<tr>
+<td>frame intervalエラー</td>
+<td><code>SECONDS</code>を0より大きい有限値にする</td>
+</tr>
+<tr>
+<td>StageからActor相対表示した</td>
+<td>placementを<code>HEADER_LIKE</code>、<code>CENTER</code>、<code>FOOTER_LIKE</code>にする</td>
+</tr>
+<tr>
+<td>placementが不正</td>
+<td>16方向、alias、0〜360度、背景相対3値のいずれかを指定する</td>
+</tr>
+<tr>
+<td>目や口がずれる</td>
+<td>ベースと全差分のcanvasサイズ、中心、透明領域を揃える</td>
+</tr>
+</tbody></table>
+<h2 id="cleanup">11. 自動解放されるタイミング</h2>
+<p>次の場合、Bubbleが所有するtimer、SVG Text skin、renderer drawableは自動的に解放されます。</p>
+<ul>
+<li><code>close this bubble</code></li>
+<li>同じsprite／cloneで次の<code>say</code>または<code>think</code>を実行したとき</li>
+<li>対象sprite／cloneが停止したとき</li>
+<li>緑の旗によるproject開始</li>
+<li>projectの全停止</li>
+<li>TurboWarp runtimeの破棄</li>
+</ul>
+<p>Asset Managerへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Managerの<code>delete asset [NAME] from memory</code>を使います。</p>
+<h2 id="regeneration">12. マニュアル画像の再生成</h2>
+<p>図とGIFはリポジトリ内のスクリプトから再生成できます。GIF生成にはImageMagickの<code>magick</code>コマンドが必要です。</p>
+<pre><code class="language-sh">pnpm docs:render
+pnpm docs:check
+</code></pre>
+<p><code>docs:check</code>は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全15ブロックへの参照、およびPages用HTMLが最新であることを検証します。</p>
+  </main>
+  <footer class="site-footer">ソースコードはMPL-2.0で公開されています。</footer>
+</body>
+</html>

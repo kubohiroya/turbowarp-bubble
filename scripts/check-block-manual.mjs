@@ -30,6 +30,10 @@ const lifecycleUrl = new URL(
   import.meta.url,
 );
 const manualUrl = new URL("../docs/block-manual.md", import.meta.url);
+const japaneseManualUrl = new URL(
+  "../docs/block-manual.ja.md",
+  import.meta.url,
+);
 
 function requireText(source, expected, label) {
   if (!source.includes(expected)) {
@@ -100,6 +104,7 @@ const [
   bubbleStyleGallery,
   lifecycle,
   manual,
+  japaneseManual,
 ] = await Promise.all([
   readFile(quickStartUrl, "utf8"),
   readFile(phaseGuideUrl, "utf8"),
@@ -109,6 +114,7 @@ const [
   readFile(bubbleStyleGalleryUrl, "utf8"),
   readFile(lifecycleUrl),
   readFile(manualUrl, "utf8"),
+  readFile(japaneseManualUrl, "utf8"),
 ]);
 
 requireText(quickStart, 'viewBox="0 0 1200 880"', "Quick-start SVG");
@@ -233,7 +239,7 @@ if (
   throw new Error(`Unexpected lifecycle GIF metadata: ${JSON.stringify(gif)}`);
 }
 
-for (const text of [
+const requiredManualReferences = [
   "define bubble style",
   "set bubble placement",
   "set bubble distance",
@@ -256,6 +262,15 @@ for (const text of [
   "./assets/actor-transform-guide.svg",
   "./assets/width-linebreak-guide.svg",
   "./assets/bubble-style-gallery.svg",
-]) {
-  requireText(manual, text, "Block manual");
+];
+for (const text of requiredManualReferences) {
+  requireText(manual, text, "English block manual");
+  requireText(japaneseManual, text, "Japanese block manual");
 }
+
+requireText(manual, "TurboWarp Bubble Block Manual", "English block manual");
+requireText(
+  japaneseManual,
+  "TurboWarp Bubble ブロック利用マニュアル",
+  "Japanese block manual",
+);
