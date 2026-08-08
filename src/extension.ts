@@ -4,7 +4,9 @@ import {
   normalizeBubbleOffset,
   normalizeBubblePlacement,
   normalizeBubbleTailLength,
+  bubbleVisualStyles,
   type BubblePlacement,
+  type BubbleVisualStyle,
 } from "./composition.js";
 import type {
   BubbleComposition,
@@ -164,6 +166,17 @@ export class BubbleExtension implements TurboWarpExtension {
         ),
       }),
     );
+  }
+
+  public setBubbleVisualStyle(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const visualStyle = this.toString(args.VISUAL_STYLE)
+      .trim()
+      .toUpperCase() as BubbleVisualStyle;
+    if (!bubbleVisualStyles.includes(visualStyle)) {
+      throw extensionError(`unsupported Bubble visual style: ${visualStyle}`);
+    }
+    this.installStyle(Object.freeze({ ...style, visualStyle }));
   }
 
   public setBubbleTailLength(args: BlockArguments): void {

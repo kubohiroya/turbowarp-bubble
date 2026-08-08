@@ -237,6 +237,7 @@ for (const text of [
   "define bubble style",
   "set bubble placement",
   "set bubble distance",
+  "set bubble visual style",
   "set bubble tail length",
   "set bubble offset x",
   "set portrait base",

@@ -42,6 +42,7 @@ bubbles.defineStyle({
   distance: 12,
   tailLength: 18,
   offset: [10, -10, 120],
+  visualStyle: "WAVY",
   portrait: {
     base: "HeroFace",
     blink: { frames: ["EyesOpen", "EyesClosed"], frameIntervalSeconds: 0.4 },

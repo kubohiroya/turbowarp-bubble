@@ -17,6 +17,18 @@ export interface RenderBubbleSvgInput {
     readonly fontSize?: number;
     readonly title?: string;
 }
+export interface BubbleBodyCenterOffsetInput {
+    readonly style: BubbleVisualStyle;
+    readonly width: number;
+    readonly height: number;
+    readonly tailDirection: number;
+    readonly tailLength?: number;
+    readonly offset: BubbleOffsetInput;
+}
+export declare function bubbleBodyCenterOffset(input: BubbleBodyCenterOffsetInput): Readonly<{
+    x: number;
+    y: number;
+}>;
 /**
  * Renders the canonical Bubble body preview as a standalone SVG document.
  * The function is pure so documentation and runtime adapters can share it.

@@ -1,6 +1,6 @@
 # TurboWarp Bubble ブロック利用マニュアル
 
-このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
+このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
 
 ![Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に実行するブロック例](./assets/block-quick-start.svg)
 
@@ -77,6 +77,7 @@ SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていま�
 define bubble style [hero-dialogue] using text style [dialogue-text]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
+set bubble visual style [NORMAL] for bubble style [hero-dialogue]
 set bubble tail length [18] for bubble style [hero-dialogue]
 set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 ```
@@ -87,7 +88,7 @@ set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 
 Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。三角形tailの基部2点は実際の本体border上にあり、本体polygonとのJSClipper union後の単一pathを描くため、接合部に内部border線は残りません。
 
-背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、図専用の近似図形ではありません。形状rendererのstandalone surface接続は後続実装です。
+背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、TurboWarp Editorで本体drawableを生成するrendererと同じです。
 
 Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
 
@@ -132,7 +133,15 @@ Stage端では、拡大後のBubble全体を画面内へ収めるクランプが
 
 ![10種類のBubble visual styleを同じSVG rendererで比較する図](./assets/bubble-style-gallery.svg)
 
-形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。図はBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は[platener/jsclipper](https://github.com/platener/jsclipper)による本体との和集合です。`THINKING`／`DREAMING`は丸trailのためunion対象外です。現段階では形状renderer基盤の仕様例であり、styleを選ぶblock／APIとstandalone surfaceへの接続は後続実装です。
+形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。次のblockでBubble styleごとに選択します。
+
+```text
+set bubble visual style [YELLING] for bubble style [hero-dialogue]
+```
+
+図とTurboWarp Editorの本体drawableはBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は[platener/jsclipper](https://github.com/platener/jsclipper)による本体との和集合です。`THINKING`／`DREAMING`は丸trailのためunion対象外です。Actor相対ではActorを向くtailを生成し、背景相対ではtailを付けません。`NO_BUBBLE`では本体drawableを非表示にして文字・表情などだけを表示します。
+
+visual styleを省略した場合は`NORMAL`です。本体drawableは文字・portraitより先に生成して背面へ置きます。`close this bubble`、対象sprite／cloneの停止、runtime破棄時には、本体drawableとBubbleが所有するSVG skinも解放します。
 
 `NEGATIVE`はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。
 

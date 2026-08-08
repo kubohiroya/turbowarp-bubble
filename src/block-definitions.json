@@ -46,6 +46,20 @@
       }
     },
     {
+      "opcode": "setBubbleVisualStyle",
+      "blockType": "COMMAND",
+      "text": "set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]",
+      "description": "Sets the SVG body shape used by this bubble style.",
+      "arguments": {
+        "VISUAL_STYLE": {
+          "type": "STRING",
+          "defaultValue": "NORMAL",
+          "menu": "visualStyle"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
       "opcode": "setBubbleTailLength",
       "blockType": "COMMAND",
       "text": "set bubble tail length [LENGTH] for bubble style [STYLE]",
@@ -149,6 +163,21 @@
     }
   ],
   "menus": {
+    "visualStyle": {
+      "acceptReporters": true,
+      "items": [
+        "NORMAL",
+        "THINKING",
+        "DREAMING",
+        "YELLING",
+        "OFF_PANEL",
+        "WAVY",
+        "WHISPERING",
+        "ANNOUNCEMENT",
+        "NARRATION",
+        "NO_BUBBLE"
+      ]
+    },
     "placement": {
       "acceptReporters": true,
       "items": [

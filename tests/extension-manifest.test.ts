@@ -89,6 +89,18 @@ describe("extension API manifest", () => {
           ],
         },
         {
+          opcode: "setBubbleVisualStyle",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "STYLE", type: "STRING" },
+            {
+              id: "VISUAL_STYLE",
+              type: "STRING",
+              menu: "visualStyle",
+            },
+          ],
+        },
+        {
           opcode: "setPortraitBase",
           blockType: "COMMAND",
           arguments: [
@@ -117,6 +129,7 @@ describe("extension API manifest", () => {
       menus: [
         { id: "phase", acceptReporters: true },
         { id: "placement", acceptReporters: true },
+        { id: "visualStyle", acceptReporters: true },
       ],
     });
     expect(serializeExtensionManifest(extensionConfig.id, definitions)).toBe(
