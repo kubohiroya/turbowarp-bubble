@@ -1,43 +1,43 @@
-# TurboWarp Bubble ブロック利用マニュアル
+# TurboWarp Bubble Block Manual
 
-このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
+This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated advance indicator.
 
-![Asset ManagerとSVG Textで準備し、Bubbleのsay、waiting、closeを順に実行するブロック例](./assets/block-quick-start.svg)
+![A quick-start block sequence that prepares Asset Manager and SVG Text, then runs Bubble say, waiting, and close blocks](./assets/block-quick-start.svg)
 
-## 1. 必要な拡張機能
+## 1. Load the required extensions
 
-次の3つはすべて「サンドボックスなしで実行」を許可して読み込みます。推奨順はAsset Manager、SVG Text、Bubbleです。実際には、最初のBubble表示より前に依存拡張が揃っていれば構いません。
+Load all three extensions with **Run without sandbox** enabled. The recommended order is Asset Manager, SVG Text, then Bubble. In practice, both dependencies only need to be available before the first Bubble is shown.
 
-| 順番 | 拡張機能            | 読み込み先                                                                                            |
-| ---: | ------------------- | ----------------------------------------------------------------------------------------------------- |
-|    1 | Asset Manager 0.7.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`        |
-|    2 | SVG Text 0.3.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                  |
-|    3 | Bubble 0.1.0        | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js` |
+| Order | Extension           | URL                                                                                                               |
+| ----: | ------------------- | ----------------------------------------------------------------------------------------------------------------- |
+|     1 | Asset Manager 0.7.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
+|     2 | SVG Text 0.3.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                              |
+|     3 | Bubble 0.1.0        | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js` |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。Bubbleだけを読み込んでも、表示時にAsset ManagerとSVG Textが見つからなければ明示的なエラーになります。
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if Asset Manager or SVG Text is missing when it tries to display a Bubble.
 
-参考：
+See also:
 
-- [Asset Manager 日本語ガイド](https://kubohiroya.github.io/turbowarp-asset-manager/ja/)
-- [SVG Text 日本語ガイド](https://kubohiroya.github.io/turbowarp-svg-text/ja/)
+- [Asset Manager guide](https://kubohiroya.github.io/turbowarp-asset-manager/)
+- [SVG Text guide](https://kubohiroya.github.io/turbowarp-svg-text/)
 
-## 2. 表情画像を準備する
+## 2. Prepare portrait assets
 
-例では`Assets`という素材用spriteに、次のcostumeを入れます。素材用spriteは画面上で非表示でも構いません。
+The following example stores costumes in a hidden asset sprite named `Assets`.
 
-| costume           | Asset Managerへ登録する名前 | 内容                                             |
-| ----------------- | --------------------------- | ------------------------------------------------ |
-| `HeroFace`        | `HeroFace`                  | 顔、髪、輪郭などのベース。動かす目と口は含めない |
-| `HeroEyesOpen`    | `HeroEyesOpen`              | 開いた目だけを描いた透明差分                     |
-| `HeroEyesClosed`  | `HeroEyesClosed`            | 閉じた目だけを描いた透明差分                     |
-| `HeroMouthClosed` | `HeroMouthClosed`           | 閉じた口だけを描いた透明差分                     |
-| `HeroMouthOpen`   | `HeroMouthOpen`             | 開いた口だけを描いた透明差分                     |
-| `Next1`           | `Next1`                     | 「次へ」アイコンの1枚目                          |
-| `Next2`           | `Next2`                     | 「次へ」アイコンの2枚目                          |
+| Costume           | Asset Manager name | Contents                                                   |
+| ----------------- | ------------------ | ---------------------------------------------------------- |
+| `HeroFace`        | `HeroFace`         | Face, hair, and outline, excluding the animated eyes/mouth |
+| `HeroEyesOpen`    | `HeroEyesOpen`     | Transparent overlay containing only the open eyes          |
+| `HeroEyesClosed`  | `HeroEyesClosed`   | Transparent overlay containing only the closed eyes        |
+| `HeroMouthClosed` | `HeroMouthClosed`  | Transparent overlay containing only the closed mouth       |
+| `HeroMouthOpen`   | `HeroMouthOpen`    | Transparent overlay containing only the open mouth         |
+| `Next1`           | `Next1`            | First frame of the advance indicator                       |
+| `Next2`           | `Next2`            | Second frame of the advance indicator                      |
 
-ベース、目、口の画像は同じcanvasサイズと同じ中心位置で作ります。差分画像の背景は透明にしてください。位置やcanvasサイズが異なると、レイヤーを重ねたときに目や口がずれます。
+Use the same canvas size and center point for the base, eye, and mouth images. Keep overlay backgrounds transparent; mismatched canvases or centers make the layers drift when composed.
 
-Asset Managerのブロックで各costumeを登録します。
+Register each costume with Asset Manager:
 
 ```text
 register resource [costume:Assets:HeroFace] as asset [HeroFace]
@@ -49,11 +49,11 @@ register resource [costume:Assets:Next1] as asset [Next1]
 register resource [costume:Assets:Next2] as asset [Next2]
 ```
 
-URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが`image/*`のアセットだけです。
+For a remote image, pass its HTTPS URL as `RESOURCE_ID`. Bubble accepts only assets already registered with Asset Manager whose MIME type is `image/*`.
 
-## 3. 文字styleを定義する
+## 3. Define a text style
 
-SVG Textで、Bubbleの文字部分に使う名前付きstyleを定義します。
+Use SVG Text to define the named style for the Bubble's text layer.
 
 ```text
 define text style [dialogue-text]
@@ -65,13 +65,13 @@ define text style [dialogue-text]
   bubble direction [up]
 ```
 
-Bubbleは`dialogue-text`という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
+Bubble refers to this style as `dialogue-text`. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.
 
-SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていますが、Bubbleが`setText`で生成する文字drawableの配置には使われません。Bubbleの配置は次節の`set bubble placement`で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。
+SVG Text 0.3.x retains a `bubble direction` input in its block contract, but Bubble does not use it when creating the text drawable through `setText`. Use `set bubble placement` in the next section instead. The obsolete SVG Text direction input is intended to be removed in a later breaking release.
 
-## 4. Bubble styleを定義する
+## 4. Define a Bubble style
 
-まず、Bubble style名とSVG Textのstyle名を関連付けます。
+First associate a Bubble style name with an SVG Text style name.
 
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
@@ -82,15 +82,15 @@ set bubble tail length [18] for bubble style [hero-dialogue]
 set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 ```
 
-### Actor相対と背景相対のplacement
+### Actor-relative and stage-relative placement
 
-![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](./assets/placement-guide.svg)
+![Actor-relative 16-way and angle placement compared with three stage-relative placements](./assets/placement-guide.svg)
 
-Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を含む独立したミニシーンで示しています。三角形tailの基部2点は実際の本体border上にあり、本体polygonとのJSClipper union後の単一pathを描くため、接合部に内部border線は残りません。
+Each of the 16 actor-relative directions is shown as a complete mini-scene containing an actor, Bubble body, tail, and text. The two tail-base points lie on the body border. The renderer uses a JSClipper union to produce a single path, so no internal border remains at the join.
 
-背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、TurboWarp Editorで本体drawableを生成するrendererと同じです。
+The three stage-relative diagrams show the Stage frame, safe area, Bubble dimensions, horizontal centerline, and relevant reference edge or center. The diagrams and the TurboWarp drawable are generated by the same shared `renderBubbleSvg` implementation.
 
-Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
+Actor-relative placement specifies the direction from the actor's center toward the center of the entire Bubble. The menu provides these 16 canonical directions:
 
 ```text
 up / up-up-right / up-right / right-up-right
@@ -99,53 +99,53 @@ down / down-down-left / down-left / left-down-left
 left / left-up-left / up-left / up-up-left
 ```
 
-`north`、`north-northeast`、`northeast`などのcompass aliasも直接入力またはreporterから指定できます。数値はScratch方向と同じ0〜360度で、`0`は上、`90`は右、`180`は下、`270`は左、`360`は`0`へ正規化されます。任意角度は16方向へ丸めません。placementを設定しないstyleは`up-right`になります。
+Compass aliases such as `north`, `north-northeast`, and `northeast` may also be typed directly or supplied by a reporter. A number uses Scratch direction semantics from 0 through 360 degrees: `0` is up, `90` right, `180` down, `270` left, and `360` normalizes to `0`. Arbitrary angles are not rounded to the 16 menu directions. The default is `up-right`.
 
-背景相対はActorから生える方向を持たず、Stage安全領域へ配置します。
+Stage-relative placements do not point at an actor and are positioned within the Stage safe area.
 
-| placement     | 配置                          |
-| ------------- | ----------------------------- |
-| `HEADER_LIKE` | Stage安全領域上部、水平中央   |
-| `CENTER`      | Stage安全領域の水平・垂直中央 |
-| `FOOTER_LIKE` | Stage安全領域下部、水平中央   |
+| Placement     | Position                                    |
+| ------------- | ------------------------------------------- |
+| `HEADER_LIKE` | Top of the Stage safe area, centered        |
+| `CENTER`      | Horizontal and vertical center of the Stage |
+| `FOOTER_LIKE` | Bottom of the Stage safe area, centered     |
 
-背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。背景相対のBubble bodyにはActorを指すtailを描画しません。
+These placements do not depend on actor coordinates, bounds, or visibility. Use one of them when running `say` or `think` from the Stage. A stage-relative Bubble has no actor-pointing tail.
 
-### Actorとの距離、tail、本体の位置・拡大率
+### Actor distance, tail, body offset, and scale
 
-![Actor相対のdistance、tail length、offset、scaleを実際のBubble SVGで比較する図](./assets/actor-transform-guide.svg)
+![Real Bubble SVGs comparing distance, tail length, offset, and scale](./assets/actor-transform-guide.svg)
 
-- `distance`（既定`12`）はActor boundsからtail先端までの距離です。Actor boundsとは、描画済みActorをStage座標で囲むAABB（上下左右のbounding box）です。
-- `tail length`（既定`18`）は通常位置におけるBubble borderからtail先端までの基準長です。
-- `offset x/y/scale`（既定`[0, 0, 100]`）は、xが右正、yが上正、scaleが百分率です。`[10, -10, 120]`なら、本体を右10・下10へ補正し、120%にします。
+- `distance` (default `12`) is the gap between the actor bounds and the tail tip. Actor bounds means the axis-aligned bounding box (AABB) of the rendered actor in Stage coordinates.
+- `tail length` (default `18`) is the nominal distance from the Bubble border to the tail tip at the normal position.
+- `offset x/y/scale` (default `[0, 0, 100]`) uses positive x to the right, positive y upward, and scale as a percentage. `[10, -10, 120]` moves the body 10 right and 10 down, then scales it to 120%.
 
-scaleは外形だけでなく、SVG Textの文字、表情ベース・目パチ・口パク、次へアイコン、内部余白へ一体で適用されるため、表示上のフォントサイズも同じ比率で変わります。scaleだけを変更すると、本体中心を拡大半径分だけActorから離してActor側の間隔を維持します。x/y offsetはその後に加算し、tail先端を固定したまま本体borderとのunionを再生成するため、offset後のtail実長は基準値から変化します。
+Scale applies to the body, SVG Text, portrait base, blink/lip-sync layers, advance indicator, and internal padding as one unit, so the displayed font size scales by the same factor. When scale alone changes, the body center moves away from the actor by the increase in radius, preserving the actor-side gap. The x/y offset is added afterward. The tail tip remains fixed and the union with the body border is regenerated, so an offset can change the effective tail length.
 
-Stage端では、拡大後のBubble全体を画面内へ収めるクランプが優先されるため、指定距離を保てない場合があります。背景相対の`HEADER_LIKE`／`CENTER`／`FOOTER_LIKE`では、これらのActor相対設定を使用しません。
+Near a Stage edge, keeping the scaled Bubble on-screen takes priority and can reduce the requested distance. Actor-relative distance, tail, offset, and scale settings do not apply to `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`.
 
-### 幅・自動改行・禁則処理
+### Width, automatic wrapping, and Japanese line-breaking rules
 
-![maxWidthの違いによる自動改行と、日本語禁則処理の例](./assets/width-linebreak-guide.svg)
+![Automatic wrapping at different maxWidth values and Japanese line-breaking examples](./assets/width-linebreak-guide.svg)
 
-図の改行結果はproductionの`wrapText`を直接実行して生成しています。`@cto.af/linebreak`がUnicode UAX #14の改行候補を返し、`Intl.Segmenter`の書記素境界で絞り込んだ後、実測幅の上限に収まる最後の候補を選びます。句読点、閉じ括弧、小書き仮名、長音、結合emojiの途中で不自然に分割しません。
+The diagram is generated by running the production `wrapText` implementation. `@cto.af/linebreak` supplies Unicode UAX #14 break opportunities, which are filtered against `Intl.Segmenter` grapheme boundaries. The renderer then chooses the last candidate that fits the measured width. It avoids unnatural breaks before punctuation, closing brackets, small kana and prolonged sound marks, and inside a combined emoji grapheme.
 
-### Bubble visual styleの形状例
+### Bubble visual styles
 
-![10種類のBubble visual styleを同じSVG rendererで比較する図](./assets/bubble-style-gallery.svg)
+![Ten Bubble visual styles rendered by the production SVG renderer](./assets/bubble-style-gallery.svg)
 
-形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。次のblockでBubble styleごとに選択します。
+Available shapes are `NORMAL`, `THINKING`, `DREAMING`, `YELLING`, `OFF_PANEL`, `WAVY`, `WHISPERING`, `ANNOUNCEMENT`, `NARRATION`, and `NO_BUBBLE`.
 
 ```text
 set bubble visual style [YELLING] for bubble style [hero-dialogue]
 ```
 
-図とTurboWarp Editorの本体drawableはBubble側の共有`renderBubbleSvg`から生成しています。三角形tailを持つ形状は[platener/jsclipper](https://github.com/platener/jsclipper)による本体との和集合です。`THINKING`／`DREAMING`は丸trailのためunion対象外です。Actor相対ではActorを向くtailを生成し、背景相対ではtailを付けません。`NO_BUBBLE`では本体drawableを非表示にして文字・表情などだけを表示します。
+The diagram and TurboWarp drawable both use Bubble's shared `renderBubbleSvg` function. Shapes with triangular tails use a [platener/jsclipper](https://github.com/platener/jsclipper) union between the body and tail. `THINKING` and `DREAMING` use circular trails and are excluded from that union. Actor-relative placement points the tail toward the actor; stage-relative placement has no tail. `NO_BUBBLE` hides the body drawable and displays only text, portrait, and other layers.
 
-visual styleを省略した場合は`NORMAL`です。本体drawableは文字・portraitより先に生成して背面へ置きます。`close this bubble`、対象sprite／cloneの停止、runtime破棄時には、本体drawableとBubbleが所有するSVG skinも解放します。
+The default visual style is `NORMAL`. The body drawable is created before text and portrait drawables so it remains behind them. `close this bubble`, target/clone disposal, and runtime disposal release the body drawable and its owned SVG skin.
 
-`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。
+`NEGATIVE` is not a separate style because it can be expressed with fill and border colors. Orientation and segments are also not public inputs; dimensions are calculated from width, font, character count, and the number of lines after wrapping.
 
-続けて、表情レイヤーと入力待ちアイコンを設定します。
+Now configure the portrait and advance animation layers:
 
 ```text
 set portrait base [HeroFace] for bubble style [hero-dialogue]
@@ -160,121 +160,121 @@ set advance frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 ```
 
-`ASSETS`はカンマ区切りのAsset Managerアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。
+`ASSETS` is a comma-separated list of Asset Manager names. Surrounding whitespace is removed; commas cannot be part of an asset name.
 
-- 目パチと口パクは1枚以上指定できます。1枚だけなら表示は固定されます。
-- 「次へ」はループが分かるよう2枚以上必要です。
-- `SECONDS`は0より大きい秒数です。
-- `ASSETS`を空にすると、そのアニメーション設定を解除します。
-- 表情ベースを空にするとportrait全体を解除します。
+- Blink and talk animations accept one or more frames. A single frame remains static.
+- Use two or more advance frames so the loop is visible.
+- `SECONDS` must be a finite number greater than zero.
+- An empty `ASSETS` input removes that animation.
+- An empty portrait base removes the whole portrait.
 
-## 5. セリフを表示して入力を待つ
+## 5. Show dialogue and wait for input
 
-`say`または`think`はBubbleを表示するとすぐ次のブロックへ進み、初期phaseは`speaking`になります。
+`say` and `think` show a Bubble immediately, continue to the next block, and begin in the `speaking` phase.
 
 ```text
-say [海へ出発！] with bubble style [hero-dialogue]
+say [Let's head for the sea!] with bubble style [hero-dialogue]
 set this bubble phase [waiting]
 wait until <space key pressed? or mouse down?>
 close this bubble
 ```
 
-`waiting`に変えると口パクが止まり、「次へ」アイコンがループします。Bubble自身はキー入力、タップ、文字送り完了を判定しません。`wait until`など、通常のScratch/TurboWarpブロックで待ち、入力成立後に`close this bubble`を実行してください。
+Changing to `waiting` stops lip-sync and loops the advance indicator. Bubble does not decide when key input, a tap, or text reveal has completed. Wait with ordinary Scratch/TurboWarp blocks, then run `close this bubble` after input is accepted.
 
-音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で`waiting`へ切り替えます。
+When combining Bubble with audio or a separate text-reveal system, switch to `waiting` when that process completes.
 
-![sayで口パクし、waitingで次へアイコンを動かし、入力成立後にBubbleを閉じるアニメーション](./assets/bubble-lifecycle.gif)
+![A say Bubble lip-syncs, shows the advance animation while waiting, then closes after input](./assets/bubble-lifecycle.gif)
 
-アニメーションGIFを再生できない環境では、次の比較図で各phaseを確認できます。
+If animated GIF playback is unavailable, use this static phase comparison:
 
-![speaking、waiting、idleの目パチ、口パク、次へアイコンの状態比較](./assets/phase-guide.svg)
+![Blink, lip-sync, and advance-indicator states in speaking, waiting, and idle phases](./assets/phase-guide.svg)
 
-## 6. phaseの使い分け
+## 6. Bubble phases
 
-| phase      | 目パチ | 口パク       | 「次へ」アイコン | 主な用途                 |
-| ---------- | ------ | ------------ | ---------------- | ------------------------ |
-| `speaking` | 実行   | 実行         | 非表示           | セリフ表示中、音声再生中 |
-| `waiting`  | 実行   | 停止・非表示 | ループ           | キー入力やタップ待ち     |
-| `idle`     | 実行   | 停止・非表示 | 停止・非表示     | Bubbleを表示したまま静止 |
+| Phase      | Blink | Lip-sync     | Advance indicator | Typical use                        |
+| ---------- | ----- | ------------ | ----------------- | ---------------------------------- |
+| `speaking` | Runs  | Runs         | Hidden            | Dialogue display or audio playback |
+| `waiting`  | Runs  | Stops/hidden | Loops             | Waiting for a key press or tap     |
+| `idle`     | Runs  | Stops/hidden | Stops/hidden      | Keep a Bubble visible and still    |
 
-`set this bubble phase [PHASE]`は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
+`set this bubble phase [PHASE]` changes only the Bubble owned by the calling sprite, clone, or Stage. It reports an error if that target has not first run `say` or `think`.
 
-## 7. sayとthink
+## 7. `say` and `think`
 
 ```text
 say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]
 ```
 
-どちらも同じvisual style、表情レイヤー、placement、phase制御を使えます。`say`／`think`だけで形状を固定せず、`set bubble visual style`で`NORMAL`、`THINKING`などを明示的に選びます。Composition APIのsurfaceには`say`／`think`のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。
+Both blocks support the same visual styles, portrait layers, placement, and phase control. The block name does not force a shape; explicitly choose `NORMAL`, `THINKING`, or another shape with `set bubble visual style`. The Composition API surface still receives a `say`/`think` kind, so a custom host can add its own kind-dependent behavior.
 
-同じsprite、clone、またはStageで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。
+Running a new `say` or `think` on the same sprite, clone, or Stage disposes the previous Bubble and its timers/drawables before replacing it. The Stage supports stage-relative placement only.
 
-## 8. cloneで使う
+## 8. Using Bubble with clones
 
-Bubble styleの定義は拡張機能内で共有されますが、表示中のBubbleはsprite／cloneごとに所有されます。
+Bubble style definitions are shared within the extension, but each sprite or clone owns its currently displayed Bubble.
 
-1. 元spriteで、緑の旗が押されたときにアセットとstyleを1回定義します。
-2. 各clone自身から`say`または`think`を実行します。
-3. phase変更とcloseも、表示したのと同じcloneから実行します。
+1. Define assets and styles once from the original sprite when the green flag is clicked.
+2. Run `say` or `think` from each clone itself.
+3. Change the phase and close the Bubble from the same clone that displayed it.
 
-cloneが停止・削除された場合は、そのtargetに属するtimer、SVG Text skin、drawableが自動解放されます。
+When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables owned by that target are released automatically.
 
-## 9. ブロック一覧
+## 9. Block reference
 
-| ブロック                                                                       | 説明                                                  |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義または再定義する                    |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する     |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Actor boundsからtail先端までの距離を設定する          |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Bubble本体のSVG形状を10種類から設定する               |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Bubble borderからtail先端までの基準長を設定する       |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | 本体位置と、文字を含む全体のscaleを設定する           |
-| `set portrait base [ASSET] for bubble style [STYLE]`                           | portraitのベース画像を設定する                        |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分と間隔を設定する                            |
-| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分と間隔を設定する                            |
-| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]` | waiting中の「次へ」アニメーションを設定する           |
-| `say [MESSAGE] with bubble style [STYLE]`                                      | speaking phaseでsay表示を開始・置換する               |
-| `think [MESSAGE] with bubble style [STYLE]`                                    | speaking phaseでthink表示を開始・置換する             |
-| `set this bubble phase [PHASE]`                                                | 自分のBubbleを`speaking`、`waiting`、`idle`へ変更する |
-| `close this bubble`                                                            | 自分のBubbleと所有resourceを解放する                  |
-| `Bubble version`                                                               | Bubble実装versionを返す                               |
+| Block                                                                          | Description                                                  |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------ |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Define or redefine a Bubble style                            |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Set an actor direction/angle or a stage-relative region      |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Set the distance from actor bounds to the tail tip           |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Select one of ten SVG body shapes                            |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Set the nominal border-to-tip tail length                    |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | Set body position and whole-Bubble scale, including text     |
+| `set portrait base [ASSET] for bubble style [STYLE]`                           | Set the portrait base image                                  |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | Set blink overlays and interval                              |
+| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | Set lip-sync overlays and interval                           |
+| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]` | Set the advance animation shown during `waiting`             |
+| `say [MESSAGE] with bubble style [STYLE]`                                      | Start or replace a `say` Bubble in the `speaking` phase      |
+| `think [MESSAGE] with bubble style [STYLE]`                                    | Start or replace a `think` Bubble in the `speaking` phase    |
+| `set this bubble phase [PHASE]`                                                | Set this target's Bubble to `speaking`, `waiting`, or `idle` |
+| `close this bubble`                                                            | Release this target's Bubble and owned resources             |
+| `Bubble version`                                                               | Report the Bubble implementation version                     |
 
-## 10. よくあるエラー
+## 10. Troubleshooting
 
-| 状況                          | 原因と対処                                                        |
-| ----------------------------- | ----------------------------------------------------------------- |
-| Asset Managerを要求するエラー | Asset Manager 0.7.xをサンドボックスなしで読み込む                 |
-| SVG Textを要求するエラー      | SVG Text 0.3.xをサンドボックスなしで読み込む                      |
-| `bubble style is not defined` | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する |
-| image assetが未登録           | `register resource ... as asset ...`の完了後にBubbleを表示する    |
-| assetが画像ではない           | `MIME type of asset [NAME]`で`image/*`か確認する                  |
-| advance framesが1枚           | 2枚以上にするか、空にしてadvance表示を解除する                    |
-| frame intervalエラー          | `SECONDS`を0より大きい有限値にする                                |
-| StageからActor相対表示した    | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする           |
-| placementが不正               | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する          |
-| 目や口がずれる                | ベースと全差分のcanvasサイズ、中心、透明領域を揃える              |
+| Symptom                              | Cause and solution                                                          |
+| ------------------------------------ | --------------------------------------------------------------------------- |
+| Asset Manager required error         | Load Asset Manager 0.7.x without sandbox                                    |
+| SVG Text required error              | Load SVG Text 0.3.x without sandbox                                         |
+| `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag |
+| Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble     |
+| Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                            |
+| Only one advance frame               | Supply at least two frames, or clear the setting                            |
+| Frame interval error                 | Use a finite `SECONDS` value greater than zero                              |
+| Actor-relative Bubble from the Stage | Use `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`                               |
+| Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value  |
+| Eyes or mouth are misaligned         | Match canvas size, center, and transparent area across all portrait layers  |
 
-## 11. 自動解放されるタイミング
+## 11. Automatic cleanup
 
-次の場合、Bubbleが所有するtimer、SVG Text skin、renderer drawableは自動的に解放されます。
+Bubble automatically releases its owned timers, SVG Text skins, and renderer drawables when:
 
-- `close this bubble`
-- 同じsprite／cloneで次の`say`または`think`を実行したとき
-- 対象sprite／cloneが停止したとき
-- 緑の旗によるproject開始
-- projectの全停止
-- TurboWarp runtimeの破棄
+- `close this bubble` runs;
+- the same sprite or clone runs another `say` or `think`;
+- the target sprite or clone stops;
+- the green flag starts the project;
+- the whole project stops; or
+- the TurboWarp runtime is disposed.
 
-Asset Managerへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Managerの`delete asset [NAME] from memory`を使います。
+Assets registered with Asset Manager are not owned by Bubble. To remove an unused registered image from memory, close the Bubble first and then use Asset Manager's `delete asset [NAME] from memory` block.
 
-## 12. マニュアル画像の再生成
+## 12. Regenerating the manual assets
 
-図とGIFはリポジトリ内のスクリプトから再生成できます。GIF生成にはImageMagickの`magick`コマンドが必要です。
+The diagrams and GIF are generated from scripts in this repository. GIF generation requires the ImageMagick `magick` command.
 
 ```sh
 pnpm docs:render
 pnpm docs:check
 ```
 
-`docs:check`は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全15ブロックへの参照、およびPages用HTMLが最新であることを検証します。
+`docs:check` verifies SVG viewBoxes, production-renderer and `wrapText` markers, every visual style, the GIF dimensions/frame count/loop setting, references to all images and 15 blocks in both language manuals, and that the generated GitHub Pages HTML is current.
