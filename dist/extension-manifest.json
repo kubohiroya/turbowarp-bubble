@@ -153,6 +153,21 @@
       ]
     },
     {
+      "opcode": "setBubbleVisualStyle",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        },
+        {
+          "id": "VISUAL_STYLE",
+          "type": "STRING",
+          "menu": "visualStyle"
+        }
+      ]
+    },
+    {
       "opcode": "setPortraitBase",
       "blockType": "COMMAND",
       "arguments": [
@@ -206,6 +221,10 @@
     },
     {
       "id": "placement",
+      "acceptReporters": true
+    },
+    {
+      "id": "visualStyle",
       "acceptReporters": true
     }
   ]

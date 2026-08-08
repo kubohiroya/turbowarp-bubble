@@ -148,6 +148,7 @@ describe("Bubble composition", () => {
           distance: 12,
           tailLength: 18,
           offset: { x: 0, y: 0, scalePercent: 100 },
+          visualStyle: "NORMAL",
         }),
       }),
     );
@@ -228,6 +229,7 @@ describe("Bubble composition", () => {
       distance: 6,
       tailLength: 24,
       offset: [10, -10, 120],
+      visualStyle: "WAVY",
     });
     await harness.composition.show({
       actor: {},
@@ -242,6 +244,7 @@ describe("Bubble composition", () => {
           distance: 6,
           tailLength: 24,
           offset: { x: 10, y: -10, scalePercent: 120 },
+          visualStyle: "WAVY",
         }),
       }),
     );
@@ -365,6 +368,13 @@ describe("Bubble composition", () => {
           frames: ["Next1"],
           frameIntervalSeconds: 0.2,
         },
+      }),
+    ).toThrowError(BubbleCompositionError);
+    expect(() =>
+      harness.composition.defineStyle({
+        name: "bad-visual-style",
+        textStyle: "default",
+        visualStyle: "ROUND" as "NORMAL",
       }),
     ).toThrowError(BubbleCompositionError);
     expect(() =>

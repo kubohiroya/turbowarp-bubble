@@ -1,5 +1,6 @@
 import {
   createBubbleComposition,
+  defaultBubbleTailLength,
   type BubbleComposition,
   type BubbleCompositionOptions,
   type BubbleLayer,
@@ -9,11 +10,17 @@ import {
   type BubbleSurfaceTargets,
 } from "./composition.js";
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
+import { bubbleBodyCenterOffset, renderBubbleSvg } from "./bubble-svg.js";
+import {
+  bubbleDirectionVector,
+  type BubbleDirectionName,
+} from "./placement.js";
 
 const spriteLayer = "sprite";
 const portraitBoxSize = 96;
 const indicatorBoxSize = 18;
 const contentGap = 8;
+const bubblePadding = 24;
 const stageSafeMargin = 16;
 let surfaceSequence = 0;
 
@@ -34,8 +41,10 @@ export interface TurboWarpBubbleTarget {
 }
 
 export interface TurboWarpBubbleRenderer {
+  createSVGSkin(svg: string): number;
   createDrawable(layerGroup: string): number;
   destroyDrawable(drawableId: number, layerGroup: string): void;
+  destroySkin(skinId: number): void;
   getCurrentSkinSize(drawableId: number): unknown;
   getNativeSize(): unknown;
   updateDrawablePosition(drawableId: number, position: [number, number]): void;
@@ -112,8 +121,10 @@ function requireRenderer(value: unknown): TurboWarpBubbleRenderer {
     );
   }
   const methods = [
+    "createSVGSkin",
     "createDrawable",
     "destroyDrawable",
+    "destroySkin",
     "getCurrentSkinSize",
     "getNativeSize",
     "updateDrawablePosition",
@@ -218,6 +229,34 @@ function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
+function expandSvgViewport(
+  svg: string,
+  width: number,
+  height: number,
+  extraX: number,
+  extraY: number,
+): string {
+  const expandedWidth = width + extraX * 2;
+  const expandedHeight = height + extraY * 2;
+  return svg.replace(/<svg\b[^>]*>/u, (root) =>
+    root
+      .replace(/\bwidth="[^"]*"/u, `width="${expandedWidth}"`)
+      .replace(/\bheight="[^"]*"/u, `height="${expandedHeight}"`)
+      .replace(
+        /\bviewBox="[^"]*"/u,
+        `viewBox="${-extraX} ${-extraY} ${expandedWidth} ${expandedHeight}"`,
+      ),
+  );
+}
+
+function tailDirectionForPlacement(
+  direction: BubbleDirectionName | number,
+): number {
+  const vector = bubbleDirectionVector(direction);
+  const degrees = (Math.atan2(-vector.x, -vector.y) * 180) / Math.PI;
+  return ((degrees % 360) + 360) % 360;
+}
+
 function createSurface(
   runtime: TurboWarpBubbleRuntime,
   actor: TurboWarpBubbleTarget,
@@ -228,6 +267,7 @@ function createSurface(
   const sequence = surfaceSequence;
   surfaceSequence += 1;
   const drawables: DrawableTarget[] = [];
+  let bodySkinId: number | undefined;
 
   const createTarget = (layer: string): DrawableTarget => {
     const drawableID = renderer.createDrawable(spriteLayer);
@@ -249,6 +289,7 @@ function createSurface(
   };
 
   try {
+    const body = createTarget("body");
     const portraitBase = style.portrait
       ? createTarget("portrait-base")
       : undefined;
@@ -279,10 +320,15 @@ function createSurface(
     const layerVisibility = new Map<BubbleLayer, boolean>();
     let surfaceVisible = false;
     let disposed = false;
+    let cachedBodySkinSignature = "";
 
     const updateVisibility = (): void => {
       const actorVisible =
         style.placement.basis === "background" || actor.visible !== false;
+      renderer.updateDrawableVisible(
+        body.drawableID,
+        surfaceVisible && actorVisible && style.visualStyle !== "NO_BUBBLE",
+      );
       renderer.updateDrawableVisible(
         text.drawableID,
         surfaceVisible && actorVisible,
@@ -334,6 +380,13 @@ function createSurface(
         (portraitBase ? contentGap * scaleMultiplier : 0) +
         textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
+      const baseBubbleWidth = totalWidth / scaleMultiplier + bubblePadding * 2;
+      const baseBubbleHeight =
+        contentHeight / scaleMultiplier + bubblePadding * 2;
+      // The SVG viewport includes padding for the tail. Placement and clamping
+      // use the visible body border, whose dimensions match the content box.
+      const bubbleWidth = totalWidth;
+      const bubbleHeight = contentHeight;
       const nativeSize = renderer.getNativeSize();
       const stageWidth =
         Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
@@ -347,19 +400,19 @@ function createSurface(
       const stageRight = stageWidth / 2;
       const stageTop = stageHeight / 2;
       const stageBottom = -stageHeight / 2;
-      const minimumCenterX = stageLeft + totalWidth / 2;
-      const maximumCenterX = stageRight - totalWidth / 2;
-      const minimumCenterY = stageBottom + contentHeight / 2;
-      const maximumCenterY = stageTop - contentHeight / 2;
+      const minimumCenterX = stageLeft + bubbleWidth / 2;
+      const maximumCenterX = stageRight - bubbleWidth / 2;
+      const minimumCenterY = stageBottom + bubbleHeight / 2;
+      const maximumCenterY = stageTop - bubbleHeight / 2;
       let centerX: number;
       let centerY: number;
 
       if (style.placement.basis === "background") {
         centerX = 0;
         if (style.placement.region === "HEADER_LIKE") {
-          centerY = stageTop - stageSafeMargin - contentHeight / 2;
+          centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
         } else if (style.placement.region === "FOOTER_LIKE") {
-          centerY = stageBottom + stageSafeMargin + contentHeight / 2;
+          centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
         } else {
           centerY = 0;
         }
@@ -367,8 +420,8 @@ function createSurface(
         const bounds = targetBounds(actor);
         const center = actorRelativeBubbleCenter({
           bounds,
-          bubbleWidth: totalWidth,
-          bubbleHeight: contentHeight,
+          bubbleWidth,
+          bubbleHeight,
           direction: style.placement.direction,
           distance: style.distance,
           tailLength: style.tailLength,
@@ -380,6 +433,92 @@ function createSurface(
 
       centerX = clamp(centerX, minimumCenterX, maximumCenterX);
       centerY = clamp(centerY, minimumCenterY, maximumCenterY);
+      const tailDirection =
+        style.placement.basis === "actor"
+          ? tailDirectionForPlacement(style.placement.direction)
+          : null;
+      const bodyOffset =
+        style.placement.basis === "actor"
+          ? ([
+              style.offset.x,
+              style.offset.y,
+              style.offset.scalePercent,
+            ] as const)
+          : ([0, 0, 100] as const);
+      const bodyCenterOffset =
+        tailDirection === null
+          ? { x: 0, y: 0 }
+          : bubbleBodyCenterOffset({
+              style: style.visualStyle,
+              width: baseBubbleWidth,
+              height: baseBubbleHeight,
+              tailDirection,
+              tailLength: style.tailLength,
+              offset: bodyOffset,
+            });
+      const viewportExtraX =
+        Math.abs(bodyOffset[0]) +
+        baseBubbleWidth * Math.abs(scaleMultiplier - 1) +
+        Math.max(0, style.tailLength - defaultBubbleTailLength) +
+        8;
+      const viewportExtraY =
+        Math.abs(bodyOffset[1]) +
+        baseBubbleHeight * Math.abs(scaleMultiplier - 1) +
+        Math.max(0, style.tailLength - defaultBubbleTailLength) +
+        8;
+      const nextBodySkinSignature = JSON.stringify({
+        baseBubbleHeight,
+        baseBubbleWidth,
+        bodyOffset,
+        tailDirection,
+        tailLength: style.tailLength,
+        viewportExtraX,
+        viewportExtraY,
+        visualStyle: style.visualStyle,
+      });
+      if (nextBodySkinSignature !== cachedBodySkinSignature) {
+        const rendered = renderBubbleSvg({
+          style: style.visualStyle,
+          lines: [],
+          width: baseBubbleWidth,
+          height: baseBubbleHeight,
+          tailDirection,
+          tailLength: style.tailLength,
+          offset: bodyOffset,
+          title: `${style.name} Bubble body`,
+        });
+        const expanded = expandSvgViewport(
+          rendered,
+          baseBubbleWidth,
+          baseBubbleHeight,
+          viewportExtraX,
+          viewportExtraY,
+        );
+        const nextSkinId = renderer.createSVGSkin(expanded);
+        if (!Number.isInteger(nextSkinId) || nextSkinId < 0) {
+          throw new BubbleRuntimeAdapterError(
+            "BUBBLE-RUNTIME-001",
+            "TurboWarp did not create the Bubble body SVG skin.",
+          );
+        }
+        try {
+          renderer.updateDrawableSkinId(body.drawableID, nextSkinId);
+        } catch (error) {
+          renderer.destroySkin(nextSkinId);
+          throw error;
+        }
+        const previousBodySkinId = bodySkinId;
+        bodySkinId = nextSkinId;
+        cachedBodySkinSignature = nextBodySkinSignature;
+        if (previousBodySkinId !== undefined) {
+          renderer.destroySkin(previousBodySkinId);
+        }
+      }
+      renderer.updateDrawableScale(body.drawableID, [100, 100]);
+      renderer.updateDrawablePosition(body.drawableID, [
+        centerX - bodyCenterOffset.x,
+        centerY + bodyCenterOffset.y,
+      ]);
       const left = centerX - totalWidth / 2;
       const portraitX = left + portraitSize.width / 2;
       const textX =
@@ -449,6 +588,10 @@ function createSurface(
         for (const target of [...drawables].reverse()) {
           renderer.destroyDrawable(target.drawableID, spriteLayer);
         }
+        if (bodySkinId !== undefined) {
+          renderer.destroySkin(bodySkinId);
+          bodySkinId = undefined;
+        }
         runtime.requestRedraw?.();
       },
     });
@@ -456,6 +599,7 @@ function createSurface(
     for (const target of [...drawables].reverse()) {
       renderer.destroyDrawable(target.drawableID, spriteLayer);
     }
+    if (bodySkinId !== undefined) renderer.destroySkin(bodySkinId);
     throw error;
   }
 }

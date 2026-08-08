@@ -60,6 +60,15 @@ export interface RenderBubbleSvgInput {
   readonly title?: string;
 }
 
+export interface BubbleBodyCenterOffsetInput {
+  readonly style: BubbleVisualStyle;
+  readonly width: number;
+  readonly height: number;
+  readonly tailDirection: number;
+  readonly tailLength?: number;
+  readonly offset: BubbleOffsetInput;
+}
+
 interface Point {
   readonly x: number;
   readonly y: number;
@@ -454,6 +463,44 @@ function wavyBodyPoints(width: number, height: number): Point[] {
       y: top + ratio * (bottom - top),
     })),
   ];
+}
+
+function transformReferenceBody(
+  style: BubbleVisualStyle,
+  width: number,
+  height: number,
+): readonly Point[] {
+  if (style === "YELLING") return burstBodyPoints(width, height);
+  if (style === "WAVY") return wavyBodyPoints(width, height);
+  return roundedRectanglePoints(width, height);
+}
+
+export function bubbleBodyCenterOffset(
+  input: BubbleBodyCenterOffsetInput,
+): Readonly<{ x: number; y: number }> {
+  const width = requireDimension(input.width, 220);
+  const height = requireDimension(input.height, 112);
+  const direction = normalizeDirection(input.tailDirection);
+  if (direction === null) {
+    throw new TypeError("Bubble body center offset requires a tail direction.");
+  }
+  const tailLength = normalizeSvgTailLength(
+    input.tailLength ?? svgDefaultTailLength,
+  );
+  const offset = normalizeSvgOffset(input.offset);
+  const center = { x: width / 2, y: height / 2 };
+  const transformed = transformedBodyGeometry(
+    transformReferenceBody(input.style, width, height),
+    width,
+    height,
+    direction,
+    tailLength,
+    offset,
+  );
+  return Object.freeze({
+    x: transformed.bodyCenter.x - center.x,
+    y: transformed.bodyCenter.y - center.y,
+  });
 }
 
 function renderBody(

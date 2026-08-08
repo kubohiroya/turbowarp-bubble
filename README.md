@@ -69,7 +69,7 @@ https://unpkg.com/@kubohiroya/turbowarp-svg-text/dist/svg-text.js
 https://unpkg.com/@kubohiroya/turbowarp-bubble/dist/turbowarp-bubble.js
 ```
 
-Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
+Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。SVG本体、文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
 
 ### 提供ブロック
 
@@ -78,6 +78,7 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する                 |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Actor boundsからtail先端までの距離を設定する                      |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`              | Bubble本体のSVG形状を10種類から設定する                           |
 | `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Bubble borderからtail先端までの基準長を設定する                   |
 | `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | 本体位置と、文字を含むBubble全体の拡大率を設定する                |
 | `set portrait base [ASSET] for bubble style [STYLE]`                           | 表情ベース画像を設定する。空文字でportrait全体を解除する          |
@@ -91,6 +92,8 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | `Bubble version`                                                               | 実装versionを返す                                                 |
 
 `ASSETS`はAsset Managerへ登録済みの画像アセット名をカンマ区切りで指定します。アセット名自体にカンマは使用できません。すべての`SECONDS`は0より大きい秒数です。
+
+visual styleを設定しない場合は`NORMAL`です。本体drawableは文字・表情より背面に生成され、close、対象停止、runtime破棄時にSVG skinとともに解放されます。
 
 ### Placement
 
@@ -114,7 +117,7 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図の外形は共有`renderBubbleSvg`から生成しています。現在のstandalone rendererは配置基準を実装済みですが、この形状rendererのsurface接続は後続実装です。
+図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図とTurboWarp Editorの本体drawableは、どちらも共有`renderBubbleSvg`から生成します。
 
 ![Actor相対のdistance、tail length、offset、scaleを比較する図](docs/assets/actor-transform-guide.svg)
 
@@ -138,6 +141,7 @@ Actor相対の`distance`はActorのStage座標AABB（axis-aligned bounding box�
 define bubble style [hero-dialogue] using text style [dialogue-text]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
+set bubble visual style [NORMAL] for bubble style [hero-dialogue]
 set bubble tail length [18] for bubble style [hero-dialogue]
 set bubble offset x [10] y [-10] scale [120] % for bubble style [hero-dialogue]
 set portrait base [HeroFace] for bubble style [hero-dialogue]
@@ -198,6 +202,7 @@ bubbles.defineStyle({
   textStyle: "dialogue-text",
   placement: "north-northeast",
   distance: 12,
+  visualStyle: "NORMAL",
   tailLength: 18,
   offset: [10, -10, 120],
   portrait: {

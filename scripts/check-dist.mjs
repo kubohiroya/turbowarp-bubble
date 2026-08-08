@@ -38,6 +38,7 @@ for (const name of [
   "BubbleHandle",
   "BubbleStyleInput",
   "BubblePlacement",
+  "BubbleBodyCenterOffsetInput",
   "BubbleVisualStyle",
   "LineBreakProvider",
   "WrappedTextLayout",
@@ -63,6 +64,7 @@ for (const value of [
   "defineBubbleStyle",
   "setBubblePlacement",
   "setBubbleDistance",
+  "setBubbleVisualStyle",
   "setBubbleTailLength",
   "setBubbleOffset",
   "sayWithBubbleStyle",
@@ -75,7 +77,7 @@ for (const value of [
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 14) {
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 15) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

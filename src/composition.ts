@@ -22,6 +22,7 @@ import {
   type BubbleOffset,
   type BubbleOffsetInput,
 } from "./actor-transform.js";
+import { bubbleVisualStyles, type BubbleVisualStyle } from "./bubble-svg.js";
 
 export {
   UnicodeLineBreakProvider,
@@ -61,8 +62,10 @@ export {
   type BubbleOffsetInput,
 } from "./actor-transform.js";
 export {
+  bubbleBodyCenterOffset,
   bubbleVisualStyles,
   renderBubbleSvg,
+  type BubbleBodyCenterOffsetInput,
   type BubbleVisualStyle,
   type RenderBubbleSvgInput,
 } from "./bubble-svg.js";
@@ -90,6 +93,7 @@ export interface BubbleStyleInput {
   readonly distance?: number;
   readonly tailLength?: number;
   readonly offset?: BubbleOffsetInput;
+  readonly visualStyle?: BubbleVisualStyle;
   readonly portrait?: BubblePortraitInput;
   readonly advanceIndicator?: BubbleFrameAnimationInput;
 }
@@ -112,6 +116,7 @@ export interface BubbleStyle {
   readonly distance: number;
   readonly tailLength: number;
   readonly offset: BubbleOffset;
+  readonly visualStyle: BubbleVisualStyle;
   readonly portrait?: BubblePortrait;
   readonly advanceIndicator?: BubbleFrameAnimation;
 }
@@ -348,6 +353,7 @@ function normalizeStyle(value: unknown): NormalizedStyle {
       "distance",
       "tailLength",
       "offset",
+      "visualStyle",
       "portrait",
       "advanceIndicator",
     ],
@@ -396,6 +402,16 @@ function normalizeStyle(value: unknown): NormalizedStyle {
         : "Bubble actor-relative transform is invalid.",
     );
   }
+  const visualStyle = value.visualStyle ?? "NORMAL";
+  if (
+    typeof visualStyle !== "string" ||
+    !bubbleVisualStyles.includes(visualStyle as BubbleVisualStyle)
+  ) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `Unsupported Bubble visual style: ${String(visualStyle)}`,
+    );
+  }
   return Object.freeze({
     name: requireName(value.name, "Bubble style name"),
     textStyle: requireName(value.textStyle, "Bubble text style name"),
@@ -403,6 +419,7 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     distance,
     tailLength,
     offset,
+    visualStyle: visualStyle as BubbleVisualStyle,
     ...(portrait === undefined ? {} : { portrait }),
     ...(advanceIndicator === undefined ? {} : { advanceIndicator }),
   });
