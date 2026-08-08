@@ -7,5 +7,9 @@
     "rootDir": "src",
     "types": []
   },
-  "include": ["src/composition.ts", "src/jsclipper.d.ts"]
+  "include": [
+    "src/composition.ts",
+    "src/turbowarp-adapter.ts",
+    "src/jsclipper.d.ts"
+  ]
 }

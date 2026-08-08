@@ -3,8 +3,10 @@ import {
   defaultBubbleTailLength,
   type BubbleComposition,
   type BubbleCompositionOptions,
+  type BubbleAssetManager,
   type BubbleLayer,
   type BubbleScheduler,
+  type BubbleSvgText,
   type BubbleStyle,
   type BubbleSurface,
   type BubbleSurfaceTargets,
@@ -83,6 +85,8 @@ export interface TurboWarpBubbleRuntime {
 }
 
 export interface TurboWarpBubbleCompositionOptions {
+  readonly assetManager?: BubbleAssetManager;
+  readonly svgText?: BubbleSvgText;
   readonly scheduler?: BubbleScheduler;
   readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];
 }
@@ -616,53 +620,57 @@ export function createTurboWarpBubbleComposition(
   }
   const runtime = runtimeInput;
   const renderer = requireRenderer(runtime.renderer);
-  const assetExtension = requireAssetManager(
-    runtime.ext_kubohiroyaassetmanager,
-  );
-  const svgTextExtension = requireSvgText(runtime.ext_kubohiroyasvgtext);
+  const assetExtension = options.assetManager
+    ? null
+    : requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+  const svgTextExtension = options.svgText
+    ? null
+    : requireSvgText(runtime.ext_kubohiroyasvgtext);
+  const assetManager: BubbleAssetManager = options.assetManager ?? {
+    isRegistered(name: unknown): boolean {
+      return assetExtension?.isLoaded({ NAME: name }) ?? false;
+    },
+    getMimeType(name: unknown): string {
+      return assetExtension?.getAssetMimeType({ NAME: name }) ?? "";
+    },
+    async applyToTarget(name, target): Promise<void> {
+      const drawableID = (target as unknown as DrawableTarget).drawableID;
+      if (!Number.isInteger(drawableID) || drawableID < 0) {
+        throw new BubbleRuntimeAdapterError(
+          "BUBBLE-RUNTIME-001",
+          "Bubble image target drawable is invalid.",
+        );
+      }
+      const skin = await assetExtension?.resolveSkin(name);
+      if (
+        !isRecord(skin) ||
+        !Number.isInteger(skin.skinId) ||
+        skin.skinId < 0
+      ) {
+        throw new BubbleRuntimeAdapterError(
+          "BUBBLE-RUNTIME-002",
+          `Asset Manager did not resolve an image skin: ${String(name)}`,
+        );
+      }
+      renderer.updateDrawableSkinId(drawableID, skin.skinId);
+      runtime.requestRedraw?.();
+    },
+  };
+  const svgText: BubbleSvgText = options.svgText ?? {
+    setText({ styleName, target, text }): void {
+      svgTextExtension?.setText(
+        { STYLE: styleName, TEXT: text },
+        { target: target as TurboWarpBubbleTarget },
+      );
+    },
+    releaseTarget(target): void {
+      svgTextExtension?.releaseTextActor(target as TurboWarpBubbleTarget);
+    },
+  };
 
   return createBubbleComposition({
-    assetManager: {
-      isRegistered(name: unknown): boolean {
-        return assetExtension.isLoaded({ NAME: name });
-      },
-      getMimeType(name: unknown): string {
-        return assetExtension.getAssetMimeType({ NAME: name });
-      },
-      async applyToTarget(name, target): Promise<void> {
-        const drawableID = (target as unknown as DrawableTarget).drawableID;
-        if (!Number.isInteger(drawableID) || drawableID < 0) {
-          throw new BubbleRuntimeAdapterError(
-            "BUBBLE-RUNTIME-001",
-            "Bubble image target drawable is invalid.",
-          );
-        }
-        const skin = await assetExtension.resolveSkin(name);
-        if (
-          !isRecord(skin) ||
-          !Number.isInteger(skin.skinId) ||
-          skin.skinId < 0
-        ) {
-          throw new BubbleRuntimeAdapterError(
-            "BUBBLE-RUNTIME-002",
-            `Asset Manager did not resolve an image skin: ${String(name)}`,
-          );
-        }
-        renderer.updateDrawableSkinId(drawableID, skin.skinId);
-        runtime.requestRedraw?.();
-      },
-    },
-    svgText: {
-      setText({ styleName, target, text }): void {
-        svgTextExtension.setText(
-          { STYLE: styleName, TEXT: text },
-          { target: target as TurboWarpBubbleTarget },
-        );
-      },
-      releaseTarget(target): void {
-        svgTextExtension.releaseTextActor(target as TurboWarpBubbleTarget);
-      },
-    },
+    assetManager,
+    svgText,
     createSurface({ actor, actorKey, style }) {
       if (!isRecord(actor) || typeof actor.id !== "string") {
         throw new BubbleRuntimeAdapterError(

@@ -176,6 +176,14 @@ describe("Bubble composition", () => {
     expect(handle.animationMode).toBe("talking");
     expect(harness.composition.hasActiveBubble("Hero")).toBe(true);
     expect(harness.scheduler.size).toBe(2);
+
+    await handle.setText("こんにちは、浦島太郎です");
+    expect(harness.setText).toHaveBeenLastCalledWith({
+      styleName: "dialogue-text",
+      target: harness.surface.targets.text,
+      text: "こんにちは、浦島太郎です",
+    });
+    expect(harness.surface.show).toHaveBeenCalledTimes(2);
   });
 
   it("normalizes direction aliases and background regions in styles", async () => {

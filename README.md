@@ -173,6 +173,16 @@ close this bubble
 
 ## Composition API
 
+TurboWarp runtimeのrenderer、Asset Manager、SVG Textへ直接接続するhostでは、公開adapterを利用できます。
+
+```ts
+import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
+
+const bubbles = createTurboWarpBubbleComposition(runtime);
+```
+
+描画surfaceをhost側で実装する場合は、以下の低レベルComposition APIを利用します。
+
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
 import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
@@ -265,7 +275,7 @@ await bubble.setAnimationMode("idle");
 await bubble.close();
 ```
 
-同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、SVG Text target、surfaceを解放します。composition間で状態は共有しません。
+返されたhandleの`setText(text)`は同じsurface上の本文を更新し、文字送りなどに利用できます。同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、SVG Text target、surfaceを解放します。composition間で状態は共有しません。
 
 ## DSL 4.0との関係
 
