@@ -4196,7 +4196,7 @@ function Yr(e) {
 		"text"
 	], [], "Text actor input"), typeof e.text != "string") throw new Z("BUBBLE-COMPOSITION-001", "Text actor text must be a string.");
 	return Object.freeze({
-		actor: ti(e.actor),
+		actor: ni(e.actor),
 		actorKey: $(e.actorKey, "Text actor key"),
 		styleName: $(e.styleName, "Text actor style name"),
 		text: e.text
@@ -4210,53 +4210,60 @@ function Zr(e) {
 	if (!Q(e) || typeof e.defineStyle != "function" || typeof e.setText != "function" || typeof e.releaseTarget != "function") throw TypeError("Bubble SVG Text composition must provide defineStyle, setText, and releaseTarget.");
 	return e;
 }
-function Qr() {
+function Qr(e, t) {
+	if (e.setPopupText) {
+		e.setPopupText(t);
+		return;
+	}
+	e.setText(t);
+}
+function $r() {
 	return Object.freeze({
 		setTimeout: (e, t) => globalThis.setTimeout(e, t),
 		clearTimeout: (e) => globalThis.clearTimeout(e)
 	});
 }
-function $r(e) {
+function ei(e) {
 	if (!Q(e) || typeof e.setTimeout != "function" || typeof e.clearTimeout != "function") throw TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
 	return e;
 }
-function ei(e, t) {
+function ti(e, t) {
 	if (!Q(e) || typeof e.id != "string" || e.id.length === 0 || typeof e.isStage != "boolean") throw new Z("BUBBLE-COMPOSITION-004", `${t} must provide id and isStage.`);
 	return e;
 }
-function ti(e) {
+function ni(e) {
 	if (!Q(e) || typeof e.drawableID != "number" || !Number.isInteger(e.drawableID) || e.drawableID < 0) throw new Z("BUBBLE-COMPOSITION-004", "Bubble text target must provide a non-negative integer drawableID.");
 	return e;
 }
-function ni(e, t) {
+function ri(e, t) {
 	if (!Q(e) || !Q(e.targets) || typeof e.setLayerVisible != "function" || typeof e.show != "function" || typeof e.hide != "function" || typeof e.dispose != "function") throw new Z("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
 	let n = e.targets;
-	ti(n.text);
+	ni(n.text);
 	let r = /* @__PURE__ */ new Set(), i = (e, t) => {
 		let i = n[e];
 		if (!t && i === void 0) return;
-		let a = ei(i, `Bubble surface ${e}`);
+		let a = ti(i, `Bubble surface ${e}`);
 		if (r.has(a.id)) throw new Z("BUBBLE-COMPOSITION-004", "Bubble image layers must use distinct target IDs.");
 		r.add(a.id);
 	};
 	return i("portraitBase", t.portrait !== void 0), i("portraitBlink", t.portrait?.blink !== void 0), i("portraitTalk", t.portrait?.talk !== void 0), i("advanceIndicator", t.advanceIndicator !== void 0), e;
 }
-function ri(e, t) {
+function ii(e, t) {
 	if (!e.isRegistered(t)) throw new Z("BUBBLE-COMPOSITION-003", `Bubble image asset is not registered: ${t}`);
 	if (!e.getMimeType(t).startsWith("image/")) throw new Z("BUBBLE-COMPOSITION-003", `Bubble asset is not an image: ${t}`);
 }
-function ii(e) {
+function ai(e) {
 	return [...e.portrait === void 0 ? [] : [
 		e.portrait.base,
 		...e.portrait.blink?.frames ?? [],
 		...e.portrait.talk?.frames ?? []
 	], ...e.advanceIndicator?.frames ?? []];
 }
-function ai(e, t) {
+function oi(e, t) {
 	if (e.length === 1) throw e[0];
 	if (e.length > 1) throw AggregateError(e, t);
 }
-function oi(e) {
+function si(e) {
 	let t = !1, n = 0, r = 0, i, a = Promise.resolve(), o = async (t) => {
 		let n = e.animation.frames[t];
 		n !== void 0 && await e.assetManager.applyToTarget(n, e.target);
@@ -4291,7 +4298,7 @@ function oi(e) {
 		}
 	});
 }
-function si(e) {
+function ci(e) {
 	if (!Q(e)) throw new Z("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
 	if (Gr(e, [
 		"actor",
@@ -4312,12 +4319,12 @@ function si(e) {
 		animationMode: t
 	};
 }
-function ci(e) {
+function li(e) {
 	if (!Q(e)) throw TypeError("Bubble composition options must be an object.");
 	let t = Xr(e.assetManager), n = Zr(e.svgText);
 	if (typeof e.createSurface != "function") throw TypeError("Bubble composition createSurface must be a function.");
 	if (e.onAnimationError !== void 0 && typeof e.onAnimationError != "function") throw TypeError("Bubble composition onAnimationError must be a function.");
-	let r = $r(e.scheduler ?? Qr()), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = !1, c = () => {
+	let r = ei(e.scheduler ?? $r()), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = !1, c = () => {
 		if (s) throw new Z("BUBBLE-COMPOSITION-005", "Bubble composition has been disposed.");
 	}, l = async (e, t) => {
 		let n = (o.get(e) ?? Promise.resolve()).catch(() => void 0).then(t);
@@ -4362,23 +4369,22 @@ function ci(e) {
 		c();
 		let s = i.get(o.styleName);
 		if (!s) throw new Z("BUBBLE-COMPOSITION-002", `Bubble style is not defined: ${o.styleName}`);
-		for (let e of new Set(ii(s))) ri(t, e);
+		for (let e of new Set(ai(s))) ii(t, e);
 		let l = a.get(o.actorKey);
 		if (l && await l.close(), s.presentationMode === "TEXT_ACTOR") return u(Object.freeze({
-			actor: ti(o.actor),
+			actor: ni(o.actor),
 			actorKey: o.actorKey,
 			styleName: s.textStyle,
 			text: o.text
 		}), o.kind);
 		let d, f = !1, p = !1, m, h, g;
 		try {
-			d = ni(await e.createSurface(Object.freeze({
+			d = ri(await e.createSurface(Object.freeze({
 				actor: o.actor,
 				actorKey: o.actorKey,
 				kind: o.kind,
 				style: s
-			})), s), n.setText({
-				scaleToStage: !1,
+			})), s), Qr(n, {
 				styleName: s.textStyle,
 				target: d.targets.text,
 				text: o.text
@@ -4392,7 +4398,7 @@ function ci(e) {
 				n !== void 0 && i.push(t.applyToTarget(n, d.targets.portraitTalk));
 			}
 			let c = s.advanceIndicator?.frames[0];
-			c !== void 0 && i.push(t.applyToTarget(c, d.targets.advanceIndicator)), await Promise.all(i), m = s.portrait?.blink === void 0 ? void 0 : oi({
+			c !== void 0 && i.push(t.applyToTarget(c, d.targets.advanceIndicator)), await Promise.all(i), m = s.portrait?.blink === void 0 ? void 0 : si({
 				actorKey: o.actorKey,
 				layer: "portraitBlink",
 				animation: s.portrait.blink,
@@ -4400,7 +4406,7 @@ function ci(e) {
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
-			}), h = s.portrait?.talk === void 0 ? void 0 : oi({
+			}), h = s.portrait?.talk === void 0 ? void 0 : si({
 				actorKey: o.actorKey,
 				layer: "portraitTalk",
 				animation: s.portrait.talk,
@@ -4408,7 +4414,7 @@ function ci(e) {
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
-			}), g = s.advanceIndicator === void 0 ? void 0 : oi({
+			}), g = s.advanceIndicator === void 0 ? void 0 : si({
 				actorKey: o.actorKey,
 				layer: "advanceIndicator",
 				animation: s.advanceIndicator,
@@ -4434,8 +4440,7 @@ function ci(e) {
 				},
 				setText(e) {
 					return u ? Promise.reject(new Z("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : typeof e == "string" ? (_ = _.then(async () => {
-						d && (n.setText({
-							scaleToStage: !1,
+						d && (Qr(n, {
 							styleName: s.textStyle,
 							target: d.targets.text,
 							text: e
@@ -4470,7 +4475,7 @@ function ci(e) {
 					} catch (t) {
 						e.push(t);
 					}
-					a.get(o.actorKey) === y && a.delete(o.actorKey), ai(e, `Failed to close bubble: ${o.actorKey}`);
+					a.get(o.actorKey) === y && a.delete(o.actorKey), oi(e, `Failed to close bubble: ${o.actorKey}`);
 				}
 			});
 			return a.set(o.actorKey, y), y;
@@ -4512,7 +4517,7 @@ function ci(e) {
 		},
 		async show(e) {
 			c();
-			let t = si(e);
+			let t = ci(e);
 			return l(t.actorKey, () => d(t));
 		},
 		async setTextActor(e) {
@@ -4528,15 +4533,15 @@ function ci(e) {
 			});
 		},
 		async releaseAll() {
-			c(), await Promise.allSettled([...o.values()]), ai((await Promise.allSettled([...a.values()].map((e) => e.close()))).flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to release all bubbles");
+			c(), await Promise.allSettled([...o.values()]), oi((await Promise.allSettled([...a.values()].map((e) => e.close()))).flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to release all bubbles");
 		},
 		async dispose() {
 			if (s) return;
 			s = !0, await Promise.allSettled([...o.values()]);
 			let e = await Promise.allSettled([...a.values()].map((e) => e.close()));
-			i.clear(), ai(e.flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to dispose bubble composition");
+			i.clear(), oi(e.flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to dispose bubble composition");
 		}
 	});
 }
 //#endregion
-export { Z as BubbleCompositionError, gr as UnicodeLineBreakProvider, re as actorRelativeBubbleCenter, d as bubbleBackgroundRegions, Te as bubbleBodyCenterOffset, u as bubbleDirectionAliases, l as bubbleDirectionNames, Vr as bubblePresentationModes, D as bubbleVisualStyles, ci as createBubbleComposition, Br as createBubbleTextEngine, ee as defaultBubbleDistance, te as defaultBubbleOffset, f as defaultBubblePlacementInput, x as defaultBubbleTailLength, C as normalizeBubbleDistance, w as normalizeBubbleOffset, y as normalizeBubblePlacement, ne as normalizeBubbleTailLength, De as renderBubbleSvg, zr as renderTextActorSvg, Cr as wrapText };
+export { Z as BubbleCompositionError, gr as UnicodeLineBreakProvider, re as actorRelativeBubbleCenter, d as bubbleBackgroundRegions, Te as bubbleBodyCenterOffset, u as bubbleDirectionAliases, l as bubbleDirectionNames, Vr as bubblePresentationModes, D as bubbleVisualStyles, li as createBubbleComposition, Br as createBubbleTextEngine, ee as defaultBubbleDistance, te as defaultBubbleOffset, f as defaultBubblePlacementInput, x as defaultBubbleTailLength, C as normalizeBubbleDistance, w as normalizeBubbleOffset, y as normalizeBubblePlacement, ne as normalizeBubbleTailLength, De as renderBubbleSvg, zr as renderTextActorSvg, Cr as wrapText };

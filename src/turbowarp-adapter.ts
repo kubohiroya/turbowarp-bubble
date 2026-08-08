@@ -7,6 +7,7 @@ import {
   type BubbleLayer,
   type BubbleScheduler,
   type BubbleSvgText,
+  type BubblePopupTextInput,
   type BubbleStyle,
   type BubbleSurface,
   type BubbleSurfaceTargets,
@@ -282,6 +283,7 @@ function createSurface(
   actor: TurboWarpBubbleTarget,
   actorKey: string,
   style: BubbleStyle,
+  textSkinIncludesStageScale: boolean,
 ): BubbleSurface {
   const renderer = runtime.renderer;
   const sequence = surfaceSequence;
@@ -373,7 +375,8 @@ function createSurface(
       } = readStageMetrics(renderer);
       const scaleMultiplier =
         style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
-      const textDrawableScale = stageScale * scaleMultiplier;
+      const textDrawableScale =
+        (textSkinIncludesStageScale ? 1 : stageScale) * scaleMultiplier;
       const nativeTextSize = readSize(renderer, text, {
         width: 180,
         height: 48,
@@ -701,6 +704,9 @@ export function createTurboWarpBubbleComposition(
         setText(input): void {
           internalSvgText.setText(input);
         },
+        setPopupText(input: BubblePopupTextInput): void {
+          internalSvgText.setText({ ...input, scaleToStage: false });
+        },
         releaseTarget(target): void {
           internalSvgText.releaseTarget(target);
           restoreTargetCostume(target);
@@ -746,6 +752,7 @@ export function createTurboWarpBubbleComposition(
         actor as unknown as TurboWarpBubbleTarget,
         actorKey,
         style,
+        injectedSvgText !== null,
       );
     },
     ...(options.scheduler === undefined

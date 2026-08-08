@@ -226,7 +226,13 @@ describe("TurboWarp composition adapter", () => {
     const releaseTarget = vi.fn();
     const svgText: BubbleSvgText = {
       defineStyle: vi.fn(),
-      setText: vi.fn(({ target }) => {
+      setText: vi.fn((input) => {
+        expect(Object.keys(input).sort()).toEqual([
+          "styleName",
+          "target",
+          "text",
+        ]);
+        const { target } = input;
         harness.renderer.updateDrawableSkinId(Number(target.drawableID), 100);
       }),
       releaseTarget,

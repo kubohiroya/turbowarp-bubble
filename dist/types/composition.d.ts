@@ -56,7 +56,15 @@ export interface BubbleStyle {
     readonly advanceIndicator?: BubbleFrameAnimation;
 }
 export type BubbleAssetManager = Pick<AssetManagerComposition, "applyToTarget" | "getMimeType" | "isRegistered">;
-export type BubbleSvgText = Pick<BubbleTextEngine, "defineStyle" | "releaseTarget" | "setText">;
+export type BubbleSvgText = Pick<BubbleTextEngine, "defineStyle" | "releaseTarget" | "setText"> & {
+    /** Internal adapter hook for popup text that is scaled by the Bubble surface. */
+    readonly setPopupText?: (input: BubblePopupTextInput) => void;
+};
+export interface BubblePopupTextInput {
+    readonly styleName: string;
+    readonly target: BubbleTextTarget;
+    readonly text: string;
+}
 export interface SetTextActorInput {
     readonly actor: BubbleTextTarget;
     readonly actorKey: string;

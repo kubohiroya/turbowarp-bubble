@@ -318,10 +318,10 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			var t = 1, n;
 			return (n = e >>> 16) != 0 && (e = n, t += 16), (n = e >> 8) != 0 && (e = n, t += 8), (n = e >> 4) != 0 && (e = n, t += 4), (n = e >> 2) != 0 && (e = n, t += 2), (n = e >> 1) != 0 && (e = n, t += 1), t;
 		}
-		function O() {
+		function ne() {
 			return this.t <= 0 ? 0 : this.DB * (this.t - 1) + D(this[this.t - 1] ^ this.s & this.DM);
 		}
-		function ne(e, t) {
+		function O(e, t) {
 			var n;
 			for (n = this.t - 1; n >= 0; --n) t[n + e] = this[n];
 			for (n = e - 1; n >= 0; --n) t[n] = 0;
@@ -337,7 +337,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			for (s = a - 1; s >= 0; --s) t[s] = 0;
 			t[a] = o, t.t = this.t + a + 1, t.s = this.s, t.clamp();
 		}
-		function j(e, t) {
+		function re(e, t) {
 			t.s = this.s;
 			var n = Math.floor(e / this.DB);
 			if (n >= this.t) {
@@ -349,7 +349,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			for (var o = n + 1; o < this.t; ++o) t[o - n - 1] |= (this[o] & a) << i, t[o - n] = this[o] >> r;
 			r > 0 && (t[this.t - n - 1] |= (this.s & a) << i), t.t = this.t - n, t.clamp();
 		}
-		function M(e, t) {
+		function j(e, t) {
 			for (var n = 0, r = 0, i = Math.min(e.t, this.t); n < i;) r += this[n] - e[n], t[n++] = r & this.DM, r >>= this.DB;
 			if (e.t < this.t) {
 				for (r -= e.s; n < this.t;) r += this[n], t[n++] = r & this.DM, r >>= this.DB;
@@ -360,13 +360,13 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			t.s = r < 0 ? -1 : 0, r < -1 ? t[n++] = this.DV + r : r > 0 && (t[n++] = r), t.t = n, t.clamp();
 		}
-		function re(e, t) {
+		function ie(e, t) {
 			var n = this.abs(), r = e.abs(), i = n.t;
 			for (t.t = i + r.t; --i >= 0;) t[i] = 0;
 			for (i = 0; i < r.t; ++i) t[i + n.t] = n.am(0, r[i], t, i, 0, n.t);
 			t.s = 0, t.clamp(), this.s != e.s && c.ZERO.subTo(t, t);
 		}
-		function N(e) {
+		function M(e) {
 			for (var t = this.abs(), n = e.t = 2 * t.t; --n >= 0;) e[n] = 0;
 			for (n = 0; n < t.t - 1; ++n) {
 				var r = t.am(n, t[n], e, 2 * n, 0, 1);
@@ -374,7 +374,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			}
 			e.t > 0 && (e[e.t - 1] += t.am(n, t[n], e, 2 * n, 0, 1)), e.s = 0, e.clamp();
 		}
-		function P(e, t, n) {
+		function N(e, t, n) {
 			var r = e.abs();
 			if (!(r.t <= 0)) {
 				var i = this.abs();
@@ -397,29 +397,29 @@ var w = /* @__PURE__ */ o(((e, t) => {
 				}
 			}
 		}
-		function F(e) {
+		function P(e) {
 			var t = l();
 			return this.abs().divRemTo(e, null, t), this.s < 0 && t.compareTo(c.ZERO) > 0 && e.subTo(t, t), t;
 		}
-		function I(e) {
+		function F(e) {
 			this.m = e;
 		}
-		function L(e) {
+		function I(e) {
 			return e.s < 0 || e.compareTo(this.m) >= 0 ? e.mod(this.m) : e;
 		}
-		function R(e) {
+		function L(e) {
 			return e;
 		}
-		function z(e) {
+		function R(e) {
 			e.divRemTo(this.m, null, e);
 		}
-		function B(e, t, n) {
+		function z(e, t, n) {
 			e.multiplyTo(t, n), this.reduce(n);
 		}
-		function ie(e, t) {
+		function B(e, t) {
 			e.squareTo(t), this.reduce(t);
 		}
-		I.prototype.convert = L, I.prototype.revert = R, I.prototype.reduce = z, I.prototype.mulTo = B, I.prototype.sqrTo = ie;
+		F.prototype.convert = I, F.prototype.revert = L, F.prototype.reduce = R, F.prototype.mulTo = z, F.prototype.sqrTo = B;
 		function ae() {
 			if (this.t < 1) return 0;
 			var e = this[0];
@@ -467,10 +467,10 @@ var w = /* @__PURE__ */ o(((e, t) => {
 			return t.revert(n);
 		}
 		function pe(e, t) {
-			var n = e < 256 || t.isEven() ? new I(t) : new V(t);
+			var n = e < 256 || t.isEven() ? new F(t) : new V(t);
 			return this.exp(e, n);
 		}
-		c.prototype.copyTo = b, c.prototype.fromInt = x, c.prototype.fromString = C, c.prototype.clamp = ee, c.prototype.dlShiftTo = ne, c.prototype.drShiftTo = k, c.prototype.lShiftTo = A, c.prototype.rShiftTo = j, c.prototype.subTo = M, c.prototype.multiplyTo = re, c.prototype.squareTo = N, c.prototype.divRemTo = P, c.prototype.invDigit = ae, c.prototype.isEven = de, c.prototype.exp = fe, c.prototype.toString = w, c.prototype.negate = te, c.prototype.abs = T, c.prototype.compareTo = E, c.prototype.bitLength = O, c.prototype.mod = F, c.prototype.modPowInt = pe, c.ZERO = S(0), c.ONE = S(1);
+		c.prototype.copyTo = b, c.prototype.fromInt = x, c.prototype.fromString = C, c.prototype.clamp = ee, c.prototype.dlShiftTo = O, c.prototype.drShiftTo = k, c.prototype.lShiftTo = A, c.prototype.rShiftTo = re, c.prototype.subTo = j, c.prototype.multiplyTo = ie, c.prototype.squareTo = M, c.prototype.divRemTo = N, c.prototype.invDigit = ae, c.prototype.isEven = de, c.prototype.exp = fe, c.prototype.toString = w, c.prototype.negate = te, c.prototype.abs = T, c.prototype.compareTo = E, c.prototype.bitLength = ne, c.prototype.mod = P, c.prototype.modPowInt = pe, c.ZERO = S(0), c.ONE = S(1);
 		function me() {
 			var e = l();
 			return this.copyTo(e), e;
@@ -727,7 +727,7 @@ var w = /* @__PURE__ */ o(((e, t) => {
 		function ft(e, t) {
 			var n = e.bitLength(), r, i = S(1), a;
 			if (n <= 0) return i;
-			r = n < 18 ? 1 : n < 48 ? 3 : n < 144 ? 4 : n < 768 ? 5 : 6, a = n < 8 ? new I(t) : t.isEven() ? new ot(t) : new V(t);
+			r = n < 18 ? 1 : n < 48 ? 3 : n < 144 ? 4 : n < 768 ? 5 : 6, a = n < 8 ? new F(t) : t.isEven() ? new ot(t) : new V(t);
 			var o = [], s = 3, c = r - 1, u = (1 << r) - 1;
 			if (o[1] = a.convert(this), r > 1) {
 				var d = l();
@@ -2706,7 +2706,7 @@ function D(e) {
 	if (typeof e != "number" || !Number.isFinite(e) || e <= 0) throw TypeError("Bubble tail length must be greater than zero.");
 	return e;
 }
-function O(e) {
+function ne(e) {
 	if (e.length !== 2 && e.length !== 3) throw TypeError("Bubble offset must be [x, y] or [x, y, scale].");
 	let [t, n, r = 100] = e;
 	if (![
@@ -2720,7 +2720,7 @@ function O(e) {
 		scalePercent: r
 	});
 }
-var ne = Object.freeze([
+var O = Object.freeze([
 	"NORMAL",
 	"THINKING",
 	"DREAMING",
@@ -2740,13 +2740,13 @@ function A(e, t) {
 	if (!Number.isFinite(n) || n <= 0) throw TypeError("Bubble SVG dimensions must be positive and finite.");
 	return n;
 }
-function j(e) {
+function re(e) {
 	if (e === null) return null;
 	let t = e ?? 180;
 	if (!Number.isFinite(t)) throw TypeError("tailDirection must be finite.");
 	return (t % 360 + 360) % 360;
 }
-function M(e, t, n = 18) {
+function j(e, t, n = 18) {
 	let r = e - 24, i = t - 24;
 	return [
 		{
@@ -2777,24 +2777,24 @@ function M(e, t, n = 18) {
 		};
 	}));
 }
-function re(e, t) {
+function ie(e, t) {
 	return e.x * t.y - e.y * t.x;
 }
-function N(e, t) {
+function M(e, t) {
 	return {
 		x: e.x - t.x,
 		y: e.y - t.y
 	};
 }
-function P(e, t) {
+function N(e, t) {
 	return Math.hypot(e.x - t.x, e.y - t.y);
 }
-function F(e, t, n, r) {
+function P(e, t, n, r) {
 	let i = t, a = r;
 	for (; a > 0;) {
 		let t = (i + n + e.length) % e.length, r = e[i], o = e[t];
 		if (!r || !o) throw Error("Bubble border path is invalid.");
-		let s = P(r, o);
+		let s = N(r, o);
 		if (a <= s) {
 			let e = a / s;
 			return {
@@ -2808,14 +2808,14 @@ function F(e, t, n, r) {
 	if (!o) throw Error("Bubble border path is empty.");
 	return o;
 }
-function I(e, t, n, r, i) {
+function F(e, t, n, r, i) {
 	let a;
 	for (let r = 0; r < e.length; r += 1) {
 		let i = e[r], o = e[(r + 1) % e.length];
 		if (!i || !o) continue;
-		let s = N(o, i), c = re(n, s);
+		let s = M(o, i), c = ie(n, s);
 		if (Math.abs(c) < 1e-9) continue;
-		let l = N(i, t), u = re(l, s) / c, d = re(l, n) / c;
+		let l = M(i, t), u = ie(l, s) / c, d = ie(l, n) / c;
 		u < 0 || d < -1e-9 || d > 1 + 1e-9 || a && u >= a.rayScale || (a = {
 			edgeIndex: r,
 			point: {
@@ -2833,58 +2833,58 @@ function I(e, t, n, r, i) {
 	], s = a.edgeIndex + 1;
 	return {
 		borderPoint: a.point,
-		base: [F(o, s, -1, 9), F(o, s, 1, 9)],
+		base: [P(o, s, -1, 9), P(o, s, 1, 9)],
 		tip: {
 			x: i?.x ?? t.x + n.x * (a.rayScale + r),
 			y: i?.y ?? t.y + n.y * (a.rayScale + r)
 		}
 	};
 }
-function L(e) {
+function I(e) {
 	let t = e * Math.PI / 180;
 	return {
 		x: Math.sin(t),
 		y: -Math.cos(t)
 	};
 }
-function R(e, t, n, r) {
+function L(e, t, n, r) {
 	return {
 		x: n.x + (e.x - t.x) * r,
 		y: n.y + (e.y - t.y) * r
 	};
 }
-function z(e, t, n, r, i, a) {
+function R(e, t, n, r, i, a) {
 	let o = {
 		x: t / 2,
 		y: n / 2
-	}, s = L(r), c = I(e, o, s, i), l = P(o, c.borderPoint), u = a.scalePercent / 100, d = {
+	}, s = I(r), c = F(e, o, s, i), l = N(o, c.borderPoint), u = a.scalePercent / 100, d = {
 		x: o.x - s.x * l * (u - 1) + a.x,
 		y: o.y - s.y * l * (u - 1) - a.y
 	};
 	return {
-		body: e.map((e) => R(e, o, d, u)),
+		body: e.map((e) => L(e, o, d, u)),
 		bodyCenter: d,
 		tip: c.tip
 	};
 }
-function B(e) {
+function z(e) {
 	let t = e[0];
 	if (!t) throw Error("Bubble polygon is empty.");
 	return `M ${t.x.toFixed(4)} ${t.y.toFixed(4)} ${e.slice(1).map(({ x: e, y: t }) => `L ${e.toFixed(4)} ${t.toFixed(4)}`).join(" ")} Z`;
 }
-function ie(e) {
+function B(e) {
 	return Math.abs(e.reduce((t, n, r) => {
 		let i = e[(r + 1) % e.length];
 		return i ? t + n.x * i.y - i.x * n.y : t;
 	}, 0) / 2);
 }
 function ae(e, t, n, r = "") {
-	return `<path d="${B(e)}" fill="${t}" stroke="${n}" stroke-width="3" stroke-linejoin="round" ${r}/>`;
+	return `<path d="${z(e)}" fill="${t}" stroke="${n}" stroke-width="3" stroke-linejoin="round" ${r}/>`;
 }
 function V(e, t, n, r, i, a = "") {
-	let o = N(n, t), s = Math.hypot(o.x, o.y);
+	let o = M(n, t), s = Math.hypot(o.x, o.y);
 	if (!(s > 0)) throw TypeError("Bubble body center and tail tip must differ.");
-	let c = I(e, t, {
+	let c = F(e, t, {
 		x: o.x / s,
 		y: o.y / s
 	}, 0, n), l = (e) => e.map(({ x: e, y: t }) => [e, t]), u = te.default.union([l(e)], [[l([
@@ -2896,9 +2896,9 @@ function V(e, t, n, r, i, a = "") {
 	let d = u.map((e) => e.map(([e, t]) => ({
 		x: e,
 		y: t
-	}))).sort((e, t) => ie(t) - ie(e))[0];
+	}))).sort((e, t) => B(t) - B(e))[0];
 	if (!d) throw Error("JSClipper returned an empty Bubble outline.");
-	return `<path d="${B(d)}" fill="${r}" stroke="${i}" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" ${a}/>`;
+	return `<path d="${z(d)}" fill="${r}" stroke="${i}" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" ${a}/>`;
 }
 function oe(e, t, n, r) {
 	let i = e - 24, a = t - 24, o = e / 2, s = t / 2;
@@ -2914,7 +2914,7 @@ function oe(e, t, n, r) {
     fill="${n}" stroke="${r}" stroke-width="3" stroke-linejoin="round"/>`;
 }
 function se(e, t, n, r, i, a) {
-	let o = N(n, t), s = Math.hypot(o.x, o.y), c = I(e, t, {
+	let o = M(n, t), s = Math.hypot(o.x, o.y), c = F(e, t, {
 		x: o.x / s,
 		y: o.y / s
 	}, 0, n), l = {
@@ -2986,24 +2986,24 @@ function le(e, t) {
 	];
 }
 function ue(e, t, n) {
-	return e === "YELLING" ? ce(t, n) : e === "WAVY" ? le(t, n) : M(t, n);
+	return e === "YELLING" ? ce(t, n) : e === "WAVY" ? le(t, n) : j(t, n);
 }
 function de(e) {
-	let t = A(e.width, 220), n = A(e.height, 112), r = j(e.tailDirection);
+	let t = A(e.width, 220), n = A(e.height, 112), r = re(e.tailDirection);
 	if (r === null) throw TypeError("Bubble body center offset requires a tail direction.");
-	let i = D(e.tailLength ?? T), a = O(e.offset), o = {
+	let i = D(e.tailLength ?? T), a = ne(e.offset), o = {
 		x: t / 2,
 		y: n / 2
-	}, s = z(ue(e.style, t, n), t, n, r, i, a);
+	}, s = R(ue(e.style, t, n), t, n, r, i, a);
 	return Object.freeze({
 		x: s.bodyCenter.x - o.x,
 		y: s.bodyCenter.y - o.y
 	});
 }
 function fe(e, t, n, r, i, a, o, s) {
-	let c = M(t, n), l = (e) => r === null ? e : z(e, t, n, r, o, s).body, u = (e, c = "") => {
+	let c = j(t, n), l = (e) => r === null ? e : R(e, t, n, r, o, s).body, u = (e, c = "") => {
 		if (r === null) return ae(e, i, a, c);
-		let l = z(e, t, n, r, o, s);
+		let l = R(e, t, n, r, o, s);
 		return V(l.body, l.bodyCenter, l.tip, i, a, c);
 	};
 	switch (e) {
@@ -3011,7 +3011,7 @@ function fe(e, t, n, r, i, a, o, s) {
 		case "THINKING":
 		case "DREAMING": {
 			if (r === null) return oe(t, n, i, a);
-			let l = z(c, t, n, r, o, s), u = s.scalePercent / 100, d = {
+			let l = R(c, t, n, r, o, s), u = s.scalePercent / 100, d = {
 				x: t / 2,
 				y: n / 2
 			}, f = l.bodyCenter.x - d.x * u, p = l.bodyCenter.y - d.y * u;
@@ -3027,12 +3027,12 @@ function fe(e, t, n, r, i, a, o, s) {
 	}
 }
 function pe(e) {
-	if (!ne.includes(e.style)) throw TypeError(`Unsupported Bubble visual style: ${String(e.style)}`);
+	if (!O.includes(e.style)) throw TypeError(`Unsupported Bubble visual style: ${String(e.style)}`);
 	if (!Array.isArray(e.lines) || e.lines.some((e) => typeof e != "string")) throw TypeError("lines must be an array of strings.");
-	let t = A(e.width, 220), n = A(e.height, 112), r = A(e.fontSize, 15), i = j(e.tailDirection), a = D(e.tailLength ?? T), o = e.offset === void 0 ? E : O(e.offset), s = e.fillColor ?? "#fff4cc", c = e.borderColor ?? "#6f5b45", l = e.textColor ?? "#25283a", u = e.fontFamily ?? "Noto Sans JP, sans-serif", d = r * 1.35, f = n / 2 - (e.lines.length - 1) * d / 2 + r * .35, p = i === null ? 1 : o.scalePercent / 100, m = i === null ? {
+	let t = A(e.width, 220), n = A(e.height, 112), r = A(e.fontSize, 15), i = re(e.tailDirection), a = D(e.tailLength ?? T), o = e.offset === void 0 ? E : ne(e.offset), s = e.fillColor ?? "#fff4cc", c = e.borderColor ?? "#6f5b45", l = e.textColor ?? "#25283a", u = e.fontFamily ?? "Noto Sans JP, sans-serif", d = r * 1.35, f = n / 2 - (e.lines.length - 1) * d / 2 + r * .35, p = i === null ? 1 : o.scalePercent / 100, m = i === null ? {
 		x: t / 2,
 		y: n / 2
-	} : z(M(t, n), t, n, i, a, o).bodyCenter, h = e.lines.map((e, t) => `<text x="${m.x}" y="${m.y + (f + t * d - n / 2) * p}" text-anchor="middle" fill="${k(l)}" font-family="${k(u)}" font-size="${r * p}">${k(e)}</text>`).join(""), g = k(e.title ?? `${e.style} bubble`);
+	} : R(j(t, n), t, n, i, a, o).bodyCenter, h = e.lines.map((e, t) => `<text x="${m.x}" y="${m.y + (f + t * d - n / 2) * p}" text-anchor="middle" fill="${k(l)}" font-family="${k(u)}" font-size="${r * p}">${k(e)}</text>`).join(""), g = k(e.title ?? `${e.style} bubble`);
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${t}" height="${n}" viewBox="0 0 ${t} ${n}" role="img" data-bubble-renderer="canonical" data-bubble-style="${e.style}"><title>${g}</title>${fe(e.style, t, n, i, s, c, a, o)}${h}</svg>`;
 }
 //#endregion
@@ -3217,18 +3217,18 @@ var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = funct
 				d += 14;
 				for (var w = new H(ee), te = new H(19), T = 0; T < C; ++T) te[be[T]] = G(e, d + T * 3, 7);
 				d += C * 3;
-				for (var E = Ne(te), D = (1 << E) - 1, O = Oe(te, E, 1), T = 0; T < ee;) {
-					var ne = O[G(e, d, D)];
-					d += ne & 15;
-					var y = ne >> 4;
+				for (var E = Ne(te), D = (1 << E) - 1, ne = Oe(te, E, 1), T = 0; T < ee;) {
+					var O = ne[G(e, d, D)];
+					d += O & 15;
+					var y = O >> 4;
 					if (y < 16) w[T++] = y;
 					else {
 						var k = 0, A = 0;
 						for (y == 16 ? (A = 3 + G(e, d, 3), d += 2, k = w[T - 1]) : y == 17 ? (A = 3 + G(e, d, 7), d += 3) : y == 18 && (A = 11 + G(e, d, 127), d += 7); A--;) w[T++] = k;
 					}
 				}
-				var j = w.subarray(0, S), M = w.subarray(S);
-				h = Ne(j), g = Ne(M), p = Oe(j, h, 1), m = Oe(M, g, 1);
+				var re = w.subarray(0, S), j = w.subarray(S);
+				h = Ne(re), g = Ne(j), p = Oe(re, h, 1), m = Oe(j, g, 1);
 			} else K(1);
 			if (d > _) {
 				c && K(0);
@@ -3236,43 +3236,43 @@ var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = funct
 			}
 		}
 		s && l(f + 131072);
-		for (var re = (1 << h) - 1, N = (1 << g) - 1, P = d;; P = d) {
-			var k = p[Pe(e, d) & re], F = k >> 4;
+		for (var ie = (1 << h) - 1, M = (1 << g) - 1, N = d;; N = d) {
+			var k = p[Pe(e, d) & ie], P = k >> 4;
 			if (d += k & 15, d > _) {
 				c && K(0);
 				break;
 			}
-			if (k || K(2), F < 256) n[f++] = F;
-			else if (F == 256) {
-				P = d, p = null;
+			if (k || K(2), P < 256) n[f++] = P;
+			else if (P == 256) {
+				N = d, p = null;
 				break;
 			} else {
-				var I = F - 254;
-				if (F > 264) {
-					var T = F - 257, L = ve[T];
-					I = G(e, d, (1 << L) - 1) + Ce[T], d += L;
+				var F = P - 254;
+				if (P > 264) {
+					var T = P - 257, I = ve[T];
+					F = G(e, d, (1 << I) - 1) + Ce[T], d += I;
 				}
-				var R = m[Pe(e, d) & N], z = R >> 4;
-				R || K(3), d += R & 15;
-				var M = Ee[z];
-				if (z > 3) {
-					var L = ye[z];
-					M += Pe(e, d) & (1 << L) - 1, d += L;
+				var L = m[Pe(e, d) & M], R = L >> 4;
+				L || K(3), d += L & 15;
+				var j = Ee[R];
+				if (R > 3) {
+					var I = ye[R];
+					j += Pe(e, d) & (1 << I) - 1, d += I;
 				}
 				if (d > _) {
 					c && K(0);
 					break;
 				}
 				s && l(f + 131072);
-				var B = f + I;
-				if (f < M) {
-					var ie = a - M, ae = Math.min(M, B);
-					for (ie + f < 0 && K(3); f < ae; ++f) n[f] = r[ie + f];
+				var z = f + F;
+				if (f < j) {
+					var B = a - j, ae = Math.min(j, z);
+					for (B + f < 0 && K(3); f < ae; ++f) n[f] = r[B + f];
 				}
-				for (; f < B; ++f) n[f] = n[f - M];
+				for (; f < z; ++f) n[f] = n[f - j];
 			}
 		}
-		t.l = p, t.p = P, t.b = f, t.f = u, p && (u = 1, t.m = h, t.d = m, t.n = g);
+		t.l = p, t.p = N, t.b = f, t.f = u, p && (u = 1, t.m = h, t.d = m, t.n = g);
 	} while (!u);
 	return f != n.length && o ? Ie(n, 0, f) : n.subarray(0, f);
 }, ze = /*#__PURE__*/ new H(0), Be = function(e) {
@@ -3568,7 +3568,7 @@ function Cn(e) {
 		throw new X("BUBBLE-COMPOSITION-001", e instanceof Error ? e.message : "Bubble actor-relative transform is invalid.");
 	}
 	let c = e.visualStyle ?? "NORMAL";
-	if (typeof c != "string" || !ne.includes(c)) throw new X("BUBBLE-COMPOSITION-001", `Unsupported Bubble visual style: ${String(c)}`);
+	if (typeof c != "string" || !O.includes(c)) throw new X("BUBBLE-COMPOSITION-001", `Unsupported Bubble visual style: ${String(c)}`);
 	return Object.freeze({
 		name: Q(e.name, "Bubble style name"),
 		textStyle: Q(e.textStyle, "Bubble text style name"),
@@ -3591,7 +3591,7 @@ function wn(e) {
 		"text"
 	], [], "Text actor input"), typeof e.text != "string") throw new X("BUBBLE-COMPOSITION-001", "Text actor text must be a string.");
 	return Object.freeze({
-		actor: An(e.actor),
+		actor: jn(e.actor),
 		actorKey: Q(e.actorKey, "Text actor key"),
 		styleName: Q(e.styleName, "Text actor style name"),
 		text: e.text
@@ -3605,53 +3605,60 @@ function En(e) {
 	if (!Z(e) || typeof e.defineStyle != "function" || typeof e.setText != "function" || typeof e.releaseTarget != "function") throw TypeError("Bubble SVG Text composition must provide defineStyle, setText, and releaseTarget.");
 	return e;
 }
-function Dn() {
+function Dn(e, t) {
+	if (e.setPopupText) {
+		e.setPopupText(t);
+		return;
+	}
+	e.setText(t);
+}
+function On() {
 	return Object.freeze({
 		setTimeout: (e, t) => globalThis.setTimeout(e, t),
 		clearTimeout: (e) => globalThis.clearTimeout(e)
 	});
 }
-function On(e) {
+function kn(e) {
 	if (!Z(e) || typeof e.setTimeout != "function" || typeof e.clearTimeout != "function") throw TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
 	return e;
 }
-function kn(e, t) {
+function An(e, t) {
 	if (!Z(e) || typeof e.id != "string" || e.id.length === 0 || typeof e.isStage != "boolean") throw new X("BUBBLE-COMPOSITION-004", `${t} must provide id and isStage.`);
 	return e;
 }
-function An(e) {
+function jn(e) {
 	if (!Z(e) || typeof e.drawableID != "number" || !Number.isInteger(e.drawableID) || e.drawableID < 0) throw new X("BUBBLE-COMPOSITION-004", "Bubble text target must provide a non-negative integer drawableID.");
 	return e;
 }
-function jn(e, t) {
+function Mn(e, t) {
 	if (!Z(e) || !Z(e.targets) || typeof e.setLayerVisible != "function" || typeof e.show != "function" || typeof e.hide != "function" || typeof e.dispose != "function") throw new X("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
 	let n = e.targets;
-	An(n.text);
+	jn(n.text);
 	let r = /* @__PURE__ */ new Set(), i = (e, t) => {
 		let i = n[e];
 		if (!t && i === void 0) return;
-		let a = kn(i, `Bubble surface ${e}`);
+		let a = An(i, `Bubble surface ${e}`);
 		if (r.has(a.id)) throw new X("BUBBLE-COMPOSITION-004", "Bubble image layers must use distinct target IDs.");
 		r.add(a.id);
 	};
 	return i("portraitBase", t.portrait !== void 0), i("portraitBlink", t.portrait?.blink !== void 0), i("portraitTalk", t.portrait?.talk !== void 0), i("advanceIndicator", t.advanceIndicator !== void 0), e;
 }
-function Mn(e, t) {
+function Nn(e, t) {
 	if (!e.isRegistered(t)) throw new X("BUBBLE-COMPOSITION-003", `Bubble image asset is not registered: ${t}`);
 	if (!e.getMimeType(t).startsWith("image/")) throw new X("BUBBLE-COMPOSITION-003", `Bubble asset is not an image: ${t}`);
 }
-function Nn(e) {
+function Pn(e) {
 	return [...e.portrait === void 0 ? [] : [
 		e.portrait.base,
 		...e.portrait.blink?.frames ?? [],
 		...e.portrait.talk?.frames ?? []
 	], ...e.advanceIndicator?.frames ?? []];
 }
-function Pn(e, t) {
+function Fn(e, t) {
 	if (e.length === 1) throw e[0];
 	if (e.length > 1) throw AggregateError(e, t);
 }
-function Fn(e) {
+function In(e) {
 	let t = !1, n = 0, r = 0, i, a = Promise.resolve(), o = async (t) => {
 		let n = e.animation.frames[t];
 		n !== void 0 && await e.assetManager.applyToTarget(n, e.target);
@@ -3686,7 +3693,7 @@ function Fn(e) {
 		}
 	});
 }
-function In(e) {
+function Ln(e) {
 	if (!Z(e)) throw new X("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
 	if (bn(e, [
 		"actor",
@@ -3707,12 +3714,12 @@ function In(e) {
 		animationMode: t
 	};
 }
-function Ln(e) {
+function Rn(e) {
 	if (!Z(e)) throw TypeError("Bubble composition options must be an object.");
 	let t = Tn(e.assetManager), n = En(e.svgText);
 	if (typeof e.createSurface != "function") throw TypeError("Bubble composition createSurface must be a function.");
 	if (e.onAnimationError !== void 0 && typeof e.onAnimationError != "function") throw TypeError("Bubble composition onAnimationError must be a function.");
-	let r = On(e.scheduler ?? Dn()), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = !1, c = () => {
+	let r = kn(e.scheduler ?? On()), i = /* @__PURE__ */ new Map(), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = !1, c = () => {
 		if (s) throw new X("BUBBLE-COMPOSITION-005", "Bubble composition has been disposed.");
 	}, l = async (e, t) => {
 		let n = (o.get(e) ?? Promise.resolve()).catch(() => void 0).then(t);
@@ -3757,23 +3764,22 @@ function Ln(e) {
 		c();
 		let s = i.get(o.styleName);
 		if (!s) throw new X("BUBBLE-COMPOSITION-002", `Bubble style is not defined: ${o.styleName}`);
-		for (let e of new Set(Nn(s))) Mn(t, e);
+		for (let e of new Set(Pn(s))) Nn(t, e);
 		let l = a.get(o.actorKey);
 		if (l && await l.close(), s.presentationMode === "TEXT_ACTOR") return u(Object.freeze({
-			actor: An(o.actor),
+			actor: jn(o.actor),
 			actorKey: o.actorKey,
 			styleName: s.textStyle,
 			text: o.text
 		}), o.kind);
 		let d, f = !1, p = !1, m, h, g;
 		try {
-			d = jn(await e.createSurface(Object.freeze({
+			d = Mn(await e.createSurface(Object.freeze({
 				actor: o.actor,
 				actorKey: o.actorKey,
 				kind: o.kind,
 				style: s
-			})), s), n.setText({
-				scaleToStage: !1,
+			})), s), Dn(n, {
 				styleName: s.textStyle,
 				target: d.targets.text,
 				text: o.text
@@ -3787,7 +3793,7 @@ function Ln(e) {
 				n !== void 0 && i.push(t.applyToTarget(n, d.targets.portraitTalk));
 			}
 			let c = s.advanceIndicator?.frames[0];
-			c !== void 0 && i.push(t.applyToTarget(c, d.targets.advanceIndicator)), await Promise.all(i), m = s.portrait?.blink === void 0 ? void 0 : Fn({
+			c !== void 0 && i.push(t.applyToTarget(c, d.targets.advanceIndicator)), await Promise.all(i), m = s.portrait?.blink === void 0 ? void 0 : In({
 				actorKey: o.actorKey,
 				layer: "portraitBlink",
 				animation: s.portrait.blink,
@@ -3795,7 +3801,7 @@ function Ln(e) {
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
-			}), h = s.portrait?.talk === void 0 ? void 0 : Fn({
+			}), h = s.portrait?.talk === void 0 ? void 0 : In({
 				actorKey: o.actorKey,
 				layer: "portraitTalk",
 				animation: s.portrait.talk,
@@ -3803,7 +3809,7 @@ function Ln(e) {
 				assetManager: t,
 				scheduler: r,
 				...e.onAnimationError === void 0 ? {} : { onError: e.onAnimationError }
-			}), g = s.advanceIndicator === void 0 ? void 0 : Fn({
+			}), g = s.advanceIndicator === void 0 ? void 0 : In({
 				actorKey: o.actorKey,
 				layer: "advanceIndicator",
 				animation: s.advanceIndicator,
@@ -3829,8 +3835,7 @@ function Ln(e) {
 				},
 				setText(e) {
 					return u ? Promise.reject(new X("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${o.actorKey}`)) : typeof e == "string" ? (_ = _.then(async () => {
-						d && (n.setText({
-							scaleToStage: !1,
+						d && (Dn(n, {
 							styleName: s.textStyle,
 							target: d.targets.text,
 							text: e
@@ -3865,7 +3870,7 @@ function Ln(e) {
 					} catch (t) {
 						e.push(t);
 					}
-					a.get(o.actorKey) === y && a.delete(o.actorKey), Pn(e, `Failed to close bubble: ${o.actorKey}`);
+					a.get(o.actorKey) === y && a.delete(o.actorKey), Fn(e, `Failed to close bubble: ${o.actorKey}`);
 				}
 			});
 			return a.set(o.actorKey, y), y;
@@ -3907,7 +3912,7 @@ function Ln(e) {
 		},
 		async show(e) {
 			c();
-			let t = In(e);
+			let t = Ln(e);
 			return l(t.actorKey, () => d(t));
 		},
 		async setTextActor(e) {
@@ -3923,29 +3928,29 @@ function Ln(e) {
 			});
 		},
 		async releaseAll() {
-			c(), await Promise.allSettled([...o.values()]), Pn((await Promise.allSettled([...a.values()].map((e) => e.close()))).flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to release all bubbles");
+			c(), await Promise.allSettled([...o.values()]), Fn((await Promise.allSettled([...a.values()].map((e) => e.close()))).flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to release all bubbles");
 		},
 		async dispose() {
 			if (s) return;
 			s = !0, await Promise.allSettled([...o.values()]);
 			let e = await Promise.allSettled([...a.values()].map((e) => e.close()));
-			i.clear(), Pn(e.flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to dispose bubble composition");
+			i.clear(), Fn(e.flatMap((e) => e.status === "rejected" ? [e.reason] : []), "Failed to dispose bubble composition");
 		}
 	});
 }
 //#endregion
 //#region src/turbowarp-adapter.ts
-var Rn = "sprite", zn = 96, Bn = 18, Vn = 8, Hn = 24, Un = 16, Wn = 480, Gn = 360, Kn = 0, $ = class extends Error {
+var zn = "sprite", Bn = 96, Vn = 18, Hn = 8, Un = 24, Wn = 16, Gn = 480, Kn = 360, qn = 0, $ = class extends Error {
 	code;
 	constructor(e, t) {
 		super(t), this.name = "BubbleRuntimeAdapterError", this.code = e;
 	}
 };
-function qn(e) {
+function Jn(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
-function Jn(e) {
-	if (!qn(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp renderer.");
+function Yn(e) {
+	if (!Jn(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp renderer.");
 	let t = [
 		"createSVGSkin",
 		"createDrawable",
@@ -3961,14 +3966,14 @@ function Jn(e) {
 	if (t.some((t) => typeof e[t] != "function")) throw new $("BUBBLE-RUNTIME-001", `Bubble renderer must provide ${t.join(", ")}.`);
 	return e;
 }
-function Yn(e) {
-	if (!qn(e) || typeof e.isLoaded != "function" || typeof e.getAssetMimeType != "function" || typeof e.resolveSkin != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble requires Asset Manager. Load @kubohiroya/turbowarp-asset-manager before using Bubble blocks.");
+function Xn(e) {
+	if (!Jn(e) || typeof e.isLoaded != "function" || typeof e.getAssetMimeType != "function" || typeof e.resolveSkin != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble requires Asset Manager. Load @kubohiroya/turbowarp-asset-manager before using Bubble blocks.");
 	return e;
 }
-function Xn(e) {
-	qn(e) && typeof e.updateAllDrawableProperties == "function" && e.updateAllDrawableProperties();
-}
 function Zn(e) {
+	Jn(e) && typeof e.updateAllDrawableProperties == "function" && e.updateAllDrawableProperties();
+}
+function Qn(e) {
 	try {
 		let t = e.getBoundsForBubble?.();
 		if (t && [
@@ -3986,7 +3991,7 @@ function Zn(e) {
 		top: n
 	};
 }
-function Qn(e, t, n) {
+function $n(e, t, n) {
 	let r = e.getCurrentSkinSize(t.drawableID);
 	if (!Array.isArray(r) || r.length < 2) return n;
 	let i = Number(r[0]), a = Number(r[1]);
@@ -3995,16 +4000,16 @@ function Qn(e, t, n) {
 		height: a
 	};
 }
-function $n(e) {
-	let t = e.getNativeSize(), n = Array.isArray(t) && Number(t[0]) > 0 ? Number(t[0]) : Wn, r = Array.isArray(t) && Number(t[1]) > 0 ? Number(t[1]) : Gn;
+function er(e) {
+	let t = e.getNativeSize(), n = Array.isArray(t) && Number(t[0]) > 0 ? Number(t[0]) : Gn, r = Array.isArray(t) && Number(t[1]) > 0 ? Number(t[1]) : Kn;
 	return {
 		height: r,
-		scale: Math.min(n / Wn, r / Gn),
+		scale: Math.min(n / Gn, r / Kn),
 		width: n
 	};
 }
-function er(e, t, n, r = 1) {
-	let i = Qn(e, t, {
+function tr(e, t, n, r = 1) {
+	let i = $n(e, t, {
 		width: n,
 		height: n
 	}), a = Math.min(n / i.width, n / i.height) * r;
@@ -4013,84 +4018,84 @@ function er(e, t, n, r = 1) {
 		height: i.height * a
 	};
 }
-function tr(e, t, n) {
+function nr(e, t, n) {
 	return n < t ? (t + n) / 2 : Math.min(n, Math.max(t, e));
 }
-function nr(e, t, n, r, i) {
+function rr(e, t, n, r, i) {
 	let a = t + r * 2, o = n + i * 2;
 	return e.replace(/<svg\b[^>]*>/u, (e) => e.replace(/\bwidth="[^"]*"/u, `width="${a}"`).replace(/\bheight="[^"]*"/u, `height="${o}"`).replace(/\bviewBox="[^"]*"/u, `viewBox="${-r} ${-i} ${a} ${o}"`));
 }
-function rr(e) {
+function ar(e) {
 	let t = v(e);
 	return (Math.atan2(-t.x, -t.y) * 180 / Math.PI % 360 + 360) % 360;
 }
-function ar(e, t, n, r) {
-	let i = e.renderer, a = Kn;
-	Kn += 1;
-	let o = [], s, c = (e) => {
-		let t = i.createDrawable(Rn);
+function or(e, t, n, r, i) {
+	let a = e.renderer, o = qn;
+	qn += 1;
+	let s = [], c, l = (e) => {
+		let t = a.createDrawable(zn);
 		if (!Number.isInteger(t) || t < 0) throw new $("BUBBLE-RUNTIME-001", `TurboWarp did not create the Bubble ${e} drawable.`);
 		let r = Object.freeze({
-			id: `bubble:${n}:${a}:${e}`,
+			id: `bubble:${n}:${o}:${e}`,
 			isStage: !1,
 			drawableID: t
 		});
-		return o.push(r), i.updateDrawableVisible(t, !1), i.setDrawableOrder?.(t, Infinity, Rn), r;
+		return s.push(r), a.updateDrawableVisible(t, !1), a.setDrawableOrder?.(t, Infinity, zn), r;
 	};
 	try {
-		let n = c("body"), a = r.portrait ? c("portrait-base") : void 0, l = r.portrait?.blink ? c("portrait-blink") : void 0, u = r.portrait?.talk ? c("portrait-talk") : void 0, d = c("text"), f = r.advanceIndicator ? c("advance-indicator") : void 0, p = Object.freeze({
-			text: d,
-			...a ? { portraitBase: a } : {},
-			...l ? { portraitBlink: l } : {},
-			...u ? { portraitTalk: u } : {},
-			...f ? { advanceIndicator: f } : {}
-		}), m = /* @__PURE__ */ new Map();
-		a && m.set("portraitBase", a), l && m.set("portraitBlink", l), u && m.set("portraitTalk", u), f && m.set("advanceIndicator", f);
-		let h = /* @__PURE__ */ new Map(), g = !1, _ = !1, v = "", y = () => {
-			let a = r.placement.basis === "background" || t.visible !== !1;
-			i.updateDrawableVisible(n.drawableID, g && a && r.visualStyle !== "NO_BUBBLE"), i.updateDrawableVisible(d.drawableID, g && a);
-			for (let [e, t] of m) i.updateDrawableVisible(t.drawableID, g && a && (h.get(e) ?? !1));
+		let n = l("body"), o = r.portrait ? l("portrait-base") : void 0, u = r.portrait?.blink ? l("portrait-blink") : void 0, d = r.portrait?.talk ? l("portrait-talk") : void 0, f = l("text"), p = r.advanceIndicator ? l("advance-indicator") : void 0, m = Object.freeze({
+			text: f,
+			...o ? { portraitBase: o } : {},
+			...u ? { portraitBlink: u } : {},
+			...d ? { portraitTalk: d } : {},
+			...p ? { advanceIndicator: p } : {}
+		}), h = /* @__PURE__ */ new Map();
+		o && h.set("portraitBase", o), u && h.set("portraitBlink", u), d && h.set("portraitTalk", d), p && h.set("advanceIndicator", p);
+		let g = /* @__PURE__ */ new Map(), _ = !1, v = !1, y = "", b = () => {
+			let i = r.placement.basis === "background" || t.visible !== !1;
+			a.updateDrawableVisible(n.drawableID, _ && i && r.visualStyle !== "NO_BUBBLE"), a.updateDrawableVisible(f.drawableID, _ && i);
+			for (let [e, t] of h) a.updateDrawableVisible(t.drawableID, _ && i && (g.get(e) ?? !1));
 			e.requestRedraw?.();
-		}, b = () => {
-			if (_) return;
-			let { height: e, scale: o, width: c } = $n(i), p = r.placement.basis === "actor" ? r.offset.scalePercent / 100 : 1, m = o * p, h = Qn(i, d, {
+		}, x = () => {
+			if (v) return;
+			let { height: e, scale: s, width: l } = er(a), m = r.placement.basis === "actor" ? r.offset.scalePercent / 100 : 1, h = (i ? 1 : s) * m, g = $n(a, f, {
 				width: 180,
 				height: 48
 			});
-			i.updateDrawableScale(d.drawableID, [m * 100, m * 100]);
-			let g = {
-				width: h.width * m,
-				height: h.height * m
-			}, b = a ? er(i, a, zn * o, p) : {
+			a.updateDrawableScale(f.drawableID, [h * 100, h * 100]);
+			let _ = {
+				width: g.width * h,
+				height: g.height * h
+			}, x = o ? tr(a, o, Bn * s, m) : {
 				width: 0,
 				height: 0
 			};
-			for (let e of [l, u]) e && er(i, e, zn * o, p);
-			let x = f ? er(i, f, Bn * o, p) : {
+			for (let e of [u, d]) e && tr(a, e, Bn * s, m);
+			let S = p ? tr(a, p, Vn * s, m) : {
 				width: 0,
 				height: 0
-			}, S = Vn * o * p, C = b.width + (a ? S : 0) + g.width, w = Math.max(b.height, g.height), te = Hn * o, T = C / p + te * 2, E = w / p + te * 2, D = C, O = w, ne = -c / 2, k = c / 2, A = e / 2, j = -e / 2, M = ne + D / 2, re = k - D / 2, N = j + O / 2, P = A - O / 2, F, I;
-			if (r.placement.basis === "background") F = 0, I = r.placement.region === "HEADER_LIKE" ? A - Un * o - O / 2 : r.placement.region === "FOOTER_LIKE" ? j + Un * o + O / 2 : 0;
+			}, C = Hn * s * m, w = x.width + (o ? C : 0) + _.width, te = Math.max(x.height, _.height), T = Un * s, E = w / m + T * 2, D = te / m + T * 2, ne = w, O = te, k = -l / 2, A = l / 2, re = e / 2, j = -e / 2, ie = k + ne / 2, M = A - ne / 2, N = j + O / 2, P = re - O / 2, F, I;
+			if (r.placement.basis === "background") F = 0, I = r.placement.region === "HEADER_LIKE" ? re - Wn * s - O / 2 : r.placement.region === "FOOTER_LIKE" ? j + Wn * s + O / 2 : 0;
 			else {
 				let e = ee({
-					bounds: Zn(t),
-					bubbleWidth: D,
+					bounds: Qn(t),
+					bubbleWidth: ne,
 					bubbleHeight: O,
 					direction: r.placement.direction,
-					distance: r.distance * o,
-					tailLength: r.tailLength * o,
+					distance: r.distance * s,
+					tailLength: r.tailLength * s,
 					offset: {
-						x: r.offset.x * o,
-						y: r.offset.y * o,
+						x: r.offset.x * s,
+						y: r.offset.y * s,
 						scalePercent: r.offset.scalePercent
 					}
 				});
 				F = e.x, I = e.y;
 			}
-			F = tr(F, M, re), I = tr(I, N, P);
-			let L = r.placement.basis === "actor" ? rr(r.placement.direction) : null, R = r.tailLength * o, z = r.placement.basis === "actor" ? [
-				r.offset.x * o,
-				r.offset.y * o,
+			F = nr(F, ie, M), I = nr(I, N, P);
+			let L = r.placement.basis === "actor" ? ar(r.placement.direction) : null, R = r.tailLength * s, z = r.placement.basis === "actor" ? [
+				r.offset.x * s,
+				r.offset.y * s,
 				r.offset.scalePercent
 			] : [
 				0,
@@ -4101,92 +4106,92 @@ function ar(e, t, n, r) {
 				y: 0
 			} : de({
 				style: r.visualStyle,
-				width: T,
-				height: E,
+				width: E,
+				height: D,
 				tailDirection: L,
 				tailLength: R,
 				offset: z
-			}), ie = Math.abs(z[0]) + T * Math.abs(p - 1) + Math.max(0, R - 18 * o) + 8 * o, ae = Math.abs(z[1]) + E * Math.abs(p - 1) + Math.max(0, R - 18 * o) + 8 * o, V = JSON.stringify({
-				baseBubbleHeight: E,
-				baseBubbleWidth: T,
+			}), ae = Math.abs(z[0]) + E * Math.abs(m - 1) + Math.max(0, R - 18 * s) + 8 * s, V = Math.abs(z[1]) + D * Math.abs(m - 1) + Math.max(0, R - 18 * s) + 8 * s, oe = JSON.stringify({
+				baseBubbleHeight: D,
+				baseBubbleWidth: E,
 				bodyOffset: z,
 				tailDirection: L,
 				tailLength: R,
-				viewportExtraX: ie,
-				viewportExtraY: ae,
+				viewportExtraX: ae,
+				viewportExtraY: V,
 				visualStyle: r.visualStyle
 			});
-			if (V !== v) {
-				let e = nr(pe({
+			if (oe !== y) {
+				let e = rr(pe({
 					style: r.visualStyle,
 					lines: [],
-					width: T,
-					height: E,
+					width: E,
+					height: D,
 					tailDirection: L,
 					tailLength: R,
 					offset: z,
 					title: `${r.name} Bubble body`
-				}), T, E, ie, ae), t = i.createSVGSkin(e);
+				}), E, D, ae, V), t = a.createSVGSkin(e);
 				if (!Number.isInteger(t) || t < 0) throw new $("BUBBLE-RUNTIME-001", "TurboWarp did not create the Bubble body SVG skin.");
 				try {
-					i.updateDrawableSkinId(n.drawableID, t);
+					a.updateDrawableSkinId(n.drawableID, t);
 				} catch (e) {
-					throw i.destroySkin(t), e;
+					throw a.destroySkin(t), e;
 				}
-				let a = s;
-				s = t, v = V, a !== void 0 && i.destroySkin(a);
+				let i = c;
+				c = t, y = oe, i !== void 0 && a.destroySkin(i);
 			}
-			i.updateDrawableScale(n.drawableID, [100, 100]), i.updateDrawablePosition(n.drawableID, [F - B.x, I + B.y]);
-			let oe = F - C / 2, se = oe + b.width / 2, ce = oe + b.width + (a ? S : 0) + g.width / 2;
+			a.updateDrawableScale(n.drawableID, [100, 100]), a.updateDrawablePosition(n.drawableID, [F - B.x, I + B.y]);
+			let se = F - w / 2, ce = se + x.width / 2, le = se + x.width + (o ? C : 0) + _.width / 2;
 			for (let e of [
-				a,
-				l,
-				u
-			]) e && i.updateDrawablePosition(e.drawableID, [se, I]);
-			i.updateDrawablePosition(d.drawableID, [ce, I]), f && i.updateDrawablePosition(f.drawableID, [ce + g.width / 2 - x.width / 2 - S, I - g.height / 2 + x.height / 2 + S]), y();
-		}, x = t.onTargetVisualChange, S = (e) => {
-			x?.(e), b();
+				o,
+				u,
+				d
+			]) e && a.updateDrawablePosition(e.drawableID, [ce, I]);
+			a.updateDrawablePosition(f.drawableID, [le, I]), p && a.updateDrawablePosition(p.drawableID, [le + _.width / 2 - S.width / 2 - C, I - _.height / 2 + S.height / 2 + C]), b();
+		}, S = t.onTargetVisualChange, C = (e) => {
+			S?.(e), x();
 		};
-		r.placement.basis === "actor" && (t.onTargetVisualChange = S);
-		let C = () => b();
-		return e.on?.("STAGE_SIZE_CHANGED", C), Object.freeze({
-			targets: p,
+		r.placement.basis === "actor" && (t.onTargetVisualChange = C);
+		let w = () => x();
+		return e.on?.("STAGE_SIZE_CHANGED", w), Object.freeze({
+			targets: m,
 			setLayerVisible(e, t) {
-				_ || (h.set(e, t), y());
+				v || (g.set(e, t), b());
 			},
 			show() {
-				_ || (g = !0, b());
+				v || (_ = !0, x());
 			},
 			hide() {
-				_ || (g = !1, y());
+				v || (_ = !1, b());
 			},
 			dispose() {
-				if (!_) {
-					_ = !0, e.off?.("STAGE_SIZE_CHANGED", C), r.placement.basis === "actor" && t.onTargetVisualChange === S && (t.onTargetVisualChange = x ?? null);
-					for (let e of [...o].reverse()) i.destroyDrawable(e.drawableID, Rn);
-					s !== void 0 && (i.destroySkin(s), s = void 0), e.requestRedraw?.();
+				if (!v) {
+					v = !0, e.off?.("STAGE_SIZE_CHANGED", w), r.placement.basis === "actor" && t.onTargetVisualChange === C && (t.onTargetVisualChange = S ?? null);
+					for (let e of [...s].reverse()) a.destroyDrawable(e.drawableID, zn);
+					c !== void 0 && (a.destroySkin(c), c = void 0), e.requestRedraw?.();
 				}
 			}
 		});
 	} catch (e) {
-		for (let e of [...o].reverse()) i.destroyDrawable(e.drawableID, Rn);
-		throw s !== void 0 && i.destroySkin(s), e;
+		for (let e of [...s].reverse()) a.destroyDrawable(e.drawableID, zn);
+		throw c !== void 0 && a.destroySkin(c), e;
 	}
 }
-function or(e, t = {}) {
-	if (!qn(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
-	let n = e, r = Jn(n.renderer), i = t.assetManager ? null : n.ext_kubohiroyaassetmanager, a = t.svgText ? null : hn(n), o = t.assetManager ?? {
+function sr(e, t = {}) {
+	if (!Jn(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
+	let n = e, r = Yn(n.renderer), i = t.assetManager ? null : n.ext_kubohiroyaassetmanager, a = t.svgText ? null : hn(n), o = t.assetManager ?? {
 		isRegistered(e) {
-			return Yn(i).isLoaded({ NAME: e });
+			return Xn(i).isLoaded({ NAME: e });
 		},
 		getMimeType(e) {
-			return Yn(i).getAssetMimeType({ NAME: e });
+			return Xn(i).getAssetMimeType({ NAME: e });
 		},
 		async applyToTarget(e, t) {
 			let a = t.drawableID;
 			if (!Number.isInteger(a) || a < 0) throw new $("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
-			let o = await Yn(i).resolveSkin(e);
-			if (!qn(o) || !Number.isInteger(o.skinId) || o.skinId < 0) throw new $("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(e)}`);
+			let o = await Xn(i).resolveSkin(e);
+			if (!Jn(o) || !Number.isInteger(o.skinId) || o.skinId < 0) throw new $("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(e)}`);
 			r.updateDrawableSkinId(a, o.skinId), n.requestRedraw?.();
 		}
 	}, s = a ? {
@@ -4196,37 +4201,43 @@ function or(e, t = {}) {
 		setText(e) {
 			a.setText(e);
 		},
+		setPopupText(e) {
+			a.setText({
+				...e,
+				scaleToStage: !1
+			});
+		},
 		releaseTarget(e) {
-			a.releaseTarget(e), Xn(e);
+			a.releaseTarget(e), Zn(e);
 		}
-	} : null, c = Ln({
+	} : null, c = t.svgText ? {
+		defineStyle(e) {
+			t.svgText?.defineStyle(e);
+		},
+		setText(e) {
+			t.svgText?.setText(e);
+		},
+		releaseTarget(e) {
+			t.svgText?.releaseTarget(e), Zn(e);
+		}
+	} : null, l = Rn({
 		assetManager: o,
-		svgText: (t.svgText ? {
-			defineStyle(e) {
-				t.svgText?.defineStyle(e);
-			},
-			setText(e) {
-				t.svgText?.setText(e);
-			},
-			releaseTarget(e) {
-				t.svgText?.releaseTarget(e), Xn(e);
-			}
-		} : null) ?? s ?? (() => {
+		svgText: c ?? s ?? (() => {
 			throw new $("BUBBLE-RUNTIME-001", "Bubble text engine is unavailable.");
 		})(),
 		createSurface({ actor: e, actorKey: t, style: r }) {
-			if (!qn(e) || typeof e.id != "string") throw new $("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-			return ar(n, e, t, r);
+			if (!Jn(e) || typeof e.id != "string") throw new $("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
+			return or(n, e, t, r, c !== null);
 		},
 		...t.scheduler === void 0 ? {} : { scheduler: t.scheduler },
 		...t.onAnimationError === void 0 ? {} : { onAnimationError: t.onAnimationError }
 	});
 	return a ? Object.freeze({
-		...c,
+		...l,
 		async dispose() {
 			let e = [];
 			try {
-				await c.dispose();
+				await l.dispose();
 			} catch (t) {
 				e.push(t);
 			}
@@ -4238,7 +4249,7 @@ function or(e, t = {}) {
 			if (e.length === 1) throw e[0];
 			if (e.length > 1) throw AggregateError(e, "Failed to dispose Bubble text engine.");
 		}
-	}) : c;
+	}) : l;
 }
 //#endregion
-export { $ as BubbleRuntimeAdapterError, or as createTurboWarpBubbleComposition };
+export { $ as BubbleRuntimeAdapterError, sr as createTurboWarpBubbleComposition };

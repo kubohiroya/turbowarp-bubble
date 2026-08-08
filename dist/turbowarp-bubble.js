@@ -7126,6 +7126,13 @@
     if (!isRecord$1(value) || typeof value.defineStyle !== "function" || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble SVG Text composition must provide defineStyle, setText, and releaseTarget.");
     return value;
   }
+  function setPopupText(svgText, input) {
+    if (svgText.setPopupText) {
+      svgText.setPopupText(input);
+      return;
+    }
+    svgText.setText(input);
+  }
   function defaultScheduler() {
     return Object.freeze({
       setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
@@ -7351,8 +7358,7 @@
           kind: input.kind,
           style
         })), style);
-        svgText.setText({
-          scaleToStage: false,
+        setPopupText(svgText, {
           styleName: style.textStyle,
           target: surface.targets.text,
           text: input.text
@@ -7438,8 +7444,7 @@
             if (typeof text !== "string") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string."));
             transitionTail = transitionTail.then(async () => {
               if (!surface) return;
-              svgText.setText({
-                scaleToStage: false,
+              setPopupText(svgText, {
                 styleName: style.textStyle,
                 target: surface.targets.text,
                 text
@@ -7668,7 +7673,7 @@
     const vector = bubbleDirectionVector(direction);
     return (Math.atan2(-vector.x, -vector.y) * 180 / Math.PI % 360 + 360) % 360;
   }
-  function createSurface(runtime, actor, actorKey, style) {
+  function createSurface(runtime, actor, actorKey, style, textSkinIncludesStageScale) {
     const renderer = runtime.renderer;
     const sequence = surfaceSequence;
     surfaceSequence += 1;
@@ -7721,7 +7726,7 @@
         if (disposed) return;
         const { height: stageHeight, scale: stageScale, width: stageWidth } = readStageMetrics(renderer);
         const scaleMultiplier = style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
-        const textDrawableScale = stageScale * scaleMultiplier;
+        const textDrawableScale = (textSkinIncludesStageScale ? 1 : stageScale) * scaleMultiplier;
         const nativeTextSize = readSize(renderer, text, {
           width: 180,
           height: 48
@@ -7927,30 +7932,37 @@
       setText(input) {
         internalSvgText.setText(input);
       },
+      setPopupText(input) {
+        internalSvgText.setText({
+          ...input,
+          scaleToStage: false
+        });
+      },
       releaseTarget(target) {
         internalSvgText.releaseTarget(target);
         restoreTargetCostume(target);
       }
     } : null;
+    const injectedSvgText = options.svgText ? {
+      defineStyle(input) {
+        options.svgText?.defineStyle(input);
+      },
+      setText(input) {
+        options.svgText?.setText(input);
+      },
+      releaseTarget(target) {
+        options.svgText?.releaseTarget(target);
+        restoreTargetCostume(target);
+      }
+    } : null;
     const composition = createBubbleComposition({
       assetManager,
-      svgText: (options.svgText ? {
-        defineStyle(input) {
-          options.svgText?.defineStyle(input);
-        },
-        setText(input) {
-          options.svgText?.setText(input);
-        },
-        releaseTarget(target) {
-          options.svgText?.releaseTarget(target);
-          restoreTargetCostume(target);
-        }
-      } : null) ?? ownedSvgText ?? (() => {
+      svgText: injectedSvgText ?? ownedSvgText ?? (() => {
         throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble text engine is unavailable.");
       })(),
       createSurface({ actor, actorKey, style }) {
         if (!isRecord(actor) || typeof actor.id !== "string") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-        return createSurface(runtime, actor, actorKey, style);
+        return createSurface(runtime, actor, actorKey, style, injectedSvgText !== null);
       },
       ...options.scheduler === void 0 ? {} : { scheduler: options.scheduler },
       ...options.onAnimationError === void 0 ? {} : { onAnimationError: options.onAnimationError }

@@ -148,7 +148,16 @@ export type BubbleAssetManager = Pick<
 export type BubbleSvgText = Pick<
   BubbleTextEngine,
   "defineStyle" | "releaseTarget" | "setText"
->;
+> & {
+  /** Internal adapter hook for popup text that is scaled by the Bubble surface. */
+  readonly setPopupText?: (input: BubblePopupTextInput) => void;
+};
+
+export interface BubblePopupTextInput {
+  readonly styleName: string;
+  readonly target: BubbleTextTarget;
+  readonly text: string;
+}
 
 export interface SetTextActorInput {
   readonly actor: BubbleTextTarget;
@@ -543,6 +552,17 @@ function validateSvgText(value: unknown): BubbleSvgText {
     );
   }
   return value as unknown as BubbleSvgText;
+}
+
+function setPopupText(
+  svgText: BubbleSvgText,
+  input: BubblePopupTextInput,
+): void {
+  if (svgText.setPopupText) {
+    svgText.setPopupText(input);
+    return;
+  }
+  svgText.setText(input);
 }
 
 function defaultScheduler(): BubbleScheduler {
@@ -978,8 +998,7 @@ export function createBubbleComposition(
         ),
         style,
       );
-      svgText.setText({
-        scaleToStage: false,
+      setPopupText(svgText, {
         styleName: style.textStyle,
         target: surface.targets.text,
         text: input.text,
@@ -1146,8 +1165,7 @@ export function createBubbleComposition(
           }
           transitionTail = transitionTail.then(async () => {
             if (!surface) return;
-            svgText.setText({
-              scaleToStage: false,
+            setPopupText(svgText, {
               styleName: style.textStyle,
               target: surface.targets.text,
               text,
