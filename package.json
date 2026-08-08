@@ -22,6 +22,7 @@
       "types": "./dist/types/composition.d.ts",
       "import": "./dist/composition.js"
     },
+    "./dist/turbowarp-bubble.js": "./dist/turbowarp-bubble.js",
     "./package.json": "./package.json"
   },
   "files": [
@@ -30,8 +31,8 @@
     "LICENSE"
   ],
   "main": "./dist/composition.js",
-  "unpkg": "./dist/composition.js",
-  "jsdelivr": "./dist/composition.js",
+  "unpkg": "./dist/turbowarp-bubble.js",
+  "jsdelivr": "./dist/turbowarp-bubble.js",
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -39,11 +40,12 @@
   "packageManager": "pnpm@11.18.0",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "pnpm build:composition && pnpm build:types",
-    "build:composition": "vite build",
+    "build": "pnpm build:extension && pnpm build:composition && pnpm build:types",
+    "build:extension": "vite build",
+    "build:composition": "vite build --config vite.composition.config.ts",
     "build:types": "tsc --project tsconfig.build.json",
     "types:composition:check": "tsc --project tsconfig.composition-consumer.json",
-    "lint": "eslint src tests scripts vite.config.ts eslint.config.mjs",
+    "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts eslint.config.mjs",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "test": "vitest run",
@@ -61,6 +63,7 @@
     "@eslint/js": "^10.0.1",
     "@kubohiroya/turbowarp-asset-manager": "0.7.0",
     "@kubohiroya/turbowarp-svg-text": "0.3.0",
+    "@kubohiroya/vite-plugin-turbowarp-extension": "0.1.1",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
     "prettier": "^3.9.6",

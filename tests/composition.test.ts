@@ -289,6 +289,31 @@ describe("Bubble composition", () => {
     ).toThrowError(BubbleCompositionError);
   });
 
+  it("cleans up a partially shown bubble when animation scheduling fails", async () => {
+    const harness = createHarness();
+    vi.spyOn(harness.scheduler, "setTimeout").mockImplementationOnce(() => {
+      throw new Error("scheduler failed");
+    });
+
+    await expect(
+      harness.composition.show({
+        actor: {},
+        actorKey: "Hero",
+        kind: "say",
+        text: "cleanup",
+        styleName: "dialogue",
+      }),
+    ).rejects.toThrow("scheduler failed");
+
+    expect(harness.scheduler.size).toBe(0);
+    expect(harness.releaseTarget).toHaveBeenCalledWith(
+      harness.surface.targets.text,
+    );
+    expect(harness.surface.hide).toHaveBeenCalledOnce();
+    expect(harness.surface.dispose).toHaveBeenCalledOnce();
+    expect(harness.composition.hasActiveBubble("Hero")).toBe(false);
+  });
+
   it("releases all bubbles and rejects new work after disposal", async () => {
     const harness = createHarness();
     await harness.composition.show({

@@ -183,7 +183,7 @@ function x(t) {
 		for (let e of new Set(_(a))) g(i, e);
 		let c = m.get(r.actorKey);
 		c && await c.close();
-		let l, u = !1, d = !1;
+		let l, u = !1, d = !1, f, b, x;
 		try {
 			l = h(await t.createSurface(Object.freeze({
 				actor: r.actor,
@@ -203,9 +203,8 @@ function x(t) {
 				let t = a.portrait.talk?.frames[0];
 				t !== void 0 && c.push(i.applyToTarget(t, l.targets.portraitTalk));
 			}
-			let f = a.advanceIndicator?.frames[0];
-			f !== void 0 && c.push(i.applyToTarget(f, l.targets.advanceIndicator)), await Promise.all(c);
-			let p = a.portrait?.blink === void 0 ? void 0 : y({
+			let p = a.advanceIndicator?.frames[0];
+			p !== void 0 && c.push(i.applyToTarget(p, l.targets.advanceIndicator)), await Promise.all(c), f = a.portrait?.blink === void 0 ? void 0 : y({
 				actorKey: r.actorKey,
 				layer: "portraitBlink",
 				animation: a.portrait.blink,
@@ -213,7 +212,7 @@ function x(t) {
 				assetManager: i,
 				scheduler: s,
 				...t.onAnimationError === void 0 ? {} : { onError: t.onAnimationError }
-			}), g = a.portrait?.talk === void 0 ? void 0 : y({
+			}), b = a.portrait?.talk === void 0 ? void 0 : y({
 				actorKey: r.actorKey,
 				layer: "portraitTalk",
 				animation: a.portrait.talk,
@@ -221,7 +220,7 @@ function x(t) {
 				assetManager: i,
 				scheduler: s,
 				...t.onAnimationError === void 0 ? {} : { onError: t.onAnimationError }
-			}), _ = a.advanceIndicator === void 0 ? void 0 : y({
+			}), x = a.advanceIndicator === void 0 ? void 0 : y({
 				actorKey: r.actorKey,
 				layer: "advanceIndicator",
 				animation: a.advanceIndicator,
@@ -229,27 +228,28 @@ function x(t) {
 				assetManager: i,
 				scheduler: s,
 				...t.onAnimationError === void 0 ? {} : { onError: t.onAnimationError }
-			}), b = "idle", x = !1, S = Promise.resolve(), C = async (e) => {
-				e !== b && (e === "speaking" ? (await _?.stop(), await l?.setLayerVisible("advanceIndicator", !1), await l?.setLayerVisible("portraitTalk", g !== void 0), await g?.start({ primed: !0 })) : e === "waiting" ? (await g?.stop({ reset: !0 }), await l?.setLayerVisible("portraitTalk", !1), await l?.setLayerVisible("advanceIndicator", _ !== void 0), await _?.start({ primed: !0 })) : (await Promise.all([g?.stop({ reset: !0 }), _?.stop()]), await Promise.all([l?.setLayerVisible("portraitTalk", !1), l?.setLayerVisible("advanceIndicator", !1)])), b = e);
+			});
+			let g = "idle", _ = !1, S = Promise.resolve(), C = async (e) => {
+				e !== g && (e === "speaking" ? (await x?.stop(), await l?.setLayerVisible("advanceIndicator", !1), await l?.setLayerVisible("portraitTalk", b !== void 0), await b?.start({ primed: !0 })) : e === "waiting" ? (await b?.stop({ reset: !0 }), await l?.setLayerVisible("portraitTalk", !1), await l?.setLayerVisible("advanceIndicator", x !== void 0), await x?.start({ primed: !0 })) : (await Promise.all([b?.stop({ reset: !0 }), x?.stop()]), await Promise.all([l?.setLayerVisible("portraitTalk", !1), l?.setLayerVisible("advanceIndicator", !1)])), g = e);
 			};
 			await Promise.all([
 				l.setLayerVisible("portraitBase", a.portrait !== void 0),
 				l.setLayerVisible("portraitBlink", a.portrait?.blink !== void 0),
 				l.setLayerVisible("portraitTalk", !1),
 				l.setLayerVisible("advanceIndicator", !1)
-			]), await l.show(), d = !0, await p?.start({ primed: !0 }), await C(r.phase);
+			]), await l.show(), d = !0, await f?.start({ primed: !0 }), await C(r.phase);
 			let w = Object.freeze({
 				actorKey: r.actorKey,
 				kind: r.kind,
 				get phase() {
-					return b;
+					return g;
 				},
 				setPhase(t) {
-					return x ? Promise.reject(new e("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${r.actorKey}`)) : n.has(t) ? (S = S.then(() => C(t)), S) : Promise.reject(new e("BUBBLE-COMPOSITION-001", "Bubble phase is invalid."));
+					return _ ? Promise.reject(new e("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${r.actorKey}`)) : n.has(t) ? (S = S.then(() => C(t)), S) : Promise.reject(new e("BUBBLE-COMPOSITION-001", "Bubble phase is invalid."));
 				},
 				async close() {
-					if (x) return;
-					x = !0;
+					if (_) return;
+					_ = !0;
 					let e = [];
 					try {
 						await S;
@@ -257,9 +257,9 @@ function x(t) {
 						e.push(t);
 					}
 					for (let t of [
-						() => p?.stop(),
-						() => g?.stop(),
-						() => _?.stop(),
+						() => f?.stop(),
+						() => b?.stop(),
+						() => x?.stop(),
 						async () => {
 							d && await l?.hide();
 						},
@@ -277,8 +277,12 @@ function x(t) {
 			});
 			return m.set(r.actorKey, w), w;
 		} catch (e) {
-			let t = [];
-			if (d && l) try {
+			let t = [], n = await Promise.allSettled([
+				f?.stop(),
+				b?.stop(),
+				x?.stop()
+			]);
+			if (t.push(...n.flatMap((e) => e.status === "rejected" ? [e.reason] : [])), d && l) try {
 				await l.hide();
 			} catch (e) {
 				t.push(e);

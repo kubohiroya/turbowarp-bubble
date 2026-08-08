@@ -651,6 +651,9 @@ export function createBubbleComposition(
     let surface: BubbleSurface | undefined;
     let textOwned = false;
     let surfaceVisible = false;
+    let blinkLoop: FrameLoop | undefined;
+    let talkLoop: FrameLoop | undefined;
+    let indicatorLoop: FrameLoop | undefined;
     try {
       surface = validateSurface(
         await options.createSurface(
@@ -708,7 +711,7 @@ export function createBubbleComposition(
       }
       await Promise.all(primeOperations);
 
-      const blinkLoop =
+      blinkLoop =
         style.portrait?.blink === undefined
           ? undefined
           : createFrameLoop({
@@ -723,7 +726,7 @@ export function createBubbleComposition(
                 ? {}
                 : { onError: options.onAnimationError }),
             });
-      const talkLoop =
+      talkLoop =
         style.portrait?.talk === undefined
           ? undefined
           : createFrameLoop({
@@ -738,7 +741,7 @@ export function createBubbleComposition(
                 ? {}
                 : { onError: options.onAnimationError }),
             });
-      const indicatorLoop =
+      indicatorLoop =
         style.advanceIndicator === undefined
           ? undefined
           : createFrameLoop({
@@ -867,6 +870,16 @@ export function createBubbleComposition(
       return handle;
     } catch (error) {
       const cleanupErrors: unknown[] = [];
+      const loopResults = await Promise.allSettled([
+        blinkLoop?.stop(),
+        talkLoop?.stop(),
+        indicatorLoop?.stop(),
+      ]);
+      cleanupErrors.push(
+        ...loopResults.flatMap((result) =>
+          result.status === "rejected" ? [result.reason] : [],
+        ),
+      );
       if (surfaceVisible && surface) {
         try {
           await surface.hide();

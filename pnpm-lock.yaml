@@ -17,6 +17,9 @@ importers:
       '@kubohiroya/turbowarp-svg-text':
         specifier: 0.3.0
         version: 0.3.0
+      '@kubohiroya/vite-plugin-turbowarp-extension':
+        specifier: 0.1.1
+        version: 0.1.1(vite@8.2.1(@types/node@26.1.2))
       '@types/node':
         specifier: ^26.1.2
         version: 26.1.2
@@ -108,6 +111,12 @@ packages:
 
   '@kubohiroya/turbowarp-svg-text@0.3.0':
     resolution: {integrity: sha512-J04auCUiuLAZDYgfNMDGqUfoT3qfevhpxTXi8/MUU6FqCq/jloZPWE7JuFZjQxen9MGVF40gT+PhPu2mJHYCvg==}
+
+  '@kubohiroya/vite-plugin-turbowarp-extension@0.1.1':
+    resolution: {integrity: sha512-6lOlSnfOcKeGwI8SpWQMC6Vz153WIit+1fVxhowy2YdgqC5tP96Zmzkn+Q+4JlJVRsFo89jrp7ifqJcWL56svg==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      vite: '>=6.0.0'
 
   '@oxc-project/types@0.143.0':
     resolution: {integrity: sha512-u6JZdLBTLotrNC9Vd6vPssINdzcCzleKAH6EJKImQb7GtYvX5keN2dxkoK44stCc4tffE6QQRtZTXVSzsLUlWA==}
@@ -883,6 +892,11 @@ snapshots:
   '@kubohiroya/turbowarp-asset-manager@0.7.0': {}
 
   '@kubohiroya/turbowarp-svg-text@0.3.0': {}
+
+  '@kubohiroya/vite-plugin-turbowarp-extension@0.1.1(vite@8.2.1(@types/node@26.1.2))':
+    dependencies:
+      acorn: 8.18.0
+      vite: 8.2.1(@types/node@26.1.2)
 
   '@oxc-project/types@0.143.0': {}
 

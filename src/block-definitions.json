@@ -1,0 +1,111 @@
+{
+  "extensionName": "Bubble",
+  "blocks": [
+    {
+      "opcode": "defineBubbleStyle",
+      "blockType": "COMMAND",
+      "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
+      "description": "Defines or replaces a bubble style and references a named SVG Text style.",
+      "arguments": {
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" },
+        "TEXT_STYLE": { "type": "STRING", "defaultValue": "default" }
+      }
+    },
+    {
+      "opcode": "setPortraitBase",
+      "blockType": "COMMAND",
+      "text": "set portrait base [ASSET] for bubble style [STYLE]",
+      "description": "Sets the registered image asset used as the portrait base. An empty asset removes the complete portrait.",
+      "arguments": {
+        "ASSET": { "type": "STRING", "defaultValue": "HeroFace" },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBlinkFrames",
+      "blockType": "COMMAND",
+      "text": "set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Sets comma-separated registered image assets for the portrait blink layer. An empty list removes blink animation.",
+      "arguments": {
+        "ASSETS": { "type": "STRING", "defaultValue": "EyesOpen,EyesClosed" },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.4 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setTalkFrames",
+      "blockType": "COMMAND",
+      "text": "set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Sets comma-separated registered image assets for the portrait talk layer. An empty list removes talk animation.",
+      "arguments": {
+        "ASSETS": { "type": "STRING", "defaultValue": "MouthClosed,MouthOpen" },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.1 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setAdvanceFrames",
+      "blockType": "COMMAND",
+      "text": "set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Sets at least two comma-separated registered image assets for the waiting indicator. An empty list removes the indicator.",
+      "arguments": {
+        "ASSETS": { "type": "STRING", "defaultValue": "Next1,Next2" },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.2 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "sayWithBubbleStyle",
+      "blockType": "COMMAND",
+      "text": "say [MESSAGE] with bubble style [STYLE]",
+      "description": "Shows or replaces this sprite's layered say bubble in the speaking phase.",
+      "arguments": {
+        "MESSAGE": { "type": "STRING", "defaultValue": "Hello!" },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "thinkWithBubbleStyle",
+      "blockType": "COMMAND",
+      "text": "think [MESSAGE] with bubble style [STYLE]",
+      "description": "Shows or replaces this sprite's layered think bubble in the speaking phase.",
+      "arguments": {
+        "MESSAGE": { "type": "STRING", "defaultValue": "Hmm..." },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubblePhase",
+      "blockType": "COMMAND",
+      "text": "set this bubble phase [PHASE]",
+      "description": "Changes this sprite's bubble phase. Waiting stops talk animation and starts the advance indicator.",
+      "arguments": {
+        "PHASE": {
+          "type": "STRING",
+          "defaultValue": "waiting",
+          "menu": "phase"
+        }
+      }
+    },
+    {
+      "opcode": "closeBubble",
+      "blockType": "COMMAND",
+      "text": "close this bubble",
+      "description": "Closes this sprite's bubble and releases its timers, SVG text skin, and drawables.",
+      "arguments": {}
+    },
+    {
+      "opcode": "getVersion",
+      "blockType": "REPORTER",
+      "text": "Bubble version",
+      "description": "Returns the Bubble implementation version.",
+      "arguments": {}
+    }
+  ],
+  "menus": {
+    "phase": {
+      "acceptReporters": true,
+      "items": ["speaking", "waiting", "idle"]
+    }
+  }
+}

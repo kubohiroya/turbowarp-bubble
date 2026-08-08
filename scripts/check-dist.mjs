@@ -9,6 +9,16 @@ const declaration = await readFile(
   new URL("../dist/types/composition.d.ts", import.meta.url),
   "utf8",
 );
+const extension = await readFile(
+  new URL("../dist/turbowarp-bubble.js", import.meta.url),
+  "utf8",
+);
+const manifest = JSON.parse(
+  await readFile(
+    new URL("../dist/extension-manifest.json", import.meta.url),
+    "utf8",
+  ),
+);
 
 for (const name of ["createBubbleComposition", "BubbleCompositionError"]) {
   if (!composition.includes(name)) {
@@ -20,4 +30,23 @@ for (const name of ["BubbleComposition", "BubbleHandle", "BubbleStyleInput"]) {
   if (!declaration.includes(name)) {
     throw new Error(`dist/types/composition.d.ts does not declare ${name}.`);
   }
+}
+
+for (const value of [
+  "kubohiroyabubble",
+  "defineBubbleStyle",
+  "sayWithBubbleStyle",
+  "setBubblePhase",
+  "kubohiroyaassetmanager",
+  "kubohiroyasvgtext",
+]) {
+  if (!extension.includes(value)) {
+    throw new Error(`dist/turbowarp-bubble.js does not contain ${value}.`);
+  }
+}
+
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 10) {
+  throw new Error(
+    "dist/extension-manifest.json has an unexpected block contract.",
+  );
 }

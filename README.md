@@ -1,6 +1,6 @@
 # TurboWarp Bubble
 
-`@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するcompositionパッケージです。紙芝居固有のDSLやシーン遷移には依存しません。
+`@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。紙芝居固有のDSLやシーン遷移には依存しません。
 
 ## パッケージ境界
 
@@ -9,9 +9,9 @@
 | `@kubohiroya/turbowarp-asset-manager` | アセット名の登録、画像種別の検証、画像targetへの適用                         |
 | `@kubohiroya/turbowarp-svg-text`      | 名前付き文字styleと、文字列からSVGスキンへの変換                             |
 | `@kubohiroya/turbowarp-bubble`        | 吹き出しsurface、say／think、表情レイヤー、表示phase、フレームアニメーション |
-| アプリ／host                          | Actorの解決、surfaceの配置、入力待ち、DSLからcomposition APIへの変換         |
+| アプリ／host                          | 入力待ち、必要に応じたDSLからcomposition APIへの変換                         |
 
-Bubbleは依存パッケージを再exportせず、それぞれの公開composition APIを受け取ります。このため、SVG文字ActorはBubbleを使わない画面でも従来どおり単独で利用できます。
+Bubbleは依存パッケージを再exportしません。このため、Asset ManagerとSVG文字ActorはBubbleを使わない画面でも従来どおり単独で利用できます。
 
 ## インストール
 
@@ -22,6 +22,60 @@ pnpm add @kubohiroya/turbowarp-bubble \
 ```
 
 現在のpeer dependency範囲は、Asset Manager `>=0.7.0 <1`、SVG Text `>=0.3.0 <1`です。
+
+## TurboWarp機能拡張
+
+TurboWarpの「カスタム拡張機能」から、次の3本を読み込みます。Asset ManagerとSVG Textは、最初のBubble表示より前にロードされていれば、読み込み順は問いません。
+
+```text
+https://unpkg.com/@kubohiroya/turbowarp-asset-manager/dist/asset-manager.js
+https://unpkg.com/@kubohiroya/turbowarp-svg-text/dist/svg-text.js
+https://unpkg.com/@kubohiroya/turbowarp-bubble/dist/turbowarp-bubble.js
+```
+
+Bubbleは呼び出し元のspriteまたはcloneごとに表示を所有します。文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示ブロックを実行することはできません。
+
+### 提供ブロック
+
+| ブロック                                                                       | 動作                                                              |
+| ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
+| `set portrait base [ASSET] for bubble style [STYLE]`                           | 表情ベース画像を設定する。空文字でportrait全体を解除する          |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分を設定する。空リストで解除する                          |
+| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分を設定する。空リストで解除する                          |
+| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]` | 入力待ちアイコンを設定する。2フレーム以上必要。空リストで解除する |
+| `say [MESSAGE] with bubble style [STYLE]`                                      | `speaking` phaseでsay表示を開始または置換する                     |
+| `think [MESSAGE] with bubble style [STYLE]`                                    | `speaking` phaseでthink表示を開始または置換する                   |
+| `set this bubble phase [PHASE]`                                                | `speaking`／`waiting`／`idle`を切り替える                         |
+| `close this bubble`                                                            | 呼び出し元のBubbleと所有resourceを解放する                        |
+| `Bubble version`                                                               | 実装versionを返す                                                 |
+
+`ASSETS`はAsset Managerへ登録済みの画像アセット名をカンマ区切りで指定します。アセット名自体にカンマは使用できません。すべての`SECONDS`は0より大きい秒数です。
+
+### 表示phase
+
+| phase      | 目パチ | 口パク       | 次へアイコン |
+| ---------- | ------ | ------------ | ------------ |
+| `speaking` | 実行   | 実行         | 非表示       |
+| `waiting`  | 実行   | 停止・非表示 | ループ実行   |
+| `idle`     | 実行   | 停止・非表示 | 停止・非表示 |
+
+`say`／`think`ブロックは表示を開始した時点で次のブロックへ進みます。キー入力、タップ、文字送り完了の判定はBubbleの責務ではありません。入力待ちを開始する側が`waiting`へ変更し、入力成立後に`close this bubble`または次の表示ブロックを実行します。
+
+### ブロック構成例
+
+```text
+define bubble style [hero-dialogue] using text style [dialogue-text]
+set portrait base [HeroFace] for bubble style [hero-dialogue]
+set blink frames [HeroEyesOpen,HeroEyesClosed] every [0.4] seconds for bubble style [hero-dialogue]
+set talk frames [HeroMouthClosed,HeroMouthOpen] every [0.1] seconds for bubble style [hero-dialogue]
+set advance frames [Next1,Next2] every [0.2] seconds for bubble style [hero-dialogue]
+say [海へ出発！] with bubble style [hero-dialogue]
+set this bubble phase [waiting]
+close this bubble
+```
+
+プロジェクト開始・停止、対象sprite／cloneの停止、runtime破棄でも、所有するtimer、SVG text skin、drawableを自動解放します。依存拡張が未ロードの場合は、必要なnpmパッケージ名を含むerrorを返します。
 
 ## Composition API
 
