@@ -7488,7 +7488,7 @@
     "speaking",
     "waiting"
   ]);
-  var EXTENSION_DOCS_URI = "https://github.com/kubohiroya/turbowarp-bubble#readme";
+  var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
   var EXTENSION_VERSION = "0.1.0";
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
