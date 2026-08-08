@@ -8,13 +8,13 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the four custom extensions with **Run without sandbox** enabled. Async Input and Runtime Expression are needed only for the integrated wait block. Asset Manager is needed only when a style uses portrait or advance-frame image assets. Bubble includes its SVG Text engine; do not load SVG Text separately.
 
-| Order | Extension                | URL                                                                                                               |
-| ----: | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
-|     1 | Temporary Variables      | Add from the TurboWarp extension library                                                                          |
-|     2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`                        |
-|     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js`          |
-|     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
-|     5 | Bubble 0.2.0             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js` |
+| Order | Extension                | URL                                                                                                      |
+| ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
+|     1 | Temporary Variables      | Add from the TurboWarp extension library                                                                 |
+|     2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`               |
+|     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
+|     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
+|     5 | Bubble 0.2.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js`               |
 
 To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if Asset Manager is missing when an image layer is used, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.
 
@@ -72,7 +72,7 @@ save text style
 
 ## 4. Define a Bubble style
 
-First associate a Bubble style name with an SVG Text style name.
+First associate a Bubble style name with a text style defined in Bubble.
 
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]

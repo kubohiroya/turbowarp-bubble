@@ -103,7 +103,7 @@
 <tr>
 <td align="right">5</td>
 <td>Bubble 0.2.0</td>
-<td>After npm publication: <code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js</code></td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
 <p>To try a development build, load this repository&#39;s <code>dist/turbowarp-bubble.js</code> as a local custom extension. Bubble reports an explicit error if Asset Manager is missing when an image layer is used, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.</p>
@@ -182,7 +182,7 @@ save text style
 </code></pre>
 <p><code>begin</code> creates or replaces the draft owned by the current TurboWarp execution thread. Concurrent scripts and clones therefore cannot overwrite each other&#39;s draft. <code>save</code> stores an immutable named style and clears that thread&#39;s draft. Starting another draft in the same script or starting/stopping the project discards its unsaved changes. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.</p>
 <h2 id="bubble-style">4. Define a Bubble style</h2>
-<p>First associate a Bubble style name with an SVG Text style name.</p>
+<p>First associate a Bubble style name with a text style defined in Bubble.</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
 set presentation mode [POP_OUT_BUBBLE] for bubble style [hero-dialogue]
 set bubble placement [up-right] for bubble style [hero-dialogue]

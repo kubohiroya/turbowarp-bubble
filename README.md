@@ -87,7 +87,7 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | `begin text style [STYLE]`                                                             | 文字style draftを開始する                                         |
 | `set text font/size/color/background/align ...`                                        | draftへ文字設定を追加する                                         |
 | `save text style`                                                                      | named styleとして保存しdraftを破棄する                            |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義し、Bubble内で定義した文字style名を関連付ける   |
 | `set presentation mode [MODE] for bubble style [STYLE]`                                | popup表示またはtext actor表示を選ぶ                               |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する                 |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する                      |
