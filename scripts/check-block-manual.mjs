@@ -41,6 +41,12 @@ function requireText(source, expected, label) {
   }
 }
 
+function forbidText(source, forbidden, label) {
+  if (source.includes(forbidden)) {
+    throw new Error(`${label} must not contain ${forbidden}.`);
+  }
+}
+
 function skipSubBlocks(buffer, startOffset) {
   let offset = startOffset;
   while (offset < buffer.length) {
@@ -119,6 +125,11 @@ const [
 
 requireText(quickStart, 'viewBox="0 0 1200 880"', "Quick-start SVG");
 requireText(quickStart, "close this bubble", "Quick-start SVG");
+for (const asset of ["Next1", "Next2"]) {
+  requireText(quickStart, `costume:Assets:${asset}`, "Quick-start SVG");
+  requireText(quickStart, `>${asset}<`, "Quick-start SVG");
+}
+forbidText(quickStart, "Next1 / Next2", "Quick-start SVG");
 requireText(phaseGuide, 'viewBox="0 0 1200 500"', "Phase-guide SVG");
 requireText(placementGuide, 'viewBox="0 0 1600 1560"', "Placement-guide SVG");
 requireText(

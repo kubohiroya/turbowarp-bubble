@@ -39,7 +39,7 @@
 <text x="467.1199999999999" y="245" class="input-text" style="font-size:12px">HeroFace</text>
   </g>
   <text x="50" y="281" class="small">同じブロックで、透明差分を含む7つの画像を登録</text>
-  <rect x="46" y="292" width="514" height="187" rx="12" fill="#eef1ff" stroke="#cbd3ff"/>
+  <rect x="46" y="292" width="514" height="195" rx="12" fill="#eef1ff" stroke="#cbd3ff"/>
   <text x="58" y="316" class="small" style="font-weight:700">RESOURCE_ID</text>
   <text x="312" y="316" class="small" style="font-weight:700">アセット名</text>
   <text x="443" y="316" class="small" style="font-weight:700">用途</text>
@@ -48,30 +48,35 @@
         <text x="312" y="302" class="small">HeroFace</text>
         <text x="443" y="302" class="small">顔・髪などのベース</text>
       </g>
-<g transform="translate(0 29)">
+<g transform="translate(0 25)">
         <text x="58" y="302" class="small">costume:Assets:HeroEyesOpen</text>
         <text x="312" y="302" class="small">HeroEyesOpen</text>
         <text x="443" y="302" class="small">目（開）</text>
       </g>
-<g transform="translate(0 58)">
+<g transform="translate(0 50)">
         <text x="58" y="302" class="small">costume:Assets:HeroEyesClosed</text>
         <text x="312" y="302" class="small">HeroEyesClosed</text>
         <text x="443" y="302" class="small">目（閉）</text>
       </g>
-<g transform="translate(0 87)">
+<g transform="translate(0 75)">
         <text x="58" y="302" class="small">costume:Assets:HeroMouthClosed</text>
         <text x="312" y="302" class="small">HeroMouthClosed</text>
         <text x="443" y="302" class="small">口（閉）</text>
       </g>
-<g transform="translate(0 116)">
+<g transform="translate(0 100)">
         <text x="58" y="302" class="small">costume:Assets:HeroMouthOpen</text>
         <text x="312" y="302" class="small">HeroMouthOpen</text>
         <text x="443" y="302" class="small">口（開）</text>
       </g>
-<g transform="translate(0 145)">
-        <text x="58" y="302" class="small">costume:Assets:Next1 / Next2</text>
-        <text x="312" y="302" class="small">Next1 / Next2</text>
-        <text x="443" y="302" class="small">次へアイコン</text>
+<g transform="translate(0 125)">
+        <text x="58" y="302" class="small">costume:Assets:Next1</text>
+        <text x="312" y="302" class="small">Next1</text>
+        <text x="443" y="302" class="small">次へアイコン 1枚目</text>
+      </g>
+<g transform="translate(0 150)">
+        <text x="58" y="302" class="small">costume:Assets:Next2</text>
+        <text x="312" y="302" class="small">Next2</text>
+        <text x="443" y="302" class="small">次へアイコン 2枚目</text>
       </g></g>
   <g role="group" aria-label="SVG Textでdialogue-text styleを定義">
     <rect x="48" y="506" width="510" height="94" rx="12" fill="#9966ff" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>

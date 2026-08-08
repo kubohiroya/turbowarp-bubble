@@ -139,14 +139,15 @@ function quickStartSvg() {
     ["costume:Assets:HeroEyesClosed", "HeroEyesClosed", "目（閉）"],
     ["costume:Assets:HeroMouthClosed", "HeroMouthClosed", "口（閉）"],
     ["costume:Assets:HeroMouthOpen", "HeroMouthOpen", "口（開）"],
-    ["costume:Assets:Next1 / Next2", "Next1 / Next2", "次へアイコン"],
+    ["costume:Assets:Next1", "Next1", "次へアイコン 1枚目"],
+    ["costume:Assets:Next2", "Next2", "次へアイコン 2枚目"],
   ];
   const mappingRows = mappings
     .map(
       (
         [resource, asset, purpose],
         index,
-      ) => `<g transform="translate(0 ${index * 29})">
+      ) => `<g transform="translate(0 ${index * 25})">
         <text x="58" y="302" class="small">${escapeXml(resource)}</text>
         <text x="312" y="302" class="small">${escapeXml(asset)}</text>
         <text x="443" y="302" class="small">${escapeXml(purpose)}</text>
@@ -185,7 +186,7 @@ function quickStartSvg() {
     ],
   })}
   <text x="50" y="281" class="small">同じブロックで、透明差分を含む7つの画像を登録</text>
-  <rect x="46" y="292" width="514" height="187" rx="12" fill="#eef1ff" stroke="#cbd3ff"/>
+  <rect x="46" y="292" width="514" height="195" rx="12" fill="#eef1ff" stroke="#cbd3ff"/>
   <text x="58" y="316" class="small" style="font-weight:700">RESOURCE_ID</text>
   <text x="312" y="316" class="small" style="font-weight:700">アセット名</text>
   <text x="443" y="316" class="small" style="font-weight:700">用途</text>
