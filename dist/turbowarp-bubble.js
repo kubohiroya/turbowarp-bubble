@@ -72,6 +72,62 @@
         }
       },
       {
+        "opcode": "setBubbleDistance",
+        "blockType": "COMMAND",
+        "text": "set bubble distance [DISTANCE] for bubble style [STYLE]",
+        "description": "Sets the distance from the actor bounds to the tail tip for actor-relative placement.",
+        "arguments": {
+          "DISTANCE": {
+            "type": "NUMBER",
+            "defaultValue": 12
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleTailLength",
+        "blockType": "COMMAND",
+        "text": "set bubble tail length [LENGTH] for bubble style [STYLE]",
+        "description": "Sets the nominal length from the bubble border to the tail tip for actor-relative placement.",
+        "arguments": {
+          "LENGTH": {
+            "type": "NUMBER",
+            "defaultValue": 18
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleOffset",
+        "blockType": "COMMAND",
+        "text": "set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]",
+        "description": "Offsets and scales the bubble body while keeping scale-only actor distance constant.",
+        "arguments": {
+          "X": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "Y": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "SCALE": {
+            "type": "NUMBER",
+            "defaultValue": 100
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
         "opcode": "setBlinkFrames",
         "blockType": "COMMAND",
         "text": "set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
@@ -380,6 +436,52 @@
     return Object.freeze({
       x: normalizedVectorComponent(Math.sin(radians)),
       y: normalizedVectorComponent(Math.cos(radians))
+    });
+  }
+  //#endregion
+  //#region src/actor-transform.ts
+  var defaultBubbleOffset = Object.freeze({
+    x: 0,
+    y: 0,
+    scalePercent: 100
+  });
+  function requireFinite(value, label) {
+    if (typeof value !== "number" || !Number.isFinite(value)) throw new TypeError(`${label} must be a finite number.`);
+    return value;
+  }
+  function normalizeBubbleDistance(value) {
+    const distance = requireFinite(value, "Bubble distance");
+    if (distance < 0) throw new TypeError("Bubble distance must be zero or greater.");
+    return distance;
+  }
+  function normalizeBubbleTailLength(value) {
+    const length = requireFinite(value, "Bubble tail length");
+    if (length <= 0) throw new TypeError("Bubble tail length must be greater than zero.");
+    return length;
+  }
+  function normalizeBubbleOffset(value) {
+    if (!Array.isArray(value) || value.length !== 2 && value.length !== 3) throw new TypeError("Bubble offset must be [x, y] or [x, y, scale].");
+    const x = requireFinite(value[0], "Bubble offset x");
+    const y = requireFinite(value[1], "Bubble offset y");
+    const scalePercent = requireFinite(value.length === 3 ? value[2] : 100, "Bubble offset scale");
+    if (scalePercent <= 0) throw new TypeError("Bubble offset scale must be greater than zero.");
+    return Object.freeze({
+      x,
+      y,
+      scalePercent
+    });
+  }
+  function actorRelativeBubbleCenter(input) {
+    const actorCenterX = (input.bounds.left + input.bounds.right) / 2;
+    const actorCenterY = (input.bounds.top + input.bounds.bottom) / 2;
+    const vector = bubbleDirectionVector(input.direction);
+    const gap = input.distance + input.tailLength;
+    const horizontalDistance = vector.x < 0 ? actorCenterX - input.bounds.left + gap + input.bubbleWidth / 2 : input.bounds.right - actorCenterX + gap + input.bubbleWidth / 2;
+    const verticalDistance = vector.y < 0 ? actorCenterY - input.bounds.bottom + gap + input.bubbleHeight / 2 : input.bounds.top - actorCenterY + gap + input.bubbleHeight / 2;
+    const placementScale = Math.min(vector.x === 0 ? Number.POSITIVE_INFINITY : horizontalDistance / Math.abs(vector.x), vector.y === 0 ? Number.POSITIVE_INFINITY : verticalDistance / Math.abs(vector.y));
+    return Object.freeze({
+      x: actorCenterX + vector.x * placementScale + input.offset.x,
+      y: actorCenterY + vector.y * placementScale + input.offset.y
     });
   }
   //#endregion
@@ -6086,6 +6188,11 @@
       ClipperLib
     };
   })))();
+  Object.freeze({
+    x: 0,
+    y: 0,
+    scalePercent: 100
+  });
   Object.freeze([
     "NORMAL",
     "THINKING",
@@ -6154,6 +6261,9 @@
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys(value, ["name", "textStyle"], [
       "placement",
+      "distance",
+      "tailLength",
+      "offset",
       "portrait",
       "advanceIndicator"
     ], "Bubble style");
@@ -6165,10 +6275,23 @@
     } catch (error) {
       throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble placement is invalid.");
     }
+    let distance;
+    let tailLength;
+    let offset;
+    try {
+      distance = normalizeBubbleDistance(value.distance ?? 12);
+      tailLength = normalizeBubbleTailLength(value.tailLength ?? 18);
+      offset = value.offset === void 0 ? defaultBubbleOffset : normalizeBubbleOffset(value.offset);
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble actor-relative transform is invalid.");
+    }
     return Object.freeze({
       name: requireName(value.name, "Bubble style name"),
       textStyle: requireName(value.textStyle, "Bubble text style name"),
       placement,
+      distance,
+      tailLength,
+      offset,
       ...portrait === void 0 ? {} : { portrait },
       ...advanceIndicator === void 0 ? {} : { advanceIndicator }
     });
@@ -6542,7 +6665,6 @@
   var portraitBoxSize = 96;
   var indicatorBoxSize = 18;
   var contentGap = 8;
-  var actorGap = 12;
   var stageSafeMargin = 16;
   var surfaceSequence = 0;
   var BubbleRuntimeAdapterError = class extends Error {
@@ -6609,16 +6731,16 @@
       height
     };
   }
-  function fitDrawable(renderer, target, boxSize) {
+  function fitDrawable(renderer, target, boxSize, scaleMultiplier = 1) {
     const native = readSize(renderer, target, {
       width: boxSize,
       height: boxSize
     });
-    const scale = Math.min(boxSize / native.width, boxSize / native.height);
-    renderer.updateDrawableScale(target.drawableID, [scale * 100, scale * 100]);
+    const effectiveScale = Math.min(boxSize / native.width, boxSize / native.height) * scaleMultiplier;
+    renderer.updateDrawableScale(target.drawableID, [effectiveScale * 100, effectiveScale * 100]);
     return {
-      width: native.width * scale,
-      height: native.height * scale
+      width: native.width * effectiveScale,
+      height: native.height * effectiveScale
     };
   }
   function clamp(value, minimum, maximum) {
@@ -6672,20 +6794,26 @@
       };
       const position = () => {
         if (disposed) return;
-        const textSize = readSize(renderer, text, {
+        const scaleMultiplier = style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+        const nativeTextSize = readSize(renderer, text, {
           width: 180,
           height: 48
         });
-        const portraitSize = portraitBase ? fitDrawable(renderer, portraitBase, portraitBoxSize) : {
+        renderer.updateDrawableScale(text.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        const textSize = {
+          width: nativeTextSize.width * scaleMultiplier,
+          height: nativeTextSize.height * scaleMultiplier
+        };
+        const portraitSize = portraitBase ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier) : {
           width: 0,
           height: 0
         };
-        for (const target of [portraitBlink, portraitTalk]) if (target) fitDrawable(renderer, target, portraitBoxSize);
-        const indicatorSize = advanceIndicator ? fitDrawable(renderer, advanceIndicator, indicatorBoxSize) : {
+        for (const target of [portraitBlink, portraitTalk]) if (target) fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
+        const indicatorSize = advanceIndicator ? fitDrawable(renderer, advanceIndicator, indicatorBoxSize, scaleMultiplier) : {
           width: 0,
           height: 0
         };
-        const totalWidth = portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width;
+        const totalWidth = portraitSize.width + (portraitBase ? contentGap * scaleMultiplier : 0) + textSize.width;
         const contentHeight = Math.max(portraitSize.height, textSize.height);
         const nativeSize = renderer.getNativeSize();
         const stageWidth = Array.isArray(nativeSize) && Number(nativeSize[0]) > 0 ? Number(nativeSize[0]) : 480;
@@ -6706,28 +6834,30 @@
           else if (style.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin + contentHeight / 2;
           else centerY = 0;
         } else {
-          const bounds = targetBounds(actor);
-          const actorCenterX = (bounds.left + bounds.right) / 2;
-          const actorCenterY = (bounds.top + bounds.bottom) / 2;
-          const vector = bubbleDirectionVector(style.placement.direction);
-          const horizontalDistance = vector.x < 0 ? actorCenterX - bounds.left + actorGap + totalWidth / 2 : bounds.right - actorCenterX + actorGap + totalWidth / 2;
-          const verticalDistance = vector.y < 0 ? actorCenterY - bounds.bottom + actorGap + contentHeight / 2 : bounds.top - actorCenterY + actorGap + contentHeight / 2;
-          const placementScale = Math.min(vector.x === 0 ? Number.POSITIVE_INFINITY : horizontalDistance / Math.abs(vector.x), vector.y === 0 ? Number.POSITIVE_INFINITY : verticalDistance / Math.abs(vector.y));
-          centerX = actorCenterX + vector.x * placementScale;
-          centerY = actorCenterY + vector.y * placementScale;
+          const center = actorRelativeBubbleCenter({
+            bounds: targetBounds(actor),
+            bubbleWidth: totalWidth,
+            bubbleHeight: contentHeight,
+            direction: style.placement.direction,
+            distance: style.distance,
+            tailLength: style.tailLength,
+            offset: style.offset
+          });
+          centerX = center.x;
+          centerY = center.y;
         }
         centerX = clamp(centerX, minimumCenterX, maximumCenterX);
         centerY = clamp(centerY, minimumCenterY, maximumCenterY);
         const left = centerX - totalWidth / 2;
         const portraitX = left + portraitSize.width / 2;
-        const textX = left + portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width / 2;
+        const textX = left + portraitSize.width + (portraitBase ? contentGap * scaleMultiplier : 0) + textSize.width / 2;
         for (const target of [
           portraitBase,
           portraitBlink,
           portraitTalk
         ]) if (target) renderer.updateDrawablePosition(target.drawableID, [portraitX, centerY]);
         renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
-        if (advanceIndicator) renderer.updateDrawablePosition(advanceIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap]);
+        if (advanceIndicator) renderer.updateDrawablePosition(advanceIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
         updateVisibility();
       };
       const originalVisualChange = actor.onTargetVisualChange;
@@ -6875,12 +7005,10 @@
           ...style.portrait,
           base
         }
-      }) : Object.freeze({
-        name: style.name,
-        textStyle: style.textStyle,
-        ...style.placement === void 0 ? {} : { placement: style.placement },
-        ...style.advanceIndicator ? { advanceIndicator: style.advanceIndicator } : {}
-      });
+      }) : (() => {
+        const { portrait, ...withoutPortrait } = style;
+        return Object.freeze(withoutPortrait);
+      })();
       this.installStyle(nextStyle);
     }
     setBubblePlacement(args) {
@@ -6896,6 +7024,41 @@
         placement: this.placementInput(placement)
       }));
     }
+    setBubbleDistance(args) {
+      const style = this.requireStyle(args.STYLE);
+      this.installStyle(Object.freeze({
+        ...style,
+        distance: this.normalizeTransformNumber(args.DISTANCE, normalizeBubbleDistance)
+      }));
+    }
+    setBubbleTailLength(args) {
+      const style = this.requireStyle(args.STYLE);
+      this.installStyle(Object.freeze({
+        ...style,
+        tailLength: this.normalizeTransformNumber(args.LENGTH, normalizeBubbleTailLength)
+      }));
+    }
+    setBubbleOffset(args) {
+      const style = this.requireStyle(args.STYLE);
+      let offset;
+      try {
+        offset = normalizeBubbleOffset([
+          Scratch.Cast.toNumber(args.X),
+          Scratch.Cast.toNumber(args.Y),
+          Scratch.Cast.toNumber(args.SCALE)
+        ]);
+      } catch (error) {
+        throw extensionError(error instanceof Error ? error.message : "Bubble offset is invalid.");
+      }
+      this.installStyle(Object.freeze({
+        ...style,
+        offset: Object.freeze([
+          offset.x,
+          offset.y,
+          offset.scalePercent
+        ])
+      }));
+    }
     setBlinkFrames(args) {
       this.setPortraitAnimation("blink", args);
     }
@@ -6907,11 +7070,9 @@
       const frames = this.parseFrames(args.ASSETS);
       if (frames.length === 1) throw extensionError("advance frames must contain at least two assets.");
       const advanceIndicator = frames.length === 0 ? void 0 : this.animationInput(frames, args.SECONDS, "advance");
+      const { advanceIndicator: previousAdvance, ...withoutAdvance } = style;
       const nextStyle = Object.freeze({
-        name: style.name,
-        textStyle: style.textStyle,
-        ...style.placement === void 0 ? {} : { placement: style.placement },
-        ...style.portrait ? { portrait: style.portrait } : {},
+        ...withoutAdvance,
         ...advanceIndicator ? { advanceIndicator } : {}
       });
       this.installStyle(nextStyle);
@@ -6974,6 +7135,13 @@
       const style = this.styles.get(name);
       if (!style) throw extensionError(`bubble style is not defined: ${name}`);
       return style;
+    }
+    normalizeTransformNumber(value, normalize) {
+      try {
+        return normalize(Scratch.Cast.toNumber(value));
+      } catch (error) {
+        throw extensionError(error instanceof Error ? error.message : "Bubble transform value is invalid.");
+      }
     }
     installStyle(style) {
       this.styles.set(style.name, style);

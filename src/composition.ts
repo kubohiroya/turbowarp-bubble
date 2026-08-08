@@ -12,6 +12,16 @@ import {
   type BubblePlacement,
   type BubblePlacementInput,
 } from "./placement.js";
+import {
+  defaultBubbleDistance,
+  defaultBubbleOffset,
+  defaultBubbleTailLength,
+  normalizeBubbleDistance,
+  normalizeBubbleOffset,
+  normalizeBubbleTailLength,
+  type BubbleOffset,
+  type BubbleOffsetInput,
+} from "./actor-transform.js";
 
 export {
   UnicodeLineBreakProvider,
@@ -37,6 +47,19 @@ export {
   type BubblePlacement,
   type BubblePlacementInput,
 } from "./placement.js";
+export {
+  actorRelativeBubbleCenter,
+  defaultBubbleDistance,
+  defaultBubbleOffset,
+  defaultBubbleTailLength,
+  normalizeBubbleDistance,
+  normalizeBubbleOffset,
+  normalizeBubbleTailLength,
+  type ActorBounds,
+  type ActorRelativeCenterInput,
+  type BubbleOffset,
+  type BubbleOffsetInput,
+} from "./actor-transform.js";
 export {
   bubbleVisualStyles,
   renderBubbleSvg,
@@ -64,6 +87,9 @@ export interface BubbleStyleInput {
   readonly name: string;
   readonly textStyle: string;
   readonly placement?: BubblePlacementInput;
+  readonly distance?: number;
+  readonly tailLength?: number;
+  readonly offset?: BubbleOffsetInput;
   readonly portrait?: BubblePortraitInput;
   readonly advanceIndicator?: BubbleFrameAnimationInput;
 }
@@ -83,6 +109,9 @@ export interface BubbleStyle {
   readonly name: string;
   readonly textStyle: string;
   readonly placement: BubblePlacement;
+  readonly distance: number;
+  readonly tailLength: number;
+  readonly offset: BubbleOffset;
   readonly portrait?: BubblePortrait;
   readonly advanceIndicator?: BubbleFrameAnimation;
 }
@@ -314,7 +343,14 @@ function normalizeStyle(value: unknown): NormalizedStyle {
   requireExactKeys(
     value,
     ["name", "textStyle"],
-    ["placement", "portrait", "advanceIndicator"],
+    [
+      "placement",
+      "distance",
+      "tailLength",
+      "offset",
+      "portrait",
+      "advanceIndicator",
+    ],
     "Bubble style",
   );
   const portrait =
@@ -340,10 +376,33 @@ function normalizeStyle(value: unknown): NormalizedStyle {
       error instanceof Error ? error.message : "Bubble placement is invalid.",
     );
   }
+  let distance: number;
+  let tailLength: number;
+  let offset: BubbleOffset;
+  try {
+    distance = normalizeBubbleDistance(value.distance ?? defaultBubbleDistance);
+    tailLength = normalizeBubbleTailLength(
+      value.tailLength ?? defaultBubbleTailLength,
+    );
+    offset =
+      value.offset === undefined
+        ? defaultBubbleOffset
+        : normalizeBubbleOffset(value.offset);
+  } catch (error) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      error instanceof Error
+        ? error.message
+        : "Bubble actor-relative transform is invalid.",
+    );
+  }
   return Object.freeze({
     name: requireName(value.name, "Bubble style name"),
     textStyle: requireName(value.textStyle, "Bubble text style name"),
     placement,
+    distance,
+    tailLength,
+    offset,
     ...(portrait === undefined ? {} : { portrait }),
     ...(advanceIndicator === undefined ? {} : { advanceIndicator }),
   });

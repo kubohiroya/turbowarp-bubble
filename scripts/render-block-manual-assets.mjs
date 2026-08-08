@@ -542,6 +542,87 @@ function placementGuideSvg() {
   });
 }
 
+function actorTransformGuideSvg() {
+  const examples = [
+    {
+      key: "distance-tail",
+      title: "distance 12 / tail length 18",
+      subtitle: "Actor bounds → tail tip → Bubble border",
+      offset: [0, 0, 100],
+      lines: ["基準サイズ", "100%"],
+    },
+    {
+      key: "offset",
+      title: "offset [10, -10]",
+      subtitle: "tail tipを固定し、本体を右10・下10へ移動",
+      offset: [10, -10, 100],
+      lines: ["位置補正", "10, -10"],
+    },
+    {
+      key: "scale",
+      title: "offset [0, 0, 120]",
+      subtitle: "文字を含む全体を120%化し、Actor側の間隔を維持",
+      offset: [0, 0, 120],
+      lines: ["文字も外形も", "120%"],
+    },
+  ];
+  const scenes = examples
+    .map(({ key, title, subtitle, offset, lines }, index) => {
+      const cardX = 32 + index * 500;
+      const cardY = 112;
+      const stageX = cardX + 18;
+      const stageY = cardY + 72;
+      const bubbleX = stageX + 128;
+      const bubbleY = stageY + 34;
+      const bubbleWidth = 260;
+      const bubbleHeight = 130;
+      const actorRight = bubbleX - 6;
+      const actorLeft = actorRight - 66;
+      const actorTop = stageY + 62;
+      const actorBottom = actorTop + 92;
+      const tailTipX = bubbleX + 6;
+      const tailTipY = bubbleY + bubbleHeight / 2;
+      const bubbleSvg = renderBubbleSvg({
+        style: "NORMAL",
+        lines,
+        width: bubbleWidth,
+        height: bubbleHeight,
+        tailDirection: 270,
+        tailLength: 18,
+        offset,
+        fontSize: 15,
+        title: `${title} preview`,
+      });
+      return `<g data-actor-transform-scene="${key}">
+        <rect x="${cardX}" y="${cardY}" width="472" height="340" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
+        <text x="${cardX + 20}" y="${cardY + 34}" class="subheading">${escapeXml(title)}</text>
+        <text x="${cardX + 20}" y="${cardY + 58}" class="small">${escapeXml(subtitle)}</text>
+        <rect x="${stageX}" y="${stageY}" width="436" height="202" rx="10" fill="#edf3fa" stroke="#aebdd0"/>
+        <rect x="${actorLeft}" y="${actorTop}" width="66" height="92" rx="12" fill="#ffd5b5" stroke="#b85d63" stroke-width="2" data-actor-bounds="true"/>
+        <text x="${(actorLeft + actorRight) / 2}" y="${actorBottom + 22}" text-anchor="middle" class="small">Actor bounds</text>
+        ${embedRenderedSvg(bubbleSvg, bubbleX, bubbleY, bubbleWidth, bubbleHeight)}
+        <circle cx="${tailTipX}" cy="${tailTipY}" r="4" fill="#ef476f"/>
+        <line x1="${actorRight}" y1="${tailTipY + 35}" x2="${tailTipX}" y2="${tailTipY + 35}" stroke="#ef476f" stroke-width="2"/>
+        <path d="M ${actorRight + 5} ${tailTipY + 31} L ${actorRight} ${tailTipY + 35} L ${actorRight + 5} ${tailTipY + 39} M ${tailTipX - 5} ${tailTipY + 31} L ${tailTipX} ${tailTipY + 35} L ${tailTipX - 5} ${tailTipY + 39}" fill="none" stroke="#ef476f"/>
+        <text x="${(actorRight + tailTipX) / 2}" y="${tailTipY + 55}" text-anchor="middle" style="fill:#ef476f;font-size:12px;font-weight:700">distance 12</text>
+        <line x1="${tailTipX}" y1="${tailTipY - 42}" x2="${bubbleX + 24}" y2="${tailTipY - 42}" stroke="#5b7cfa" stroke-width="2"/>
+        <text x="${(tailTipX + bubbleX + 24) / 2}" y="${tailTipY - 50}" text-anchor="middle" style="fill:#4767d8;font-size:12px;font-weight:700">tail 18</text>
+      </g>`;
+    })
+    .join("\n");
+  return svgDocument({
+    width: 1532,
+    height: 486,
+    title: "Actor相対のdistance、tail length、offset、scale",
+    description:
+      "実際のBubble SVG rendererで、Actor boundsからtail tipまでのdistance、本体borderまでのtail length、offsetと文字を含むscaleを比較する図。",
+    body: `<rect width="1532" height="486" fill="${colors.page}"/>
+      <text x="32" y="48" class="heading">Actor相対：distance・tail・offset・scale</text>
+      <text x="32" y="78" class="body">赤い点のtail tipを基準に本体を再生成。scaleはフォント、表情、アイコン、余白にも適用します。</text>
+      ${scenes}`,
+  });
+}
+
 const guideSegmenter = new Intl.Segmenter("ja", { granularity: "grapheme" });
 
 function measureGuideText(text) {
@@ -996,6 +1077,11 @@ async function main() {
   await writeFile(
     join(assetsDirectory, "placement-guide.svg"),
     placementGuideSvg(),
+    "utf8",
+  );
+  await writeFile(
+    join(assetsDirectory, "actor-transform-guide.svg"),
+    actorTransformGuideSvg(),
     "utf8",
   );
   await writeFile(

@@ -77,6 +77,9 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | ------------------------------------------------------------------------------ | ----------------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                    | Bubble styleを定義し、SVG Textで定義した文字style名を関連付ける   |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                    | Actor相対方向・角度、または背景相対領域を設定する                 |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                      | Actor boundsからtail先端までの距離を設定する                      |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                     | Bubble borderからtail先端までの基準長を設定する                   |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`       | 本体位置と、文字を含むBubble全体の拡大率を設定する                |
 | `set portrait base [ASSET] for bubble style [STYLE]`                           | 表情ベース画像を設定する。空文字でportrait全体を解除する          |
 | `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`   | 目パチ差分を設定する。空リストで解除する                          |
 | `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`    | 口パク差分を設定する。空リストで解除する                          |
@@ -113,6 +116,12 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図の外形は共有`renderBubbleSvg`から生成しています。現在のstandalone rendererは配置基準を実装済みですが、この形状rendererのsurface接続は後続実装です。
 
+![Actor相対のdistance、tail length、offset、scaleを比較する図](docs/assets/actor-transform-guide.svg)
+
+Actor相対の`distance`はActorのStage座標AABB（axis-aligned bounding box。rendererの`getBoundsForBubble()`が返す上下左右）からtail先端までで、既定値は`12`です。`tail length`は通常位置における本体borderからtail先端までで、既定値は`18`です。
+
+`offset x/y/scale`の既定値は`[0, 0, 100]`です。xは右、yは上が正です。scaleはBubble外形だけでなく、SVG Textの文字（フォントサイズ）、表情画像、次へアイコン、内部余白へ一体で適用します。scaleだけを変えた場合は、拡大量の半径分だけ本体中心をActorから離し、Actor側の間隔を維持します。その後x/y offsetを加え、固定したtail先端へ向けてtailを再生成するため、offset後の実長は`tail length`から変化し得ます。Stage端では全体が画面内に収まるようクランプします。これら3設定は背景相対placementでは無視します。
+
 ### 表示phase
 
 | phase      | 目パチ | 口パク       | 次へアイコン |
@@ -128,6 +137,9 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
 set bubble placement [up-right] for bubble style [hero-dialogue]
+set bubble distance [12] for bubble style [hero-dialogue]
+set bubble tail length [18] for bubble style [hero-dialogue]
+set bubble offset x [10] y [-10] scale [120] % for bubble style [hero-dialogue]
 set portrait base [HeroFace] for bubble style [hero-dialogue]
 set blink frames [HeroEyesOpen,HeroEyesClosed] every [0.4] seconds for bubble style [hero-dialogue]
 set talk frames [HeroMouthClosed,HeroMouthOpen] every [0.1] seconds for bubble style [hero-dialogue]
@@ -185,6 +197,9 @@ bubbles.defineStyle({
   name: "hero-dialogue",
   textStyle: "dialogue-text",
   placement: "north-northeast",
+  distance: 12,
+  tailLength: 18,
+  offset: [10, -10, 120],
   portrait: {
     base: "HeroFace",
     blink: {

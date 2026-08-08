@@ -1,6 +1,9 @@
 import definitions from "./block-definitions.json";
 import {
+  normalizeBubbleDistance,
+  normalizeBubbleOffset,
   normalizeBubblePlacement,
+  normalizeBubbleTailLength,
   type BubblePlacement,
 } from "./composition.js";
 import type {
@@ -124,16 +127,11 @@ export class BubbleExtension implements TurboWarpExtension {
     const base = this.toString(args.ASSET).trim();
     const nextStyle: BubbleStyleInput = base
       ? Object.freeze({ ...style, portrait: { ...style.portrait, base } })
-      : Object.freeze({
-          name: style.name,
-          textStyle: style.textStyle,
-          ...(style.placement === undefined
-            ? {}
-            : { placement: style.placement }),
-          ...(style.advanceIndicator
-            ? { advanceIndicator: style.advanceIndicator }
-            : {}),
-        });
+      : (() => {
+          const { portrait, ...withoutPortrait } = style;
+          void portrait;
+          return Object.freeze(withoutPortrait);
+        })();
     this.installStyle(nextStyle);
   }
 
@@ -151,6 +149,58 @@ export class BubbleExtension implements TurboWarpExtension {
       Object.freeze({
         ...style,
         placement: this.placementInput(placement),
+      }),
+    );
+  }
+
+  public setBubbleDistance(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        distance: this.normalizeTransformNumber(
+          args.DISTANCE,
+          normalizeBubbleDistance,
+        ),
+      }),
+    );
+  }
+
+  public setBubbleTailLength(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        tailLength: this.normalizeTransformNumber(
+          args.LENGTH,
+          normalizeBubbleTailLength,
+        ),
+      }),
+    );
+  }
+
+  public setBubbleOffset(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    let offset;
+    try {
+      offset = normalizeBubbleOffset([
+        Scratch.Cast.toNumber(args.X),
+        Scratch.Cast.toNumber(args.Y),
+        Scratch.Cast.toNumber(args.SCALE),
+      ]);
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error ? error.message : "Bubble offset is invalid.",
+      );
+    }
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        offset: Object.freeze([
+          offset.x,
+          offset.y,
+          offset.scalePercent,
+        ] as const),
       }),
     );
   }
@@ -173,11 +223,10 @@ export class BubbleExtension implements TurboWarpExtension {
       frames.length === 0
         ? undefined
         : this.animationInput(frames, args.SECONDS, "advance");
+    const { advanceIndicator: previousAdvance, ...withoutAdvance } = style;
+    void previousAdvance;
     const nextStyle: BubbleStyleInput = Object.freeze({
-      name: style.name,
-      textStyle: style.textStyle,
-      ...(style.placement === undefined ? {} : { placement: style.placement }),
-      ...(style.portrait ? { portrait: style.portrait } : {}),
+      ...withoutAdvance,
       ...(advanceIndicator ? { advanceIndicator } : {}),
     });
     this.installStyle(nextStyle);
@@ -271,6 +320,21 @@ export class BubbleExtension implements TurboWarpExtension {
     const style = this.styles.get(name);
     if (!style) throw extensionError(`bubble style is not defined: ${name}`);
     return style;
+  }
+
+  private normalizeTransformNumber(
+    value: unknown,
+    normalize: (value: unknown) => number,
+  ): number {
+    try {
+      return normalize(Scratch.Cast.toNumber(value));
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error
+          ? error.message
+          : "Bubble transform value is invalid.",
+      );
+    }
   }
 
   private installStyle(style: BubbleStyleInput): void {

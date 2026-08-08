@@ -181,6 +181,9 @@ describe("Bubble extension", () => {
       "defineBubbleStyle",
       "setBubblePlacement",
       "setPortraitBase",
+      "setBubbleDistance",
+      "setBubbleTailLength",
+      "setBubbleOffset",
       "setBlinkFrames",
       "setTalkFrames",
       "setAdvanceFrames",
@@ -242,7 +245,7 @@ describe("Bubble extension", () => {
 
     bounds = { bottom: -20, left: -50, right: 10, top: 60 };
     target.onTargetVisualChange?.(target);
-    expect(harness.positions.get(drawableId!)).toEqual([112, 20]);
+    expect(harness.positions.get(drawableId!)).toEqual([130, 20]);
 
     extension.setBubblePlacement({ STYLE: "placed", PLACEMENT: "33.75" });
     await extension.sayWithBubbleStyle(
@@ -250,8 +253,37 @@ describe("Bubble extension", () => {
       { target },
     );
     expect(harness.positions.get(harness.created.at(-1)!)).not.toEqual([
-      112, 20,
+      130, 20,
     ]);
+  });
+
+  it("scales text and applies actor distance, tail length, and offset", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "transform", TEXT_STYLE: "default" });
+    extension.setBubblePlacement({ STYLE: "transform", PLACEMENT: "right" });
+    extension.setBubbleDistance({ STYLE: "transform", DISTANCE: 5 });
+    extension.setBubbleTailLength({ STYLE: "transform", LENGTH: 15 });
+    extension.setBubbleOffset({
+      STYLE: "transform",
+      X: -10,
+      Y: 8,
+      SCALE: 120,
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "scaled", STYLE: "transform" },
+      { target },
+    );
+
+    const textDrawable = harness.created.at(-1)!;
+    expect(harness.renderer.updateDrawableScale).toHaveBeenCalledWith(
+      textDrawable,
+      [120, 120],
+    );
+    // The requested x position is 168; stage-edge clamping keeps it visible.
+    expect(harness.positions.get(textDrawable)).toEqual([132, -12]);
   });
 
   it("places background-relative bubbles independently of actor visibility", async () => {

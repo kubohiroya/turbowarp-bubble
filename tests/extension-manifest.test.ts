@@ -50,6 +50,24 @@ describe("extension API manifest", () => {
           ],
         },
         {
+          opcode: "setBubbleDistance",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "DISTANCE", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setBubbleOffset",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "SCALE", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+            { id: "X", type: "NUMBER" },
+            { id: "Y", type: "NUMBER" },
+          ],
+        },
+        {
           opcode: "setBubblePhase",
           blockType: "COMMAND",
           arguments: [{ id: "PHASE", type: "STRING", menu: "phase" }],
@@ -59,6 +77,14 @@ describe("extension API manifest", () => {
           blockType: "COMMAND",
           arguments: [
             { id: "PLACEMENT", type: "STRING", menu: "placement" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setBubbleTailLength",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "LENGTH", type: "NUMBER" },
             { id: "STYLE", type: "STRING" },
           ],
         },

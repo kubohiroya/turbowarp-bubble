@@ -1,4 +1,32 @@
 import jsclipper from "jsclipper";
+import type { BubbleOffset, BubbleOffsetInput } from "./actor-transform.js";
+
+const svgDefaultTailLength = 18;
+const svgDefaultOffset: BubbleOffset = Object.freeze({
+  x: 0,
+  y: 0,
+  scalePercent: 100,
+});
+
+function normalizeSvgTailLength(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    throw new TypeError("Bubble tail length must be greater than zero.");
+  }
+  return value;
+}
+
+function normalizeSvgOffset(value: BubbleOffsetInput): BubbleOffset {
+  if (value.length !== 2 && value.length !== 3) {
+    throw new TypeError("Bubble offset must be [x, y] or [x, y, scale].");
+  }
+  const [x, y, scalePercent = 100] = value;
+  if (![x, y, scalePercent].every(Number.isFinite) || scalePercent <= 0) {
+    throw new TypeError(
+      "Bubble offset values must be finite and scale positive.",
+    );
+  }
+  return Object.freeze({ x, y, scalePercent });
+}
 
 export const bubbleVisualStyles = Object.freeze([
   "NORMAL",
@@ -22,6 +50,8 @@ export interface RenderBubbleSvgInput {
   readonly height?: number;
   /** Scratch direction: 0 is up, 90 is right. */
   readonly tailDirection?: number | null;
+  readonly tailLength?: number;
+  readonly offset?: BubbleOffsetInput;
   readonly fillColor?: string;
   readonly borderColor?: string;
   readonly textColor?: string;
@@ -132,13 +162,15 @@ function walkPath(
 
 function tailGeometryForPolygon(
   body: readonly Point[],
-  width: number,
-  height: number,
-  direction: number,
-): { readonly base: readonly [Point, Point]; readonly tip: Point } {
-  const center = { x: width / 2, y: height / 2 };
-  const radians = (direction * Math.PI) / 180;
-  const ray = { x: Math.sin(radians), y: -Math.cos(radians) };
+  center: Point,
+  ray: Point,
+  tipDistance: number,
+  fixedTip?: Point,
+): {
+  readonly base: readonly [Point, Point];
+  readonly borderPoint: Point;
+  readonly tip: Point;
+} {
   let selected:
     | {
         readonly edgeIndex: number;
@@ -183,28 +215,62 @@ function tailGeometryForPolygon(
   ];
   const intersectionIndex = selected.edgeIndex + 1;
   return {
+    borderPoint: selected.point,
     base: [
       walkPath(borderWithIntersection, intersectionIndex, -1, 9),
       walkPath(borderWithIntersection, intersectionIndex, 1, 9),
     ],
     tip: {
-      x: center.x + ray.x * (selected.rayScale + 18),
-      y: center.y + ray.y * (selected.rayScale + 18),
+      x: fixedTip?.x ?? center.x + ray.x * (selected.rayScale + tipDistance),
+      y: fixedTip?.y ?? center.y + ray.y * (selected.rayScale + tipDistance),
     },
   };
 }
 
-function tailGeometry(
+function directionRay(direction: number): Point {
+  const radians = (direction * Math.PI) / 180;
+  return { x: Math.sin(radians), y: -Math.cos(radians) };
+}
+
+function transformPoint(
+  point: Point,
+  center: Point,
+  bodyCenter: Point,
+  scale: number,
+): Point {
+  return {
+    x: bodyCenter.x + (point.x - center.x) * scale,
+    y: bodyCenter.y + (point.y - center.y) * scale,
+  };
+}
+
+function transformedBodyGeometry(
+  body: readonly Point[],
   width: number,
   height: number,
   direction: number,
-): { readonly base: readonly [Point, Point]; readonly tip: Point } {
-  return tailGeometryForPolygon(
-    roundedRectanglePoints(width, height),
-    width,
-    height,
-    direction,
-  );
+  tailLength: number,
+  offset: BubbleOffset,
+): {
+  readonly body: readonly Point[];
+  readonly bodyCenter: Point;
+  readonly tip: Point;
+} {
+  const center = { x: width / 2, y: height / 2 };
+  const ray = directionRay(direction);
+  const baseline = tailGeometryForPolygon(body, center, ray, tailLength);
+  const borderRadius = distance(center, baseline.borderPoint);
+  const scale = offset.scalePercent / 100;
+  const bodyCenter = {
+    x: center.x - ray.x * borderRadius * (scale - 1) + offset.x,
+    // Bubble offset uses Stage coordinates, where positive y points upward.
+    y: center.y - ray.y * borderRadius * (scale - 1) - offset.y,
+  };
+  return {
+    body: body.map((point) => transformPoint(point, center, bodyCenter, scale)),
+    bodyCenter,
+    tip: baseline.tip,
+  };
 }
 
 function polygonPath(points: readonly Point[]): string {
@@ -237,14 +303,24 @@ function bodyPath(
 
 function unionBodyAndTail(
   body: readonly Point[],
-  width: number,
-  height: number,
-  direction: number,
+  bodyCenter: Point,
+  tip: Point,
   fill: string,
   border: string,
   extra = "",
 ): string {
-  const geometry = tailGeometryForPolygon(body, width, height, direction);
+  const tipVector = subtract(tip, bodyCenter);
+  const tipDistance = Math.hypot(tipVector.x, tipVector.y);
+  if (!(tipDistance > 0)) {
+    throw new TypeError("Bubble body center and tail tip must differ.");
+  }
+  const geometry = tailGeometryForPolygon(
+    body,
+    bodyCenter,
+    { x: tipVector.x / tipDistance, y: tipVector.y / tipDistance },
+    0,
+    tip,
+  );
   const toClipperPath = (points: readonly Point[]): [number, number][] =>
     points.map(({ x, y }) => [x, y]);
   const solution = jsclipper.union(
@@ -286,14 +362,22 @@ function cloudBody(
 }
 
 function thoughtTrail(
-  width: number,
-  height: number,
-  direction: number,
+  body: readonly Point[],
+  bodyCenter: Point,
+  tip: Point,
   fill: string,
   border: string,
   dreaming: boolean,
 ): string {
-  const geometry = tailGeometry(width, height, direction);
+  const tipVector = subtract(tip, bodyCenter);
+  const tipDistance = Math.hypot(tipVector.x, tipVector.y);
+  const geometry = tailGeometryForPolygon(
+    body,
+    bodyCenter,
+    { x: tipVector.x / tipDistance, y: tipVector.y / tipDistance },
+    0,
+    tip,
+  );
   const center = {
     x: (geometry.base[0].x + geometry.base[1].x) / 2,
     y: (geometry.base[0].y + geometry.base[1].y) / 2,
@@ -379,19 +463,60 @@ function renderBody(
   direction: number | null,
   fill: string,
   border: string,
+  tailLength: number,
+  offset: BubbleOffset,
 ): string {
   const rounded = roundedRectanglePoints(width, height);
-  const withTail = (body: readonly Point[], extra = ""): string =>
-    direction === null
-      ? bodyPath(body, fill, border, extra)
-      : unionBodyAndTail(body, width, height, direction, fill, border, extra);
+  const transformWithoutTail = (body: readonly Point[]): readonly Point[] => {
+    if (direction === null) return body;
+    return transformedBodyGeometry(
+      body,
+      width,
+      height,
+      direction,
+      tailLength,
+      offset,
+    ).body;
+  };
+  const withTail = (body: readonly Point[], extra = ""): string => {
+    if (direction === null) return bodyPath(body, fill, border, extra);
+    const transformed = transformedBodyGeometry(
+      body,
+      width,
+      height,
+      direction,
+      tailLength,
+      offset,
+    );
+    return unionBodyAndTail(
+      transformed.body,
+      transformed.bodyCenter,
+      transformed.tip,
+      fill,
+      border,
+      extra,
+    );
+  };
   switch (style) {
     case "NO_BUBBLE":
       return "";
     case "THINKING":
-      return `${direction === null ? "" : thoughtTrail(width, height, direction, fill, border, false)}${cloudBody(width, height, fill, border)}`;
-    case "DREAMING":
-      return `${direction === null ? "" : thoughtTrail(width, height, direction, fill, border, true)}${cloudBody(width, height, fill, border)}`;
+    case "DREAMING": {
+      if (direction === null) return cloudBody(width, height, fill, border);
+      const transformed = transformedBodyGeometry(
+        rounded,
+        width,
+        height,
+        direction,
+        tailLength,
+        offset,
+      );
+      const scale = offset.scalePercent / 100;
+      const center = { x: width / 2, y: height / 2 };
+      const translateX = transformed.bodyCenter.x - center.x * scale;
+      const translateY = transformed.bodyCenter.y - center.y * scale;
+      return `${thoughtTrail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, style === "DREAMING")}<g transform="translate(${translateX} ${translateY}) scale(${scale})">${cloudBody(width, height, fill, border)}</g>`;
+    }
     case "YELLING":
       return withTail(burstBodyPoints(width, height));
     case "WAVY":
@@ -401,7 +526,7 @@ function renderBody(
     case "ANNOUNCEMENT":
       return `${withTail(rounded)}<rect x="30" y="30" width="${width - 60}" height="${height - 60}" rx="13" fill="none" stroke="${border}" stroke-width="1.5"/>`;
     case "NARRATION":
-      return `<rect x="24" y="24" width="${width - 48}" height="${height - 48}" fill="${fill}" stroke="${border}" stroke-width="3"/>`;
+      return bodyPath(transformWithoutTail(rounded), fill, border);
     case "OFF_PANEL":
       return withTail(rounded);
     case "NORMAL":
@@ -429,6 +554,13 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
   const height = requireDimension(input.height, 112);
   const fontSize = requireDimension(input.fontSize, 15);
   const direction = normalizeDirection(input.tailDirection);
+  const tailLength = normalizeSvgTailLength(
+    input.tailLength ?? svgDefaultTailLength,
+  );
+  const offset =
+    input.offset === undefined
+      ? svgDefaultOffset
+      : normalizeSvgOffset(input.offset);
   const fill = input.fillColor ?? "#fff4cc";
   const border = input.borderColor ?? "#6f5b45";
   const textColor = input.textColor ?? "#25283a";
@@ -436,12 +568,24 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
   const lineHeight = fontSize * 1.35;
   const firstBaseline =
     height / 2 - ((input.lines.length - 1) * lineHeight) / 2 + fontSize * 0.35;
+  const textScale = direction === null ? 1 : offset.scalePercent / 100;
+  const textCenter =
+    direction === null
+      ? { x: width / 2, y: height / 2 }
+      : transformedBodyGeometry(
+          roundedRectanglePoints(width, height),
+          width,
+          height,
+          direction,
+          tailLength,
+          offset,
+        ).bodyCenter;
   const text = input.lines
     .map(
       (line, index) =>
-        `<text x="${width / 2}" y="${firstBaseline + index * lineHeight}" text-anchor="middle" fill="${escapeXml(textColor)}" font-family="${escapeXml(fontFamily)}" font-size="${fontSize}">${escapeXml(line)}</text>`,
+        `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml(textColor)}" font-family="${escapeXml(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml(line)}</text>`,
     )
     .join("");
   const title = escapeXml(input.title ?? `${input.style} bubble`);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border)}${text}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border, tailLength, offset)}${text}</svg>`;
 }

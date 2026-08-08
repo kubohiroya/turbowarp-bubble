@@ -59,6 +59,26 @@ describe("renderBubbleSvg", () => {
     }
   });
 
+  it("applies tail length, body offset, scale, and scaled text", () => {
+    const baseline = renderBubbleSvg({
+      style: "NORMAL",
+      lines: ["拡大"],
+      tailDirection: 90,
+    });
+    const transformed = renderBubbleSvg({
+      style: "NORMAL",
+      lines: ["拡大"],
+      tailDirection: 90,
+      tailLength: 30,
+      offset: [10, -10, 120],
+      fontSize: 15,
+    });
+
+    expect(transformed).not.toEqual(baseline);
+    expect(transformed).toContain('font-size="18"');
+    expect(transformed).toContain('data-boolean-operation="union"');
+  });
+
   it("escapes text and rejects invalid dimensions", () => {
     expect(
       renderBubbleSvg({ style: "NO_BUBBLE", lines: ["<次へ>"] }),

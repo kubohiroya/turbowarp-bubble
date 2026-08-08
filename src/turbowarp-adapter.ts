@@ -8,13 +8,12 @@ import {
   type BubbleSurface,
   type BubbleSurfaceTargets,
 } from "./composition.js";
-import { bubbleDirectionVector } from "./placement.js";
+import { actorRelativeBubbleCenter } from "./actor-transform.js";
 
 const spriteLayer = "sprite";
 const portraitBoxSize = 96;
 const indicatorBoxSize = 18;
 const contentGap = 8;
-const actorGap = 12;
 const stageSafeMargin = 16;
 let surfaceSequence = 0;
 
@@ -196,14 +195,22 @@ function fitDrawable(
   renderer: TurboWarpBubbleRenderer,
   target: DrawableTarget,
   boxSize: number,
+  scaleMultiplier = 1,
 ): DrawableSize {
   const native = readSize(renderer, target, {
     width: boxSize,
     height: boxSize,
   });
   const scale = Math.min(boxSize / native.width, boxSize / native.height);
-  renderer.updateDrawableScale(target.drawableID, [scale * 100, scale * 100]);
-  return { width: native.width * scale, height: native.height * scale };
+  const effectiveScale = scale * scaleMultiplier;
+  renderer.updateDrawableScale(target.drawableID, [
+    effectiveScale * 100,
+    effectiveScale * 100,
+  ]);
+  return {
+    width: native.width * effectiveScale,
+    height: native.height * effectiveScale,
+  };
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -293,18 +300,39 @@ function createSurface(
 
     const position = (): void => {
       if (disposed) return;
-      const textSize = readSize(renderer, text, { width: 180, height: 48 });
+      const scaleMultiplier =
+        style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+      const nativeTextSize = readSize(renderer, text, {
+        width: 180,
+        height: 48,
+      });
+      renderer.updateDrawableScale(text.drawableID, [
+        scaleMultiplier * 100,
+        scaleMultiplier * 100,
+      ]);
+      const textSize = {
+        width: nativeTextSize.width * scaleMultiplier,
+        height: nativeTextSize.height * scaleMultiplier,
+      };
       const portraitSize = portraitBase
-        ? fitDrawable(renderer, portraitBase, portraitBoxSize)
+        ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier)
         : { width: 0, height: 0 };
       for (const target of [portraitBlink, portraitTalk]) {
-        if (target) fitDrawable(renderer, target, portraitBoxSize);
+        if (target)
+          fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
       }
       const indicatorSize = advanceIndicator
-        ? fitDrawable(renderer, advanceIndicator, indicatorBoxSize)
+        ? fitDrawable(
+            renderer,
+            advanceIndicator,
+            indicatorBoxSize,
+            scaleMultiplier,
+          )
         : { width: 0, height: 0 };
       const totalWidth =
-        portraitSize.width + (portraitBase ? contentGap : 0) + textSize.width;
+        portraitSize.width +
+        (portraitBase ? contentGap * scaleMultiplier : 0) +
+        textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
       const nativeSize = renderer.getNativeSize();
       const stageWidth =
@@ -337,27 +365,17 @@ function createSurface(
         }
       } else {
         const bounds = targetBounds(actor);
-        const actorCenterX = (bounds.left + bounds.right) / 2;
-        const actorCenterY = (bounds.top + bounds.bottom) / 2;
-        const vector = bubbleDirectionVector(style.placement.direction);
-        const horizontalDistance =
-          vector.x < 0
-            ? actorCenterX - bounds.left + actorGap + totalWidth / 2
-            : bounds.right - actorCenterX + actorGap + totalWidth / 2;
-        const verticalDistance =
-          vector.y < 0
-            ? actorCenterY - bounds.bottom + actorGap + contentHeight / 2
-            : bounds.top - actorCenterY + actorGap + contentHeight / 2;
-        const placementScale = Math.min(
-          vector.x === 0
-            ? Number.POSITIVE_INFINITY
-            : horizontalDistance / Math.abs(vector.x),
-          vector.y === 0
-            ? Number.POSITIVE_INFINITY
-            : verticalDistance / Math.abs(vector.y),
-        );
-        centerX = actorCenterX + vector.x * placementScale;
-        centerY = actorCenterY + vector.y * placementScale;
+        const center = actorRelativeBubbleCenter({
+          bounds,
+          bubbleWidth: totalWidth,
+          bubbleHeight: contentHeight,
+          direction: style.placement.direction,
+          distance: style.distance,
+          tailLength: style.tailLength,
+          offset: style.offset,
+        });
+        centerX = center.x;
+        centerY = center.y;
       }
 
       centerX = clamp(centerX, minimumCenterX, maximumCenterX);
@@ -367,7 +385,7 @@ function createSurface(
       const textX =
         left +
         portraitSize.width +
-        (portraitBase ? contentGap : 0) +
+        (portraitBase ? contentGap * scaleMultiplier : 0) +
         textSize.width / 2;
       for (const target of [portraitBase, portraitBlink, portraitTalk]) {
         if (target) {
@@ -380,8 +398,14 @@ function createSurface(
       renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
       if (advanceIndicator) {
         renderer.updateDrawablePosition(advanceIndicator.drawableID, [
-          textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap,
-          centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap,
+          textX +
+            textSize.width / 2 -
+            indicatorSize.width / 2 -
+            contentGap * scaleMultiplier,
+          centerY -
+            textSize.height / 2 +
+            indicatorSize.height / 2 +
+            contentGap * scaleMultiplier,
         ]);
       }
       updateVisibility();

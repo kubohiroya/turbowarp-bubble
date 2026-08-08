@@ -1,3 +1,4 @@
+import type { BubbleOffsetInput } from "./actor-transform.js";
 export declare const bubbleVisualStyles: readonly ["NORMAL", "THINKING", "DREAMING", "YELLING", "OFF_PANEL", "WAVY", "WHISPERING", "ANNOUNCEMENT", "NARRATION", "NO_BUBBLE"];
 export type BubbleVisualStyle = (typeof bubbleVisualStyles)[number];
 export interface RenderBubbleSvgInput {
@@ -7,6 +8,8 @@ export interface RenderBubbleSvgInput {
     readonly height?: number;
     /** Scratch direction: 0 is up, 90 is right. */
     readonly tailDirection?: number | null;
+    readonly tailLength?: number;
+    readonly offset?: BubbleOffsetInput;
     readonly fillColor?: string;
     readonly borderColor?: string;
     readonly textColor?: string;

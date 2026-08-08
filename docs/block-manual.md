@@ -76,6 +76,9 @@ SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていま�
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
 set bubble placement [up-right] for bubble style [hero-dialogue]
+set bubble distance [12] for bubble style [hero-dialogue]
+set bubble tail length [18] for bubble style [hero-dialogue]
+set bubble offset x [0] y [0] scale [100] % for bubble style [hero-dialogue]
 ```
 
 ### Actor相対と背景相対のplacement
@@ -106,6 +109,18 @@ left / left-up-left / up-left / up-up-left
 | `FOOTER_LIKE` | Stage安全領域下部、水平中央   |
 
 背景相対placementはActorの座標、bounds、可視性に依存しません。Stageから`say`／`think`を実行する場合も、この3値のいずれかを設定します。将来のBubble body rendererではActorを指すtailを描画しません。
+
+### Actorとの距離、tail、本体の位置・拡大率
+
+![Actor相対のdistance、tail length、offset、scaleを実際のBubble SVGで比較する図](./assets/actor-transform-guide.svg)
+
+- `distance`（既定`12`）はActor boundsからtail先端までの距離です。Actor boundsとは、描画済みActorをStage座標で囲むAABB（上下左右のbounding box）です。
+- `tail length`（既定`18`）は通常位置におけるBubble borderからtail先端までの基準長です。
+- `offset x/y/scale`（既定`[0, 0, 100]`）は、xが右正、yが上正、scaleが百分率です。`[10, -10, 120]`なら、本体を右10・下10へ補正し、120%にします。
+
+scaleは外形だけでなく、SVG Textの文字、表情ベース・目パチ・口パク、次へアイコン、内部余白へ一体で適用されるため、表示上のフォントサイズも同じ比率で変わります。scaleだけを変更すると、本体中心を拡大半径分だけActorから離してActor側の間隔を維持します。x/y offsetはその後に加算し、tail先端を固定したまま本体borderとのunionを再生成するため、offset後のtail実長は基準値から変化します。
+
+Stage端では、拡大後のBubble全体を画面内へ収めるクランプが優先されるため、指定距離を保てない場合があります。背景相対の`HEADER_LIKE`／`CENTER`／`FOOTER_LIKE`では、これらのActor相対設定を使用しません。
 
 ### 幅・自動改行・禁則処理
 
