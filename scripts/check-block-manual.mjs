@@ -266,6 +266,23 @@ if (animationModeUnionedTails?.length !== 3) {
     `Animation-mode-guide SVG must contain 3 unioned Bubble tails, found ${animationModeUnionedTails?.length ?? 0}.`,
   );
 }
+const animationModeUnionPaths = animationModeGuide.match(
+  /data-animation-mode-bubble-path="union"/gu,
+);
+if (animationModeUnionPaths?.length !== 3) {
+  throw new Error(
+    `Animation-mode-guide SVG must contain 3 single-path Bubble drawings, found ${animationModeUnionPaths?.length ?? 0}.`,
+  );
+}
+const animationModeTailDirections = animationModeGuide.match(
+  /data-bubble-tail-direction="270"/gu,
+);
+if (animationModeTailDirections?.length !== 3) {
+  throw new Error(
+    `Animation-mode-guide SVG must contain 3 left-facing Bubble tails, found ${animationModeTailDirections?.length ?? 0}.`,
+  );
+}
+forbidText(animationModeGuide, "<svg x=", "Animation-mode-guide SVG");
 forbidText(
   animationModeGuide,
   "set this bubble phase",
