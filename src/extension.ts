@@ -70,18 +70,18 @@ interface PendingBubbleWait {
 type BubbleExtensionOptions = TurboWarpBubbleCompositionOptions;
 
 type BlockArguments = Readonly<Record<string, unknown>>;
-type AnimationField = "blink" | "talk";
+type AnimationField = "blink" | "lipSync";
 
 const blockDefinitions = definitions.blocks as readonly BlockDefinition[];
 const definitionMenus = definitions.menus as Record<string, DefinitionMenu>;
 const validAnimationModes = new Set<BubbleAnimationMode>([
   "idle",
   "talking",
-  "awaiting-advance",
+  "awaiting-continue",
 ]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
-export const EXTENSION_VERSION = "0.1.0";
+export const EXTENSION_VERSION = "0.2.0";
 
 function extensionError(message: string): Error {
   const error = new Error(`[Bubble] ${message}`);
@@ -250,25 +250,25 @@ export class BubbleExtension implements TurboWarpExtension {
     this.setPortraitAnimation("blink", args);
   }
 
-  public setTalkFrames(args: BlockArguments): void {
-    this.setPortraitAnimation("talk", args);
+  public setLipSyncFrames(args: BlockArguments): void {
+    this.setPortraitAnimation("lipSync", args);
   }
 
-  public setAdvanceFrames(args: BlockArguments): void {
+  public setContinueFrames(args: BlockArguments): void {
     const style = this.requireStyle(args.STYLE);
     const frames = this.parseFrames(args.ASSETS);
     if (frames.length === 1) {
-      throw extensionError("advance frames must contain at least two assets.");
+      throw extensionError("continue frames must contain at least two assets.");
     }
-    const advanceIndicator =
+    const continueIndicator =
       frames.length === 0
         ? undefined
-        : this.animationInput(frames, args.SECONDS, "advance");
-    const { advanceIndicator: previousAdvance, ...withoutAdvance } = style;
-    void previousAdvance;
+        : this.animationInput(frames, args.SECONDS, "continue");
+    const { continueIndicator: previousContinue, ...withoutContinue } = style;
+    void previousContinue;
     const nextStyle: BubbleStyleInput = Object.freeze({
-      ...withoutAdvance,
-      ...(advanceIndicator ? { advanceIndicator } : {}),
+      ...withoutContinue,
+      ...(continueIndicator ? { continueIndicator } : {}),
     });
     this.installStyle(nextStyle);
   }
@@ -297,7 +297,7 @@ export class BubbleExtension implements TurboWarpExtension {
       .toLowerCase() as BubbleAnimationMode;
     if (!validAnimationModes.has(mode)) {
       throw extensionError(
-        "animation mode must be talking, awaiting-advance, or idle.",
+        "animation mode must be talking, awaiting-continue, or idle.",
       );
     }
     const handle = this.handles.get(target.id);
@@ -306,7 +306,7 @@ export class BubbleExtension implements TurboWarpExtension {
     await handle.setAnimationMode(mode);
   }
 
-  public async waitForBubbleAdvance(
+  public async waitForBubbleContinue(
     args: BlockArguments,
     util: BlockUtility,
   ): Promise<void> {
@@ -342,7 +342,7 @@ export class BubbleExtension implements TurboWarpExtension {
     }
 
     this.cancelWait(target.id, "Bubble wait was replaced.");
-    await handle.setAnimationMode("awaiting-advance");
+    await handle.setAnimationMode("awaiting-continue");
 
     await new Promise<void>((resolve, reject) => {
       let settled = false;
@@ -539,11 +539,11 @@ export class BubbleExtension implements TurboWarpExtension {
       ...(field === "blink"
         ? {
             ...(animation ? { blink: animation } : {}),
-            ...(portrait.talk ? { talk: portrait.talk } : {}),
+            ...(portrait.lipSync ? { lipSync: portrait.lipSync } : {}),
           }
         : {
             ...(portrait.blink ? { blink: portrait.blink } : {}),
-            ...(animation ? { talk: animation } : {}),
+            ...(animation ? { lipSync: animation } : {}),
           }),
     });
     this.installStyle(Object.freeze({ ...style, portrait: nextPortrait }));

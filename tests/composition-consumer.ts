@@ -19,11 +19,11 @@ import {
 declare const runtime: Parameters<
   typeof createSvgTextComposition
 >[0]["runtime"];
-const assetManager = createAssetManagerComposition();
+const imageResolver = createAssetManagerComposition();
 const svgText = createSvgTextComposition({ runtime });
 
 const bubbles: BubbleComposition = createBubbleComposition({
-  assetManager,
+  imageResolver,
   svgText,
   createSurface(input) {
     return {
@@ -31,10 +31,11 @@ const bubbles: BubbleComposition = createBubbleComposition({
         text: { drawableID: 1 },
         portraitBase: { id: `${input.actorKey}:base`, isStage: false },
         portraitBlink: { id: `${input.actorKey}:blink`, isStage: false },
-        portraitTalk: { id: `${input.actorKey}:talk`, isStage: false },
-        advanceIndicator: { id: `${input.actorKey}:next`, isStage: false },
+        portraitLipSync: { id: `${input.actorKey}:lip-sync`, isStage: false },
+        continueIndicator: { id: `${input.actorKey}:next`, isStage: false },
       },
       setLayerVisible() {},
+      updateStyle() {},
       show() {},
       hide() {},
       dispose() {},
@@ -53,9 +54,12 @@ bubbles.defineStyle({
   portrait: {
     base: "HeroFace",
     blink: { frames: ["EyesOpen", "EyesClosed"], frameIntervalSeconds: 0.4 },
-    talk: { frames: ["MouthClosed", "MouthOpen"], frameIntervalSeconds: 0.1 },
+    lipSync: {
+      frames: ["MouthClosed", "MouthOpen"],
+      frameIntervalSeconds: 0.1,
+    },
   },
-  advanceIndicator: {
+  continueIndicator: {
     frames: ["Next1", "Next2"],
     frameIntervalSeconds: 0.2,
   },

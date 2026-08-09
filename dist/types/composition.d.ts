@@ -1,5 +1,3 @@
-import type { AssetManagerComposition, AssetManagerCompositionTarget } from "@kubohiroya/turbowarp-asset-manager/composition";
-import type { SvgTextComposition, SvgTextTarget } from "@kubohiroya/turbowarp-svg-text/composition";
 import { type BubblePlacement, type BubblePlacementInput } from "./placement.js";
 import { type BubbleOffset, type BubbleOffsetInput } from "./actor-transform.js";
 import { type BubbleVisualStyle } from "./bubble-svg.js";
@@ -8,8 +6,8 @@ export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, 
 export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
 export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
 export type BubbleKind = "say" | "think";
-export type BubbleAnimationMode = "idle" | "talking" | "awaiting-advance";
-export type BubbleLayer = "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";
+export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
+export type BubbleLayer = "portraitBase" | "portraitBlink" | "portraitLipSync" | "continueIndicator";
 export interface BubbleFrameAnimationInput {
     readonly frames: ReadonlyArray<string>;
     readonly frameIntervalSeconds: number;
@@ -17,18 +15,20 @@ export interface BubbleFrameAnimationInput {
 export interface BubblePortraitInput {
     readonly base: string;
     readonly blink?: BubbleFrameAnimationInput;
-    readonly talk?: BubbleFrameAnimationInput;
+    readonly lipSync?: BubbleFrameAnimationInput;
 }
 export interface BubbleStyleInput {
     readonly name: string;
     readonly textStyle: string;
+    readonly maxWidth?: number;
+    readonly textLocale?: string;
     readonly placement?: BubblePlacementInput;
     readonly distance?: number;
     readonly tailLength?: number;
     readonly offset?: BubbleOffsetInput;
     readonly visualStyle?: BubbleVisualStyle;
     readonly portrait?: BubblePortraitInput;
-    readonly advanceIndicator?: BubbleFrameAnimationInput;
+    readonly continueIndicator?: BubbleFrameAnimationInput;
 }
 export interface BubbleFrameAnimation {
     readonly frames: ReadonlyArray<string>;
@@ -37,31 +37,61 @@ export interface BubbleFrameAnimation {
 export interface BubblePortrait {
     readonly base: string;
     readonly blink?: BubbleFrameAnimation;
-    readonly talk?: BubbleFrameAnimation;
+    readonly lipSync?: BubbleFrameAnimation;
 }
 export interface BubbleStyle {
     readonly name: string;
     readonly textStyle: string;
+    readonly maxWidth?: number;
+    readonly textLocale?: string;
     readonly placement: BubblePlacement;
     readonly distance: number;
     readonly tailLength: number;
     readonly offset: BubbleOffset;
     readonly visualStyle: BubbleVisualStyle;
     readonly portrait?: BubblePortrait;
-    readonly advanceIndicator?: BubbleFrameAnimation;
+    readonly continueIndicator?: BubbleFrameAnimation;
 }
-export type BubbleAssetManager = Pick<AssetManagerComposition, "applyToTarget" | "getMimeType" | "isRegistered">;
-export type BubbleSvgText = Pick<SvgTextComposition, "releaseTarget" | "setText">;
+export interface BubbleAssetTarget {
+    readonly id: string;
+    readonly isStage: boolean;
+}
+export interface BubbleImageCapability {
+    readonly applyToTarget: (name: unknown, target: BubbleAssetTarget) => void | Promise<void>;
+    readonly getMimeType: (name: unknown) => string;
+    readonly isRegistered: (name: unknown) => boolean;
+}
+export interface BubbleAudioCapability {
+    readonly playSound: (name: unknown, options?: Readonly<{
+        untilDone?: boolean;
+    }>) => Promise<void>;
+}
+export interface BubbleTextTarget {
+    readonly drawableID: number;
+}
+export interface BubbleSvgText {
+    readonly setText: (input: {
+        readonly styleName: string;
+        readonly target: BubbleTextTarget;
+        readonly text: string;
+    }) => void;
+    readonly releaseTarget: (target: BubbleTextTarget) => void;
+    readonly measureText?: (input: {
+        readonly styleName: string;
+        readonly text: string;
+    }) => number;
+}
 export interface BubbleSurfaceTargets {
-    readonly text: SvgTextTarget;
-    readonly portraitBase?: AssetManagerCompositionTarget;
-    readonly portraitBlink?: AssetManagerCompositionTarget;
-    readonly portraitTalk?: AssetManagerCompositionTarget;
-    readonly advanceIndicator?: AssetManagerCompositionTarget;
+    readonly text: BubbleTextTarget;
+    readonly portraitBase?: BubbleAssetTarget;
+    readonly portraitBlink?: BubbleAssetTarget;
+    readonly portraitLipSync?: BubbleAssetTarget;
+    readonly continueIndicator?: BubbleAssetTarget;
 }
 export interface BubbleSurface {
     readonly targets: BubbleSurfaceTargets;
     setLayerVisible(layer: BubbleLayer, visible: boolean): void | Promise<void>;
+    updateStyle(style: BubbleStyle): void | Promise<void>;
     show(): void | Promise<void>;
     hide(): void | Promise<void>;
     dispose(): void | Promise<void>;
@@ -83,7 +113,8 @@ export interface BubbleAnimationErrorContext {
     readonly assetName: string;
 }
 export interface BubbleCompositionOptions {
-    readonly assetManager: BubbleAssetManager;
+    readonly imageResolver?: BubbleImageCapability;
+    readonly audio?: BubbleAudioCapability;
     readonly svgText: BubbleSvgText;
     readonly createSurface: BubbleSurfaceFactory;
     readonly scheduler?: BubbleScheduler;
@@ -102,6 +133,7 @@ export interface BubbleHandle {
     readonly kind: BubbleKind;
     readonly animationMode: BubbleAnimationMode;
     setText(text: string): Promise<void>;
+    updateStyle(style: BubbleStyleInput): Promise<void>;
     setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
     close(): Promise<void>;
 }
@@ -113,7 +145,7 @@ export interface BubbleComposition {
     releaseAll(): Promise<void>;
     dispose(): Promise<void>;
 }
-export type BubbleCompositionErrorCode = "BUBBLE-COMPOSITION-001" | "BUBBLE-COMPOSITION-002" | "BUBBLE-COMPOSITION-003" | "BUBBLE-COMPOSITION-004" | "BUBBLE-COMPOSITION-005";
+export type BubbleCompositionErrorCode = "BUBBLE-COMPOSITION-001" | "BUBBLE-COMPOSITION-002" | "BUBBLE-COMPOSITION-003" | "BUBBLE-COMPOSITION-004" | "BUBBLE-COMPOSITION-005" | "BUBBLE-COMPOSITION-006" | "BUBBLE-COMPOSITION-007";
 export declare class BubbleCompositionError extends Error {
     readonly code: BubbleCompositionErrorCode;
     constructor(code: BubbleCompositionErrorCode, message: string);

@@ -185,7 +185,7 @@ standalone機能拡張では、`set bubble visual style`ブロックで形状を
 pnpm add @kubohiroya/turbowarp-bubble @kubohiroya/turbowarp-svg-text
 ```
 
-現在のpeer dependency範囲は、SVG Textが`>=0.3.0 <1`、Asset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。Asset Manager、Async Input、Runtime Expressionはoptional peer dependencyです。
+現在のpeer dependency範囲は、SVG Textが`>=0.4.0 <1`、Asset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。Asset Manager、Async Input、Runtime Expressionはoptional peer dependencyです。
 
 画像portrait、lip-sync、continue indicator、または音声アセットを使う機能を利用する場合はAsset Managerを追加します。`CONDITION`付きの待機ブロックを使う場合はAsync InputとRuntime Expressionを追加します。
 

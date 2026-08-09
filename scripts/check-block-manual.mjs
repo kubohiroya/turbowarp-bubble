@@ -247,7 +247,7 @@ for (const style of [
     "Bubble-style-gallery SVG",
   );
 }
-for (const mode of ["talking", "awaiting-advance", "idle"]) {
+for (const mode of ["talking", "awaiting-continue", "idle"]) {
   requireText(animationModeGuide, mode, "Animation-mode-guide SVG");
 }
 forbidText(
@@ -275,8 +275,8 @@ const requiredManualReferences = [
   "set bubble offset x",
   "set portrait base",
   "set blink frames",
-  "set talk frames",
-  "set advance frames",
+  "set lip-sync frames",
+  "set continue frames",
   "say [MESSAGE] with bubble style",
   "think [MESSAGE] with bubble style",
   "set this bubble animation mode",
@@ -312,7 +312,7 @@ for (const [manualSource, label] of [
     "wait until <space key pressed? or mouse down?>",
     label,
   );
-  requireText(manualSource, "awaiting-advance", label);
+  requireText(manualSource, "awaiting-continue", label);
   requireText(manualSource, "turbowarp-async-input", label);
   requireText(manualSource, "turbowarp-runtime-expression", label);
 }

@@ -71,7 +71,7 @@
 <p>このマニュアルでは、<code>turbowarp-bubble</code>をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。</p>
 <p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る5つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime ExpressionはBubbleの待機ブロックより前に、Asset ManagerとSVG Textは最初のBubble表示より前に読み込みます。</p>
+<p>入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。文字BubbleにはSVG TextとBubbleが必要です。portrait、lip-sync、continue indicator、将来のフルボイスや表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。</p>
 <table>
 <thead>
 <tr>
@@ -102,16 +102,16 @@
 </tr>
 <tr>
 <td align="right">5</td>
-<td>SVG Text 0.3.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js</code></td>
+<td>SVG Text 0.4.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js</code></td>
 </tr>
 <tr>
 <td align="right">6</td>
-<td>Bubble 0.1.0</td>
-<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.2.0</td>
+<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。表示時にAsset ManagerかSVG Textが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。</p>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。表示時にSVG Textが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。</p>
 <p>参考：</p>
 <ul>
 <li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
@@ -187,7 +187,7 @@ register resource [costume:Assets:Next2] as asset [Next2]
   bubble direction [up]
 </code></pre>
 <p>Bubbleは<code>dialogue-text</code>という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。</p>
-<p>SVG Text 0.3.xではblock contract上<code>bubble direction</code>入力が残っていますが、Bubbleが<code>setText</code>で生成する文字drawableの配置には使われません。Bubbleの配置は次節の<code>set bubble placement</code>で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。</p>
+<p>SVG Text 0.4.xは文字providerです。名前付き文字styleの定義、SVG文字skinの生成、文字幅の測定を担当します。Bubbleの配置は<code>set bubble placement</code>で設定し、tailや吹き出し外形はSVG Text providerの責務ではありません。</p>
 <h2 id="bubble-style">4. Bubble styleを定義する</h2>
 <p>まず、Bubble style名とSVG Textのstyle名を関連付けます。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [dialogue-text]
@@ -256,10 +256,10 @@ left / left-up-left / up-left / up-up-left
 set blink frames [HeroEyesOpen,HeroEyesClosed]
   every [0.4] seconds for bubble style [hero-dialogue]
 
-set talk frames [HeroMouthClosed,HeroMouthOpen]
+set lip-sync frames [HeroMouthClosed,HeroMouthOpen]
   every [0.1] seconds for bubble style [hero-dialogue]
 
-set advance frames [Next1,Next2]
+set continue frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 </code></pre>
 <p><code>ASSETS</code>はカンマ区切りのAsset Managerアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。</p>
@@ -279,12 +279,12 @@ say [海へ出発！] with bubble style [hero-dialogue]
 wait with this bubble until condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 close this bubble
 </code></pre>
-<p>まずTemporary Variablesで<code>input</code>を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、<code>input == &quot;pressed&quot;</code>をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に<code>awaiting-advance</code>となり、口パクを停止して<code>set advance frames</code>の画像をループします。条件成立またはtimeout後は<code>idle</code>へ移り、次の<code>close this bubble</code>へ進みます。timeoutを<code>0</code>にすると時間制限なしです。</p>
+<p>まずTemporary Variablesで<code>input</code>を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、<code>input == &quot;pressed&quot;</code>をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に<code>awaiting-continue</code>となり、口パクを停止して<code>set continue frames</code>の画像をループします。条件成立またはtimeout後は<code>idle</code>へ移り、次の<code>close this bubble</code>へ進みます。timeoutを<code>0</code>にすると時間制限なしです。</p>
 <p>次の待機に入る前に<code>input</code>を空文字へ戻してください。前回の<code>pressed</code>が残っていると、次の条件が直ちに成立します。別のBubble表示、close、対象targetの停止、projectの開始・停止、runtime破棄では、targetが所有する待機とlistener、timerをキャンセルして解放します。</p>
-<p>音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で<code>awaiting-advance</code>へ切り替えます。</p>
-<p><img src="../assets/bubble-lifecycle.gif" alt="sayで口パクし、awaiting-advanceでadvance framesを動かし、入力成立後にBubbleを閉じるアニメーション"></p>
+<p>音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で<code>awaiting-continue</code>へ切り替えます。</p>
+<p><img src="../assets/bubble-lifecycle.gif" alt="sayで口パクし、awaiting-continueでcontinue framesを動かし、入力成立後にBubbleを閉じるアニメーション"></p>
 <p>アニメーションGIFを再生できない環境では、次の比較図で各animation modeを確認できます。</p>
-<p><img src="../assets/animation-mode-guide.svg" alt="talking、awaiting-advance、idleの目パチ、口パク、advance framesの状態比較"></p>
+<p><img src="../assets/animation-mode-guide.svg" alt="talking、awaiting-continue、idleの目パチ、口パク、continue framesの状態比較"></p>
 <h2 id="animation-modes">6. Animation modeの使い分け</h2>
 <table>
 <thead>
@@ -292,7 +292,7 @@ close this bubble
 <th>mode</th>
 <th>目パチ</th>
 <th>口パク</th>
-<th>advance frames</th>
+<th>continue frames</th>
 <th>主な用途</th>
 </tr>
 </thead>
@@ -304,7 +304,7 @@ close this bubble
 <td>セリフ表示中、音声再生中</td>
 </tr>
 <tr>
-<td><code>awaiting-advance</code></td>
+<td><code>awaiting-continue</code></td>
 <td>実行</td>
 <td>停止・非表示</td>
 <td>ループ</td>
@@ -374,12 +374,12 @@ think [MESSAGE] with bubble style [STYLE]
 <td>目パチ差分と間隔を設定する</td>
 </tr>
 <tr>
-<td><code>set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td><code>set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
 <td>口パク差分と間隔を設定する</td>
 </tr>
 <tr>
-<td><code>set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
-<td><code>awaiting-advance</code>中の「次へ」アニメーションを設定する</td>
+<td><code>set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td><code>awaiting-continue</code>中の「次へ」アニメーションを設定する</td>
 </tr>
 <tr>
 <td><code>say [MESSAGE] with bubble style [STYLE]</code></td>
@@ -391,7 +391,7 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 <tr>
 <td><code>set this bubble animation mode [MODE]</code></td>
-<td><code>talking</code>、<code>awaiting-advance</code>、<code>idle</code>からmodeを選ぶ</td>
+<td><code>talking</code>、<code>awaiting-continue</code>、<code>idle</code>からmodeを選ぶ</td>
 </tr>
 <tr>
 <td><code>wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds</code></td>
@@ -416,11 +416,11 @@ think [MESSAGE] with bubble style [STYLE]
 </thead>
 <tbody><tr>
 <td>Asset Managerを要求するエラー</td>
-<td>Asset Manager 0.7.xをサンドボックスなしで読み込む</td>
+<td>画像・メディアアセットを使う前にAsset Manager 0.7.xを読み込む</td>
 </tr>
 <tr>
 <td>SVG Textを要求するエラー</td>
-<td>SVG Text 0.3.xをサンドボックスなしで読み込む</td>
+<td>SVG Text 0.4.xをサンドボックスなしで読み込む</td>
 </tr>
 <tr>
 <td>Async Inputを要求するエラー</td>
@@ -443,8 +443,8 @@ think [MESSAGE] with bubble style [STYLE]
 <td><code>MIME type of asset [NAME]</code>で<code>image/*</code>か確認する</td>
 </tr>
 <tr>
-<td>advance framesが1枚</td>
-<td>2枚以上にするか、空にしてadvance表示を解除する</td>
+<td>continue framesが1枚</td>
+<td>2枚以上にするか、空にしてcontinue表示を解除する</td>
 </tr>
 <tr>
 <td>frame intervalエラー</td>

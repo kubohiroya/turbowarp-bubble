@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BubbleExtension } from "../src/extension.js";
 import type {
-  BubbleAssetManager,
+  BubbleImageCapability,
   BubbleScheduler,
   BubbleSvgText,
 } from "../src/composition.js";
@@ -222,11 +222,19 @@ afterEach(() => {
 });
 
 describe("TurboWarp composition adapter", () => {
+  it("defers Asset Manager lookup until a media style is shown", () => {
+    const harness = createRuntime({ assetManager: false });
+
+    expect(() =>
+      createTurboWarpBubbleComposition(harness.runtime),
+    ).not.toThrow();
+  });
+
   it("accepts host-owned Asset Manager and SVG Text compositions", async () => {
     const harness = createRuntime({ assetManager: false, svgText: false });
-    const assetManager: BubbleAssetManager = {
-      isRegistered: () => false,
-      getMimeType: () => "",
+    const imageResolver: BubbleImageCapability = {
+      isRegistered: () => true,
+      getMimeType: () => "image/png",
       applyToTarget: vi.fn(),
     };
     const releaseTarget = vi.fn();
@@ -237,10 +245,14 @@ describe("TurboWarp composition adapter", () => {
       releaseTarget,
     };
     const composition = createTurboWarpBubbleComposition(harness.runtime, {
-      assetManager,
+      imageResolver,
       svgText,
     });
-    composition.defineStyle({ name: "dialogue", textStyle: "dialogue" });
+    composition.defineStyle({
+      name: "dialogue",
+      textStyle: "dialogue",
+      portrait: { base: "Face" },
+    });
 
     const handle = await composition.show({
       actor: actor(),
@@ -252,8 +264,12 @@ describe("TurboWarp composition adapter", () => {
     await handle.close();
 
     expect(svgText.setText).toHaveBeenCalledOnce();
+    expect(imageResolver.applyToTarget).toHaveBeenCalledWith(
+      "Face",
+      expect.objectContaining({ id: expect.any(String) }),
+    );
     expect(releaseTarget).toHaveBeenCalledOnce();
-    expect(harness.destroyed).toHaveLength(2);
+    expect(harness.destroyed).toHaveLength(3);
   });
 });
 
@@ -278,18 +294,18 @@ describe("Bubble extension", () => {
       "setBubbleTailLength",
       "setBubbleOffset",
       "setBlinkFrames",
-      "setTalkFrames",
-      "setAdvanceFrames",
+      "setLipSyncFrames",
+      "setContinueFrames",
       "sayWithBubbleStyle",
       "thinkWithBubbleStyle",
       "setBubbleAnimationMode",
-      "waitForBubbleAdvance",
+      "waitForBubbleContinue",
       "closeBubble",
       "getVersion",
     ]);
     expect(info.menus.animationMode).toEqual({
       acceptReporters: true,
-      items: ["talking", "awaiting-advance", "idle"],
+      items: ["talking", "awaiting-continue", "idle"],
     });
     expect(info.menus.placement).toEqual({
       acceptReporters: true,
@@ -516,7 +532,7 @@ describe("Bubble extension", () => {
     await extension.closeBubble({}, { target: stage });
   });
 
-  it("renders layered speech and changes from talk to advance animation", async () => {
+  it("renders layered speech and changes from talk to continue animation", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
     const extension = new BubbleExtension(harness.runtime, { scheduler });
@@ -531,12 +547,12 @@ describe("Bubble extension", () => {
       ASSETS: "EyesOpen,EyesClosed",
       SECONDS: 0.4,
     });
-    extension.setTalkFrames({
+    extension.setLipSyncFrames({
       STYLE: "dialogue",
       ASSETS: "MouthClosed,MouthOpen",
       SECONDS: 0.1,
     });
-    extension.setAdvanceFrames({
+    extension.setContinueFrames({
       STYLE: "dialogue",
       ASSETS: "Next1,Next2",
       SECONDS: 0.2,
@@ -556,7 +572,7 @@ describe("Bubble extension", () => {
     expect([...harness.positions.values()]).not.toHaveLength(0);
 
     await extension.setBubbleAnimationMode(
-      { MODE: "awaiting-advance" },
+      { MODE: "awaiting-continue" },
       { target },
     );
     expect(scheduler.size).toBe(2);
@@ -568,7 +584,7 @@ describe("Bubble extension", () => {
     expect(harness.releaseTextActor).toHaveBeenCalledOnce();
   });
 
-  it("waits in awaiting-advance mode until the expression becomes true", async () => {
+  it("waits in awaiting-continue mode until the expression becomes true", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
     const extension = new BubbleExtension(harness.runtime, { scheduler });
@@ -577,7 +593,7 @@ describe("Bubble extension", () => {
       STYLE: "dialogue",
       TEXT_STYLE: "dialogue-text",
     });
-    extension.setAdvanceFrames({
+    extension.setContinueFrames({
       STYLE: "dialogue",
       ASSETS: "Next1,Next2",
       SECONDS: 0.2,
@@ -587,7 +603,7 @@ describe("Bubble extension", () => {
       { target },
     );
 
-    const waiting = extension.waitForBubbleAdvance(
+    const waiting = extension.waitForBubbleContinue(
       { CONDITION: 'input == "pressed"', TIMEOUT: 0 },
       { target },
     );
@@ -620,7 +636,7 @@ describe("Bubble extension", () => {
       { target },
     );
 
-    const waiting = extension.waitForBubbleAdvance(
+    const waiting = extension.waitForBubbleContinue(
       { CONDITION: "false", TIMEOUT: 2 },
       { target },
     );
@@ -645,7 +661,7 @@ describe("Bubble extension", () => {
       { target },
     );
 
-    const waiting = extension.waitForBubbleAdvance(
+    const waiting = extension.waitForBubbleContinue(
       { CONDITION: "false", TIMEOUT: 10 },
       { target },
     );
@@ -679,7 +695,7 @@ describe("Bubble extension", () => {
         { target },
       );
 
-      const waiting = extension.waitForBubbleAdvance(
+      const waiting = extension.waitForBubbleContinue(
         { CONDITION: "false", TIMEOUT: 10 },
         { target },
       );
@@ -707,7 +723,7 @@ describe("Bubble extension", () => {
       { target },
     );
     await expect(
-      inputExtension.waitForBubbleAdvance(
+      inputExtension.waitForBubbleContinue(
         { CONDITION: "true", TIMEOUT: 0 },
         { target },
       ),
@@ -724,7 +740,7 @@ describe("Bubble extension", () => {
       { target },
     );
     await expect(
-      expressionExtension.waitForBubbleAdvance(
+      expressionExtension.waitForBubbleContinue(
         { CONDITION: "true", TIMEOUT: 0 },
         { target },
       ),
@@ -756,7 +772,14 @@ describe("Bubble extension", () => {
         { MESSAGE: "hello", STYLE: "plain" },
         { target: actor() },
       ),
-    ).rejects.toThrow("Load @kubohiroya/turbowarp-asset-manager");
+    ).resolves.toBeUndefined();
+    first.setPortraitBase({ STYLE: "plain", ASSET: "Face" });
+    await expect(
+      first.sayWithBubbleStyle(
+        { MESSAGE: "hello", STYLE: "plain" },
+        { target: actor() },
+      ),
+    ).rejects.toThrow("imageResolver capability");
 
     const noText = createRuntime({ svgText: false });
     const second = new BubbleExtension(noText.runtime);

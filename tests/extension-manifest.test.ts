@@ -32,15 +32,6 @@ describe("extension API manifest", () => {
           ],
         },
         {
-          opcode: "setAdvanceFrames",
-          blockType: "COMMAND",
-          arguments: [
-            { id: "ASSETS", type: "STRING" },
-            { id: "SECONDS", type: "NUMBER" },
-            { id: "STYLE", type: "STRING" },
-          ],
-        },
-        {
           opcode: "setBlinkFrames",
           blockType: "COMMAND",
           arguments: [
@@ -101,19 +92,28 @@ describe("extension API manifest", () => {
           ],
         },
         {
-          opcode: "setPortraitBase",
-          blockType: "COMMAND",
-          arguments: [
-            { id: "ASSET", type: "STRING" },
-            { id: "STYLE", type: "STRING" },
-          ],
-        },
-        {
-          opcode: "setTalkFrames",
+          opcode: "setContinueFrames",
           blockType: "COMMAND",
           arguments: [
             { id: "ASSETS", type: "STRING" },
             { id: "SECONDS", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setLipSyncFrames",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "ASSETS", type: "STRING" },
+            { id: "SECONDS", type: "NUMBER" },
+            { id: "STYLE", type: "STRING" },
+          ],
+        },
+        {
+          opcode: "setPortraitBase",
+          blockType: "COMMAND",
+          arguments: [
+            { id: "ASSET", type: "STRING" },
             { id: "STYLE", type: "STRING" },
           ],
         },
@@ -126,7 +126,7 @@ describe("extension API manifest", () => {
           ],
         },
         {
-          opcode: "waitForBubbleAdvance",
+          opcode: "waitForBubbleContinue",
           blockType: "COMMAND",
           arguments: [
             { id: "CONDITION", type: "STRING" },

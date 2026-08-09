@@ -3,7 +3,8 @@ import {
   defaultBubbleTailLength,
   type BubbleComposition,
   type BubbleCompositionOptions,
-  type BubbleAssetManager,
+  type BubbleAudioCapability,
+  type BubbleImageCapability,
   type BubbleLayer,
   type BubbleScheduler,
   type BubbleSvgText,
@@ -64,6 +65,8 @@ export interface TurboWarpBubbleRenderer {
 export interface TurboWarpAssetManagerExtension {
   isLoaded(args: Readonly<{ NAME: unknown }>): boolean;
   getAssetMimeType(args: Readonly<{ NAME: unknown }>): string;
+  playSound?(args: Readonly<{ NAME: unknown }>): Promise<void>;
+  playSoundUntilDone?(args: Readonly<{ NAME: unknown }>): Promise<void>;
   resolveSkin(
     value: unknown,
   ): Readonly<{ skinId: number }> | Promise<Readonly<{ skinId: number }>>;
@@ -74,6 +77,7 @@ export interface TurboWarpSvgTextExtension {
     args: Readonly<{ STYLE: unknown; TEXT: unknown }>,
     util: Readonly<{ target: TurboWarpBubbleTarget }>,
   ): void;
+  measureText?(styleName: unknown, text: unknown): number;
   releaseTextActor(target: TurboWarpBubbleTarget): boolean;
 }
 
@@ -85,7 +89,8 @@ export interface TurboWarpBubbleRuntime {
 }
 
 export interface TurboWarpBubbleCompositionOptions {
-  readonly assetManager?: BubbleAssetManager;
+  readonly imageResolver?: BubbleImageCapability;
+  readonly audio?: BubbleAudioCapability;
   readonly svgText?: BubbleSvgText;
   readonly scheduler?: BubbleScheduler;
   readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];
@@ -154,7 +159,7 @@ function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
   ) {
     throw new BubbleRuntimeAdapterError(
       "BUBBLE-RUNTIME-002",
-      "Bubble requires Asset Manager. Load @kubohiroya/turbowarp-asset-manager before using Bubble blocks.",
+      "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.",
     );
   }
   return value as unknown as TurboWarpAssetManagerExtension;
@@ -300,38 +305,42 @@ function createSurface(
     const portraitBlink = style.portrait?.blink
       ? createTarget("portrait-blink")
       : undefined;
-    const portraitTalk = style.portrait?.talk
-      ? createTarget("portrait-talk")
+    const portraitLipSync = style.portrait?.lipSync
+      ? createTarget("portrait-lip-sync")
       : undefined;
     const text = createTarget("text");
-    const advanceIndicator = style.advanceIndicator
-      ? createTarget("advance-indicator")
+    const continueIndicator = style.continueIndicator
+      ? createTarget("continue-indicator")
       : undefined;
     const targets: BubbleSurfaceTargets = Object.freeze({
       text,
       ...(portraitBase ? { portraitBase } : {}),
       ...(portraitBlink ? { portraitBlink } : {}),
-      ...(portraitTalk ? { portraitTalk } : {}),
-      ...(advanceIndicator ? { advanceIndicator } : {}),
+      ...(portraitLipSync ? { portraitLipSync } : {}),
+      ...(continueIndicator ? { continueIndicator } : {}),
     });
     const layerTargets = new Map<BubbleLayer, DrawableTarget>();
     if (portraitBase) layerTargets.set("portraitBase", portraitBase);
     if (portraitBlink) layerTargets.set("portraitBlink", portraitBlink);
-    if (portraitTalk) layerTargets.set("portraitTalk", portraitTalk);
-    if (advanceIndicator) {
-      layerTargets.set("advanceIndicator", advanceIndicator);
+    if (portraitLipSync) layerTargets.set("portraitLipSync", portraitLipSync);
+    if (continueIndicator) {
+      layerTargets.set("continueIndicator", continueIndicator);
     }
     const layerVisibility = new Map<BubbleLayer, boolean>();
     let surfaceVisible = false;
     let disposed = false;
     let cachedBodySkinSignature = "";
+    let currentStyle = style;
 
     const updateVisibility = (): void => {
       const actorVisible =
-        style.placement.basis === "background" || actor.visible !== false;
+        currentStyle.placement.basis === "background" ||
+        actor.visible !== false;
       renderer.updateDrawableVisible(
         body.drawableID,
-        surfaceVisible && actorVisible && style.visualStyle !== "NO_BUBBLE",
+        surfaceVisible &&
+          actorVisible &&
+          currentStyle.visualStyle !== "NO_BUBBLE",
       );
       renderer.updateDrawableVisible(
         text.drawableID,
@@ -351,7 +360,9 @@ function createSurface(
     const position = (): void => {
       if (disposed) return;
       const scaleMultiplier =
-        style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+        currentStyle.placement.basis === "actor"
+          ? currentStyle.offset.scalePercent / 100
+          : 1;
       const nativeTextSize = readSize(renderer, text, {
         width: 180,
         height: 48,
@@ -367,14 +378,14 @@ function createSurface(
       const portraitSize = portraitBase
         ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier)
         : { width: 0, height: 0 };
-      for (const target of [portraitBlink, portraitTalk]) {
+      for (const target of [portraitBlink, portraitLipSync]) {
         if (target)
           fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
       }
-      const indicatorSize = advanceIndicator
+      const indicatorSize = continueIndicator
         ? fitDrawable(
             renderer,
-            advanceIndicator,
+            continueIndicator,
             indicatorBoxSize,
             scaleMultiplier,
           )
@@ -411,11 +422,11 @@ function createSurface(
       let centerX: number;
       let centerY: number;
 
-      if (style.placement.basis === "background") {
+      if (currentStyle.placement.basis === "background") {
         centerX = 0;
-        if (style.placement.region === "HEADER_LIKE") {
+        if (currentStyle.placement.region === "HEADER_LIKE") {
           centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
-        } else if (style.placement.region === "FOOTER_LIKE") {
+        } else if (currentStyle.placement.region === "FOOTER_LIKE") {
           centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
         } else {
           centerY = 0;
@@ -426,10 +437,10 @@ function createSurface(
           bounds,
           bubbleWidth,
           bubbleHeight,
-          direction: style.placement.direction,
-          distance: style.distance,
-          tailLength: style.tailLength,
-          offset: style.offset,
+          direction: currentStyle.placement.direction,
+          distance: currentStyle.distance,
+          tailLength: currentStyle.tailLength,
+          offset: currentStyle.offset,
         });
         centerX = center.x;
         centerY = center.y;
@@ -438,58 +449,58 @@ function createSurface(
       centerX = clamp(centerX, minimumCenterX, maximumCenterX);
       centerY = clamp(centerY, minimumCenterY, maximumCenterY);
       const tailDirection =
-        style.placement.basis === "actor"
-          ? tailDirectionForPlacement(style.placement.direction)
+        currentStyle.placement.basis === "actor"
+          ? tailDirectionForPlacement(currentStyle.placement.direction)
           : null;
       const bodyOffset =
-        style.placement.basis === "actor"
+        currentStyle.placement.basis === "actor"
           ? ([
-              style.offset.x,
-              style.offset.y,
-              style.offset.scalePercent,
+              currentStyle.offset.x,
+              currentStyle.offset.y,
+              currentStyle.offset.scalePercent,
             ] as const)
           : ([0, 0, 100] as const);
       const bodyCenterOffset =
         tailDirection === null
           ? { x: 0, y: 0 }
           : bubbleBodyCenterOffset({
-              style: style.visualStyle,
+              style: currentStyle.visualStyle,
               width: baseBubbleWidth,
               height: baseBubbleHeight,
               tailDirection,
-              tailLength: style.tailLength,
+              tailLength: currentStyle.tailLength,
               offset: bodyOffset,
             });
       const viewportExtraX =
         Math.abs(bodyOffset[0]) +
         baseBubbleWidth * Math.abs(scaleMultiplier - 1) +
-        Math.max(0, style.tailLength - defaultBubbleTailLength) +
+        Math.max(0, currentStyle.tailLength - defaultBubbleTailLength) +
         8;
       const viewportExtraY =
         Math.abs(bodyOffset[1]) +
         baseBubbleHeight * Math.abs(scaleMultiplier - 1) +
-        Math.max(0, style.tailLength - defaultBubbleTailLength) +
+        Math.max(0, currentStyle.tailLength - defaultBubbleTailLength) +
         8;
       const nextBodySkinSignature = JSON.stringify({
         baseBubbleHeight,
         baseBubbleWidth,
         bodyOffset,
         tailDirection,
-        tailLength: style.tailLength,
+        tailLength: currentStyle.tailLength,
         viewportExtraX,
         viewportExtraY,
-        visualStyle: style.visualStyle,
+        visualStyle: currentStyle.visualStyle,
       });
       if (nextBodySkinSignature !== cachedBodySkinSignature) {
         const rendered = renderBubbleSvg({
-          style: style.visualStyle,
+          style: currentStyle.visualStyle,
           lines: [],
           width: baseBubbleWidth,
           height: baseBubbleHeight,
           tailDirection,
-          tailLength: style.tailLength,
+          tailLength: currentStyle.tailLength,
           offset: bodyOffset,
-          title: `${style.name} Bubble body`,
+          title: `${currentStyle.name} Bubble body`,
         });
         const expanded = expandSvgViewport(
           rendered,
@@ -530,7 +541,7 @@ function createSurface(
         portraitSize.width +
         (portraitBase ? contentGap * scaleMultiplier : 0) +
         textSize.width / 2;
-      for (const target of [portraitBase, portraitBlink, portraitTalk]) {
+      for (const target of [portraitBase, portraitBlink, portraitLipSync]) {
         if (target) {
           renderer.updateDrawablePosition(target.drawableID, [
             portraitX,
@@ -539,8 +550,8 @@ function createSurface(
         }
       }
       renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
-      if (advanceIndicator) {
-        renderer.updateDrawablePosition(advanceIndicator.drawableID, [
+      if (continueIndicator) {
+        renderer.updateDrawablePosition(continueIndicator.drawableID, [
           textX +
             textSize.width / 2 -
             indicatorSize.width / 2 -
@@ -559,7 +570,7 @@ function createSurface(
       originalVisualChange?.(changedTarget);
       position();
     };
-    if (style.placement.basis === "actor") {
+    if (currentStyle.placement.basis === "actor") {
       actor.onTargetVisualChange = visualChangeHook;
     }
 
@@ -569,6 +580,20 @@ function createSurface(
         if (disposed) return;
         layerVisibility.set(layer, visible);
         updateVisibility();
+      },
+      updateStyle(nextStyle: BubbleStyle): void {
+        if (disposed) return;
+        const wasActorRelative = currentStyle.placement.basis === "actor";
+        currentStyle = nextStyle;
+        const isActorRelative = currentStyle.placement.basis === "actor";
+        if (wasActorRelative && !isActorRelative) {
+          if (actor.onTargetVisualChange === visualChangeHook) {
+            actor.onTargetVisualChange = originalVisualChange ?? null;
+          }
+        } else if (!wasActorRelative && isActorRelative) {
+          actor.onTargetVisualChange = visualChangeHook;
+        }
+        position();
       },
       show(): void {
         if (disposed) return;
@@ -584,7 +609,7 @@ function createSurface(
         if (disposed) return;
         disposed = true;
         if (
-          style.placement.basis === "actor" &&
+          currentStyle.placement.basis === "actor" &&
           actor.onTargetVisualChange === visualChangeHook
         ) {
           actor.onTargetVisualChange = originalVisualChange ?? null;
@@ -620,18 +645,17 @@ export function createTurboWarpBubbleComposition(
   }
   const runtime = runtimeInput;
   const renderer = requireRenderer(runtime.renderer);
-  const assetExtension = options.assetManager
-    ? null
-    : requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+  const getAssetExtension = (): TurboWarpAssetManagerExtension =>
+    requireAssetManager(runtime.ext_kubohiroyaassetmanager);
   const svgTextExtension = options.svgText
     ? null
     : requireSvgText(runtime.ext_kubohiroyasvgtext);
-  const assetManager: BubbleAssetManager = options.assetManager ?? {
+  const imageResolver: BubbleImageCapability = options.imageResolver ?? {
     isRegistered(name: unknown): boolean {
-      return assetExtension?.isLoaded({ NAME: name }) ?? false;
+      return getAssetExtension().isLoaded({ NAME: name });
     },
     getMimeType(name: unknown): string {
-      return assetExtension?.getAssetMimeType({ NAME: name }) ?? "";
+      return getAssetExtension().getAssetMimeType({ NAME: name });
     },
     async applyToTarget(name, target): Promise<void> {
       const drawableID = (target as unknown as DrawableTarget).drawableID;
@@ -641,7 +665,7 @@ export function createTurboWarpBubbleComposition(
           "Bubble image target drawable is invalid.",
         );
       }
-      const skin = await assetExtension?.resolveSkin(name);
+      const skin = await getAssetExtension().resolveSkin(name);
       if (
         !isRecord(skin) ||
         !Number.isInteger(skin.skinId) ||
@@ -656,6 +680,24 @@ export function createTurboWarpBubbleComposition(
       runtime.requestRedraw?.();
     },
   };
+  const audio: BubbleAudioCapability | undefined = options.audio ?? {
+    async playSound(
+      name: unknown,
+      playOptions: Readonly<{ untilDone?: boolean }> = {},
+    ): Promise<void> {
+      const extension = getAssetExtension();
+      const method = playOptions.untilDone
+        ? extension?.playSoundUntilDone
+        : extension?.playSound;
+      if (typeof method !== "function") {
+        throw new BubbleRuntimeAdapterError(
+          "BUBBLE-RUNTIME-002",
+          "TurboWarp Asset Manager does not provide audio playback.",
+        );
+      }
+      await method.call(extension, { NAME: name });
+    },
+  };
   const svgText: BubbleSvgText = options.svgText ?? {
     setText({ styleName, target, text }): void {
       svgTextExtension?.setText(
@@ -666,10 +708,21 @@ export function createTurboWarpBubbleComposition(
     releaseTarget(target): void {
       svgTextExtension?.releaseTextActor(target as TurboWarpBubbleTarget);
     },
+    measureText({ styleName, text }): number {
+      const measureText = svgTextExtension?.measureText;
+      if (typeof measureText !== "function") {
+        throw new BubbleRuntimeAdapterError(
+          "BUBBLE-RUNTIME-003",
+          "SVG Text does not provide text measurement.",
+        );
+      }
+      return measureText.call(svgTextExtension, styleName, text);
+    },
   };
 
   return createBubbleComposition({
-    assetManager,
+    imageResolver,
+    audio,
     svgText,
     createSurface({ actor, actorKey, style }) {
       if (!isRecord(actor) || typeof actor.id !== "string") {

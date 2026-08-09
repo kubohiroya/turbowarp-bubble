@@ -41,24 +41,6 @@
       ]
     },
     {
-      "opcode": "setAdvanceFrames",
-      "blockType": "COMMAND",
-      "arguments": [
-        {
-          "id": "ASSETS",
-          "type": "STRING"
-        },
-        {
-          "id": "SECONDS",
-          "type": "NUMBER"
-        },
-        {
-          "id": "STYLE",
-          "type": "STRING"
-        }
-      ]
-    },
-    {
       "opcode": "setBlinkFrames",
       "blockType": "COMMAND",
       "arguments": [
@@ -168,21 +150,7 @@
       ]
     },
     {
-      "opcode": "setPortraitBase",
-      "blockType": "COMMAND",
-      "arguments": [
-        {
-          "id": "ASSET",
-          "type": "STRING"
-        },
-        {
-          "id": "STYLE",
-          "type": "STRING"
-        }
-      ]
-    },
-    {
-      "opcode": "setTalkFrames",
+      "opcode": "setContinueFrames",
       "blockType": "COMMAND",
       "arguments": [
         {
@@ -192,6 +160,38 @@
         {
           "id": "SECONDS",
           "type": "NUMBER"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "setLipSyncFrames",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "ASSETS",
+          "type": "STRING"
+        },
+        {
+          "id": "SECONDS",
+          "type": "NUMBER"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "setPortraitBase",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "ASSET",
+          "type": "STRING"
         },
         {
           "id": "STYLE",
@@ -214,7 +214,7 @@
       ]
     },
     {
-      "opcode": "waitForBubbleAdvance",
+      "opcode": "waitForBubbleContinue",
       "blockType": "COMMAND",
       "arguments": [
         {

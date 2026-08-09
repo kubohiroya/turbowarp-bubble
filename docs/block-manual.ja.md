@@ -6,7 +6,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、残る5つのカスタム拡張機能は「サンドボックスなしで実行」を許可して読み込みます。Async InputとRuntime ExpressionはBubbleの待機ブロックより前に、Asset ManagerとSVG Textは最初のBubble表示より前に読み込みます。
+入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。文字BubbleにはSVG TextとBubbleが必要です。portrait、lip-sync、continue indicator、将来のフルボイスや表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -14,10 +14,10 @@
 |    2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`               |
 |    3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
 |    4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
-|    5 | SVG Text 0.3.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                     |
-|    6 | Bubble 0.1.0             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js`    |
+|    5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                     |
+|    6 | Bubble 0.2.0             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js`    |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時にAsset ManagerかSVG Textが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時にSVG Textが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。
 
 参考：
 
@@ -72,7 +72,7 @@ define text style [dialogue-text]
 
 Bubbleは`dialogue-text`という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
 
-SVG Text 0.3.xではblock contract上`bubble direction`入力が残っていますが、Bubbleが`setText`で生成する文字drawableの配置には使われません。Bubbleの配置は次節の`set bubble placement`で設定します。SVG Textからのdirection削除は、破壊的変更が可能な次版で行います。
+SVG Text 0.4.xは文字providerです。名前付き文字styleの定義、SVG文字skinの生成、文字幅の測定を担当します。Bubbleの配置は`set bubble placement`で設定し、tailや吹き出し外形はSVG Text providerの責務ではありません。
 
 ## 4. Bubble styleを定義する
 
@@ -158,10 +158,10 @@ set portrait base [HeroFace] for bubble style [hero-dialogue]
 set blink frames [HeroEyesOpen,HeroEyesClosed]
   every [0.4] seconds for bubble style [hero-dialogue]
 
-set talk frames [HeroMouthClosed,HeroMouthOpen]
+set lip-sync frames [HeroMouthClosed,HeroMouthOpen]
   every [0.1] seconds for bubble style [hero-dialogue]
 
-set advance frames [Next1,Next2]
+set continue frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 ```
 
@@ -186,25 +186,25 @@ wait with this bubble until condition [input == "pressed"] or timeout after [10]
 close this bubble
 ```
 
-まずTemporary Variablesで`input`を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、`input == "pressed"`をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に`awaiting-advance`となり、口パクを停止して`set advance frames`の画像をループします。条件成立またはtimeout後は`idle`へ移り、次の`close this bubble`へ進みます。timeoutを`0`にすると時間制限なしです。
+まずTemporary Variablesで`input`を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、`input == "pressed"`をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に`awaiting-continue`となり、口パクを停止して`set continue frames`の画像をループします。条件成立またはtimeout後は`idle`へ移り、次の`close this bubble`へ進みます。timeoutを`0`にすると時間制限なしです。
 
 次の待機に入る前に`input`を空文字へ戻してください。前回の`pressed`が残っていると、次の条件が直ちに成立します。別のBubble表示、close、対象targetの停止、projectの開始・停止、runtime破棄では、targetが所有する待機とlistener、timerをキャンセルして解放します。
 
-音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で`awaiting-advance`へ切り替えます。
+音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で`awaiting-continue`へ切り替えます。
 
-![sayで口パクし、awaiting-advanceでadvance framesを動かし、入力成立後にBubbleを閉じるアニメーション](./assets/bubble-lifecycle.gif)
+![sayで口パクし、awaiting-continueでcontinue framesを動かし、入力成立後にBubbleを閉じるアニメーション](./assets/bubble-lifecycle.gif)
 
 アニメーションGIFを再生できない環境では、次の比較図で各animation modeを確認できます。
 
-![talking、awaiting-advance、idleの目パチ、口パク、advance framesの状態比較](./assets/animation-mode-guide.svg)
+![talking、awaiting-continue、idleの目パチ、口パク、continue framesの状態比較](./assets/animation-mode-guide.svg)
 
 ## 6. Animation modeの使い分け
 
-| mode               | 目パチ | 口パク       | advance frames | 主な用途                     |
-| ------------------ | ------ | ------------ | -------------- | ---------------------------- |
-| `talking`          | 実行   | 実行         | 非表示         | セリフ表示中、音声再生中     |
-| `awaiting-advance` | 実行   | 停止・非表示 | ループ         | ユーザによる「次へ」操作待ち |
-| `idle`             | 実行   | 停止・非表示 | 停止・非表示   | Bubbleを表示したまま静止     |
+| mode                | 目パチ | 口パク       | continue frames | 主な用途                     |
+| ------------------- | ------ | ------------ | --------------- | ---------------------------- |
+| `talking`           | 実行   | 実行         | 非表示          | セリフ表示中、音声再生中     |
+| `awaiting-continue` | 実行   | 停止・非表示 | ループ          | ユーザによる「次へ」操作待ち |
+| `idle`              | 実行   | 停止・非表示 | 停止・非表示    | Bubbleを表示したまま静止     |
 
 `set this bubble animation mode [MODE]`は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
 
@@ -231,37 +231,37 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 
 ## 9. ブロック一覧
 
-| ブロック                                                                               | 説明                                                   |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義または再定義する                     |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する      |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する           |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Bubble本体のSVG形状を10種類から設定する                |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Bubble borderからtail先端までの基準長を設定する        |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | 本体位置と、文字を含む全体のscaleを設定する            |
-| `set portrait base [ASSET] for bubble style [STYLE]`                                   | portraitのベース画像を設定する                         |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | 目パチ差分と間隔を設定する                             |
-| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`            | 口パク差分と間隔を設定する                             |
-| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`         | `awaiting-advance`中の「次へ」アニメーションを設定する |
-| `say [MESSAGE] with bubble style [STYLE]`                                              | `talking` modeでsay表示を開始・置換する                |
-| `think [MESSAGE] with bubble style [STYLE]`                                            | `talking` modeでthink表示を開始・置換する              |
-| `set this bubble animation mode [MODE]`                                                | `talking`、`awaiting-advance`、`idle`からmodeを選ぶ    |
-| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Runtime Expressionの条件成立またはtimeoutまで待つ      |
-| `close this bubble`                                                                    | 自分のBubbleと所有resourceを解放する                   |
-| `Bubble version`                                                                       | Bubble実装versionを返す                                |
+| ブロック                                                                               | 説明                                                    |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義または再定義する                      |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する       |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する            |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Bubble本体のSVG形状を10種類から設定する                 |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Bubble borderからtail先端までの基準長を設定する         |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | 本体位置と、文字を含む全体のscaleを設定する             |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                   | portraitのベース画像を設定する                          |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | 目パチ差分と間隔を設定する                              |
+| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | 口パク差分と間隔を設定する                              |
+| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | `awaiting-continue`中の「次へ」アニメーションを設定する |
+| `say [MESSAGE] with bubble style [STYLE]`                                              | `talking` modeでsay表示を開始・置換する                 |
+| `think [MESSAGE] with bubble style [STYLE]`                                            | `talking` modeでthink表示を開始・置換する               |
+| `set this bubble animation mode [MODE]`                                                | `talking`、`awaiting-continue`、`idle`からmodeを選ぶ    |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Runtime Expressionの条件成立またはtimeoutまで待つ       |
+| `close this bubble`                                                                    | 自分のBubbleと所有resourceを解放する                    |
+| `Bubble version`                                                                       | Bubble実装versionを返す                                 |
 
 ## 10. よくあるエラー
 
 | 状況                               | 原因と対処                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------ |
-| Asset Managerを要求するエラー      | Asset Manager 0.7.xをサンドボックスなしで読み込む                        |
-| SVG Textを要求するエラー           | SVG Text 0.3.xをサンドボックスなしで読み込む                             |
+| Asset Managerを要求するエラー      | 画像・メディアアセットを使う前にAsset Manager 0.7.xを読み込む            |
+| SVG Textを要求するエラー           | SVG Text 0.4.xをサンドボックスなしで読み込む                             |
 | Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
 | `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
 | image assetが未登録                | `register resource ... as asset ...`の完了後にBubbleを表示する           |
 | assetが画像ではない                | `MIME type of asset [NAME]`で`image/*`か確認する                         |
-| advance framesが1枚                | 2枚以上にするか、空にしてadvance表示を解除する                           |
+| continue framesが1枚               | 2枚以上にするか、空にしてcontinue表示を解除する                          |
 | frame intervalエラー               | `SECONDS`を0より大きい有限値にする                                       |
 | StageからActor相対表示した         | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする                  |
 | placementが不正                    | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する                 |
