@@ -100,7 +100,7 @@ const motionNames = new Set([
 const easeNames = new Set(["linear", "easeIn", "easeOut", "easeInOut"]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
-export const EXTENSION_VERSION = "0.2.0";
+export const EXTENSION_VERSION = "0.3.0";
 
 function extensionError(message: string): Error {
   const error = new Error(`[Bubble] ${message}`);

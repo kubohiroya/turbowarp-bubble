@@ -9925,7 +9925,7 @@
     "easeInOut"
   ]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.2.0";
+  var EXTENSION_VERSION = "0.3.0";
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
     Object.defineProperty(error, "code", { value: "BUBBLE-EXTENSION-001" });
