@@ -15,7 +15,7 @@ The complete input-wait example uses six extensions. Add Temporary Variables fro
 |     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js`          |
 |     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
 |     5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                              |
-|     6 | Bubble 0.3.0             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.3.0/dist/turbowarp-bubble.js` |
+|     6 | Bubble 0.3.1             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.3.1/dist/turbowarp-bubble.js` |
 
 To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if SVG Text is missing when it displays a Bubble, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.
 

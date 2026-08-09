@@ -35,6 +35,18 @@ describe("Bubble sequential reveal", () => {
     );
   });
 
+  it("uses space, tab, carriage return, and line feed as WORD defaults", () => {
+    const reveal = normalizeBubbleReveal({ unit: "WORD" });
+    expect(reveal.delimiters).toBe(" \t\r\n");
+    expect(splitBubbleText("one two\tthree\rfour\nfive", reveal)).toEqual([
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+    ]);
+  });
+
   it("preserves line and paragraph boundaries", () => {
     expect(
       splitBubbleText(

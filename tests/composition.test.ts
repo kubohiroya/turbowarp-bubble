@@ -654,6 +654,87 @@ describe("Bubble composition", () => {
     ).toThrowError(BubbleCompositionError);
   });
 
+  it("preserves literal image and audio asset names", async () => {
+    const harness = createHarness();
+    const imageNames = [
+      " leading-space",
+      "trailing-space ",
+      "./portrait/frame",
+      "control\u0001frame",
+      "e\u0301-frame",
+      " ",
+    ] as const;
+    const soundNames = [
+      " voice ",
+      "reveal/sound",
+      "finish\u0002sound",
+    ] as const;
+    for (const name of imageNames) harness.registered.set(name, "image/png");
+    for (const name of soundNames) harness.registered.set(name, "audio/mpeg");
+    const played: string[] = [];
+    const composition = createBubbleComposition({
+      imageResolver: harness.imageResolver,
+      audio: {
+        isRegistered: (name) => harness.registered.has(String(name)),
+        getMimeType: (name) => harness.registered.get(String(name)) ?? "",
+        async playSound(name) {
+          played.push(String(name));
+        },
+      },
+      svgText: harness.svgText,
+      createSurface: harness.createSurface,
+      scheduler: harness.scheduler,
+    });
+    composition.defineStyle({
+      name: "literal-assets",
+      textStyle: "default",
+      portrait: {
+        base: imageNames[0],
+        blink: {
+          frames: [imageNames[1], imageNames[5]],
+          frameIntervalSeconds: 0.4,
+        },
+        lipSync: { frames: [imageNames[2]], frameIntervalSeconds: 0.1 },
+      },
+      continueIndicator: {
+        frames: [imageNames[3], imageNames[4]],
+        frameIntervalSeconds: 0.2,
+      },
+      reveal: { unit: "CHARACTER", intervalSeconds: 0, sound: soundNames[1] },
+      audio: { voice: soundNames[0], finish: soundNames[2] },
+    });
+
+    const handle = await composition.show({
+      actor: {},
+      actorKey: "Hero",
+      kind: "say",
+      text: "literal",
+      styleName: "literal-assets",
+    });
+    await handle.finish();
+
+    expect(harness.applied.map(({ assetName }) => assetName)).toEqual(
+      expect.arrayContaining(imageNames.slice(0, 4)),
+    );
+    expect(played).toEqual(expect.arrayContaining([...soundNames]));
+    expect(harness.createSurface).toHaveBeenCalledWith(
+      expect.objectContaining({
+        style: expect.objectContaining({
+          portrait: expect.objectContaining({
+            base: imageNames[0],
+            lipSync: { frames: [imageNames[2]], frameIntervalSeconds: 0.1 },
+          }),
+          continueIndicator: {
+            frames: [imageNames[3], imageNames[4]],
+            frameIntervalSeconds: 0.2,
+          },
+          reveal: expect.objectContaining({ sound: soundNames[1] }),
+          audio: { voice: soundNames[0], finish: soundNames[2] },
+        }),
+      }),
+    );
+  });
+
   it("cleans up a partially shown bubble when animation scheduling fails", async () => {
     const harness = createHarness();
     vi.spyOn(harness.scheduler, "setTimeout").mockImplementationOnce(() => {

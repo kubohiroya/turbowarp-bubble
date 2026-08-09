@@ -8330,7 +8330,7 @@
     ]);
     if (Object.keys(input).filter((key) => !allowed.has(key)).length > 0 || input.unit === void 0) throw new TypeError("Bubble reveal has unknown or missing properties.");
     const unit = requireUnit(input.unit);
-    const delimiters = input.delimiters ?? " \\t\\r\\n";
+    const delimiters = input.delimiters ?? " 	\r\n";
     if (typeof delimiters !== "string" || delimiters.length === 0) throw new TypeError("Bubble WORD delimiters must be a non-empty string.");
     const showDelimiters = input.showDelimiters ?? false;
     if (typeof showDelimiters !== "boolean") throw new TypeError("Bubble reveal showDelimiters must be boolean.");
@@ -8339,18 +8339,18 @@
     const intervalSeconds = input.intervalSeconds ?? 0;
     if (typeof intervalSeconds !== "number" || !Number.isFinite(intervalSeconds) || intervalSeconds < 0) throw new TypeError("Bubble reveal intervalSeconds must be zero or greater.");
     const sound = input.sound;
-    if (sound !== void 0 && (typeof sound !== "string" || sound.trim() === "")) throw new TypeError("Bubble reveal sound must be a non-empty asset name.");
+    if (sound !== void 0 && (typeof sound !== "string" || sound.length === 0)) throw new TypeError("Bubble reveal sound must be a non-empty asset name.");
     return Object.freeze({
       unit,
       delimiters,
       showDelimiters,
       layout,
       intervalSeconds,
-      ...sound === void 0 ? {} : { sound: sound.trim() }
+      ...sound === void 0 ? {} : { sound }
     });
   }
   function splitWords(text, delimiters, showDelimiters) {
-    const delimiterSet = new Set(graphemes(delimiters));
+    const delimiterSet = new Set(Array.from(delimiters));
     const result = [];
     let current = "";
     for (const character of graphemes(text)) {
@@ -8444,11 +8444,15 @@
     if (typeof value !== "string" || value.trim().length === 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be a non-empty string.`);
     return value.trim();
   }
+  function requireAssetName(value, label) {
+    if (typeof value !== "string" || value.length === 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be a non-empty string.`);
+    return value;
+  }
   function normalizeAnimation(value, label, minimumFrames) {
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
     requireExactKeys(value, ["frames", "frameIntervalSeconds"], [], label);
     if (!Array.isArray(value.frames) || value.frames.length < minimumFrames) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.frames must contain at least ${minimumFrames} image asset name${minimumFrames === 1 ? "" : "s"}.`);
-    const frames = Object.freeze(value.frames.map((frame, index) => requireName(frame, `${label}.frames[${index}]`)));
+    const frames = Object.freeze(value.frames.map((frame, index) => requireAssetName(frame, `${label}.frames[${index}]`)));
     const interval = value.frameIntervalSeconds;
     if (typeof interval !== "number" || !Number.isFinite(interval) || interval <= 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.frameIntervalSeconds must be a positive finite number.`);
     return Object.freeze({
@@ -8462,7 +8466,7 @@
     const blink = value.blink === void 0 ? void 0 : normalizeAnimation(value.blink, "Bubble portrait blink", 1);
     const lipSync = value.lipSync === void 0 ? void 0 : normalizeAnimation(value.lipSync, "Bubble portrait lip-sync", 1);
     return Object.freeze({
-      base: requireName(value.base, "Bubble portrait base"),
+      base: requireAssetName(value.base, "Bubble portrait base"),
       ...blink === void 0 ? {} : { blink },
       ...lipSync === void 0 ? {} : { lipSync }
     });
@@ -8521,7 +8525,7 @@
       "finish"
     ]) {
       const asset = value[key];
-      if (asset !== void 0) result[key] = requireName(asset, `Bubble audio ${key}`);
+      if (asset !== void 0) result[key] = requireAssetName(asset, `Bubble audio ${key}`);
     }
     return Object.freeze(result);
   }
@@ -9925,7 +9929,7 @@
     "easeInOut"
   ]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.3.0";
+  var EXTENSION_VERSION = "0.3.1";
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
     Object.defineProperty(error, "code", { value: "BUBBLE-EXTENSION-001" });
