@@ -3046,11 +3046,13 @@ function xe(e, t, n, r, i, a, o, s) {
 function Se(e) {
 	if (!M.includes(e.style)) throw TypeError(`Unsupported Bubble visual style: ${String(e.style)}`);
 	if (!Array.isArray(e.lines) || e.lines.some((e) => typeof e != "string")) throw TypeError("lines must be an array of strings.");
-	let t = ie(e.width, 220), n = ie(e.height, 112), r = ie(e.fontSize, 15), i = ae(e.tailDirection), a = j(e.tailLength ?? k), o = e.offset === void 0 ? A : ne(e.offset), s = e.fillColor ?? "#fff4cc", c = e.borderColor ?? "#6f5b45", l = e.textColor ?? "#25283a", u = e.fontFamily ?? "Noto Sans JP, sans-serif", d = r * 1.35, f = n / 2 - (e.lines.length - 1) * d / 2 + r * .35, p = i === null ? 1 : o.scalePercent / 100, m = i === null ? {
+	let t = ie(e.width, 220), n = ie(e.height, 112), r = ie(e.fontSize, 15), i = ae(e.tailDirection), a = j(e.tailLength ?? k), o = e.offset === void 0 ? A : ne(e.offset), s = e.shapeTransition;
+	if (s !== void 0 && (!M.includes(s.from) || !M.includes(s.to) || !Number.isFinite(s.progress) || s.progress < 0 || s.progress > 1)) throw TypeError("Bubble shape transition is invalid.");
+	let c = e.fillColor ?? "#fff4cc", l = e.borderColor ?? "#6f5b45", u = e.textColor ?? "#25283a", d = e.fontFamily ?? "Noto Sans JP, sans-serif", f = r * 1.35, p = n / 2 - (e.lines.length - 1) * f / 2 + r * .35, m = i === null ? 1 : o.scalePercent / 100, h = i === null ? {
 		x: t / 2,
 		y: n / 2
-	} : I(N(t, n), t, n, i, a, o).bodyCenter, h = e.lines.map((e, t) => `<text x="${m.x}" y="${m.y + (f + t * d - n / 2) * p}" text-anchor="middle" fill="${re(l)}" font-family="${re(u)}" font-size="${r * p}">${re(e)}</text>`).join(""), g = re(e.title ?? `${e.style} bubble`);
-	return `<svg xmlns="http://www.w3.org/2000/svg" width="${t}" height="${n}" viewBox="0 0 ${t} ${n}" role="img" data-bubble-renderer="canonical" data-bubble-style="${e.style}"><title>${g}</title>${xe(e.style, t, n, i, s, c, a, o)}${h}</svg>`;
+	} : I(N(t, n), t, n, i, a, o).bodyCenter, g = e.lines.map((e, t) => `<text x="${h.x}" y="${h.y + (p + t * f - n / 2) * m}" text-anchor="middle" fill="${re(u)}" font-family="${re(d)}" font-size="${r * m}">${re(e)}</text>`).join(""), _ = s === void 0 ? xe(e.style, t, n, i, c, l, a, o) : `<g opacity="${(1 - s.progress).toFixed(4)}">${xe(s.from, t, n, i, c, l, a, o)}</g><g opacity="${s.progress.toFixed(4)}">${xe(s.to, t, n, i, c, l, a, o)}</g>`, v = re(e.title ?? `${e.style} bubble`), y = s === void 0 ? "" : ` data-bubble-shape-transition-from="${s.from}" data-bubble-shape-transition-to="${s.to}" data-bubble-shape-transition-progress="${s.progress.toFixed(4)}"`;
+	return `<svg xmlns="http://www.w3.org/2000/svg" width="${t}" height="${n}" viewBox="0 0 ${t} ${n}" role="img" data-bubble-renderer="canonical" data-bubble-style="${e.style}"${y}><title>${v}</title>${_}${g}</svg>`;
 }
 //#endregion
 //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
@@ -4587,10 +4589,15 @@ function ni(e) {
 						return Promise.reject(e);
 					}
 					return l = l.then(async () => {
-						t.name === "animateBubbleShape" && t.visualStyle && (u = Object.freeze({
-							...u,
-							visualStyle: t.visualStyle
-						}), await v?.updateStyle(u)), await v?.animate?.(t);
+						if (t.name === "animateBubbleShape" && t.visualStyle) {
+							let e = Object.freeze({
+								...u,
+								visualStyle: t.visualStyle
+							});
+							await v?.animate?.(t), u = e, await v?.updateStyle(u);
+							return;
+						}
+						await v?.animate?.(t);
 					}), l;
 				},
 				async close() {

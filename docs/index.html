@@ -338,7 +338,7 @@ shake this bubble direction [90] count [2] ease [easeInOut]
 explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </code></pre>
-<p><code>shake</code> applies direction, count, and <code>ease</code> to the complete Bubble surface. <code>explode</code> changes the relative scale of text and portrait together. <code>animate bubble shape</code> switches the outline at the requested speed and duration to styles such as <code>THINKING</code>, <code>DREAMING</code>, <code>YELLING</code>, <code>WAVY</code>, or <code>WHISPERING</code>.</p>
+<p>The TurboWarp adapter advances these motions on scheduler frames and applies <code>ease</code> to each frame. <code>shake</code> applies direction and count to the complete Bubble surface, <code>explode</code> expands and returns the relative scale of text and portrait together, and <code>animate bubble shape</code> cross-fades the current outline into styles such as <code>THINKING</code>, <code>DREAMING</code>, <code>YELLING</code>, <code>WAVY</code>, or <code>WHISPERING</code> during the requested speed and duration.</p>
 <h2 id="reference">9. <code>say</code> and <code>think</code></h2>
 <pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]

@@ -83,6 +83,24 @@ describe("renderBubbleSvg", () => {
     expect(transformed).toContain('data-boolean-operation="union"');
   });
 
+  it("renders a continuous body-shape transition without duplicating text", () => {
+    const svg = renderBubbleSvg({
+      style: "NORMAL",
+      lines: ["shape"],
+      tailDirection: 90,
+      shapeTransition: {
+        from: "NORMAL",
+        to: "WAVY",
+        progress: 0.5,
+      },
+    });
+
+    expect(svg).toContain('data-bubble-shape-transition-from="NORMAL"');
+    expect(svg).toContain('data-bubble-shape-transition-to="WAVY"');
+    expect(svg).toContain('data-bubble-shape-transition-progress="0.5000"');
+    expect(svg.match(/>shape</gu)).toHaveLength(1);
+  });
+
   it("reports the body-center shift used to align runtime content", () => {
     const shift = bubbleBodyCenterOffset({
       style: "NORMAL",

@@ -6325,6 +6325,10 @@
     const direction = normalizeDirection(input.tailDirection);
     const tailLength = normalizeSvgTailLength(input.tailLength ?? svgDefaultTailLength);
     const offset = input.offset === void 0 ? svgDefaultOffset : normalizeSvgOffset(input.offset);
+    const shapeTransition = input.shapeTransition;
+    if (shapeTransition !== void 0) {
+      if (!bubbleVisualStyles.includes(shapeTransition.from) || !bubbleVisualStyles.includes(shapeTransition.to) || !Number.isFinite(shapeTransition.progress) || shapeTransition.progress < 0 || shapeTransition.progress > 1) throw new TypeError("Bubble shape transition is invalid.");
+    }
     const fill = input.fillColor ?? "#fff4cc";
     const border = input.borderColor ?? "#6f5b45";
     const textColor = input.textColor ?? "#25283a";
@@ -6337,8 +6341,10 @@
       y: height / 2
     } : transformedBodyGeometry(roundedRectanglePoints(width, height), width, height, direction, tailLength, offset).bodyCenter;
     const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml(textColor)}" font-family="${escapeXml(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml(line)}</text>`).join("");
+    const body = shapeTransition === void 0 ? renderBody(input.style, width, height, direction, fill, border, tailLength, offset) : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(shapeTransition.from, width, height, direction, fill, border, tailLength, offset)}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(shapeTransition.to, width, height, direction, fill, border, tailLength, offset)}</g>`;
     const title = escapeXml(input.title ?? `${input.style} bubble`);
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border, tailLength, offset)}${text}</svg>`;
+    const transitionAttributes = shapeTransition === void 0 ? "" : ` data-bubble-shape-transition-from="${shapeTransition.from}" data-bubble-shape-transition-to="${shapeTransition.to}" data-bubble-shape-transition-progress="${shapeTransition.progress.toFixed(4)}"`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
   }
   //#endregion
   //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
@@ -9163,11 +9169,14 @@
             }
             transitionTail = transitionTail.then(async () => {
               if (normalized.name === "animateBubbleShape" && normalized.visualStyle) {
-                activeStyle = Object.freeze({
+                const nextStyle = Object.freeze({
                   ...activeStyle,
                   visualStyle: normalized.visualStyle
                 });
+                await surface?.animate?.(normalized);
+                activeStyle = nextStyle;
                 await surface?.updateStyle(activeStyle);
+                return;
               }
               await surface?.animate?.(normalized);
             });
@@ -9346,6 +9355,52 @@
       height
     };
   }
+  function clamp01(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+  function easeProgress(value, ease) {
+    const progress = clamp01(value);
+    switch (ease) {
+      case "linear": return progress;
+      case "easeIn": return progress * progress;
+      case "easeOut": return 1 - (1 - progress) * (1 - progress);
+      case "easeInOut": return progress < .5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      default: return progress;
+    }
+  }
+  /**
+  * Drives a motion with the same scheduler used by frame loops and reveal.
+  * The adapter intentionally does not depend on requestAnimationFrame so a
+  * host can provide deterministic time in tests and non-browser runtimes.
+  */
+  function runMotionTimeline(scheduler, durationSeconds, onFrame) {
+    const durationMilliseconds = Math.max(0, durationSeconds * 1e3);
+    if (durationMilliseconds === 0) {
+      onFrame(1);
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      let elapsed = 0;
+      let timer;
+      const tick = () => {
+        const step = Math.min(16, durationMilliseconds - elapsed);
+        elapsed += step;
+        try {
+          onFrame(clamp01(elapsed / durationMilliseconds));
+        } catch (error) {
+          if (timer !== void 0) scheduler.clearTimeout(timer);
+          reject(error);
+          return;
+        }
+        if (elapsed >= durationMilliseconds) {
+          resolve();
+          return;
+        }
+        timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds - elapsed));
+      };
+      timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds));
+    });
+  }
   function fitDrawable(renderer, target, boxSize, scaleMultiplier = 1) {
     const native = readSize(renderer, target, {
       width: boxSize,
@@ -9417,11 +9472,25 @@
       let reservedTextSize;
       const layoutPositions = /* @__PURE__ */ new Map();
       const layoutScales = /* @__PURE__ */ new Map();
+      let motionTranslation = [0, 0];
+      let motionScaleMultiplier = 1;
+      let motionOpacity = 1;
+      let shapeTransition;
+      const applyMotionTransforms = () => {
+        for (const target of drawables) {
+          const basePosition = layoutPositions.get(target.drawableID);
+          if (basePosition) renderer.updateDrawablePosition(target.drawableID, [basePosition[0] + motionTranslation[0], basePosition[1] + motionTranslation[1]]);
+          const baseScale = layoutScales.get(target.drawableID);
+          if (baseScale) renderer.updateDrawableScale(target.drawableID, [baseScale[0] * motionScaleMultiplier, baseScale[1] * motionScaleMultiplier]);
+          renderer.updateDrawableEffect?.(target.drawableID, "ghost", (1 - motionOpacity) * 100);
+        }
+      };
       const updateVisibility = () => {
         const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
-        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && currentStyle.visualStyle !== "NO_BUBBLE");
-        renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible);
-        for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false));
+        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && currentStyle.visualStyle !== "NO_BUBBLE" && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
+        renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
+        for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false) && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
+        applyMotionTransforms();
         runtime.requestRedraw?.();
       };
       const position = () => {
@@ -9515,7 +9584,8 @@
           tailLength: currentStyle.tailLength,
           viewportExtraX,
           viewportExtraY,
-          visualStyle: currentStyle.visualStyle
+          visualStyle: currentStyle.visualStyle,
+          shapeTransition
         });
         if (nextBodySkinSignature !== cachedBodySkinSignature) {
           const expanded = expandSvgViewport(renderBubbleSvg({
@@ -9526,7 +9596,8 @@
             tailDirection,
             tailLength: currentStyle.tailLength,
             offset: bodyOffset,
-            title: `${currentStyle.name} Bubble body`
+            title: `${currentStyle.name} Bubble body`,
+            ...shapeTransition === void 0 ? {} : { shapeTransition }
           }), baseBubbleWidth, baseBubbleHeight, viewportExtraX, viewportExtraY);
           const nextSkinId = renderer.createSVGSkin(expanded);
           if (!Number.isInteger(nextSkinId) || nextSkinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "TurboWarp did not create the Bubble body SVG skin.");
@@ -9569,6 +9640,7 @@
         if (portraitLipSync) layoutScales.set(portraitLipSync.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
         if (continueIndicator) layoutScales.set(continueIndicator.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
         if (continueIndicator) remember(continueIndicator, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
+        applyMotionTransforms();
         updateVisibility();
       };
       const originalVisualChange = actor.onTargetVisualChange;
@@ -9588,6 +9660,10 @@
           if (disposed) return;
           const wasActorRelative = currentStyle.placement.basis === "actor";
           currentStyle = nextStyle;
+          motionTranslation = [0, 0];
+          motionScaleMultiplier = 1;
+          motionOpacity = 1;
+          shapeTransition = void 0;
           if (nextStyle.reveal?.layout !== "RESERVED") reservedTextSize = void 0;
           const isActorRelative = currentStyle.placement.basis === "actor";
           if (wasActorRelative && !isActorRelative) {
@@ -9610,83 +9686,111 @@
         async animate(motion) {
           if (disposed) return;
           const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
-          const waitForDuration = async () => {
-            if (durationSeconds === 0) return;
-            await new Promise((resolve) => {
-              scheduler.setTimeout(resolve, durationSeconds * 1e3);
-            });
+          const setFrame = () => {
+            if (disposed) return;
+            applyMotionTransforms();
+            updateVisibility();
           };
-          const motionTargets = [
-            body,
-            text,
-            portraitBase,
-            portraitBlink,
-            portraitLipSync,
-            continueIndicator
-          ].filter((target) => target !== void 0);
+          const eased = (progress) => easeProgress(progress, motion.ease ?? "easeInOut");
           if (motion.name === "fadeIn" || motion.name === "floatIn" || motion.name === "zoomIn" || motion.name === "riseUp") {
             surfaceVisible = true;
-            updateVisibility();
-            if (motion.name === "floatIn" || motion.name === "riseUp") for (const target of motionTargets) {
-              const base = layoutPositions.get(target.drawableID);
-              if (base) renderer.updateDrawablePosition(target.drawableID, [base[0], base[1] + 16]);
-            }
-            else if (motion.name === "zoomIn") for (const target of motionTargets) {
-              const base = layoutScales.get(target.drawableID) ?? [100, 100];
-              renderer.updateDrawableScale(target.drawableID, [base[0] * .01, base[1] * .01]);
-            }
-            await waitForDuration();
+            const startingTranslation = motion.name === "floatIn" || motion.name === "riseUp" ? [0, 16] : [0, 0];
+            const startingScale = motion.name === "zoomIn" ? .01 : 1;
+            motionTranslation = startingTranslation;
+            motionScaleMultiplier = startingScale;
+            motionOpacity = motion.name === "fadeIn" ? 0 : 1;
+            setFrame();
+            await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+              const easedProgress = eased(progress);
+              motionTranslation = [startingTranslation[0] * (1 - easedProgress), startingTranslation[1] * (1 - easedProgress)];
+              motionScaleMultiplier = startingScale + (1 - startingScale) * easedProgress;
+              motionOpacity = motion.name === "fadeIn" ? easedProgress : 1;
+              setFrame();
+            });
+            motionTranslation = [0, 0];
+            motionScaleMultiplier = 1;
+            motionOpacity = 1;
             position();
             return;
           }
           if (motion.name === "fadeOut" || motion.name === "floatOut" || motion.name === "zoomOut" || motion.name === "sink") {
-            if (motion.name === "floatOut" || motion.name === "sink") for (const target of motionTargets) {
-              const base = layoutPositions.get(target.drawableID);
-              if (base) renderer.updateDrawablePosition(target.drawableID, [base[0], base[1] - 16]);
-            }
-            else if (motion.name === "zoomOut") for (const target of motionTargets) {
-              const base = layoutScales.get(target.drawableID) ?? [100, 100];
-              renderer.updateDrawableScale(target.drawableID, [base[0] * .01, base[1] * .01]);
-            }
-            await waitForDuration();
+            const endingTranslation = motion.name === "floatOut" || motion.name === "sink" ? [0, -16] : [0, 0];
+            const endingScale = motion.name === "zoomOut" ? .01 : 1;
+            motionTranslation = [0, 0];
+            motionScaleMultiplier = 1;
+            motionOpacity = 1;
+            setFrame();
+            await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+              const easedProgress = eased(progress);
+              motionTranslation = [endingTranslation[0] * easedProgress, endingTranslation[1] * easedProgress];
+              motionScaleMultiplier = 1 + (endingScale - 1) * easedProgress;
+              motionOpacity = motion.name === "fadeOut" ? 1 - easedProgress : 1;
+              setFrame();
+            });
+            motionTranslation = endingTranslation;
+            motionScaleMultiplier = endingScale;
+            motionOpacity = motion.name === "fadeOut" ? 0 : 1;
+            setFrame();
             surfaceVisible = false;
             updateVisibility();
+            motionTranslation = [0, 0];
+            motionScaleMultiplier = 1;
+            motionOpacity = 1;
             return;
           }
           if (motion.name === "shake") {
             const count = Math.max(1, Math.floor(motion.count ?? 1));
+            const animationDuration = durationSeconds > 0 ? durationSeconds : count * .08;
             const vector = bubbleDirectionVector(typeof motion.direction === "number" ? motion.direction : motion.direction ?? "right") ?? bubbleDirectionVector("right");
-            const dx = vector.x * 5;
-            const dy = vector.y * 5;
-            for (let index = 0; index < count; index += 1) {
-              for (const target of motionTargets) {
-                const base = layoutPositions.get(target.drawableID);
-                if (base) renderer.updateDrawablePosition(target.drawableID, [base[0] + dx, base[1] + dy]);
-              }
-              for (const target of motionTargets) {
-                const base = layoutPositions.get(target.drawableID);
-                if (base) renderer.updateDrawablePosition(target.drawableID, [base[0] - dx, base[1] - dy]);
-              }
-            }
+            const amplitude = 5;
+            motionTranslation = [0, 0];
+            await runMotionTimeline(scheduler, animationDuration, (progress) => {
+              const phase = eased(progress) * count * Math.PI * 2;
+              const displacement = Math.sin(phase) * amplitude;
+              motionTranslation = [vector.x * displacement, vector.y * displacement];
+              setFrame();
+            });
+            motionTranslation = [0, 0];
             position();
-            await waitForDuration();
             return;
           }
           if (motion.name === "explode") {
             const count = Math.max(1, Math.floor(motion.count ?? 1));
+            const animationDuration = durationSeconds > 0 ? durationSeconds : count * .12;
             const factor = motion.relativeScale ?? 1.15;
-            for (let index = 0; index < count; index += 1) {
-              for (const target of motionTargets) {
-                const base = layoutScales.get(target.drawableID) ?? [100, 100];
-                renderer.updateDrawableScale(target.drawableID, [base[0] * factor, base[1] * factor]);
-              }
-              position();
-            }
+            await runMotionTimeline(scheduler, animationDuration, (progress) => {
+              const easedProgress = eased(progress);
+              const wave = Math.abs(Math.sin(easedProgress * count * Math.PI));
+              motionScaleMultiplier = 1 + (factor - 1) * wave;
+              setFrame();
+            });
+            motionScaleMultiplier = 1;
             position();
-            await waitForDuration();
             return;
           }
-          await waitForDuration();
+          if (motion.name === "animateBubbleShape") {
+            const targetStyle = motion.visualStyle ?? currentStyle.visualStyle;
+            const fromStyle = currentStyle.visualStyle;
+            const speed = motion.speed === void 0 ? 1 : Math.max(0, motion.speed);
+            shapeTransition = {
+              from: fromStyle,
+              to: targetStyle,
+              progress: 0
+            };
+            position();
+            await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+              const speedProgress = durationSeconds === 0 ? 1 : clamp01(progress * Math.max(speed, 1) / 1);
+              shapeTransition = {
+                from: fromStyle,
+                to: targetStyle,
+                progress: easeProgress(speedProgress, motion.ease ?? "easeInOut")
+              };
+              position();
+            });
+            shapeTransition = void 0;
+            position();
+            return;
+          }
         },
         show() {
           if (disposed) return;

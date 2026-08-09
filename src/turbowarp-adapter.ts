@@ -12,6 +12,7 @@ import {
   type BubbleStyle,
   type BubbleSurface,
   type BubbleSurfaceTargets,
+  type BubbleVisualStyle,
 } from "./composition.js";
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
 import { bubbleBodyCenterOffset, renderBubbleSvg } from "./bubble-svg.js";
@@ -55,6 +56,12 @@ export interface TurboWarpBubbleRenderer {
   updateDrawableScale(drawableId: number, scale: [number, number]): void;
   updateDrawableSkinId(drawableId: number, skinId: number): void;
   updateDrawableVisible(drawableId: number, visible: boolean): void;
+  /** Scratch/TurboWarp's ghost effect is used to implement fade motions. */
+  updateDrawableEffect?(
+    drawableId: number,
+    effectName: string,
+    value: number,
+  ): void;
   setDrawableOrder?(
     drawableId: number,
     order: number,
@@ -212,6 +219,70 @@ function readSize(
   return { width, height };
 }
 
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
+}
+
+function easeProgress(value: number, ease: BubbleMotionInput["ease"]): number {
+  const progress = clamp01(value);
+  switch (ease) {
+    case "linear":
+      return progress;
+    case "easeIn":
+      return progress * progress;
+    case "easeOut":
+      return 1 - (1 - progress) * (1 - progress);
+    case "easeInOut": {
+      return progress < 0.5
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    }
+    default:
+      return progress;
+  }
+}
+
+/**
+ * Drives a motion with the same scheduler used by frame loops and reveal.
+ * The adapter intentionally does not depend on requestAnimationFrame so a
+ * host can provide deterministic time in tests and non-browser runtimes.
+ */
+function runMotionTimeline(
+  scheduler: BubbleScheduler,
+  durationSeconds: number,
+  onFrame: (progress: number) => void,
+): Promise<void> {
+  const durationMilliseconds = Math.max(0, durationSeconds * 1000);
+  if (durationMilliseconds === 0) {
+    onFrame(1);
+    return Promise.resolve();
+  }
+  return new Promise<void>((resolve, reject) => {
+    let elapsed = 0;
+    let timer: unknown;
+    const tick = (): void => {
+      const step = Math.min(16, durationMilliseconds - elapsed);
+      elapsed += step;
+      try {
+        onFrame(clamp01(elapsed / durationMilliseconds));
+      } catch (error) {
+        if (timer !== undefined) scheduler.clearTimeout(timer);
+        reject(error);
+        return;
+      }
+      if (elapsed >= durationMilliseconds) {
+        resolve();
+        return;
+      }
+      timer = scheduler.setTimeout(
+        tick,
+        Math.min(16, durationMilliseconds - elapsed),
+      );
+    };
+    timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds));
+  });
+}
+
 function fitDrawable(
   renderer: TurboWarpBubbleRenderer,
   target: DrawableTarget,
@@ -336,6 +407,40 @@ function createSurface(
     let reservedTextSize: DrawableSize | undefined;
     const layoutPositions = new Map<number, [number, number]>();
     const layoutScales = new Map<number, [number, number]>();
+    let motionTranslation: [number, number] = [0, 0];
+    let motionScaleMultiplier = 1;
+    let motionOpacity = 1;
+    let shapeTransition:
+      | {
+          readonly from: BubbleVisualStyle;
+          readonly to: BubbleVisualStyle;
+          readonly progress: number;
+        }
+      | undefined;
+
+    const applyMotionTransforms = (): void => {
+      for (const target of drawables) {
+        const basePosition = layoutPositions.get(target.drawableID);
+        if (basePosition) {
+          renderer.updateDrawablePosition(target.drawableID, [
+            basePosition[0] + motionTranslation[0],
+            basePosition[1] + motionTranslation[1],
+          ]);
+        }
+        const baseScale = layoutScales.get(target.drawableID);
+        if (baseScale) {
+          renderer.updateDrawableScale(target.drawableID, [
+            baseScale[0] * motionScaleMultiplier,
+            baseScale[1] * motionScaleMultiplier,
+          ]);
+        }
+        renderer.updateDrawableEffect?.(
+          target.drawableID,
+          "ghost",
+          (1 - motionOpacity) * 100,
+        );
+      }
+    };
 
     const updateVisibility = (): void => {
       const actorVisible =
@@ -345,20 +450,25 @@ function createSurface(
         body.drawableID,
         surfaceVisible &&
           actorVisible &&
-          currentStyle.visualStyle !== "NO_BUBBLE",
+          currentStyle.visualStyle !== "NO_BUBBLE" &&
+          (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
       );
       renderer.updateDrawableVisible(
         text.drawableID,
-        surfaceVisible && actorVisible,
+        surfaceVisible &&
+          actorVisible &&
+          (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
       );
       for (const [layer, target] of layerTargets) {
         renderer.updateDrawableVisible(
           target.drawableID,
           surfaceVisible &&
             actorVisible &&
-            (layerVisibility.get(layer) ?? false),
+            (layerVisibility.get(layer) ?? false) &&
+            (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
         );
       }
+      applyMotionTransforms();
       runtime.requestRedraw?.();
     };
 
@@ -497,6 +607,7 @@ function createSurface(
         viewportExtraX,
         viewportExtraY,
         visualStyle: currentStyle.visualStyle,
+        shapeTransition,
       });
       if (nextBodySkinSignature !== cachedBodySkinSignature) {
         const rendered = renderBubbleSvg({
@@ -508,6 +619,7 @@ function createSurface(
           tailLength: currentStyle.tailLength,
           offset: bodyOffset,
           title: `${currentStyle.name} Bubble body`,
+          ...(shapeTransition === undefined ? {} : { shapeTransition }),
         });
         const expanded = expandSvgViewport(
           rendered,
@@ -621,6 +733,7 @@ function createSurface(
             contentGap * scaleMultiplier,
         ]);
       }
+      applyMotionTransforms();
       updateVisibility();
     };
 
@@ -644,6 +757,10 @@ function createSurface(
         if (disposed) return;
         const wasActorRelative = currentStyle.placement.basis === "actor";
         currentStyle = nextStyle;
+        motionTranslation = [0, 0];
+        motionScaleMultiplier = 1;
+        motionOpacity = 1;
+        shapeTransition = undefined;
         if (nextStyle.reveal?.layout !== "RESERVED")
           reservedTextSize = undefined;
         const isActorRelative = currentStyle.placement.basis === "actor";
@@ -671,20 +788,13 @@ function createSurface(
       async animate(motion: BubbleMotionInput): Promise<void> {
         if (disposed) return;
         const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
-        const waitForDuration = async (): Promise<void> => {
-          if (durationSeconds === 0) return;
-          await new Promise<void>((resolve) => {
-            scheduler.setTimeout(resolve, durationSeconds * 1000);
-          });
+        const setFrame = (): void => {
+          if (disposed) return;
+          applyMotionTransforms();
+          updateVisibility();
         };
-        const motionTargets = [
-          body,
-          text,
-          portraitBase,
-          portraitBlink,
-          portraitLipSync,
-          continueIndicator,
-        ].filter((target): target is DrawableTarget => target !== undefined);
+        const eased = (progress: number): number =>
+          easeProgress(progress, motion.ease ?? "easeInOut");
         if (
           motion.name === "fadeIn" ||
           motion.name === "floatIn" ||
@@ -692,26 +802,29 @@ function createSurface(
           motion.name === "riseUp"
         ) {
           surfaceVisible = true;
-          updateVisibility();
-          if (motion.name === "floatIn" || motion.name === "riseUp") {
-            for (const target of motionTargets) {
-              const base = layoutPositions.get(target.drawableID);
-              if (base)
-                renderer.updateDrawablePosition(target.drawableID, [
-                  base[0],
-                  base[1] + 16,
-                ]);
-            }
-          } else if (motion.name === "zoomIn") {
-            for (const target of motionTargets) {
-              const base = layoutScales.get(target.drawableID) ?? [100, 100];
-              renderer.updateDrawableScale(target.drawableID, [
-                base[0] * 0.01,
-                base[1] * 0.01,
-              ]);
-            }
-          }
-          await waitForDuration();
+          const startingTranslation =
+            motion.name === "floatIn" || motion.name === "riseUp"
+              ? ([0, 16] as [number, number])
+              : ([0, 0] as [number, number]);
+          const startingScale = motion.name === "zoomIn" ? 0.01 : 1;
+          motionTranslation = startingTranslation;
+          motionScaleMultiplier = startingScale;
+          motionOpacity = motion.name === "fadeIn" ? 0 : 1;
+          setFrame();
+          await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+            const easedProgress = eased(progress);
+            motionTranslation = [
+              startingTranslation[0] * (1 - easedProgress),
+              startingTranslation[1] * (1 - easedProgress),
+            ];
+            motionScaleMultiplier =
+              startingScale + (1 - startingScale) * easedProgress;
+            motionOpacity = motion.name === "fadeIn" ? easedProgress : 1;
+            setFrame();
+          });
+          motionTranslation = [0, 0];
+          motionScaleMultiplier = 1;
+          motionOpacity = 1;
           position();
           return;
         }
@@ -721,31 +834,40 @@ function createSurface(
           motion.name === "zoomOut" ||
           motion.name === "sink"
         ) {
-          if (motion.name === "floatOut" || motion.name === "sink") {
-            for (const target of motionTargets) {
-              const base = layoutPositions.get(target.drawableID);
-              if (base)
-                renderer.updateDrawablePosition(target.drawableID, [
-                  base[0],
-                  base[1] - 16,
-                ]);
-            }
-          } else if (motion.name === "zoomOut") {
-            for (const target of motionTargets) {
-              const base = layoutScales.get(target.drawableID) ?? [100, 100];
-              renderer.updateDrawableScale(target.drawableID, [
-                base[0] * 0.01,
-                base[1] * 0.01,
-              ]);
-            }
-          }
-          await waitForDuration();
+          const endingTranslation =
+            motion.name === "floatOut" || motion.name === "sink"
+              ? ([0, -16] as [number, number])
+              : ([0, 0] as [number, number]);
+          const endingScale = motion.name === "zoomOut" ? 0.01 : 1;
+          motionTranslation = [0, 0];
+          motionScaleMultiplier = 1;
+          motionOpacity = 1;
+          setFrame();
+          await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+            const easedProgress = eased(progress);
+            motionTranslation = [
+              endingTranslation[0] * easedProgress,
+              endingTranslation[1] * easedProgress,
+            ];
+            motionScaleMultiplier = 1 + (endingScale - 1) * easedProgress;
+            motionOpacity = motion.name === "fadeOut" ? 1 - easedProgress : 1;
+            setFrame();
+          });
+          motionTranslation = endingTranslation;
+          motionScaleMultiplier = endingScale;
+          motionOpacity = motion.name === "fadeOut" ? 0 : 1;
+          setFrame();
           surfaceVisible = false;
           updateVisibility();
+          motionTranslation = [0, 0];
+          motionScaleMultiplier = 1;
+          motionOpacity = 1;
           return;
         }
         if (motion.name === "shake") {
           const count = Math.max(1, Math.floor(motion.count ?? 1));
+          const animationDuration =
+            durationSeconds > 0 ? durationSeconds : count * 0.08;
           const direction =
             typeof motion.direction === "number"
               ? motion.direction
@@ -753,48 +875,64 @@ function createSurface(
                 "right");
           const vector =
             bubbleDirectionVector(direction) ?? bubbleDirectionVector("right");
-          const dx = vector.x * 5;
-          const dy = vector.y * 5;
-          for (let index = 0; index < count; index += 1) {
-            for (const target of motionTargets) {
-              const base = layoutPositions.get(target.drawableID);
-              if (base)
-                renderer.updateDrawablePosition(target.drawableID, [
-                  base[0] + dx,
-                  base[1] + dy,
-                ]);
-            }
-            for (const target of motionTargets) {
-              const base = layoutPositions.get(target.drawableID);
-              if (base)
-                renderer.updateDrawablePosition(target.drawableID, [
-                  base[0] - dx,
-                  base[1] - dy,
-                ]);
-            }
-          }
+          const amplitude = 5;
+          motionTranslation = [0, 0];
+          await runMotionTimeline(scheduler, animationDuration, (progress) => {
+            const easedProgress = eased(progress);
+            const phase = easedProgress * count * Math.PI * 2;
+            const displacement = Math.sin(phase) * amplitude;
+            motionTranslation = [
+              vector.x * displacement,
+              vector.y * displacement,
+            ];
+            setFrame();
+          });
+          motionTranslation = [0, 0];
           position();
-          await waitForDuration();
           return;
         }
         if (motion.name === "explode") {
           const count = Math.max(1, Math.floor(motion.count ?? 1));
+          const animationDuration =
+            durationSeconds > 0 ? durationSeconds : count * 0.12;
           const factor = motion.relativeScale ?? 1.15;
-          for (let index = 0; index < count; index += 1) {
-            for (const target of motionTargets) {
-              const base = layoutScales.get(target.drawableID) ?? [100, 100];
-              renderer.updateDrawableScale(target.drawableID, [
-                base[0] * factor,
-                base[1] * factor,
-              ]);
-            }
-            position();
-          }
+          await runMotionTimeline(scheduler, animationDuration, (progress) => {
+            const easedProgress = eased(progress);
+            const wave = Math.abs(Math.sin(easedProgress * count * Math.PI));
+            motionScaleMultiplier = 1 + (factor - 1) * wave;
+            setFrame();
+          });
+          motionScaleMultiplier = 1;
           position();
-          await waitForDuration();
           return;
         }
-        await waitForDuration();
+        if (motion.name === "animateBubbleShape") {
+          const targetStyle = motion.visualStyle ?? currentStyle.visualStyle;
+          const fromStyle = currentStyle.visualStyle;
+          const speed =
+            motion.speed === undefined ? 1 : Math.max(0, motion.speed);
+          shapeTransition = {
+            from: fromStyle,
+            to: targetStyle,
+            progress: 0,
+          };
+          position();
+          await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+            const speedProgress =
+              durationSeconds === 0
+                ? 1
+                : clamp01((progress * Math.max(speed, 1)) / 1);
+            shapeTransition = {
+              from: fromStyle,
+              to: targetStyle,
+              progress: easeProgress(speedProgress, motion.ease ?? "easeInOut"),
+            };
+            position();
+          });
+          shapeTransition = undefined;
+          position();
+          return;
+        }
       },
       show(): void {
         if (disposed) return;

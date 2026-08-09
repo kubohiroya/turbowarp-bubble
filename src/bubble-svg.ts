@@ -58,6 +58,17 @@ export interface RenderBubbleSvgInput {
   readonly fontFamily?: string;
   readonly fontSize?: number;
   readonly title?: string;
+  /**
+   * Cross-fades two Bubble body geometries while keeping the text layer
+   * stable. This is used by the runtime adapter for animateBubbleShape.
+   */
+  readonly shapeTransition?: BubbleShapeTransition;
+}
+
+export interface BubbleShapeTransition {
+  readonly from: BubbleVisualStyle;
+  readonly to: BubbleVisualStyle;
+  readonly progress: number;
 }
 
 export interface BubbleBodyCenterOffsetInput {
@@ -608,6 +619,18 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
     input.offset === undefined
       ? svgDefaultOffset
       : normalizeSvgOffset(input.offset);
+  const shapeTransition = input.shapeTransition;
+  if (shapeTransition !== undefined) {
+    if (
+      !bubbleVisualStyles.includes(shapeTransition.from) ||
+      !bubbleVisualStyles.includes(shapeTransition.to) ||
+      !Number.isFinite(shapeTransition.progress) ||
+      shapeTransition.progress < 0 ||
+      shapeTransition.progress > 1
+    ) {
+      throw new TypeError("Bubble shape transition is invalid.");
+    }
+  }
   const fill = input.fillColor ?? "#fff4cc";
   const border = input.borderColor ?? "#6f5b45";
   const textColor = input.textColor ?? "#25283a";
@@ -633,6 +656,41 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
         `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml(textColor)}" font-family="${escapeXml(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml(line)}</text>`,
     )
     .join("");
+  const body =
+    shapeTransition === undefined
+      ? renderBody(
+          input.style,
+          width,
+          height,
+          direction,
+          fill,
+          border,
+          tailLength,
+          offset,
+        )
+      : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(
+          shapeTransition.from,
+          width,
+          height,
+          direction,
+          fill,
+          border,
+          tailLength,
+          offset,
+        )}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(
+          shapeTransition.to,
+          width,
+          height,
+          direction,
+          fill,
+          border,
+          tailLength,
+          offset,
+        )}</g>`;
   const title = escapeXml(input.title ?? `${input.style} bubble`);
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border, tailLength, offset)}${text}</svg>`;
+  const transitionAttributes =
+    shapeTransition === undefined
+      ? ""
+      : ` data-bubble-shape-transition-from="${shapeTransition.from}" data-bubble-shape-transition-to="${shapeTransition.to}" data-bubble-shape-transition-progress="${shapeTransition.progress.toFixed(4)}"`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
 }
