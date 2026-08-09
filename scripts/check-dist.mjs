@@ -27,6 +27,26 @@ const manifest = JSON.parse(
     "utf8",
   ),
 );
+const packageManifest = JSON.parse(
+  await readFile(new URL("../package.json", import.meta.url), "utf8"),
+);
+
+for (const section of ["dependencies", "optionalDependencies"]) {
+  for (const [name, specifier] of Object.entries(
+    packageManifest[section] ?? {},
+  )) {
+    if (
+      typeof specifier !== "string" ||
+      /^(?:bitbucket:|file:|git(?:\+[^:]+)?:|github:|gitlab:|https?:|link:)/iu.test(
+        specifier,
+      )
+    ) {
+      throw new Error(
+        `package.json ${section}.${name} must use a registry version specifier.`,
+      );
+    }
+  }
+}
 
 for (const name of [
   "createBubbleComposition",

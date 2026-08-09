@@ -409,6 +409,16 @@ function requireName(value: unknown, label: string): string {
   return value.trim();
 }
 
+function requireAssetName(value: unknown, label: string): string {
+  if (typeof value !== "string" || value.length === 0) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `${label} must be a non-empty string.`,
+    );
+  }
+  return value;
+}
+
 function normalizeAnimation(
   value: unknown,
   label: string,
@@ -429,7 +439,7 @@ function normalizeAnimation(
   }
   const frames = Object.freeze(
     value.frames.map((frame, index) =>
-      requireName(frame, `${label}.frames[${index}]`),
+      requireAssetName(frame, `${label}.frames[${index}]`),
     ),
   );
   const interval = value.frameIntervalSeconds;
@@ -463,7 +473,7 @@ function normalizePortrait(value: unknown): NormalizedPortrait {
       ? undefined
       : normalizeAnimation(value.lipSync, "Bubble portrait lip-sync", 1);
   return Object.freeze({
-    base: requireName(value.base, "Bubble portrait base"),
+    base: requireAssetName(value.base, "Bubble portrait base"),
     ...(blink === undefined ? {} : { blink }),
     ...(lipSync === undefined ? {} : { lipSync }),
   });
@@ -576,7 +586,7 @@ function normalizeAudio(value: unknown): BubbleAudioInput | undefined {
   for (const key of ["voice", "reveal", "finish"] as const) {
     const asset = value[key];
     if (asset !== undefined)
-      result[key] = requireName(asset, `Bubble audio ${key}`);
+      result[key] = requireAssetName(asset, `Bubble audio ${key}`);
   }
   return Object.freeze(result);
 }

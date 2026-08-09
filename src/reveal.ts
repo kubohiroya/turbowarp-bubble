@@ -68,7 +68,7 @@ export function normalizeBubbleReveal(value: unknown): NormalizedBubbleReveal {
     throw new TypeError("Bubble reveal has unknown or missing properties.");
   }
   const unit = requireUnit(input.unit);
-  const delimiters = input.delimiters ?? " \\t\\r\\n";
+  const delimiters = input.delimiters ?? " \t\r\n";
   if (typeof delimiters !== "string" || delimiters.length === 0) {
     throw new TypeError("Bubble WORD delimiters must be a non-empty string.");
   }
@@ -93,7 +93,7 @@ export function normalizeBubbleReveal(value: unknown): NormalizedBubbleReveal {
   const sound = input.sound;
   if (
     sound !== undefined &&
-    (typeof sound !== "string" || sound.trim() === "")
+    (typeof sound !== "string" || sound.length === 0)
   ) {
     throw new TypeError("Bubble reveal sound must be a non-empty asset name.");
   }
@@ -103,7 +103,7 @@ export function normalizeBubbleReveal(value: unknown): NormalizedBubbleReveal {
     showDelimiters,
     layout,
     intervalSeconds,
-    ...(sound === undefined ? {} : { sound: sound.trim() }),
+    ...(sound === undefined ? {} : { sound }),
   });
 }
 
@@ -112,7 +112,7 @@ function splitWords(
   delimiters: string,
   showDelimiters: boolean,
 ): string[] {
-  const delimiterSet = new Set(graphemes(delimiters));
+  const delimiterSet = new Set(Array.from(delimiters));
   const result: string[] = [];
   let current = "";
   for (const character of graphemes(text)) {
