@@ -6,7 +6,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。文字BubbleにはSVG TextとBubbleが必要です。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
+入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。Bubbleは文字Bubbleの既定`BubbleTextCapability` adapterとしてSVG Textを使います。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -15,9 +15,9 @@
 |    3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
 |    4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
 |    5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                     |
-|    6 | Bubble 0.3.1             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.3.1/dist/turbowarp-bubble.js`    |
+|    6 | Bubble 0.4.0             | npm公開後は`https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.4.0/dist/turbowarp-bubble.js`    |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時にSVG Textが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時に既定のSVG Text adapterが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入でき、その場合SVG Textは不要です。
 
 参考：
 
@@ -296,7 +296,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | 状況                               | 原因と対処                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------ |
 | Asset Managerを要求するエラー      | 画像・メディアアセットを使う前にAsset Manager 0.7.xを読み込む            |
-| SVG Textを要求するエラー           | SVG Text 0.4.xをサンドボックスなしで読み込む                             |
+| 既定text adapterを要求するエラー   | SVG Text 0.4.xをサンドボックスなしで読み込む                             |
 | Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
 | `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
@@ -310,7 +310,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 
 ## 13. 自動解放されるタイミング
 
-次の場合、Bubbleが所有するtimer、SVG Text skin、renderer drawableは自動的に解放されます。
+次の場合、Bubbleが所有するtimer、text skin、renderer drawableは自動的に解放されます。
 
 - `close this bubble`
 - 同じsprite／cloneで次の`say`または`think`を実行したとき

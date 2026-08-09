@@ -4218,7 +4218,7 @@ function Ur(e) {
 	return e;
 }
 function Wr(e) {
-	if (!Q(e) || typeof e.setText != "function" || typeof e.releaseTarget != "function") throw TypeError("Bubble SVG Text composition must provide setText and releaseTarget.");
+	if (!Q(e) || typeof e.setText != "function" || typeof e.releaseTarget != "function") throw TypeError("Bubble text capability must provide setText and releaseTarget.");
 	return e;
 }
 function Gr() {
@@ -4236,7 +4236,7 @@ function qr(e, t) {
 	return e;
 }
 function Jr(e) {
-	if (!Q(e) || typeof e.drawableID != "number" || !Number.isInteger(e.drawableID) || e.drawableID < 0) throw new Z("BUBBLE-COMPOSITION-004", "Bubble text target must provide a non-negative integer drawableID.");
+	if (typeof e != "object" || !e) throw new Z("BUBBLE-COMPOSITION-004", "Bubble text target must be a non-null object.");
 	return e;
 }
 function Yr(e, t) {
@@ -4352,7 +4352,7 @@ function ni(e) {
 }
 function ri(e) {
 	if (!Q(e)) throw TypeError("Bubble composition options must be an object.");
-	let t = Vr(e.imageResolver), n = Hr(e.audio), r = Wr(e.svgText);
+	let t = Vr(e.imageResolver), n = Hr(e.audio), r = Wr(e.textCapability);
 	if (typeof e.createSurface != "function") throw TypeError("Bubble composition createSurface must be a function.");
 	if (e.onAnimationError !== void 0 && typeof e.onAnimationError != "function") throw TypeError("Bubble composition onAnimationError must be a function.");
 	let i = Kr(e.scheduler ?? Gr()), a = /* @__PURE__ */ new Map(), o = /* @__PURE__ */ new Map(), s = /* @__PURE__ */ new Map(), c = !1, l = () => {

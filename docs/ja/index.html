@@ -71,7 +71,7 @@
 <p>このマニュアルでは、<code>turbowarp-bubble</code>をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。</p>
 <p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。文字BubbleにはSVG TextとBubbleが必要です。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。</p>
+<p>入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。Bubbleは文字Bubbleの既定<code>BubbleTextCapability</code> adapterとしてSVG Textを使います。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。</p>
 <table>
 <thead>
 <tr>
@@ -107,11 +107,11 @@
 </tr>
 <tr>
 <td align="right">6</td>
-<td>Bubble 0.3.1</td>
-<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.3.1/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.4.0</td>
+<td>npm公開後は<code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.4.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。表示時にSVG Textが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。</p>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。表示時に既定のSVG Text adapterが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入でき、その場合SVG Textは不要です。</p>
 <p>参考：</p>
 <ul>
 <li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
@@ -483,7 +483,7 @@ think [MESSAGE] with bubble style [STYLE]
 <td>画像・メディアアセットを使う前にAsset Manager 0.7.xを読み込む</td>
 </tr>
 <tr>
-<td>SVG Textを要求するエラー</td>
+<td>既定text adapterを要求するエラー</td>
 <td>SVG Text 0.4.xをサンドボックスなしで読み込む</td>
 </tr>
 <tr>
@@ -528,7 +528,7 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 </tbody></table>
 <h2>13. 自動解放されるタイミング</h2>
-<p>次の場合、Bubbleが所有するtimer、SVG Text skin、renderer drawableは自動的に解放されます。</p>
+<p>次の場合、Bubbleが所有するtimer、text skin、renderer drawableは自動的に解放されます。</p>
 <ul>
 <li><code>close this bubble</code></li>
 <li>同じsprite／cloneで次の<code>say</code>または<code>think</code>を実行したとき</li>

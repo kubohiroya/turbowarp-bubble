@@ -24,6 +24,15 @@ import {
   type BubbleRevealUnit,
   type NormalizedBubbleReveal,
 } from "./reveal.js";
+import type {
+  BubbleTextCapability,
+  BubbleTextTarget,
+} from "./text-capability.js";
+
+export type {
+  BubbleTextCapability,
+  BubbleTextTarget,
+} from "./text-capability.js";
 
 export {
   UnicodeLineBreakProvider,
@@ -206,23 +215,6 @@ export interface BubbleAudioCapability {
   readonly getMimeType?: (name: unknown) => string;
 }
 
-export interface BubbleTextTarget {
-  readonly drawableID: number;
-}
-
-export interface BubbleSvgText {
-  readonly setText: (input: {
-    readonly styleName: string;
-    readonly target: BubbleTextTarget;
-    readonly text: string;
-  }) => void;
-  readonly releaseTarget: (target: BubbleTextTarget) => void;
-  readonly measureText?: (input: {
-    readonly styleName: string;
-    readonly text: string;
-  }) => number;
-}
-
 export interface BubbleSurfaceTargets {
   readonly text: BubbleTextTarget;
   readonly portraitBase?: BubbleAssetTarget;
@@ -270,7 +262,7 @@ export interface BubbleAnimationErrorContext {
 export interface BubbleCompositionOptions {
   readonly imageResolver?: BubbleImageCapability;
   readonly audio?: BubbleAudioCapability;
-  readonly svgText: BubbleSvgText;
+  readonly textCapability: BubbleTextCapability;
   readonly createSurface: BubbleSurfaceFactory;
   readonly scheduler?: BubbleScheduler;
   readonly onAnimationError?: (
@@ -783,17 +775,17 @@ function requireImageResolver(
   return value;
 }
 
-function validateSvgText(value: unknown): BubbleSvgText {
+function validateTextCapability(value: unknown): BubbleTextCapability {
   if (
     !isRecord(value) ||
     typeof value.setText !== "function" ||
     typeof value.releaseTarget !== "function"
   ) {
     throw new TypeError(
-      "Bubble SVG Text composition must provide setText and releaseTarget.",
+      "Bubble text capability must provide setText and releaseTarget.",
     );
   }
-  return value as unknown as BubbleSvgText;
+  return value as unknown as BubbleTextCapability;
 }
 
 function defaultScheduler(): BubbleScheduler {
@@ -834,18 +826,13 @@ function validateAssetTarget(value: unknown, label: string): BubbleAssetTarget {
 }
 
 function validateTextTarget(value: unknown): BubbleTextTarget {
-  if (
-    !isRecord(value) ||
-    typeof value.drawableID !== "number" ||
-    !Number.isInteger(value.drawableID) ||
-    value.drawableID < 0
-  ) {
+  if (typeof value !== "object" || value === null) {
     throw new BubbleCompositionError(
       "BUBBLE-COMPOSITION-004",
-      "Bubble text target must provide a non-negative integer drawableID.",
+      "Bubble text target must be a non-null object.",
     );
   }
-  return value as unknown as BubbleTextTarget;
+  return value;
 }
 
 function validateSurface(
@@ -960,7 +947,7 @@ function styleAssetNames(style: NormalizedStyle): readonly string[] {
 function formatBubbleText(
   text: string,
   style: BubbleStyle,
-  textCapability: BubbleSvgText,
+  textCapability: BubbleTextCapability,
 ): string {
   if (style.maxWidth === undefined) return text;
   if (typeof textCapability.measureText !== "function") {
@@ -1140,7 +1127,7 @@ export function createBubbleComposition(
   }
   const imageResolver = validateImageResolver(options.imageResolver);
   const audio = validateAudioCapability(options.audio);
-  const svgText = validateSvgText(options.svgText);
+  const textCapability = validateTextCapability(options.textCapability);
   if (typeof options.createSurface !== "function") {
     throw new TypeError("Bubble composition createSurface must be a function.");
   }
@@ -1361,22 +1348,26 @@ export function createBubbleComposition(
         ),
         activeStyle,
       );
-      const fullText = formatBubbleText(input.text, activeStyle, svgText);
+      const fullText = formatBubbleText(
+        input.text,
+        activeStyle,
+        textCapability,
+      );
       if (reveal?.layout === "RESERVED") {
-        svgText.setText({
+        textCapability.setText({
           styleName: activeStyle.textStyle,
           target: surface.targets.text,
           text: fullText,
         });
         surface.captureTextLayout?.();
       }
-      svgText.setText({
+      textCapability.setText({
         styleName: activeStyle.textStyle,
         target: surface.targets.text,
         text: formatBubbleText(
           reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text,
           activeStyle,
-          svgText,
+          textCapability,
         ),
       });
       textOwned = true;
@@ -1393,10 +1384,10 @@ export function createBubbleComposition(
         const visible = reveal
           ? revealedBubbleText(revealChunks, revealedCount)
           : currentText;
-        svgText.setText({
+        textCapability.setText({
           styleName: activeStyle.textStyle,
           target: surface.targets.text,
-          text: formatBubbleText(visible, activeStyle, svgText),
+          text: formatBubbleText(visible, activeStyle, textCapability),
         });
         await surface.show();
       };
@@ -1514,10 +1505,10 @@ export function createBubbleComposition(
               revealChunks = splitBubbleText(text, reveal);
               revealedCount = Math.min(1, revealChunks.length);
               if (reveal.layout === "RESERVED") {
-                svgText.setText({
+                textCapability.setText({
                   styleName: activeStyle.textStyle,
                   target: surface.targets.text,
-                  text: formatBubbleText(text, activeStyle, svgText),
+                  text: formatBubbleText(text, activeStyle, textCapability),
                 });
                 surface.captureTextLayout?.();
               }
@@ -1572,17 +1563,17 @@ export function createBubbleComposition(
             revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
             stopRevealTimer();
             if (reveal?.layout === "RESERVED") {
-              svgText.setText({
+              textCapability.setText({
                 styleName: nextStyle.textStyle,
                 target: surface.targets.text,
-                text: formatBubbleText(currentText, nextStyle, svgText),
+                text: formatBubbleText(currentText, nextStyle, textCapability),
               });
               surface.captureTextLayout?.();
             }
-            svgText.setText({
+            textCapability.setText({
               styleName: nextStyle.textStyle,
               target: surface.targets.text,
-              text: formatBubbleText(currentText, nextStyle, svgText),
+              text: formatBubbleText(currentText, nextStyle, textCapability),
             });
             createStyleLoops(nextStyle, nextImageResolver, surface);
             await Promise.all([
@@ -1700,10 +1691,14 @@ export function createBubbleComposition(
               revealChunks = splitBubbleText(currentText, reveal);
               revealedCount = Math.min(1, revealChunks.length);
               if (reveal.layout === "RESERVED" && surface) {
-                svgText.setText({
+                textCapability.setText({
                   styleName: activeStyle.textStyle,
                   target: surface.targets.text,
-                  text: formatBubbleText(currentText, activeStyle, svgText),
+                  text: formatBubbleText(
+                    currentText,
+                    activeStyle,
+                    textCapability,
+                  ),
                 });
                 surface.captureTextLayout?.();
               }
@@ -1835,7 +1830,7 @@ export function createBubbleComposition(
             },
             async () => {
               if (textOwned && surface)
-                svgText.releaseTarget(surface.targets.text);
+                textCapability.releaseTarget(surface.targets.text);
             },
             async () => surface?.dispose(),
           ]) {
@@ -1878,7 +1873,7 @@ export function createBubbleComposition(
       }
       if (textOwned && surface) {
         try {
-          svgText.releaseTarget(surface.targets.text);
+          textCapability.releaseTarget(surface.targets.text);
         } catch (cleanupError) {
           cleanupErrors.push(cleanupError);
         }
