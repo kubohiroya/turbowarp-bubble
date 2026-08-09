@@ -1,4 +1,4 @@
-import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAssetManager, type BubbleScheduler, type BubbleSvgText } from "./composition.js";
+import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudioCapability, type BubbleImageCapability, type BubbleScheduler, type BubbleSvgText } from "./composition.js";
 export interface TurboWarpBubbleTarget {
     readonly id: string;
     readonly isStage: boolean;
@@ -34,6 +34,12 @@ export interface TurboWarpAssetManagerExtension {
     getAssetMimeType(args: Readonly<{
         NAME: unknown;
     }>): string;
+    playSound?(args: Readonly<{
+        NAME: unknown;
+    }>): Promise<void>;
+    playSoundUntilDone?(args: Readonly<{
+        NAME: unknown;
+    }>): Promise<void>;
     resolveSkin(value: unknown): Readonly<{
         skinId: number;
     }> | Promise<Readonly<{
@@ -47,6 +53,7 @@ export interface TurboWarpSvgTextExtension {
     }>, util: Readonly<{
         target: TurboWarpBubbleTarget;
     }>): void;
+    measureText?(styleName: unknown, text: unknown): number;
     releaseTextActor(target: TurboWarpBubbleTarget): boolean;
 }
 export interface TurboWarpBubbleRuntime {
@@ -56,7 +63,8 @@ export interface TurboWarpBubbleRuntime {
     requestRedraw?(): void;
 }
 export interface TurboWarpBubbleCompositionOptions {
-    readonly assetManager?: BubbleAssetManager;
+    readonly imageResolver?: BubbleImageCapability;
+    readonly audio?: BubbleAudioCapability;
     readonly svgText?: BubbleSvgText;
     readonly scheduler?: BubbleScheduler;
     readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];

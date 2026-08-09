@@ -1,12 +1,12 @@
 # TurboWarp Bubble Block Manual
 
-This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated advance indicator.
+This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated continue indicator.
 
 ![A quick-start block sequence that registers Next1 and Next2 separately, prepares input listeners, then uses Bubble's integrated wait](./assets/block-quick-start.svg)
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the five custom extensions with **Run without sandbox** enabled. Async Input and Runtime Expression must be available before a Bubble wait; Asset Manager and SVG Text must be available before the first Bubble is shown.
+The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. SVG Text and Bubble are required for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, and future voice or display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
 
 | Order | Extension                | URL                                                                                                               |
 | ----: | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
@@ -14,10 +14,10 @@ The complete input-wait example uses six extensions. Add Temporary Variables fro
 |     2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`                        |
 |     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js`          |
 |     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
-|     5 | SVG Text 0.3.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.3.0/dist/svg-text.js`                              |
-|     6 | Bubble 0.1.0             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.1.0/dist/turbowarp-bubble.js` |
+|     5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                              |
+|     6 | Bubble 0.2.0             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js` |
 
-To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if Asset Manager or SVG Text is missing when it displays a Bubble, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if SVG Text is missing when it displays a Bubble, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.
 
 See also:
 
@@ -37,8 +37,8 @@ The following example stores costumes in a hidden asset sprite named `Assets`.
 | `HeroEyesClosed`  | `HeroEyesClosed`   | Transparent overlay containing only the closed eyes        |
 | `HeroMouthClosed` | `HeroMouthClosed`  | Transparent overlay containing only the closed mouth       |
 | `HeroMouthOpen`   | `HeroMouthOpen`    | Transparent overlay containing only the open mouth         |
-| `Next1`           | `Next1`            | First frame of the advance indicator                       |
-| `Next2`           | `Next2`            | Second frame of the advance indicator                      |
+| `Next1`           | `Next1`            | First frame of the continue indicator                      |
+| `Next2`           | `Next2`            | Second frame of the continue indicator                     |
 
 Use the same canvas size and center point for the base, eye, and mouth images. Keep overlay backgrounds transparent; mismatched canvases or centers make the layers drift when composed.
 
@@ -72,7 +72,7 @@ define text style [dialogue-text]
 
 Bubble refers to this style as `dialogue-text`. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.
 
-SVG Text 0.3.x retains a `bubble direction` input in its block contract, but Bubble does not use it when creating the text drawable through `setText`. Use `set bubble placement` in the next section instead. The obsolete SVG Text direction input is intended to be removed in a later breaking release.
+SVG Text 0.4.x is a text provider: it defines named text styles, creates SVG text skins, and measures text. Bubble placement is configured by `set bubble placement`; the SVG Text provider does not own Bubble direction, tail, or outer shape.
 
 ## 4. Define a Bubble style
 
@@ -124,7 +124,7 @@ These placements do not depend on actor coordinates, bounds, or visibility. Use 
 - `tail length` (default `18`) is the nominal distance from the Bubble border to the tail tip at the normal position.
 - `offset x/y/scale` (default `[0, 0, 100]`) uses positive x to the right, positive y upward, and scale as a percentage. `[10, -10, 120]` moves the body 10 right and 10 down, then scales it to 120%.
 
-Scale applies to the body, SVG Text, portrait base, blink/lip-sync layers, advance indicator, and internal padding as one unit, so the displayed font size scales by the same factor. When scale alone changes, the body center moves away from the actor by the increase in radius, preserving the actor-side gap. The x/y offset is added afterward. The tail tip remains fixed and the union with the body border is regenerated, so an offset can change the effective tail length.
+Scale applies to the body, SVG Text, portrait base, blink/lip-sync layers, continue indicator, and internal padding as one unit, so the displayed font size scales by the same factor. When scale alone changes, the body center moves away from the actor by the increase in radius, preserving the actor-side gap. The x/y offset is added afterward. The tail tip remains fixed and the union with the body border is regenerated, so an offset can change the effective tail length.
 
 Near a Stage edge, keeping the scaled Bubble on-screen takes priority and can reduce the requested distance. Actor-relative distance, tail, offset, and scale settings do not apply to `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`.
 
@@ -150,7 +150,7 @@ The default visual style is `NORMAL`. The body drawable is created before text a
 
 `NEGATIVE` is not a separate style because it can be expressed with fill and border colors. Orientation and segments are also not public inputs; dimensions are calculated from width, font, character count, and the number of lines after wrapping.
 
-Now configure the portrait and advance animation layers:
+Now configure the portrait and continue animation layers:
 
 ```text
 set portrait base [HeroFace] for bubble style [hero-dialogue]
@@ -158,17 +158,17 @@ set portrait base [HeroFace] for bubble style [hero-dialogue]
 set blink frames [HeroEyesOpen,HeroEyesClosed]
   every [0.4] seconds for bubble style [hero-dialogue]
 
-set talk frames [HeroMouthClosed,HeroMouthOpen]
+set lip-sync frames [HeroMouthClosed,HeroMouthOpen]
   every [0.1] seconds for bubble style [hero-dialogue]
 
-set advance frames [Next1,Next2]
+set continue frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 ```
 
 `ASSETS` is a comma-separated list of Asset Manager names. Surrounding whitespace is removed; commas cannot be part of an asset name.
 
-- Blink and talk animations accept one or more frames. A single frame remains static.
-- Use two or more advance frames so the loop is visible.
+- Blink and lip-sync animations accept one or more frames. A single frame remains static.
+- Use two or more continue frames so the loop is visible.
 - `SECONDS` must be a finite number greater than zero.
 - An empty `ASSETS` input removes that animation.
 - An empty portrait base removes the whole portrait.
@@ -186,25 +186,25 @@ wait with this bubble until condition [input == "pressed"] or timeout after [10]
 close this bubble
 ```
 
-Initialize `input` with Temporary Variables before registering the Async Input listeners. The listeners update that runtime variable when Space is pressed or the sprite is tapped. The Bubble wait delegates `input == "pressed"` to Runtime Expression immediately and once per VM frame. While waiting it automatically enters `awaiting-advance`, stops lip-sync, and loops the images configured by `set advance frames`. When the condition becomes true or the timeout expires, it enters `idle` and continues to `close this bubble`. Set the timeout to `0` to wait without a timeout.
+Initialize `input` with Temporary Variables before registering the Async Input listeners. The listeners update that runtime variable when Space is pressed or the sprite is tapped. The Bubble wait delegates `input == "pressed"` to Runtime Expression immediately and once per VM frame. While waiting it automatically enters `awaiting-continue`, stops lip-sync, and loops the images configured by `set continue frames`. When the condition becomes true or the timeout expires, it enters `idle` and continues to `close this bubble`. Set the timeout to `0` to wait without a timeout.
 
 Reset `input` to an empty string before each later wait; otherwise the previous `pressed` value makes the next condition succeed immediately. Starting another Bubble, closing it, stopping its target, restarting or stopping the project, and disposing the runtime all cancel the target-owned wait and release its listener and timer.
 
-When combining Bubble with audio or a separate text-reveal system, switch to `awaiting-advance` when that process completes.
+When combining Bubble with audio or a separate text-reveal system, switch to `awaiting-continue` when that process completes.
 
-![A say Bubble lip-syncs, shows advance frames while awaiting advance, then closes after input](./assets/bubble-lifecycle.gif)
+![A say Bubble lip-syncs, shows continue frames while awaiting continue, then closes after input](./assets/bubble-lifecycle.gif)
 
 If animated GIF playback is unavailable, use this static animation-mode comparison:
 
-![Blink, lip-sync, and advance-frame states in talking, awaiting-advance, and idle modes](./assets/animation-mode-guide.svg)
+![Blink, lip-sync, and continue-frame states in talking, awaiting-continue, and idle modes](./assets/animation-mode-guide.svg)
 
 ## 6. Bubble animation modes
 
-| Mode               | Blink | Lip-sync     | Advance frames | Typical use                         |
-| ------------------ | ----- | ------------ | -------------- | ----------------------------------- |
-| `talking`          | Runs  | Runs         | Hidden         | Dialogue display or audio playback  |
-| `awaiting-advance` | Runs  | Stops/hidden | Loops          | Await the user's request to advance |
-| `idle`             | Runs  | Stops/hidden | Stops/hidden   | Keep a Bubble visible and still     |
+| Mode                | Blink | Lip-sync     | Continue frames | Typical use                          |
+| ------------------- | ----- | ------------ | --------------- | ------------------------------------ |
+| `talking`           | Runs  | Runs         | Hidden          | Dialogue display or audio playback   |
+| `awaiting-continue` | Runs  | Stops/hidden | Loops           | Await the user's request to continue |
+| `idle`              | Runs  | Stops/hidden | Stops/hidden    | Keep a Bubble visible and still      |
 
 `set this bubble animation mode [MODE]` changes only the Bubble owned by the calling sprite, clone, or Stage. It reports an error if that target has not first run `say` or `think`.
 
@@ -231,37 +231,37 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 
 ## 9. Block reference
 
-| Block                                                                                  | Description                                                     |
-| -------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Define or redefine a Bubble style                               |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Set an actor direction/angle or a stage-relative region         |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Set the distance from actor bounds to the tail tip              |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Select one of ten SVG body shapes                               |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Set the nominal border-to-tip tail length                       |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | Set body position and whole-Bubble scale, including text        |
-| `set portrait base [ASSET] for bubble style [STYLE]`                                   | Set the portrait base image                                     |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | Set blink overlays and interval                                 |
-| `set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`            | Set lip-sync overlays and interval                              |
-| `set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`         | Set the animation shown during `awaiting-advance`               |
-| `say [MESSAGE] with bubble style [STYLE]`                                              | Start or replace a `say` Bubble in `talking` mode               |
-| `think [MESSAGE] with bubble style [STYLE]`                                            | Start or replace a `think` Bubble in `talking` mode             |
-| `set this bubble animation mode [MODE]`                                                | Select `talking`, `awaiting-advance`, or `idle` for this Bubble |
-| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Await a Runtime Expression condition or optional timeout        |
-| `close this bubble`                                                                    | Release this target's Bubble and owned resources                |
-| `Bubble version`                                                                       | Report the Bubble implementation version                        |
+| Block                                                                                  | Description                                                      |
+| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Define or redefine a Bubble style                                |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Set an actor direction/angle or a stage-relative region          |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Set the distance from actor bounds to the tail tip               |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Select one of ten SVG body shapes                                |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Set the nominal border-to-tip tail length                        |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | Set body position and whole-Bubble scale, including text         |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                   | Set the portrait base image                                      |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | Set blink overlays and interval                                  |
+| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | Set lip-sync overlays and interval                               |
+| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | Set the animation shown during `awaiting-continue`               |
+| `say [MESSAGE] with bubble style [STYLE]`                                              | Start or replace a `say` Bubble in `talking` mode                |
+| `think [MESSAGE] with bubble style [STYLE]`                                            | Start or replace a `think` Bubble in `talking` mode              |
+| `set this bubble animation mode [MODE]`                                                | Select `talking`, `awaiting-continue`, or `idle` for this Bubble |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Await a Runtime Expression condition or optional timeout         |
+| `close this bubble`                                                                    | Release this target's Bubble and owned resources                 |
+| `Bubble version`                                                                       | Report the Bubble implementation version                         |
 
 ## 10. Troubleshooting
 
 | Symptom                              | Cause and solution                                                          |
 | ------------------------------------ | --------------------------------------------------------------------------- |
-| Asset Manager required error         | Load Asset Manager 0.7.x without sandbox                                    |
-| SVG Text required error              | Load SVG Text 0.3.x without sandbox                                         |
+| Asset Manager required error         | Load Asset Manager 0.7.x without sandbox before using image/media assets    |
+| SVG Text required error              | Load SVG Text 0.4.x without sandbox                                         |
 | Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait         |
 | Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait  |
 | `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag |
 | Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble     |
 | Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                            |
-| Only one advance frame               | Supply at least two frames, or clear the setting                            |
+| Only one continue frame              | Supply at least two frames, or clear the setting                            |
 | Frame interval error                 | Use a finite `SECONDS` value greater than zero                              |
 | Actor-relative Bubble from the Stage | Use `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`                               |
 | Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value  |

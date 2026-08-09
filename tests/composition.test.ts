@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   BubbleCompositionError,
   createBubbleComposition,
-  type BubbleAssetManager,
+  type BubbleImageCapability,
   type BubbleLayer,
   type BubbleScheduler,
   type BubbleSurface,
@@ -53,7 +53,7 @@ function createHarness() {
     ["Voice", "audio/mpeg"],
   ]);
   const applied: Array<{ assetName: string; targetId: string }> = [];
-  const assetManager: BubbleAssetManager = {
+  const imageResolver: BubbleImageCapability = {
     isRegistered: vi.fn((name: unknown) => registered.has(String(name))),
     getMimeType: vi.fn((name: unknown) => registered.get(String(name)) ?? ""),
     applyToTarget: vi.fn(async (name: unknown, target) => {
@@ -61,20 +61,22 @@ function createHarness() {
     }),
   };
   const setText = vi.fn();
+  const measureText = vi.fn(({ text }: { text: string }) => text.length * 10);
   const releaseTarget = vi.fn();
-  const svgText: BubbleSvgText = { setText, releaseTarget };
+  const svgText: BubbleSvgText = { setText, measureText, releaseTarget };
   const visibility: Array<{ layer: BubbleLayer; visible: boolean }> = [];
   const surface: BubbleSurface = {
     targets: {
       text: { drawableID: 7 },
       portraitBase: { id: "portrait-base", isStage: false },
       portraitBlink: { id: "portrait-blink", isStage: false },
-      portraitTalk: { id: "portrait-talk", isStage: false },
-      advanceIndicator: { id: "advance-indicator", isStage: false },
+      portraitLipSync: { id: "portrait-lip-sync", isStage: false },
+      continueIndicator: { id: "continue-indicator", isStage: false },
     },
     setLayerVisible: vi.fn(async (layer, visible) => {
       visibility.push({ layer, visible });
     }),
+    updateStyle: vi.fn(async () => undefined),
     show: vi.fn(async () => undefined),
     hide: vi.fn(async () => undefined),
     dispose: vi.fn(async () => undefined),
@@ -83,7 +85,7 @@ function createHarness() {
   const scheduler = new TestScheduler();
   const animationErrors: unknown[] = [];
   const composition = createBubbleComposition({
-    assetManager,
+    imageResolver,
     svgText,
     createSurface,
     scheduler,
@@ -100,12 +102,12 @@ function createHarness() {
         frames: ["EyesOpen", "EyesClosed"],
         frameIntervalSeconds: 0.4,
       },
-      talk: {
+      lipSync: {
         frames: ["MouthClosed", "MouthOpen"],
         frameIntervalSeconds: 0.1,
       },
     },
-    advanceIndicator: {
+    continueIndicator: {
       frames: ["Next1", "Next2"],
       frameIntervalSeconds: 0.2,
     },
@@ -113,11 +115,12 @@ function createHarness() {
   return {
     animationErrors,
     applied,
-    assetManager,
+    imageResolver,
     composition,
     createSurface,
     registered,
     releaseTarget,
+    measureText,
     scheduler,
     setText,
     surface,
@@ -126,6 +129,69 @@ function createHarness() {
 }
 
 describe("Bubble composition", () => {
+  it("allows text-only bubbles without an Asset Manager", async () => {
+    const surface: BubbleSurface = {
+      targets: { text: { drawableID: 7 } },
+      setLayerVisible: vi.fn(),
+      updateStyle: vi.fn(),
+      show: vi.fn(),
+      hide: vi.fn(),
+      dispose: vi.fn(),
+    };
+    const composition = createBubbleComposition({
+      svgText: { setText: vi.fn(), releaseTarget: vi.fn() },
+      createSurface: vi.fn(() => surface),
+    });
+    composition.defineStyle({ name: "plain", textStyle: "default" });
+
+    const handle = await composition.show({
+      actor: {},
+      actorKey: "plain-actor",
+      kind: "say",
+      text: "hello",
+      styleName: "plain",
+    });
+
+    expect(handle.animationMode).toBe("talking");
+    await handle.close();
+  });
+
+  it("requires an image capability only when an image style is shown", async () => {
+    const surface: BubbleSurface = {
+      targets: {
+        text: { drawableID: 7 },
+        portraitBase: { id: "portrait-base", isStage: false },
+      },
+      setLayerVisible: vi.fn(),
+      updateStyle: vi.fn(),
+      show: vi.fn(),
+      hide: vi.fn(),
+      dispose: vi.fn(),
+    };
+    const composition = createBubbleComposition({
+      svgText: { setText: vi.fn(), releaseTarget: vi.fn() },
+      createSurface: vi.fn(() => surface),
+    });
+    composition.defineStyle({
+      name: "portrait",
+      textStyle: "default",
+      portrait: { base: "Face" },
+    });
+
+    await expect(
+      composition.show({
+        actor: {},
+        actorKey: "portrait-actor",
+        kind: "say",
+        text: "hello",
+        styleName: "portrait",
+      }),
+    ).rejects.toMatchObject({
+      code: "BUBBLE-COMPOSITION-006",
+      message: expect.stringContaining("image capability"),
+    });
+  });
+
   it("coordinates SVG text and independent portrait layers for say bubbles", async () => {
     const harness = createHarness();
     const actor = { id: "Hero" };
@@ -161,16 +227,16 @@ describe("Bubble composition", () => {
       expect.arrayContaining([
         { assetName: "Face", targetId: "portrait-base" },
         { assetName: "EyesOpen", targetId: "portrait-blink" },
-        { assetName: "MouthClosed", targetId: "portrait-talk" },
-        { assetName: "Next1", targetId: "advance-indicator" },
+        { assetName: "MouthClosed", targetId: "portrait-lip-sync" },
+        { assetName: "Next1", targetId: "continue-indicator" },
       ]),
     );
     expect(harness.visibility).toContainEqual({
-      layer: "portraitTalk",
+      layer: "portraitLipSync",
       visible: true,
     });
     expect(harness.visibility).toContainEqual({
-      layer: "advanceIndicator",
+      layer: "continueIndicator",
       visible: false,
     });
     expect(handle.animationMode).toBe("talking");
@@ -184,6 +250,89 @@ describe("Bubble composition", () => {
       text: "こんにちは、浦島太郎です",
     });
     expect(harness.surface.show).toHaveBeenCalledTimes(2);
+  });
+
+  it("updates the active style through the bubble handle", async () => {
+    const harness = createHarness();
+    const handle = await harness.composition.show({
+      actor: {},
+      actorKey: "StyleUpdate",
+      kind: "say",
+      text: "style",
+      styleName: "dialogue",
+    });
+
+    await handle.updateStyle({
+      name: "dialogue",
+      textStyle: "updated-text",
+      visualStyle: "WAVY",
+      portrait: {
+        base: "Face",
+        blink: {
+          frames: ["EyesOpen", "EyesClosed"],
+          frameIntervalSeconds: 0.4,
+        },
+        lipSync: {
+          frames: ["MouthClosed", "MouthOpen"],
+          frameIntervalSeconds: 0.1,
+        },
+      },
+      continueIndicator: {
+        frames: ["Next1", "Next2"],
+        frameIntervalSeconds: 0.2,
+      },
+    });
+
+    expect(harness.surface.updateStyle).toHaveBeenCalledWith(
+      expect.objectContaining({
+        name: "dialogue",
+        textStyle: "updated-text",
+        visualStyle: "WAVY",
+      }),
+    );
+    expect(harness.setText).toHaveBeenLastCalledWith({
+      styleName: "updated-text",
+      target: harness.surface.targets.text,
+      text: "style",
+    });
+    await handle.close();
+    await harness.composition.show({
+      actor: {},
+      actorKey: "StyleUpdateNext",
+      kind: "say",
+      text: "next",
+      styleName: "dialogue",
+    });
+    expect(harness.createSurface).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        style: expect.objectContaining({ textStyle: "dialogue-text" }),
+      }),
+    );
+  });
+
+  it("uses wrapText and the text capability when maxWidth is configured", async () => {
+    const harness = createHarness();
+    harness.composition.defineStyle({
+      name: "wrapped",
+      textStyle: "dialogue-text",
+      maxWidth: 20,
+    });
+
+    const handle = await harness.composition.show({
+      actor: {},
+      actorKey: "Wrapped",
+      kind: "say",
+      text: "abcd",
+      styleName: "wrapped",
+    });
+
+    expect(harness.setText).toHaveBeenLastCalledWith({
+      styleName: "dialogue-text",
+      target: harness.surface.targets.text,
+      text: "ab\ncd",
+    });
+    expect(harness.measureText).toHaveBeenCalled();
+    await handle.close();
   });
 
   it("normalizes direction aliases and background regions in styles", async () => {
@@ -258,7 +407,7 @@ describe("Bubble composition", () => {
     );
   });
 
-  it("stops mouth animation and loops the indicator while awaiting advance", async () => {
+  it("stops mouth animation and loops the indicator while awaiting continue", async () => {
     const harness = createHarness();
     const handle = await harness.composition.show({
       actor: { id: "Hero" },
@@ -268,11 +417,11 @@ describe("Bubble composition", () => {
       styleName: "dialogue",
     });
 
-    await handle.setAnimationMode("awaiting-advance");
-    expect(handle.animationMode).toBe("awaiting-advance");
+    await handle.setAnimationMode("awaiting-continue");
+    expect(handle.animationMode).toBe("awaiting-continue");
     expect(harness.visibility.slice(-2)).toEqual([
-      { layer: "portraitTalk", visible: false },
-      { layer: "advanceIndicator", visible: true },
+      { layer: "portraitLipSync", visible: false },
+      { layer: "continueIndicator", visible: true },
     ]);
     expect(harness.scheduler.size).toBe(2);
 
@@ -284,7 +433,7 @@ describe("Bubble composition", () => {
     });
     expect(harness.applied).toContainEqual({
       assetName: "Next2",
-      targetId: "advance-indicator",
+      targetId: "continue-indicator",
     });
 
     await handle.close();
@@ -324,7 +473,7 @@ describe("Bubble composition", () => {
     });
 
     await expect(
-      firstHandle.setAnimationMode("awaiting-advance"),
+      firstHandle.setAnimationMode("awaiting-continue"),
     ).rejects.toMatchObject({
       code: "BUBBLE-COMPOSITION-005",
     });
@@ -368,13 +517,13 @@ describe("Bubble composition", () => {
     ).rejects.toMatchObject({ code: "BUBBLE-COMPOSITION-003" });
   });
 
-  it("validates style shape and requires two advance frames", () => {
+  it("validates style shape and requires two continue frames", () => {
     const harness = createHarness();
     expect(() =>
       harness.composition.defineStyle({
         name: "bad",
         textStyle: "default",
-        advanceIndicator: {
+        continueIndicator: {
           frames: ["Next1"],
           frameIntervalSeconds: 0.2,
         },

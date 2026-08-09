@@ -269,7 +269,7 @@ function quickStartSvg() {
       ],
     ],
   })}
-  <text x="52" y="804" class="body">続けて blink・talk・advance のフレームを設定</text>
+  <text x="52" y="804" class="body">続けて blink・lip-sync・continue のフレームを設定</text>
   <text x="52" y="832" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
   ${block({
     x: 640,
@@ -298,7 +298,10 @@ function quickStartSvg() {
     fontSize: 12,
     ariaLabel: "口パクフレームを設定",
     lines: [
-      [{ text: "set talk frames" }, { input: "HeroMouthClosed,HeroMouthOpen" }],
+      [
+        { text: "set lip-sync frames" },
+        { input: "HeroMouthClosed,HeroMouthOpen" },
+      ],
       [
         { text: "every" },
         { input: "0.1" },
@@ -316,7 +319,7 @@ function quickStartSvg() {
     fontSize: 12,
     ariaLabel: "次へアイコンフレームを設定",
     lines: [
-      [{ text: "set advance frames" }, { input: "Next1,Next2" }],
+      [{ text: "set continue frames" }, { input: "Next1,Next2" }],
       [
         { text: "every" },
         { input: "0.2" },
@@ -402,7 +405,7 @@ function quickStartSvg() {
   })}
   <rect x="644" y="720" width="502" height="112" rx="16" fill="#fff3f6" stroke="#ffc4d1"/>
   <text x="668" y="750" class="body" style="font-weight:700">Bubbleが条件成立またはtimeoutまで待機</text>
-  <text x="668" y="779" class="body">待機中はadvance framesをループし、口パクを停止。</text>
+  <text x="668" y="779" class="body">待機中はcontinue framesをループし、口パクを停止。</text>
   <text x="668" y="808" class="body">待機後はidleへ移り、次のcloseを実行します。</text>`;
 
   return svgDocument({
@@ -903,8 +906,8 @@ function phaseCard({
 }) {
   return `<g>
     <rect x="${x}" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
-    <rect x="${x + 20}" y="106" width="170" height="34" rx="17" fill="${phase === "awaiting-advance" ? colors.bubble : "#e8ebf2"}"/>
-    <text x="${x + 105}" y="129" text-anchor="middle" style="fill:${phase === "awaiting-advance" ? "#ffffff" : colors.ink};font-size:15px;font-weight:700">${escapeXml(title)}</text>
+    <rect x="${x + 20}" y="106" width="170" height="34" rx="17" fill="${phase === "awaiting-continue" ? colors.bubble : "#e8ebf2"}"/>
+    <text x="${x + 105}" y="129" text-anchor="middle" style="fill:${phase === "awaiting-continue" ? "#ffffff" : colors.ink};font-size:15px;font-weight:700">${escapeXml(title)}</text>
     <text x="${x + 20}" y="164" class="small">${escapeXml(subtitle)}</text>
     ${face({ centerX: x + 76, centerY: 253, eyesClosed, mouthOpen, scale: 0.72 })}
     ${speechBubble({
@@ -952,9 +955,9 @@ function phaseGuideSvg() {
   })}
   ${phaseCard({
     x: 420,
-    title: "awaiting-advance",
+    title: "awaiting-continue",
     subtitle: "ユーザの「次へ」操作待ち",
-    phase: "awaiting-advance",
+    phase: "awaiting-continue",
     eyesClosed: true,
     mouthOpen: false,
     indicator: true,
@@ -983,7 +986,7 @@ function phaseGuideSvg() {
     height: 500,
     title: "Bubble animation mode比較",
     description:
-      "talking、awaiting-advance、idleにおける目パチ、口パク、advance framesの動作比較。",
+      "talking、awaiting-continue、idleにおける目パチ、口パク、continue framesの動作比較。",
     body,
   });
 }
@@ -1000,18 +1003,18 @@ function lifecycleFrameSvg(index) {
     index < 8
       ? "talking"
       : index < 14
-        ? "awaiting-advance"
+        ? "awaiting-continue"
         : index === 14
           ? "input"
           : "closed";
   const mouthOpen = phase === "talking" && index % 2 === 1;
   const eyesClosed = index === 3 || index === 11;
-  const indicator = phase === "awaiting-advance" || phase === "input";
+  const indicator = phase === "awaiting-continue" || phase === "input";
   const indicatorOffset = index % 2 === 0 ? 0 : 7;
   const activeIndex =
     phase === "talking"
       ? 0
-      : phase === "awaiting-advance"
+      : phase === "awaiting-continue"
         ? 1
         : phase === "input"
           ? 2
@@ -1019,15 +1022,15 @@ function lifecycleFrameSvg(index) {
   const stateText =
     phase === "talking"
       ? "talking：目パチ＋口パク"
-      : phase === "awaiting-advance"
-        ? "awaiting-advance：口パク停止＋次へループ"
+      : phase === "awaiting-continue"
+        ? "awaiting-continue：口パク停止＋次へループ"
         : phase === "input"
           ? "キー入力／タップ成立"
           : "close：timer・skin・drawableを解放";
   const blockText =
     phase === "talking"
       ? "say  [海へ出発！]  with bubble style  [hero-dialogue]"
-      : phase === "awaiting-advance"
+      : phase === "awaiting-continue"
         ? 'wait with this bubble until  [input == "pressed"]  or timeout  [10] seconds'
         : phase === "input"
           ? 'Runtime Expression:  input == "pressed"  → true'

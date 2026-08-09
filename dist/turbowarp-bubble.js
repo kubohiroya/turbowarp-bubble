@@ -1,6 +1,6 @@
 // Name: Bubble
 // ID: kubohiroyabubble
-// Description: Layered say and think bubbles with portrait animation and advance indicators.
+// Description: Layered say and think bubbles with portrait animation and continue indicators.
 // By: Hiroya Kubo
 // License: MPL-2.0
 
@@ -35,7 +35,7 @@
     id: "kubohiroyabubble",
     slug: "turbowarp-bubble",
     name: "Bubble",
-    description: "Layered say and think bubbles with portrait animation and advance indicators.",
+    description: "Layered say and think bubbles with portrait animation and continue indicators.",
     author: "Hiroya Kubo",
     license: "MPL-2.0",
     unsandboxed: true
@@ -186,10 +186,10 @@
         }
       },
       {
-        "opcode": "setTalkFrames",
+        "opcode": "setLipSyncFrames",
         "blockType": "COMMAND",
-        "text": "set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
-        "description": "Sets comma-separated registered image assets for the portrait talk layer. An empty list removes talk animation.",
+        "text": "set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+        "description": "Sets comma-separated registered image assets for the portrait lip-sync layer. An empty list removes lip-sync animation.",
         "arguments": {
           "ASSETS": {
             "type": "STRING",
@@ -206,10 +206,10 @@
         }
       },
       {
-        "opcode": "setAdvanceFrames",
+        "opcode": "setContinueFrames",
         "blockType": "COMMAND",
-        "text": "set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
-        "description": "Sets at least two comma-separated registered image assets for the awaiting-advance indicator. An empty list removes the indicator.",
+        "text": "set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+        "description": "Sets at least two comma-separated registered image assets for the awaiting-continue indicator. An empty list removes the indicator.",
         "arguments": {
           "ASSETS": {
             "type": "STRING",
@@ -261,18 +261,18 @@
         "opcode": "setBubbleAnimationMode",
         "blockType": "COMMAND",
         "text": "set this bubble animation mode [MODE]",
-        "description": "Changes this sprite's bubble animation mode. Awaiting advance stops talk animation and starts the configured advance frames.",
+        "description": "Changes this sprite's bubble animation mode. Awaiting continue stops lip-sync animation and starts the configured continue frames.",
         "arguments": { "MODE": {
           "type": "STRING",
-          "defaultValue": "awaiting-advance",
+          "defaultValue": "awaiting-continue",
           "menu": "animationMode"
         } }
       },
       {
-        "opcode": "waitForBubbleAdvance",
+        "opcode": "waitForBubbleContinue",
         "blockType": "COMMAND",
         "text": "wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds",
-        "description": "Switches to awaiting-advance mode, evaluates a Runtime Expression condition using variables updated by Async Input, and waits until the condition is true or the timeout expires. Zero disables the timeout.",
+        "description": "Switches to awaiting-continue mode, evaluates a Runtime Expression condition using variables updated by Async Input, and waits until the condition is true or the timeout expires. Zero disables the timeout.",
         "arguments": {
           "CONDITION": {
             "type": "STRING",
@@ -343,7 +343,7 @@
         "acceptReporters": true,
         "items": [
           "talking",
-          "awaiting-advance",
+          "awaiting-continue",
           "idle"
         ]
       }
@@ -6065,44 +6065,6 @@
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"><title>${title}</title>${renderBody(input.style, width, height, direction, fill, border, tailLength, offset)}${text}</svg>`;
   }
   //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/typeof.js
-  function _typeof(o) {
-    "@babel/helpers - typeof";
-    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
-      return typeof o;
-    } : function(o) {
-      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
-    }, _typeof(o);
-  }
-  //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPrimitive.js
-  function toPrimitive(t, r) {
-    if ("object" != _typeof(t) || !t) return t;
-    var e = t[Symbol.toPrimitive];
-    if (void 0 !== e) {
-      var i = e.call(t, r || "default");
-      if ("object" != _typeof(i)) return i;
-      throw new TypeError("@@toPrimitive must return a primitive value.");
-    }
-    return ("string" === r ? String : Number)(t);
-  }
-  //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPropertyKey.js
-  function toPropertyKey(t) {
-    var i = toPrimitive(t, "string");
-    return "symbol" == _typeof(i) ? i : i + "";
-  }
-  //#endregion
-  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/defineProperty.js
-  function _defineProperty(e, r, t) {
-    return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
-      value: t,
-      enumerable: !0,
-      configurable: !0,
-      writable: !0
-    }) : e[r] = t, e;
-  }
-  //#endregion
   //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
   var LSCP_INDEX_2_OFFSET = 2048;
   var INDEX_1_OFFSET = 2112;
@@ -6653,7 +6615,331 @@
   */
   var names$1 = Object.fromEntries(LineBreak.values.map((v, i) => [v, i]));
   var { values: values$1 } = LineBreak;
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/typeof.js
+  function _typeof(o) {
+    "@babel/helpers - typeof";
+    return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
+      return typeof o;
+    } : function(o) {
+      return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o;
+    }, _typeof(o);
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPrimitive.js
+  function toPrimitive(t, r) {
+    if ("object" != _typeof(t) || !t) return t;
+    var e = t[Symbol.toPrimitive];
+    if (void 0 !== e) {
+      var i = e.call(t, r || "default");
+      if ("object" != _typeof(i)) return i;
+      throw new TypeError("@@toPrimitive must return a primitive value.");
+    }
+    return ("string" === r ? String : Number)(t);
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/toPropertyKey.js
+  function toPropertyKey(t) {
+    var i = toPrimitive(t, "string");
+    return "symbol" == _typeof(i) ? i : i + "";
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/defineProperty.js
+  function _defineProperty(e, r, t) {
+    return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
+      value: t,
+      enumerable: !0,
+      configurable: !0,
+      writable: !0
+    }) : e[r] = t, e;
+  }
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/state.js
+  var _Symbol$for;
+  var _Symbol$for2;
   var { AI, AL: AL$1, CJ, CM: CM$1, NS: NS$1, SA, SG, SP: SP$1, XX } = names$1;
+  /**
+  * Convert a class number to a string, if possible.
+  *
+  * @param {number?} cls
+  */
+  function classText(cls) {
+    switch (cls) {
+      case null: return null;
+      case -1: return "sot";
+      case -2: return "eot";
+      default: return values$1[cls];
+    }
+  }
+  /**
+  * LB1: Assign a line breaking class to each code point of the input. Resolve
+  * AI, CB, CJ, SA, SG, and XX into other line breaking classes depending on
+  * criteria outside the scope of this algorithm.
+  *
+  * @param {number} cls
+  * @param {string} char
+  * @returns {number}
+  */
+  function resolve(cls, char) {
+    switch (cls) {
+      case AI:
+      case SG:
+      case XX: return AL$1;
+      case SA: return /^[\p{gc=Mn}\p{gc=Mc}]$/u.test(char) ? CM$1 : AL$1;
+      case CJ: return NS$1;
+    }
+    return cls;
+  }
+  _Symbol$for = Symbol.for("nodejs.util.inspect.custom");
+  /**
+  * Information about a particular input character.
+  */
+  var BreakerChar = class {
+    /**
+    * @param {number} cls
+    * @param {number} cp
+    * @param {string} char
+    * @param {number} len
+    */
+    constructor(cls, cp, char, len) {
+      _defineProperty(
+        this,
+        /**
+        * Code point
+        */
+        "cp",
+        -Infinity
+      );
+      _defineProperty(
+        this,
+        /**
+        * Line breaking class, or `sot` or `eot`.
+        */
+        "cls",
+        -1
+      );
+      _defineProperty(
+        this,
+        /**
+        * The character.  Might be one or two UTF-16 JS characters.
+        */
+        "char",
+        ""
+      );
+      _defineProperty(
+        this,
+        /**
+        * The length of the whole string up to and including char, in JS chars.
+        */
+        "len",
+        0
+      );
+      _defineProperty(
+        this,
+        /**
+        * If true, this is an LB9 CM or ZWJ that is treated as coalesced into
+        * the previous code point.
+        */
+        "ignored",
+        false
+      );
+      this.cls = cls;
+      this.cp = cp;
+      this.char = char;
+      this.len = len;
+    }
+    /**
+    * Debug helper.
+    *
+    * @param {number} _depth
+    * @param {import('util').InspectOptionsStylized} _inspectOptions
+    * @param {(x: any) => string} _inspect
+    * @returns
+    */
+    [_Symbol$for](_depth, _inspectOptions, _inspect) {
+      return `${classText(this.cls)}(${this.cp.toString(16).padStart(4, "0")}:${JSON.stringify(this.char)})${this.ignored ? "Ig" : ""}`;
+    }
+  };
+  _Symbol$for2 = Symbol.for("nodejs.util.inspect.custom");
+  /**
+  * @private
+  */
+  var BreakerState = class {
+    /**
+    * @param {string} str
+    */
+    constructor(str) {
+      _defineProperty(this, "str", "");
+      _defineProperty(this, "len", 0);
+      _defineProperty(this, "prevChunk", 0);
+      _defineProperty(this, "prev", new BreakerChar(-1, -Infinity, "", 0));
+      _defineProperty(this, "cur", new BreakerChar(-1, -Infinity, "", 0));
+      _defineProperty(this, "next", new BreakerChar(-1, -Infinity, "", 0));
+      _defineProperty(this, "LB8", false);
+      _defineProperty(this, "spaces", false);
+      _defineProperty(this, "RI", 0);
+      _defineProperty(
+        this,
+        /**
+        * Extra properties, to be copied to Break when created.
+        *
+        * @type {Record<string,any>=}
+        */
+        "props",
+        void 0
+      );
+      _defineProperty(
+        this,
+        /**
+        * Extra state information, for use by tailoring subclasses.
+        *
+        * @type {Record<string,any>}
+        */
+        "extra",
+        {}
+      );
+      this.str = str;
+      this.len = str.length;
+    }
+    /**
+    * Move to the next state.
+    *
+    * @param {BreakerChar} step
+    */
+    push(step) {
+      if (this.next.ignored) this.cur.len = this.next.len;
+      else {
+        this.prev = this.cur;
+        this.cur = this.next;
+      }
+      this.next = step;
+    }
+    pushEnd() {
+      this.push(new BreakerChar(-2, Infinity, "", this.next.len));
+    }
+    /**
+    * Iterate over the codepoints in the string, starting at pos.
+    *
+    * @param {number} pos;
+    * @param {boolean} [fwd=true] If true, go forward.  Otherwise reverse.
+    */
+    *codePoints(pos, fwd = true) {
+      if (fwd) while (pos < this.len) if (pos === this.cur.len && this.next.cls >= 0) {
+        yield this.next;
+        pos += this.next.char.length;
+      } else {
+        const cp = this.str.codePointAt(pos);
+        const char = String.fromCodePoint(cp);
+        const cls = LineBreak.get(cp);
+        pos += char.length;
+        yield new BreakerChar(resolve(cls, char), cp, char, pos);
+      }
+      else while (pos > 0) if (pos === this.cur.len) {
+        yield this.cur;
+        pos -= this.cur.char.length;
+      } else if (pos === this.prev.len) {
+        yield this.prev;
+        pos -= this.prev.char.length;
+      } else {
+        let prev = pos - 1;
+        const prevUSV = this.str.charCodeAt(prev);
+        if (prevUSV >= 56320 && prevUSV <= 57343) prev--;
+        const cp = this.str.codePointAt(prev);
+        const char = String.fromCodePoint(cp);
+        yield new BreakerChar(resolve(LineBreak.get(cp), char), cp, char, pos);
+        pos = prev;
+      }
+    }
+    /**
+    * Look ahead in the string to see what the next linebreak class is after zero
+    * or more spaces, starting at JS char offset pos.
+    *
+    * @param {number} pos
+    * @returns {number}
+    */
+    classAfterSpaces(pos) {
+      for (const { cls } of this.codePoints(pos)) if (cls !== SP$1) return cls;
+      return -2;
+    }
+    /**
+    * Get the character after next.
+    *
+    * @returns {BreakerChar?}
+    */
+    afterNext(offset = 1) {
+      for (const chr of this.codePoints(this.next.len)) if (--offset <= 0) return chr;
+      return null;
+    }
+    /**
+    * Set some extra information in the state that will be passed to
+    * the next created Break.
+    *
+    * @param {string} key
+    * @param {any} value
+    */
+    setProp(key, value) {
+      if (!this.props) this.props = {};
+      this.props[key] = value;
+    }
+    /**
+    * Debug helper.
+    *
+    * @param {number} _depth
+    * @param {import('util').InspectOptionsStylized} _inspectOptions
+    * @param {(x: any) => string} inspect
+    * @returns
+    */
+    [_Symbol$for2](_depth, _inspectOptions, inspect) {
+      let pn = `${inspect(this.prev)} => ${inspect(this.cur)} => ${inspect(this.next)}`;
+      if (this.LB8) pn += " LB8";
+      if (this.spaces) pn += " spaces";
+      if (this.RI > 0) pn += ` RI: ${this.RI}`;
+      if (this.props) pn += ` ${JSON.stringify(this.props)}`;
+      return pn;
+    }
+  };
+  //#endregion
+  //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/break.js
+  var Break = class {
+    /**
+    * @param {number} position
+    * @param {boolean} [required=false]
+    */
+    constructor(position, required = false) {
+      _defineProperty(
+        this,
+        /**
+        * If the `string` option is enabled, a slice of the original input.
+        *
+        * @type {string=}
+        */
+        "string",
+        void 0
+      );
+      _defineProperty(
+        this,
+        /**
+        * Extra info from plugin rules.
+        *
+        * @type {Record<string,any>=}
+        */
+        "props",
+        void 0
+      );
+      /**
+      * Offset into input string in JS characters (16bit code units).
+      *
+      * @type {number}
+      */
+      this.position = position;
+      /**
+      * Is this a required break?
+      *
+      * @type {boolean}
+      */
+      this.required = required;
+    }
+  };
   //#endregion
   //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/EastAsianWidth.js
   var EastAsianWidth = UnicodeTrie.fromBase64(`AAAEAAAAAAD/////wQIAAB+LCAC1xcFoAgPtmj1IHUEQxzd5FiaEkMLSKqQIViEQCEmTjyqk
@@ -6673,8 +6959,1065 @@
   Object.fromEntries(EastAsianWidth.values.map((v, i) => [v, i]));
   var { values } = EastAsianWidth;
   //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/checkPrivateRedeclaration.js
+  function _checkPrivateRedeclaration(e, t) {
+    if (t.has(e)) throw new TypeError("Cannot initialize the same private elements twice on an object");
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/classPrivateMethodInitSpec.js
+  function _classPrivateMethodInitSpec(e, a) {
+    _checkPrivateRedeclaration(e, a), a.add(e);
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/classPrivateFieldInitSpec.js
+  function _classPrivateFieldInitSpec(e, t, a) {
+    _checkPrivateRedeclaration(e, t), t.set(e, a);
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/assertClassBrand.js
+  function _assertClassBrand(e, t, n) {
+    if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n;
+    throw new TypeError("Private element is not present on this object");
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/classPrivateFieldSet2.js
+  function _classPrivateFieldSet2(s, a, r) {
+    return s.set(_assertClassBrand(s, a), r), r;
+  }
+  //#endregion
+  //#region \0@oxc-project+runtime@0.143.0/helpers/esm/classPrivateFieldGet2.js
+  function _classPrivateFieldGet2(s, a) {
+    return s.get(_assertClassBrand(s, a));
+  }
+  //#endregion
   //#region node_modules/.pnpm/@cto.af+linebreak@4.0.3/node_modules/@cto.af/linebreak/lib/index.js
   var { AK, AL, AP, AS, B2, BA, BB, BK, CB, CL, CM, CP, CR, EB, EM, EX, GL, H2, H3, HH, HL, HY, ID, IN, IS, JL, JT, JV, LF, NU, OP, NL, NS, PO, PR, RI, SP, SY, QU, VF, VI, WJ, ZW, ZWJ } = names$1;
+  var ALHLNU = /* @__PURE__ */ new Set([
+    AL,
+    HL,
+    NU
+  ]);
+  var BKCRLFNLSPZW = /* @__PURE__ */ new Set([
+    BK,
+    CR,
+    LF,
+    NL,
+    SP,
+    ZW
+  ]);
+  var IDEBEM = /* @__PURE__ */ new Set([
+    ID,
+    EB,
+    EM
+  ]);
+  var JLJVH2H3 = /* @__PURE__ */ new Set([
+    JL,
+    JV,
+    H2,
+    H3
+  ]);
+  var JLJVJTH2H3 = /* @__PURE__ */ new Set([
+    JL,
+    JV,
+    JT,
+    H2,
+    H3
+  ]);
+  var JVJT = /* @__PURE__ */ new Set([JV, JT]);
+  var SPGLWJCLQUCPEXISSYBKCRLFNLZW = /* @__PURE__ */ new Set([
+    SP,
+    GL,
+    WJ,
+    CL,
+    QU,
+    CP,
+    EX,
+    IS,
+    SY,
+    BK,
+    CR,
+    LF,
+    NL,
+    ZW
+  ]);
+  var sotBKCRLFNLOPQUGLSPZW = /* @__PURE__ */ new Set([
+    -1,
+    BK,
+    CR,
+    LF,
+    NL,
+    OP,
+    QU,
+    GL,
+    SP,
+    ZW
+  ]);
+  /**
+  * @template T
+  * @typedef {ValuesWithKeys<T, keyof T>} EnumValues
+  */
+  /**
+  * @template T
+  * @template {keyof T} K
+  * @typedef {T[K]} ValuesWithKeys
+  */
+  /**
+  * This rule has no opinion.
+  */
+  var PASS = Symbol("PASS");
+  /**
+  * This rule asserts that there must not be a break after the current
+  * code point.
+  */
+  var NO_BREAK = Symbol("NO_BREAK");
+  /**
+  * This rule asserts that there may be a break after the current code point.
+  */
+  var MAY_BREAK = Symbol("MAY_BREAK");
+  /**
+  * This rule asserts that there must be a line break after the current code point.
+  */
+  var MUST_BREAK = Symbol("MUST_BREAK");
+  /**
+  * @typedef {EnumValues<typeof RuleResults>} RuleResultsEnum
+  */
+  /**
+  * A rule that impacts linebreaking.  Looking ahead and behind one code point
+  * is fast, using `state.prev` and `state.next` respectively.  Looking ahead
+  * more code points is possible with `*BreakerState.codePoints()`, but be
+  * careful of causing ReDos vulnerabilities.
+  *
+  * @callback BreakRule
+  * @param {BreakerState} state
+  * @returns {RuleResultsEnum}
+  */
+  /**
+  * LB2: Never break at the start of text.
+  *
+  * @type {BreakRule}
+  */
+  function LB02(state) {
+    if (state.cur.cls === -1 && state.next.cls !== -2) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB3 Always break at the end of text.
+  *
+  * @type {BreakRule}
+  */
+  function LB03(state) {
+    if (state.next.cls === -2 && (state.cur.len === 0 || state.cur.len !== state.prevChunk)) return MUST_BREAK;
+    return PASS;
+  }
+  /**
+  * LB4: Always break after hard line breaks.
+  *
+  * @type {BreakRule}
+  */
+  function LB04(state) {
+    if (state.cur.cls === BK) return MUST_BREAK;
+    return PASS;
+  }
+  /**
+  * LB5: Treat CR followed by LF, as well as CR, LF, and NL as hard line
+  * breaks.
+  *
+  * @type {BreakRule}
+  */
+  function LB05(state) {
+    switch (state.cur.cls) {
+      case CR:
+        if (state.next.cls === LF) return NO_BREAK;
+        return MUST_BREAK;
+      case LF:
+      case NL: return MUST_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB6: Do not break before hard line breaks.
+  *
+  * @type {BreakRule}
+  */
+  function LB06(state) {
+    switch (state.next.cls) {
+      case BK:
+      case CR:
+      case LF:
+      case NL: return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * The end of a run of spaces, for rules that have "Do not break within
+  * ...even with intervening spaces", such as LB15.
+  *
+  * @type {BreakRule}
+  */
+  function LBspacesStop(state) {
+    if (state.cur.cls !== RI) state.RI = 0;
+    if (state.spaces) {
+      if (state.next.cls !== SP) state.spaces = false;
+      return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB7: Do not break before spaces or zero width space.
+  *
+  * @type {BreakRule}
+  */
+  function LB07(state) {
+    if (state.next.cls === ZW) return NO_BREAK;
+    if (state.next.cls === SP) switch (state.cur.cls) {
+      case ZW:
+      case OP:
+      case QU:
+      case CL:
+      case CP:
+      case B2: break;
+      default: return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB8: Break before any character following a zero-width space, even if one or
+  * more spaces intervene.
+  *
+  * @type {BreakRule}
+  */
+  function LB08(state) {
+    if (state.LB8) {
+      state.LB8 = false;
+      return MAY_BREAK;
+    } else if (state.cur.cls === ZW) {
+      if (state.next.cls === SP) {
+        state.LB8 = true;
+        return NO_BREAK;
+      }
+      return MAY_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB8a: Do not break after a zero width joiner.
+  *
+  * @type {BreakRule}
+  */
+  function LB08a(state) {
+    if (state.cur.cls === ZWJ) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB9: Do not break a combining character sequence; treat it as if it has the
+  * line breaking class of the base character in all of the following rules.
+  * Treat ZWJ as if it were CM.
+  *
+  * @type {BreakRule}
+  */
+  function LB09(state) {
+    if (!BKCRLFNLSPZW.has(state.cur.cls) && (state.next.cls === CM || state.next.cls === ZWJ)) {
+      state.next.ignored = true;
+      return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB10: Treat any remaining combining mark or ZWJ as AL.
+  *
+  * @type {BreakRule}
+  */
+  function LB10(state) {
+    if (state.cur.cls === CM) state.cur.cls = AL;
+    if (state.next.cls === CM) state.next.cls = AL;
+    return PASS;
+  }
+  /**
+  * LB11: Do not break before or after Word joiner and related characters.
+  *
+  * @type {BreakRule}
+  */
+  function LB11(state) {
+    if (state.next.cls === WJ || state.cur.cls === WJ) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB12: Do not break after NBSP and related characters.
+  *
+  * @type {BreakRule}
+  */
+  function LB12(state) {
+    if (state.cur.cls === GL) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB12a: Do not break before NBSP and related characters, except after spaces
+  * and hyphens.
+  *
+  * @type {BreakRule}
+  */
+  function LB12a(state) {
+    if (state.next.cls === GL) switch (state.cur.cls) {
+      case SP:
+      case BA:
+      case HY:
+      case HH: return PASS;
+      default: return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB13: Do not break before ‘]’ or ‘!’ or ‘;’ or ‘/’, even after spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB13(state) {
+    switch (state.next.cls) {
+      case CL:
+      case CP:
+      case EX:
+      case SY: return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB14: Do not break after ‘[’, even after spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB14(state) {
+    if (state.cur.cls === OP) {
+      if (state.next.cls === SP) state.spaces = true;
+      return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB15a: Do not break after an unresolved initial punctuation that lies at
+  * the start of the line, after a space, after opening punctuation, or after
+  * an unresolved quotation mark, even after spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB15a(state) {
+    if (sotBKCRLFNLOPQUGLSPZW.has(state.prev.cls) && /^\p{Pi}$/u.test(state.cur.char) && state.cur.cls === QU) {
+      state.spaces = true;
+      return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB15b: Do not break before an unresolved final punctuation that lies at the
+  * end of the line, before a space, before a prohibited break, or before an
+  * unresolved quotation mark, even after spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB15b(state) {
+    if (/^\p{gc=Pf}$/u.test(state.next.char) && state.next.cls === QU) {
+      const after = state.afterNext();
+      if (!after) return NO_BREAK;
+      if (SPGLWJCLQUCPEXISSYBKCRLFNLZW.has(after.cls)) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB15c: Break before a decimal mark that follows a space, for instance, in
+  * ‘subtract .5’.
+  *
+  * @type {BreakRule}
+  */
+  function LB15c(state) {
+    if (state.cur.cls === SP && state.next.cls === IS) {
+      if (state.afterNext()?.cls === NU) return MAY_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB15d: Otherwise, do not break before ‘;’, ‘,’, or ‘.’, even after spaces
+  *
+  * @type {BreakRule}
+  */
+  function LB15d(state) {
+    if (state.next.cls === IS) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB16: Do not break between closing punctuation and a nonstarter (lb=NS),
+  * even with intervening spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB16(state) {
+    if (state.cur.cls === CL || state.cur.cls === CP) {
+      if (state.classAfterSpaces(state.cur.len) === NS) {
+        if (state.next.cls === SP) state.spaces = true;
+        return NO_BREAK;
+      }
+      if (state.next.cls === SP) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB17: Do not break within ‘——’, even with intervening spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB17(state) {
+    if (state.cur.cls === B2) {
+      if (state.classAfterSpaces(state.cur.len) === B2) {
+        if (state.next.cls !== SP) return NO_BREAK;
+        state.spaces = true;
+        return NO_BREAK;
+      } else if (state.next.cls === SP) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB18: Break after spaces.
+  *
+  * @type {BreakRule}
+  */
+  function LB18(state) {
+    if (state.cur.cls === SP) return MAY_BREAK;
+    return PASS;
+  }
+  /**
+  * LB19: Do not break before non-initial unresolved quotation marks, such as ‘
+  * ” ’ or ‘ " ’, nor after non-final unresolved quotation marks, such as ‘ “ ’
+  * or ‘ " ’.
+  *
+  * @type {BreakRule}
+  */
+  function LB19(state) {
+    if (state.next.cls === QU && !/^\p{Pi}$/u.test(state.next.char)) return NO_BREAK;
+    if (state.cur.cls === QU && !/^\p{Pf}$/u.test(state.cur.char)) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB19a: Unless surrounded by East Asian characters, do not break either side
+  * of any unresolved quotation marks.
+  *
+  * @type {BreakRule}
+  */
+  function LB19a(state) {
+    if (!EastAsianWidth.get(state.cur.cp) && state.next.cls === QU) return NO_BREAK;
+    if (state.next.cls === QU) {
+      const after = state.afterNext();
+      if (!after || !EastAsianWidth.get(after.cp)) return NO_BREAK;
+    }
+    if (state.cur.cls === QU && !EastAsianWidth.get(state.next.cp)) return NO_BREAK;
+    if ((state.prev.cls === -1 || !EastAsianWidth.get(state.prev.cp)) && state.cur.cls === QU) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB20: Break before and after unresolved CB.
+  *
+  * @type {BreakRule}
+  */
+  function LB20(state) {
+    if (state.cur.cls === CB || state.next.cls === CB) return MAY_BREAK;
+    return PASS;
+  }
+  var sotBKCRLFNLSPZWCBGL = /* @__PURE__ */ new Set([
+    -1,
+    BK,
+    CR,
+    LF,
+    NL,
+    SP,
+    ZW,
+    CB,
+    GL
+  ]);
+  /**
+  * LB20a: Do not break after a word-initial hyphen.
+  *
+  * @type {BreakRule}
+  */
+  function LB20a(state) {
+    if (sotBKCRLFNLSPZWCBGL.has(state.prev.cls) && (state.cur.cls === HY || state.cur.cls === HH) && (state.next.cls === AL || state.next.cls === HL)) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB21: Do not break before hyphen-minus, other hyphens, fixed-width spaces,
+  * small kana, and other non-starters, or after acute accents.
+  *
+  * @type {BreakRule}
+  */
+  function LB21(state) {
+    if (state.cur.cls === BB) return NO_BREAK;
+    switch (state.next.cls) {
+      case BA:
+      case HH:
+      case HY:
+      case NS: return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB21a: Do not break after the hyphen in Hebrew + Hyphen + non-Hebrew.
+  *
+  * @type {BreakRule}
+  */
+  function LB21a(state) {
+    if (state.prev.cls === HL && (state.cur.cls === HY || state.cur.cls === HH) && state.next.cls !== HL) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB21b: Don’t break between Solidus and Hebrew letters.
+  *
+  * @type {BreakRule}
+  */
+  function LB21b(state) {
+    if (state.cur.cls === SY && state.next.cls === HL) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB22: Do not break before ellipses.
+  *
+  * @type {BreakRule}
+  */
+  function LB22(state) {
+    if (state.next.cls === IN) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB23: Do not break between digits and letters.
+  *
+  * @type {BreakRule}
+  */
+  function LB23(state) {
+    switch (state.cur.cls) {
+      case AL:
+      case HL:
+        if (state.next.cls === NU) return NO_BREAK;
+        break;
+      case NU: if (state.next.cls === AL || state.next.cls === HL) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB23a: Do not break between numeric prefixes and ideographs, or between
+  * ideographs and numeric postfixes.
+  *
+  * @type {BreakRule}
+  */
+  function LB23a(state) {
+    if (state.cur.cls === PR && IDEBEM.has(state.next.cls)) return NO_BREAK;
+    if (state.next.cls === PO && IDEBEM.has(state.cur.cls)) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB24: Do not break between numeric prefix/postfix and letters, or between
+  * letters and prefix/postfix.
+  *
+  * @type {BreakRule}
+  */
+  function LB24(state) {
+    if ((state.cur.cls === PR || state.cur.cls === PO) && (state.next.cls === AL || state.next.cls === HL)) return NO_BREAK;
+    if ((state.cur.cls === AL || state.cur.cls === HL) && (state.next.cls === PR || state.next.cls === PO)) return NO_BREAK;
+    return PASS;
+  }
+  var POPR = /* @__PURE__ */ new Set([PO, PR]);
+  var CLCP = /* @__PURE__ */ new Set([CL, CP]);
+  /**
+  * LB25: Do not break numbers.
+  * Approach: Find the end of a matching run, then no-break everything as we go
+  * past it.
+  *
+  * @type {BreakRule}
+  */
+  function LB25(state) {
+    let syIs = null;
+    if (POPR.has(state.next.cls)) {
+      if (CLCP.has(state.cur.cls)) syIs = state.prev.len;
+      else syIs = state.cur.len;
+    } else if (state.next.cls === NU) syIs = state.cur.len;
+    if (syIs !== null) SyIsLoop: for (const { cls } of state.codePoints(syIs, false)) switch (cls) {
+      case SY:
+      case IS: continue;
+      case NU: return NO_BREAK;
+      default: break SyIsLoop;
+    }
+    if (state.cur.cls === PO || state.cur.cls === PR) {
+      if (state.next.cls === OP) {
+        const after = state.afterNext();
+        if (after) {
+          if (after.cls === NU) return NO_BREAK;
+          else if (after.cls === IS) {
+            if (state.afterNext(2)?.cls === NU) return NO_BREAK;
+          }
+        }
+      } else if (state.next.cls === NU) return NO_BREAK;
+    }
+    if (state.cur.cls === HY && state.next.cls === NU) return NO_BREAK;
+    if (state.cur.cls === IS && state.next.cls === NU) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB26: Do not break a Korean syllable.
+  *
+  * @type {BreakRule}
+  */
+  function LB26(state) {
+    switch (state.cur.cls) {
+      case JL:
+        if (JLJVH2H3.has(state.next.cls)) return NO_BREAK;
+        break;
+      case JV:
+      case H2:
+        if (JVJT.has(state.next.cls)) return NO_BREAK;
+        break;
+      case JT:
+      case H3: if (state.next.cls === JT) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB27: Treat a Korean Syllable Block the same as ID.
+  *
+  * @type {BreakRule}
+  */
+  function LB27(state) {
+    switch (state.cur.cls) {
+      case JL:
+      case JV:
+      case JT:
+      case H2:
+      case H3:
+        if (state.next.cls === PO) return NO_BREAK;
+        break;
+      case PR: if (JLJVJTH2H3.has(state.next.cls)) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB28 Do not break between alphabetics (“at”).
+  *
+  * @type {BreakRule}
+  */
+  function LB28(state) {
+    if ((state.cur.cls === AL || state.cur.cls === HL) && (state.next.cls === AL || state.next.cls === HL)) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB28a: Do not break inside the orthographic syllables of Brahmic scripts.
+  *
+  * @type {BreakRule}
+  */
+  function LB28a(state) {
+    const { prev, cur, next } = state;
+    const dotCircle = "◌";
+    /**
+    * AK | ◌ | AS
+    *
+    * @param {import('./state.js').BreakerChar} chr Check one char
+    * @returns true if char matches
+    */
+    function akCas(chr) {
+      return chr.cls === AK || chr.char === dotCircle || chr.cls === AS;
+    }
+    if (cur.cls === AP && akCas(next)) return NO_BREAK;
+    if (akCas(cur) && (next.cls === VF || next.cls === VI)) return NO_BREAK;
+    if (akCas(prev) && cur.cls === VI && (next.cls === AK || next.char === dotCircle)) return NO_BREAK;
+    if (akCas(cur) && akCas(next) && state.afterNext()?.cls === VF) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB29: Do not break between numeric punctuation and alphabetics (“e.g.”).
+  *
+  * @type {BreakRule}
+  */
+  function LB29(state) {
+    if (state.cur.cls === IS && (state.next.cls === AL || state.next.cls === HL)) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB30: Do not break between letters, numbers, or ordinary symbols and
+  * opening or closing parentheses.
+  *
+  * @type {BreakRule}
+  */
+  function LB30(state) {
+    switch (state.cur.cls) {
+      case AL:
+      case HL:
+      case NU:
+        if (state.next.cls === OP && !EastAsianWidth.get(state.next.cp)) return NO_BREAK;
+        break;
+      case CP: if (!EastAsianWidth.get(state.cur.cp) && ALHLNU.has(state.next.cls)) return NO_BREAK;
+    }
+    return PASS;
+  }
+  /**
+  * LB30a: Break between two regional indicator symbols if and only if there
+  * are an even number of regional indicators preceding the position of the
+  * break.
+  *
+  * @type {BreakRule}
+  */
+  function LB30a(state) {
+    if (state.cur.cls === RI) {
+      if (state.next.cls === RI) {
+        if (++state.RI % 2 !== 0) return NO_BREAK;
+      }
+    } else state.RI = 0;
+    return PASS;
+  }
+  /**
+  * LB30b: Do not break between an emoji base (or potential emoji) and an emoji
+  * modifier.
+  *
+  * @type {BreakRule}
+  */
+  function LB30b(state) {
+    if (state.cur.cls === EB && state.next.cls === EM) return NO_BREAK;
+    if (state.next.cls === EM && /^\p{ExtPict}$/u.test(state.cur.char) && /^\p{gc=Cn}$/u.test(state.cur.char)) return NO_BREAK;
+    return PASS;
+  }
+  /**
+  * LB31: Break everywhere else.
+  *
+  * @type {BreakRule}
+  */
+  function LB31() {
+    return MAY_BREAK;
+  }
+  /**
+  * @type {BreakRule[]}
+  * @private
+  */
+  var rules = [
+    LB02,
+    LB03,
+    LB04,
+    LB05,
+    LB06,
+    LBspacesStop,
+    LB07,
+    LB08,
+    LB08a,
+    LB09,
+    LB10,
+    LB11,
+    LB12,
+    LB12a,
+    LB13,
+    LB14,
+    LB15a,
+    LB15b,
+    LB15c,
+    LB15d,
+    LB16,
+    LB17,
+    LB18,
+    LB19,
+    LB19a,
+    LB20,
+    LB20a,
+    LB21a,
+    LB21,
+    LB21b,
+    LB22,
+    LB23,
+    LB23a,
+    LB24,
+    LB25,
+    LB26,
+    LB27,
+    LB28,
+    LB28a,
+    LB29,
+    LB30,
+    LB30a,
+    LB30b,
+    LB31
+  ];
+  var _opts = /* @__PURE__ */ new WeakMap();
+  var _Rules_brand = /* @__PURE__ */ new WeakSet();
+  /**
+  * Options for how rules are applied.
+  *
+  * @typedef {object} RulesOptions
+  * @prop {boolean} [string=false] Extract strings from input, rather than just
+  *   returning char offsets.
+  * @prop {boolean} [verbose=false] Turn on some verbose logging that is
+  *   useful for debug.
+  */
+  var Rules = class {
+    /**
+    *
+    * @param {RulesOptions} opts
+    */
+    constructor(opts = {}) {
+      _classPrivateMethodInitSpec(this, _Rules_brand);
+      _classPrivateFieldInitSpec(this, _opts, void 0);
+      /**
+      * @type {Required<RulesOptions>}
+      */
+      _classPrivateFieldSet2(_opts, this, {
+        string: false,
+        example7: false,
+        verbose: false,
+        ...opts
+      });
+      /**
+      * Copy of rules, safe to tweak.
+      *
+      * @type {BreakRule[]}
+      */
+      this.rules = [...rules];
+      if (_classPrivateFieldGet2(_opts, this).example7) throw new Error("'example7' flag deprecated");
+      if (_classPrivateFieldGet2(_opts, this).verbose) this.rules.unshift((state) => {
+        console.log(state.cur.len, state);
+        return PASS;
+      });
+    }
+    /**
+    * Remove the rules with names as indicated.
+    *
+    * @param  {...string} names
+    * @returns {BreakRule[]} The deleted rules
+    */
+    removeRule(...names) {
+      /**
+      * @type {BreakRule[]}
+      */
+      const ret = [];
+      this.rules = this.rules.filter((r) => {
+        if (names.includes(r.name)) {
+          ret.push(r);
+          return false;
+        }
+        return true;
+      });
+      return ret;
+    }
+    /**
+    * Add rules after the one named `name`.
+    *
+    * @param {string} name The name of the rule before.
+    * @param {...BreakRule} newRules
+    * @returns {number} Index of start of the new rules
+    */
+    addRuleAfter(name, ...newRules) {
+      const i = this.rules.findIndex((r) => r.name === name);
+      if (i === -1) throw new Error(`Rule not found: "${name}"`);
+      this.rules.splice(i + 1, 0, ...newRules);
+      return i + 1;
+    }
+    /**
+    * Add rules before the one named `name`.
+    *
+    * @param {string} name The name of the rule before.
+    * @param {...BreakRule} newRules
+    * @returns {number} Index of start of the new rules
+    */
+    addRuleBefore(name, ...newRules) {
+      const i = this.rules.findIndex((r) => r.name === name);
+      if (i === -1) throw new Error(`Rule not found: "${name}"`);
+      this.rules.splice(i, 0, ...newRules);
+      return i;
+    }
+    /**
+    * Replace the rule named `name` with the given rules.
+    *
+    * @param {string} name The name of the rule before.
+    * @param {...BreakRule} newRules
+    * @returns {BreakRule[]} The replaced rules.
+    */
+    replaceRule(name, ...newRules) {
+      const i = this.rules.findIndex((r) => r.name === name);
+      if (i === -1) throw new Error(`Rule not found: "${name}"`);
+      return this.rules.splice(i, 1, ...newRules);
+    }
+    /**
+    * Enumerate all of the potential line breaks.
+    *
+    * @param {string} str
+    */
+    *breaks(str) {
+      const state = new BreakerState(str);
+      for (const step of state.codePoints(0)) {
+        state.push(step);
+        yield* _assertClassBrand(_Rules_brand, this, _exec).call(this, state);
+      }
+      state.pushEnd();
+      yield* _assertClassBrand(_Rules_brand, this, _exec).call(this, state);
+    }
+  };
+  /**
+  *
+  * @param {BreakerState} state
+  * @returns {Break?}
+  */
+  function _execRules(state) {
+    for (const rule of this.rules) {
+      const res = rule.call(this, state);
+      switch (res) {
+        case PASS: break;
+        case NO_BREAK:
+          if (_classPrivateFieldGet2(_opts, this).verbose) console.log(`  ${rule.name}: NO_BREAK`);
+          return null;
+        case MAY_BREAK:
+          if (_classPrivateFieldGet2(_opts, this).verbose) console.log(`  ${rule.name}: MAY_BREAK`);
+          return new Break(state.cur.len);
+        case MUST_BREAK:
+          if (_classPrivateFieldGet2(_opts, this).verbose) console.log(`  ${rule.name}: MUST_BREAK`);
+          return new Break(state.cur.len, true);
+        default: throw new Error(`Invalid state: "${res}"`);
+      }
+    }
+    return null;
+  }
+  /**
+  * @param {BreakerState} state
+  */
+  function* _exec(state) {
+    const res = _assertClassBrand(_Rules_brand, this, _execRules).call(this, state);
+    if (res) {
+      if (_classPrivateFieldGet2(_opts, this).string) res.string = state.str.slice(state.prevChunk, state.cur.len);
+      if (state.props) {
+        res.props = state.props;
+        state.props = void 0;
+      }
+      yield res;
+      state.prevChunk = state.cur.len;
+    }
+  }
+  //#endregion
+  //#region src/text-layout.ts
+  function graphemeBoundaries(text, locale) {
+    const segmenter = new Intl.Segmenter(locale, { granularity: "grapheme" });
+    const boundaries = /* @__PURE__ */ new Set([0]);
+    for (const item of segmenter.segment(text)) boundaries.add(item.index + item.segment.length);
+    return boundaries;
+  }
+  var _rules = /* @__PURE__ */ new WeakMap();
+  var _locale = /* @__PURE__ */ new WeakMap();
+  /**
+  * Adapts UAX #14 opportunities and removes positions inside grapheme clusters.
+  */
+  var UnicodeLineBreakProvider = class {
+    constructor(locale = "ja") {
+      _classPrivateFieldInitSpec(this, _rules, new Rules());
+      _classPrivateFieldInitSpec(this, _locale, void 0);
+      _classPrivateFieldSet2(_locale, this, locale);
+    }
+    getBreakOpportunities(text) {
+      const boundaries = graphemeBoundaries(text, _classPrivateFieldGet2(_locale, this));
+      const opportunities = /* @__PURE__ */ new Map();
+      for (const candidate of _classPrivateFieldGet2(_rules, this).breaks(text)) {
+        if (!boundaries.has(candidate.position)) continue;
+        opportunities.set(candidate.position, (opportunities.get(candidate.position) ?? false) || candidate.required);
+      }
+      return Object.freeze([...opportunities].sort(([left], [right]) => left - right).map(([position, required]) => Object.freeze({
+        position,
+        required
+      })));
+    }
+  };
+  var defaultLineBreakProviders = /* @__PURE__ */ new Map();
+  var newlinePattern = /\r\n|[\n\r\v\f\u0085\u2028\u2029]/gu;
+  function defaultLineBreakProvider(locale) {
+    const existing = defaultLineBreakProviders.get(locale);
+    if (existing) return existing;
+    const provider = new UnicodeLineBreakProvider(locale);
+    defaultLineBreakProviders.set(locale, provider);
+    return provider;
+  }
+  function requireWidth(width, label) {
+    if (!Number.isFinite(width) || width < 0) throw new TypeError(`${label} must return a non-negative finite number.`);
+    return width;
+  }
+  function normalizeOpportunities(text, provider, boundaries) {
+    const normalized = /* @__PURE__ */ new Map();
+    for (const opportunity of provider.getBreakOpportunities(text)) {
+      const { position, required } = opportunity;
+      if (!Number.isInteger(position) || position <= 0 || position > text.length || !boundaries.has(position)) continue;
+      normalized.set(position, (normalized.get(position) ?? false) || required);
+    }
+    normalized.set(text.length, true);
+    return [...normalized].sort(([left], [right]) => left - right).map(([position, required]) => ({
+      position,
+      required
+    }));
+  }
+  function wrapParagraph(text, originalStart, input, provider, locale) {
+    if (text.length === 0) return [{
+      text: "",
+      start: originalStart,
+      end: originalStart,
+      width: 0
+    }];
+    const boundarySet = graphemeBoundaries(text, locale);
+    const boundaries = [...boundarySet].sort((left, right) => left - right);
+    const opportunities = normalizeOpportunities(text, provider, boundarySet);
+    const lines = [];
+    let start = 0;
+    while (start < text.length) {
+      const requiredEnd = opportunities.find((opportunity) => opportunity.position > start && opportunity.required)?.position ?? text.length;
+      let selected;
+      let selectedWidth = 0;
+      for (const opportunity of opportunities) {
+        if (opportunity.position <= start || opportunity.position > requiredEnd) continue;
+        const candidate = text.slice(start, opportunity.position);
+        const width = requireWidth(input.measureText(candidate), "measureText");
+        if (width <= input.maxWidth) {
+          selected = opportunity.position;
+          selectedWidth = width;
+        }
+      }
+      if (selected === void 0) {
+        const fallbackBoundaries = boundaries.filter((position) => position > start && position <= requiredEnd);
+        for (const position of fallbackBoundaries) {
+          const candidate = text.slice(start, position);
+          const width = requireWidth(input.measureText(candidate), "measureText");
+          if (width <= input.maxWidth) {
+            selected = position;
+            selectedWidth = width;
+          }
+        }
+        if (selected === void 0) {
+          selected = fallbackBoundaries[0] ?? requiredEnd;
+          selectedWidth = requireWidth(input.measureText(text.slice(start, selected)), "measureText");
+        }
+      }
+      lines.push({
+        text: text.slice(start, selected),
+        start: originalStart + start,
+        end: originalStart + selected,
+        width: selectedWidth
+      });
+      start = selected;
+    }
+    return lines;
+  }
+  /**
+  * Greedily chooses the last legal break that fits the measured pixel width.
+  * Explicit newlines are preserved. Unbreakable overflow falls back to a
+  * grapheme boundary, even when a single grapheme is wider than maxWidth.
+  */
+  function wrapText(input) {
+    if (typeof input.text !== "string") throw new TypeError("text must be a string.");
+    if (!Number.isFinite(input.maxWidth) || input.maxWidth <= 0) throw new TypeError("maxWidth must be a positive finite number.");
+    if (typeof input.measureText !== "function") throw new TypeError("measureText must be a function.");
+    const locale = input.locale ?? "ja";
+    const provider = input.lineBreakProvider ?? defaultLineBreakProvider(locale);
+    const lines = [];
+    let paragraphStart = 0;
+    for (const newline of input.text.matchAll(newlinePattern)) {
+      const newlineStart = newline.index;
+      lines.push(...wrapParagraph(input.text.slice(paragraphStart, newlineStart), paragraphStart, input, provider, locale));
+      paragraphStart = newlineStart + newline[0].length;
+    }
+    lines.push(...wrapParagraph(input.text.slice(paragraphStart), paragraphStart, input, provider, locale));
+    return Object.freeze({
+      lines: Object.freeze(lines.map((line) => Object.freeze(line))),
+      maxLineWidth: Math.max(0, ...lines.map((line) => line.width))
+    });
+  }
   //#endregion
   //#region src/composition.ts
   var BubbleCompositionError = class extends Error {
@@ -6689,7 +8032,7 @@
   var validAnimationModes$1 = /* @__PURE__ */ new Set([
     "idle",
     "talking",
-    "awaiting-advance"
+    "awaiting-continue"
   ]);
   function isRecord$1(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -6718,28 +8061,30 @@
   }
   function normalizePortrait(value) {
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
-    requireExactKeys(value, ["base"], ["blink", "talk"], "Bubble portrait");
+    requireExactKeys(value, ["base"], ["blink", "lipSync"], "Bubble portrait");
     const blink = value.blink === void 0 ? void 0 : normalizeAnimation(value.blink, "Bubble portrait blink", 1);
-    const talk = value.talk === void 0 ? void 0 : normalizeAnimation(value.talk, "Bubble portrait talk", 1);
+    const lipSync = value.lipSync === void 0 ? void 0 : normalizeAnimation(value.lipSync, "Bubble portrait lip-sync", 1);
     return Object.freeze({
       base: requireName(value.base, "Bubble portrait base"),
       ...blink === void 0 ? {} : { blink },
-      ...talk === void 0 ? {} : { talk }
+      ...lipSync === void 0 ? {} : { lipSync }
     });
   }
   function normalizeStyle(value) {
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys(value, ["name", "textStyle"], [
       "placement",
+      "maxWidth",
+      "textLocale",
       "distance",
       "tailLength",
       "offset",
       "visualStyle",
       "portrait",
-      "advanceIndicator"
+      "continueIndicator"
     ], "Bubble style");
     const portrait = value.portrait === void 0 ? void 0 : normalizePortrait(value.portrait);
-    const advanceIndicator = value.advanceIndicator === void 0 ? void 0 : normalizeAnimation(value.advanceIndicator, "Bubble advance indicator", 2);
+    const continueIndicator = value.continueIndicator === void 0 ? void 0 : normalizeAnimation(value.continueIndicator, "Bubble continue indicator", 2);
     let placement;
     try {
       placement = normalizeBubblePlacement(value.placement ?? "up-right");
@@ -6758,20 +8103,33 @@
     }
     const visualStyle = value.visualStyle ?? "NORMAL";
     if (typeof visualStyle !== "string" || !bubbleVisualStyles.includes(visualStyle)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `Unsupported Bubble visual style: ${String(visualStyle)}`);
+    let maxWidth;
+    if (value.maxWidth !== void 0) {
+      if (typeof value.maxWidth !== "number" || !Number.isFinite(value.maxWidth) || value.maxWidth <= 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style maxWidth must be a positive finite number.");
+      maxWidth = value.maxWidth;
+    }
+    const textLocale = value.textLocale === void 0 ? void 0 : requireName(value.textLocale, "Bubble style text locale");
     return Object.freeze({
       name: requireName(value.name, "Bubble style name"),
       textStyle: requireName(value.textStyle, "Bubble text style name"),
+      ...maxWidth === void 0 ? {} : { maxWidth },
+      ...textLocale === void 0 ? {} : { textLocale },
       placement,
       distance,
       tailLength,
       offset,
       visualStyle,
       ...portrait === void 0 ? {} : { portrait },
-      ...advanceIndicator === void 0 ? {} : { advanceIndicator }
+      ...continueIndicator === void 0 ? {} : { continueIndicator }
     });
   }
-  function validateAssetManager(value) {
-    if (!isRecord$1(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble asset manager must provide applyToTarget, getMimeType, and isRegistered.");
+  function validateImageResolver(value) {
+    if (value === void 0) return void 0;
+    if (!isRecord$1(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
+    return value;
+  }
+  function requireImageResolver(value) {
+    if (value === void 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-006", "Bubble image assets require an image capability. Provide options.imageResolver.");
     return value;
   }
   function validateSvgText(value) {
@@ -6797,7 +8155,7 @@
     return value;
   }
   function validateSurface(value, style) {
-    if (!isRecord$1(value) || !isRecord$1(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
+    if (!isRecord$1(value) || !isRecord$1(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
     const targets = value.targets;
     validateTextTarget(targets.text);
     const assetTargetIds = /* @__PURE__ */ new Set();
@@ -6810,20 +8168,34 @@
     };
     requireLayerTarget("portraitBase", style.portrait !== void 0);
     requireLayerTarget("portraitBlink", style.portrait?.blink !== void 0);
-    requireLayerTarget("portraitTalk", style.portrait?.talk !== void 0);
-    requireLayerTarget("advanceIndicator", style.advanceIndicator !== void 0);
+    requireLayerTarget("portraitLipSync", style.portrait?.lipSync !== void 0);
+    requireLayerTarget("continueIndicator", style.continueIndicator !== void 0);
     return value;
   }
-  function requireImageAsset(assetManager, name) {
-    if (!assetManager.isRegistered(name)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble image asset is not registered: ${name}`);
-    if (!assetManager.getMimeType(name).startsWith("image/")) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble asset is not an image: ${name}`);
+  function requireImageAsset(imageResolver, name) {
+    if (imageResolver === void 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-006", `Bubble image capability is required for: ${name}. Provide options.imageResolver.`);
+    if (!imageResolver.isRegistered(name)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble image asset is not registered: ${name}`);
+    if (!imageResolver.getMimeType(name).startsWith("image/")) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble asset is not an image: ${name}`);
   }
   function styleAssetNames(style) {
     return [...style.portrait === void 0 ? [] : [
       style.portrait.base,
       ...style.portrait.blink?.frames ?? [],
-      ...style.portrait.talk?.frames ?? []
-    ], ...style.advanceIndicator?.frames ?? []];
+      ...style.portrait.lipSync?.frames ?? []
+    ], ...style.continueIndicator?.frames ?? []];
+  }
+  function formatBubbleText(text, style, textCapability) {
+    if (style.maxWidth === void 0) return text;
+    if (typeof textCapability.measureText !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Bubble style maxWidth requires the text capability measureText method.");
+    return wrapText({
+      text,
+      maxWidth: style.maxWidth,
+      ...style.textLocale === void 0 ? {} : { locale: style.textLocale },
+      measureText: (candidate) => textCapability.measureText?.({
+        styleName: style.textStyle,
+        text: candidate
+      }) ?? 0
+    }).lines.map(({ text: line }) => line).join("\n");
   }
   function aggregateErrors(errors, message) {
     if (errors.length === 1) throw errors[0];
@@ -6838,7 +8210,7 @@
     const applyFrame = async (index) => {
       const assetName = options.animation.frames[index];
       if (assetName === void 0) return;
-      await options.assetManager.applyToTarget(assetName, options.target);
+      await options.imageResolver.applyToTarget(assetName, options.target);
     };
     const reportError = (error, assetName) => {
       options.onError?.(error, Object.freeze({
@@ -6911,7 +8283,7 @@
   }
   function createBubbleComposition(options) {
     if (!isRecord$1(options)) throw new TypeError("Bubble composition options must be an object.");
-    const assetManager = validateAssetManager(options.assetManager);
+    const imageResolver = validateImageResolver(options.imageResolver);
     const svgText = validateSvgText(options.svgText);
     if (typeof options.createSurface !== "function") throw new TypeError("Bubble composition createSurface must be a function.");
     if (options.onAnimationError !== void 0 && typeof options.onAnimationError !== "function") throw new TypeError("Bubble composition onAnimationError must be a function.");
@@ -6936,66 +8308,85 @@
       ensureActive();
       const style = styles.get(input.styleName);
       if (!style) throw new BubbleCompositionError("BUBBLE-COMPOSITION-002", `Bubble style is not defined: ${input.styleName}`);
-      for (const assetName of new Set(styleAssetNames(style))) requireImageAsset(assetManager, assetName);
+      let activeStyle = style;
+      let currentText = input.text;
+      const resolveStyleImageCapability = (nextStyle) => {
+        const assetNames = new Set(styleAssetNames(nextStyle));
+        const nextImageResolver = assetNames.size === 0 ? void 0 : requireImageResolver(imageResolver);
+        for (const assetName of assetNames) requireImageAsset(nextImageResolver, assetName);
+        return nextImageResolver;
+      };
+      const styleImageResolver = resolveStyleImageCapability(activeStyle);
+      const primeStyleImages = async (nextStyle, nextImageResolver, nextSurface) => {
+        const imageCapability = styleAssetNames(nextStyle).length === 0 ? void 0 : requireImageResolver(nextImageResolver);
+        const operations = [];
+        if (nextStyle.portrait) {
+          const capability = requireImageResolver(imageCapability);
+          operations.push(Promise.resolve(capability.applyToTarget(nextStyle.portrait.base, nextSurface.targets.portraitBase)));
+          const blinkFirst = nextStyle.portrait.blink?.frames[0];
+          if (blinkFirst !== void 0) operations.push(Promise.resolve(capability.applyToTarget(blinkFirst, nextSurface.targets.portraitBlink)));
+          const lipSyncFirst = nextStyle.portrait.lipSync?.frames[0];
+          if (lipSyncFirst !== void 0) operations.push(Promise.resolve(capability.applyToTarget(lipSyncFirst, nextSurface.targets.portraitLipSync)));
+        }
+        const continueFirst = nextStyle.continueIndicator?.frames[0];
+        if (continueFirst !== void 0) {
+          const capability = requireImageResolver(imageCapability);
+          operations.push(Promise.resolve(capability.applyToTarget(continueFirst, nextSurface.targets.continueIndicator)));
+        }
+        await Promise.all(operations);
+      };
+      const createStyleLoops = (nextStyle, nextImageResolver, nextSurface) => {
+        blinkLoop = nextStyle.portrait?.blink === void 0 ? void 0 : createFrameLoop({
+          actorKey: input.actorKey,
+          layer: "portraitBlink",
+          animation: nextStyle.portrait.blink,
+          target: nextSurface.targets.portraitBlink,
+          imageResolver: requireImageResolver(nextImageResolver),
+          scheduler,
+          ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
+        });
+        lipSyncLoop = nextStyle.portrait?.lipSync === void 0 ? void 0 : createFrameLoop({
+          actorKey: input.actorKey,
+          layer: "portraitLipSync",
+          animation: nextStyle.portrait.lipSync,
+          target: nextSurface.targets.portraitLipSync,
+          imageResolver: requireImageResolver(nextImageResolver),
+          scheduler,
+          ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
+        });
+        indicatorLoop = nextStyle.continueIndicator === void 0 ? void 0 : createFrameLoop({
+          actorKey: input.actorKey,
+          layer: "continueIndicator",
+          animation: nextStyle.continueIndicator,
+          target: nextSurface.targets.continueIndicator,
+          imageResolver: requireImageResolver(nextImageResolver),
+          scheduler,
+          ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
+        });
+      };
       const previous = active.get(input.actorKey);
       if (previous) await previous.close();
       let surface;
       let textOwned = false;
       let surfaceVisible = false;
       let blinkLoop;
-      let talkLoop;
+      let lipSyncLoop;
       let indicatorLoop;
       try {
         surface = validateSurface(await options.createSurface(Object.freeze({
           actor: input.actor,
           actorKey: input.actorKey,
           kind: input.kind,
-          style
-        })), style);
+          style: activeStyle
+        })), activeStyle);
         svgText.setText({
-          styleName: style.textStyle,
+          styleName: activeStyle.textStyle,
           target: surface.targets.text,
-          text: input.text
+          text: formatBubbleText(input.text, activeStyle, svgText)
         });
         textOwned = true;
-        const primeOperations = [];
-        if (style.portrait) {
-          primeOperations.push(assetManager.applyToTarget(style.portrait.base, surface.targets.portraitBase));
-          const blinkFirst = style.portrait.blink?.frames[0];
-          if (blinkFirst !== void 0) primeOperations.push(assetManager.applyToTarget(blinkFirst, surface.targets.portraitBlink));
-          const talkFirst = style.portrait.talk?.frames[0];
-          if (talkFirst !== void 0) primeOperations.push(assetManager.applyToTarget(talkFirst, surface.targets.portraitTalk));
-        }
-        const indicatorFirst = style.advanceIndicator?.frames[0];
-        if (indicatorFirst !== void 0) primeOperations.push(assetManager.applyToTarget(indicatorFirst, surface.targets.advanceIndicator));
-        await Promise.all(primeOperations);
-        blinkLoop = style.portrait?.blink === void 0 ? void 0 : createFrameLoop({
-          actorKey: input.actorKey,
-          layer: "portraitBlink",
-          animation: style.portrait.blink,
-          target: surface.targets.portraitBlink,
-          assetManager,
-          scheduler,
-          ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
-        });
-        talkLoop = style.portrait?.talk === void 0 ? void 0 : createFrameLoop({
-          actorKey: input.actorKey,
-          layer: "portraitTalk",
-          animation: style.portrait.talk,
-          target: surface.targets.portraitTalk,
-          assetManager,
-          scheduler,
-          ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
-        });
-        indicatorLoop = style.advanceIndicator === void 0 ? void 0 : createFrameLoop({
-          actorKey: input.actorKey,
-          layer: "advanceIndicator",
-          animation: style.advanceIndicator,
-          target: surface.targets.advanceIndicator,
-          assetManager,
-          scheduler,
-          ...options.onAnimationError === void 0 ? {} : { onError: options.onAnimationError }
-        });
+        await primeStyleImages(activeStyle, styleImageResolver, surface);
+        createStyleLoops(activeStyle, styleImageResolver, surface);
         let currentAnimationMode = "idle";
         let closed = false;
         let transitionTail = Promise.resolve();
@@ -7003,25 +8394,25 @@
           if (mode === currentAnimationMode) return;
           if (mode === "talking") {
             await indicatorLoop?.stop();
-            await surface?.setLayerVisible("advanceIndicator", false);
-            await surface?.setLayerVisible("portraitTalk", talkLoop !== void 0);
-            await talkLoop?.start({ primed: true });
-          } else if (mode === "awaiting-advance") {
-            await talkLoop?.stop({ reset: true });
-            await surface?.setLayerVisible("portraitTalk", false);
-            await surface?.setLayerVisible("advanceIndicator", indicatorLoop !== void 0);
+            await surface?.setLayerVisible("continueIndicator", false);
+            await surface?.setLayerVisible("portraitLipSync", lipSyncLoop !== void 0);
+            await lipSyncLoop?.start({ primed: true });
+          } else if (mode === "awaiting-continue") {
+            await lipSyncLoop?.stop({ reset: true });
+            await surface?.setLayerVisible("portraitLipSync", false);
+            await surface?.setLayerVisible("continueIndicator", indicatorLoop !== void 0);
             await indicatorLoop?.start({ primed: true });
           } else {
-            await Promise.all([talkLoop?.stop({ reset: true }), indicatorLoop?.stop()]);
-            await Promise.all([surface?.setLayerVisible("portraitTalk", false), surface?.setLayerVisible("advanceIndicator", false)]);
+            await Promise.all([lipSyncLoop?.stop({ reset: true }), indicatorLoop?.stop()]);
+            await Promise.all([surface?.setLayerVisible("portraitLipSync", false), surface?.setLayerVisible("continueIndicator", false)]);
           }
           currentAnimationMode = mode;
         };
         await Promise.all([
-          surface.setLayerVisible("portraitBase", style.portrait !== void 0),
-          surface.setLayerVisible("portraitBlink", style.portrait?.blink !== void 0),
-          surface.setLayerVisible("portraitTalk", false),
-          surface.setLayerVisible("advanceIndicator", false)
+          surface.setLayerVisible("portraitBase", activeStyle.portrait !== void 0),
+          surface.setLayerVisible("portraitBlink", activeStyle.portrait?.blink !== void 0),
+          surface.setLayerVisible("portraitLipSync", false),
+          surface.setLayerVisible("continueIndicator", false)
         ]);
         await surface.show();
         surfaceVisible = true;
@@ -7039,10 +8430,51 @@
             transitionTail = transitionTail.then(async () => {
               if (!surface) return;
               svgText.setText({
-                styleName: style.textStyle,
+                styleName: activeStyle.textStyle,
                 target: surface.targets.text,
-                text
+                text: formatBubbleText(text, activeStyle, svgText)
               });
+              currentText = text;
+              await surface.show();
+            });
+            return transitionTail;
+          },
+          updateStyle(styleInput) {
+            if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
+            let nextStyle;
+            try {
+              nextStyle = normalizeStyle(styleInput);
+            } catch (error) {
+              return Promise.reject(error);
+            }
+            transitionTail = transitionTail.then(async () => {
+              if (!surface) return;
+              validateSurface(surface, nextStyle);
+              const nextImageResolver = resolveStyleImageCapability(nextStyle);
+              await Promise.all([
+                blinkLoop?.stop(),
+                lipSyncLoop?.stop(),
+                indicatorLoop?.stop()
+              ]);
+              await primeStyleImages(nextStyle, nextImageResolver, surface);
+              await surface.updateStyle(nextStyle);
+              activeStyle = nextStyle;
+              svgText.setText({
+                styleName: nextStyle.textStyle,
+                target: surface.targets.text,
+                text: formatBubbleText(currentText, nextStyle, svgText)
+              });
+              createStyleLoops(nextStyle, nextImageResolver, surface);
+              await Promise.all([
+                surface.setLayerVisible("portraitBase", nextStyle.portrait !== void 0),
+                surface.setLayerVisible("portraitBlink", nextStyle.portrait?.blink !== void 0),
+                surface.setLayerVisible("portraitLipSync", false),
+                surface.setLayerVisible("continueIndicator", false)
+              ]);
+              const previousMode = currentAnimationMode;
+              currentAnimationMode = "idle";
+              await blinkLoop?.start({ primed: true });
+              await applyAnimationMode(previousMode);
               await surface.show();
             });
             return transitionTail;
@@ -7064,7 +8496,7 @@
             }
             for (const operation of [
               () => blinkLoop?.stop(),
-              () => talkLoop?.stop(),
+              () => lipSyncLoop?.stop(),
               () => indicatorLoop?.stop(),
               async () => {
                 if (surfaceVisible) await surface?.hide();
@@ -7088,7 +8520,7 @@
         const cleanupErrors = [];
         const loopResults = await Promise.allSettled([
           blinkLoop?.stop(),
-          talkLoop?.stop(),
+          lipSyncLoop?.stop(),
           indicatorLoop?.stop()
         ]);
         cleanupErrors.push(...loopResults.flatMap((result) => result.status === "rejected" ? [result.reason] : []));
@@ -7184,7 +8616,7 @@
     return value;
   }
   function requireAssetManager(value) {
-    if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble requires Asset Manager. Load @kubohiroya/turbowarp-asset-manager before using Bubble blocks.");
+    if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
     return value;
   }
   function requireSvgText(value) {
@@ -7269,35 +8701,36 @@
       const body = createTarget("body");
       const portraitBase = style.portrait ? createTarget("portrait-base") : void 0;
       const portraitBlink = style.portrait?.blink ? createTarget("portrait-blink") : void 0;
-      const portraitTalk = style.portrait?.talk ? createTarget("portrait-talk") : void 0;
+      const portraitLipSync = style.portrait?.lipSync ? createTarget("portrait-lip-sync") : void 0;
       const text = createTarget("text");
-      const advanceIndicator = style.advanceIndicator ? createTarget("advance-indicator") : void 0;
+      const continueIndicator = style.continueIndicator ? createTarget("continue-indicator") : void 0;
       const targets = Object.freeze({
         text,
         ...portraitBase ? { portraitBase } : {},
         ...portraitBlink ? { portraitBlink } : {},
-        ...portraitTalk ? { portraitTalk } : {},
-        ...advanceIndicator ? { advanceIndicator } : {}
+        ...portraitLipSync ? { portraitLipSync } : {},
+        ...continueIndicator ? { continueIndicator } : {}
       });
       const layerTargets = /* @__PURE__ */ new Map();
       if (portraitBase) layerTargets.set("portraitBase", portraitBase);
       if (portraitBlink) layerTargets.set("portraitBlink", portraitBlink);
-      if (portraitTalk) layerTargets.set("portraitTalk", portraitTalk);
-      if (advanceIndicator) layerTargets.set("advanceIndicator", advanceIndicator);
+      if (portraitLipSync) layerTargets.set("portraitLipSync", portraitLipSync);
+      if (continueIndicator) layerTargets.set("continueIndicator", continueIndicator);
       const layerVisibility = /* @__PURE__ */ new Map();
       let surfaceVisible = false;
       let disposed = false;
       let cachedBodySkinSignature = "";
+      let currentStyle = style;
       const updateVisibility = () => {
-        const actorVisible = style.placement.basis === "background" || actor.visible !== false;
-        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && style.visualStyle !== "NO_BUBBLE");
+        const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
+        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && currentStyle.visualStyle !== "NO_BUBBLE");
         renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible);
         for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false));
         runtime.requestRedraw?.();
       };
       const position = () => {
         if (disposed) return;
-        const scaleMultiplier = style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+        const scaleMultiplier = currentStyle.placement.basis === "actor" ? currentStyle.offset.scalePercent / 100 : 1;
         const nativeTextSize = readSize(renderer, text, {
           width: 180,
           height: 48
@@ -7311,8 +8744,8 @@
           width: 0,
           height: 0
         };
-        for (const target of [portraitBlink, portraitTalk]) if (target) fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
-        const indicatorSize = advanceIndicator ? fitDrawable(renderer, advanceIndicator, indicatorBoxSize, scaleMultiplier) : {
+        for (const target of [portraitBlink, portraitLipSync]) if (target) fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
+        const indicatorSize = continueIndicator ? fitDrawable(renderer, continueIndicator, indicatorBoxSize, scaleMultiplier) : {
           width: 0,
           height: 0
         };
@@ -7335,31 +8768,31 @@
         const maximumCenterY = stageTop - bubbleHeight / 2;
         let centerX;
         let centerY;
-        if (style.placement.basis === "background") {
+        if (currentStyle.placement.basis === "background") {
           centerX = 0;
-          if (style.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
-          else if (style.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
+          if (currentStyle.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
+          else if (currentStyle.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
           else centerY = 0;
         } else {
           const center = actorRelativeBubbleCenter({
             bounds: targetBounds(actor),
             bubbleWidth,
             bubbleHeight,
-            direction: style.placement.direction,
-            distance: style.distance,
-            tailLength: style.tailLength,
-            offset: style.offset
+            direction: currentStyle.placement.direction,
+            distance: currentStyle.distance,
+            tailLength: currentStyle.tailLength,
+            offset: currentStyle.offset
           });
           centerX = center.x;
           centerY = center.y;
         }
         centerX = clamp(centerX, minimumCenterX, maximumCenterX);
         centerY = clamp(centerY, minimumCenterY, maximumCenterY);
-        const tailDirection = style.placement.basis === "actor" ? tailDirectionForPlacement(style.placement.direction) : null;
-        const bodyOffset = style.placement.basis === "actor" ? [
-          style.offset.x,
-          style.offset.y,
-          style.offset.scalePercent
+        const tailDirection = currentStyle.placement.basis === "actor" ? tailDirectionForPlacement(currentStyle.placement.direction) : null;
+        const bodyOffset = currentStyle.placement.basis === "actor" ? [
+          currentStyle.offset.x,
+          currentStyle.offset.y,
+          currentStyle.offset.scalePercent
         ] : [
           0,
           0,
@@ -7369,35 +8802,35 @@
           x: 0,
           y: 0
         } : bubbleBodyCenterOffset({
-          style: style.visualStyle,
+          style: currentStyle.visualStyle,
           width: baseBubbleWidth,
           height: baseBubbleHeight,
           tailDirection,
-          tailLength: style.tailLength,
+          tailLength: currentStyle.tailLength,
           offset: bodyOffset
         });
-        const viewportExtraX = Math.abs(bodyOffset[0]) + baseBubbleWidth * Math.abs(scaleMultiplier - 1) + Math.max(0, style.tailLength - 18) + 8;
-        const viewportExtraY = Math.abs(bodyOffset[1]) + baseBubbleHeight * Math.abs(scaleMultiplier - 1) + Math.max(0, style.tailLength - 18) + 8;
+        const viewportExtraX = Math.abs(bodyOffset[0]) + baseBubbleWidth * Math.abs(scaleMultiplier - 1) + Math.max(0, currentStyle.tailLength - 18) + 8;
+        const viewportExtraY = Math.abs(bodyOffset[1]) + baseBubbleHeight * Math.abs(scaleMultiplier - 1) + Math.max(0, currentStyle.tailLength - 18) + 8;
         const nextBodySkinSignature = JSON.stringify({
           baseBubbleHeight,
           baseBubbleWidth,
           bodyOffset,
           tailDirection,
-          tailLength: style.tailLength,
+          tailLength: currentStyle.tailLength,
           viewportExtraX,
           viewportExtraY,
-          visualStyle: style.visualStyle
+          visualStyle: currentStyle.visualStyle
         });
         if (nextBodySkinSignature !== cachedBodySkinSignature) {
           const expanded = expandSvgViewport(renderBubbleSvg({
-            style: style.visualStyle,
+            style: currentStyle.visualStyle,
             lines: [],
             width: baseBubbleWidth,
             height: baseBubbleHeight,
             tailDirection,
-            tailLength: style.tailLength,
+            tailLength: currentStyle.tailLength,
             offset: bodyOffset,
-            title: `${style.name} Bubble body`
+            title: `${currentStyle.name} Bubble body`
           }), baseBubbleWidth, baseBubbleHeight, viewportExtraX, viewportExtraY);
           const nextSkinId = renderer.createSVGSkin(expanded);
           if (!Number.isInteger(nextSkinId) || nextSkinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "TurboWarp did not create the Bubble body SVG skin.");
@@ -7420,10 +8853,10 @@
         for (const target of [
           portraitBase,
           portraitBlink,
-          portraitTalk
+          portraitLipSync
         ]) if (target) renderer.updateDrawablePosition(target.drawableID, [portraitX, centerY]);
         renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
-        if (advanceIndicator) renderer.updateDrawablePosition(advanceIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
+        if (continueIndicator) renderer.updateDrawablePosition(continueIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
         updateVisibility();
       };
       const originalVisualChange = actor.onTargetVisualChange;
@@ -7431,13 +8864,23 @@
         originalVisualChange?.(changedTarget);
         position();
       };
-      if (style.placement.basis === "actor") actor.onTargetVisualChange = visualChangeHook;
+      if (currentStyle.placement.basis === "actor") actor.onTargetVisualChange = visualChangeHook;
       return Object.freeze({
         targets,
         setLayerVisible(layer, visible) {
           if (disposed) return;
           layerVisibility.set(layer, visible);
           updateVisibility();
+        },
+        updateStyle(nextStyle) {
+          if (disposed) return;
+          const wasActorRelative = currentStyle.placement.basis === "actor";
+          currentStyle = nextStyle;
+          const isActorRelative = currentStyle.placement.basis === "actor";
+          if (wasActorRelative && !isActorRelative) {
+            if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
+          } else if (!wasActorRelative && isActorRelative) actor.onTargetVisualChange = visualChangeHook;
+          position();
         },
         show() {
           if (disposed) return;
@@ -7452,7 +8895,7 @@
         dispose() {
           if (disposed) return;
           disposed = true;
-          if (style.placement.basis === "actor" && actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
+          if (currentStyle.placement.basis === "actor" && actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
           for (const target of [...drawables].reverse()) renderer.destroyDrawable(target.drawableID, spriteLayer);
           if (bodySkinId !== void 0) {
             renderer.destroySkin(bodySkinId);
@@ -7471,25 +8914,31 @@
     if (!isRecord(runtimeInput)) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
     const runtime = runtimeInput;
     const renderer = requireRenderer(runtime.renderer);
-    const assetExtension = options.assetManager ? null : requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+    const getAssetExtension = () => requireAssetManager(runtime.ext_kubohiroyaassetmanager);
     const svgTextExtension = options.svgText ? null : requireSvgText(runtime.ext_kubohiroyasvgtext);
     return createBubbleComposition({
-      assetManager: options.assetManager ?? {
+      imageResolver: options.imageResolver ?? {
         isRegistered(name) {
-          return assetExtension?.isLoaded({ NAME: name }) ?? false;
+          return getAssetExtension().isLoaded({ NAME: name });
         },
         getMimeType(name) {
-          return assetExtension?.getAssetMimeType({ NAME: name }) ?? "";
+          return getAssetExtension().getAssetMimeType({ NAME: name });
         },
         async applyToTarget(name, target) {
           const drawableID = target.drawableID;
           if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
-          const skin = await assetExtension?.resolveSkin(name);
+          const skin = await getAssetExtension().resolveSkin(name);
           if (!isRecord(skin) || !Number.isInteger(skin.skinId) || skin.skinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(name)}`);
           renderer.updateDrawableSkinId(drawableID, skin.skinId);
           runtime.requestRedraw?.();
         }
       },
+      audio: options.audio ?? { async playSound(name, playOptions = {}) {
+        const extension = getAssetExtension();
+        const method = playOptions.untilDone ? extension?.playSoundUntilDone : extension?.playSound;
+        if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
+        await method.call(extension, { NAME: name });
+      } },
       svgText: options.svgText ?? {
         setText({ styleName, target, text }) {
           svgTextExtension?.setText({
@@ -7499,6 +8948,11 @@
         },
         releaseTarget(target) {
           svgTextExtension?.releaseTextActor(target);
+        },
+        measureText({ styleName, text }) {
+          const measureText = svgTextExtension?.measureText;
+          if (typeof measureText !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-003", "SVG Text does not provide text measurement.");
+          return measureText.call(svgTextExtension, styleName, text);
         }
       },
       createSurface({ actor, actorKey, style }) {
@@ -7516,10 +8970,10 @@
   var validAnimationModes = /* @__PURE__ */ new Set([
     "idle",
     "talking",
-    "awaiting-advance"
+    "awaiting-continue"
   ]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.1.0";
+  var EXTENSION_VERSION = "0.2.0";
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
     Object.defineProperty(error, "code", { value: "BUBBLE-EXTENSION-001" });
@@ -7648,18 +9102,18 @@
     setBlinkFrames(args) {
       this.setPortraitAnimation("blink", args);
     }
-    setTalkFrames(args) {
-      this.setPortraitAnimation("talk", args);
+    setLipSyncFrames(args) {
+      this.setPortraitAnimation("lipSync", args);
     }
-    setAdvanceFrames(args) {
+    setContinueFrames(args) {
       const style = this.requireStyle(args.STYLE);
       const frames = this.parseFrames(args.ASSETS);
-      if (frames.length === 1) throw extensionError("advance frames must contain at least two assets.");
-      const advanceIndicator = frames.length === 0 ? void 0 : this.animationInput(frames, args.SECONDS, "advance");
-      const { advanceIndicator: previousAdvance, ...withoutAdvance } = style;
+      if (frames.length === 1) throw extensionError("continue frames must contain at least two assets.");
+      const continueIndicator = frames.length === 0 ? void 0 : this.animationInput(frames, args.SECONDS, "continue");
+      const { continueIndicator: previousContinue, ...withoutContinue } = style;
       const nextStyle = Object.freeze({
-        ...withoutAdvance,
-        ...advanceIndicator ? { advanceIndicator } : {}
+        ...withoutContinue,
+        ...continueIndicator ? { continueIndicator } : {}
       });
       this.installStyle(nextStyle);
     }
@@ -7672,12 +9126,12 @@
     async setBubbleAnimationMode(args, util) {
       const target = this.requireTarget(util);
       const mode = this.toString(args.MODE).trim().toLowerCase();
-      if (!validAnimationModes.has(mode)) throw extensionError("animation mode must be talking, awaiting-advance, or idle.");
+      if (!validAnimationModes.has(mode)) throw extensionError("animation mode must be talking, awaiting-continue, or idle.");
       const handle = this.handles.get(target.id);
       if (!handle) throw extensionError("this target does not have an active bubble.");
       await handle.setAnimationMode(mode);
     }
-    async waitForBubbleAdvance(args, util) {
+    async waitForBubbleContinue(args, util) {
       const target = this.requireTarget(util);
       const handle = this.handles.get(target.id);
       if (!handle) throw extensionError("this target does not have an active bubble.");
@@ -7690,7 +9144,7 @@
       if (!this.isRecord(runtimeExpression) || typeof runtimeExpression.runtimeCondition !== "function") throw extensionError("Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.");
       if (typeof this.runtime.on !== "function" || typeof this.runtime.off !== "function") throw extensionError("TurboWarp runtime events are unavailable.");
       this.cancelWait(target.id, "Bubble wait was replaced.");
-      await handle.setAnimationMode("awaiting-advance");
+      await handle.setAnimationMode("awaiting-continue");
       await new Promise((resolve, reject) => {
         let settled = false;
         let timeoutHandle;
@@ -7820,10 +9274,10 @@
         base: portrait.base,
         ...field === "blink" ? {
           ...animation ? { blink: animation } : {},
-          ...portrait.talk ? { talk: portrait.talk } : {}
+          ...portrait.lipSync ? { lipSync: portrait.lipSync } : {}
         } : {
           ...portrait.blink ? { blink: portrait.blink } : {},
-          ...animation ? { talk: animation } : {}
+          ...animation ? { lipSync: animation } : {}
         }
       });
       this.installStyle(Object.freeze({

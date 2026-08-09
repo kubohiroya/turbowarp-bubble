@@ -100,7 +100,7 @@ for (const value of [
   "https://kubohiroya.github.io/turbowarp-bubble/",
   "sayWithBubbleStyle",
   "setBubbleAnimationMode",
-  "waitForBubbleAdvance",
+  "waitForBubbleContinue",
   "kubohiroyaassetmanager",
   "kubohiroyasvgtext",
 ]) {

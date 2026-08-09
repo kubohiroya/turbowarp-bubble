@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="500" viewBox="0 0 1200 500" role="img" aria-labelledby="title description">
   <title id="title">Bubble animation mode比較</title>
-  <desc id="description">talking、awaiting-advance、idleにおける目パチ、口パク、advance framesの動作比較。</desc>
+  <desc id="description">talking、awaiting-continue、idleにおける目パチ、口パク、continue framesの動作比較。</desc>
   <style>
     text { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif; }
     .heading { fill: #25283a; font-size: 28px; font-weight: 700; }
@@ -53,7 +53,7 @@
   <g>
     <rect x="420" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
     <rect x="440" y="106" width="170" height="34" rx="17" fill="#ff6680"/>
-    <text x="525" y="129" text-anchor="middle" style="fill:#ffffff;font-size:15px;font-weight:700">awaiting-advance</text>
+    <text x="525" y="129" text-anchor="middle" style="fill:#ffffff;font-size:15px;font-weight:700">awaiting-continue</text>
     <text x="440" y="164" class="small">ユーザの「次へ」操作待ち</text>
     <g>
     <circle cx="496" cy="253" r="37.44" fill="#ffd5b5" stroke="#b85d63" stroke-width="2.88"/>

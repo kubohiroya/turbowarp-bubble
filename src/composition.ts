@@ -1,11 +1,3 @@
-import type {
-  AssetManagerComposition,
-  AssetManagerCompositionTarget,
-} from "@kubohiroya/turbowarp-asset-manager/composition";
-import type {
-  SvgTextComposition,
-  SvgTextTarget,
-} from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   defaultBubblePlacementInput,
   normalizeBubblePlacement,
@@ -23,6 +15,7 @@ import {
   type BubbleOffsetInput,
 } from "./actor-transform.js";
 import { bubbleVisualStyles, type BubbleVisualStyle } from "./bubble-svg.js";
+import { wrapText } from "./text-layout.js";
 
 export {
   UnicodeLineBreakProvider,
@@ -71,9 +64,9 @@ export {
 } from "./bubble-svg.js";
 
 export type BubbleKind = "say" | "think";
-export type BubbleAnimationMode = "idle" | "talking" | "awaiting-advance";
+export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
 export type BubbleLayer =
-  "portraitBase" | "portraitBlink" | "portraitTalk" | "advanceIndicator";
+  "portraitBase" | "portraitBlink" | "portraitLipSync" | "continueIndicator";
 
 export interface BubbleFrameAnimationInput {
   readonly frames: ReadonlyArray<string>;
@@ -83,19 +76,21 @@ export interface BubbleFrameAnimationInput {
 export interface BubblePortraitInput {
   readonly base: string;
   readonly blink?: BubbleFrameAnimationInput;
-  readonly talk?: BubbleFrameAnimationInput;
+  readonly lipSync?: BubbleFrameAnimationInput;
 }
 
 export interface BubbleStyleInput {
   readonly name: string;
   readonly textStyle: string;
+  readonly maxWidth?: number;
+  readonly textLocale?: string;
   readonly placement?: BubblePlacementInput;
   readonly distance?: number;
   readonly tailLength?: number;
   readonly offset?: BubbleOffsetInput;
   readonly visualStyle?: BubbleVisualStyle;
   readonly portrait?: BubblePortraitInput;
-  readonly advanceIndicator?: BubbleFrameAnimationInput;
+  readonly continueIndicator?: BubbleFrameAnimationInput;
 }
 
 export interface BubbleFrameAnimation {
@@ -106,42 +101,73 @@ export interface BubbleFrameAnimation {
 export interface BubblePortrait {
   readonly base: string;
   readonly blink?: BubbleFrameAnimation;
-  readonly talk?: BubbleFrameAnimation;
+  readonly lipSync?: BubbleFrameAnimation;
 }
 
 export interface BubbleStyle {
   readonly name: string;
   readonly textStyle: string;
+  readonly maxWidth?: number;
+  readonly textLocale?: string;
   readonly placement: BubblePlacement;
   readonly distance: number;
   readonly tailLength: number;
   readonly offset: BubbleOffset;
   readonly visualStyle: BubbleVisualStyle;
   readonly portrait?: BubblePortrait;
-  readonly advanceIndicator?: BubbleFrameAnimation;
+  readonly continueIndicator?: BubbleFrameAnimation;
 }
 
-export type BubbleAssetManager = Pick<
-  AssetManagerComposition,
-  "applyToTarget" | "getMimeType" | "isRegistered"
->;
+export interface BubbleAssetTarget {
+  readonly id: string;
+  readonly isStage: boolean;
+}
 
-export type BubbleSvgText = Pick<
-  SvgTextComposition,
-  "releaseTarget" | "setText"
->;
+export interface BubbleImageCapability {
+  readonly applyToTarget: (
+    name: unknown,
+    target: BubbleAssetTarget,
+  ) => void | Promise<void>;
+  readonly getMimeType: (name: unknown) => string;
+  readonly isRegistered: (name: unknown) => boolean;
+}
+
+export interface BubbleAudioCapability {
+  readonly playSound: (
+    name: unknown,
+    options?: Readonly<{ untilDone?: boolean }>,
+  ) => Promise<void>;
+}
+
+export interface BubbleTextTarget {
+  readonly drawableID: number;
+}
+
+export interface BubbleSvgText {
+  readonly setText: (input: {
+    readonly styleName: string;
+    readonly target: BubbleTextTarget;
+    readonly text: string;
+  }) => void;
+  readonly releaseTarget: (target: BubbleTextTarget) => void;
+  readonly measureText?: (input: {
+    readonly styleName: string;
+    readonly text: string;
+  }) => number;
+}
 
 export interface BubbleSurfaceTargets {
-  readonly text: SvgTextTarget;
-  readonly portraitBase?: AssetManagerCompositionTarget;
-  readonly portraitBlink?: AssetManagerCompositionTarget;
-  readonly portraitTalk?: AssetManagerCompositionTarget;
-  readonly advanceIndicator?: AssetManagerCompositionTarget;
+  readonly text: BubbleTextTarget;
+  readonly portraitBase?: BubbleAssetTarget;
+  readonly portraitBlink?: BubbleAssetTarget;
+  readonly portraitLipSync?: BubbleAssetTarget;
+  readonly continueIndicator?: BubbleAssetTarget;
 }
 
 export interface BubbleSurface {
   readonly targets: BubbleSurfaceTargets;
   setLayerVisible(layer: BubbleLayer, visible: boolean): void | Promise<void>;
+  updateStyle(style: BubbleStyle): void | Promise<void>;
   show(): void | Promise<void>;
   hide(): void | Promise<void>;
   dispose(): void | Promise<void>;
@@ -170,7 +196,8 @@ export interface BubbleAnimationErrorContext {
 }
 
 export interface BubbleCompositionOptions {
-  readonly assetManager: BubbleAssetManager;
+  readonly imageResolver?: BubbleImageCapability;
+  readonly audio?: BubbleAudioCapability;
   readonly svgText: BubbleSvgText;
   readonly createSurface: BubbleSurfaceFactory;
   readonly scheduler?: BubbleScheduler;
@@ -194,6 +221,7 @@ export interface BubbleHandle {
   readonly kind: BubbleKind;
   readonly animationMode: BubbleAnimationMode;
   setText(text: string): Promise<void>;
+  updateStyle(style: BubbleStyleInput): Promise<void>;
   setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
   close(): Promise<void>;
 }
@@ -212,7 +240,9 @@ export type BubbleCompositionErrorCode =
   | "BUBBLE-COMPOSITION-002"
   | "BUBBLE-COMPOSITION-003"
   | "BUBBLE-COMPOSITION-004"
-  | "BUBBLE-COMPOSITION-005";
+  | "BUBBLE-COMPOSITION-005"
+  | "BUBBLE-COMPOSITION-006"
+  | "BUBBLE-COMPOSITION-007";
 
 export class BubbleCompositionError extends Error {
   public readonly code: BubbleCompositionErrorCode;
@@ -230,12 +260,12 @@ interface NormalizedFrameAnimation extends BubbleFrameAnimation {
 
 interface NormalizedPortrait extends BubblePortrait {
   readonly blink?: NormalizedFrameAnimation;
-  readonly talk?: NormalizedFrameAnimation;
+  readonly lipSync?: NormalizedFrameAnimation;
 }
 
 interface NormalizedStyle extends BubbleStyle {
   readonly portrait?: NormalizedPortrait;
-  readonly advanceIndicator?: NormalizedFrameAnimation;
+  readonly continueIndicator?: NormalizedFrameAnimation;
 }
 
 interface FrameLoop {
@@ -247,7 +277,7 @@ const validKinds = new Set<BubbleKind>(["say", "think"]);
 const validAnimationModes = new Set<BubbleAnimationMode>([
   "idle",
   "talking",
-  "awaiting-advance",
+  "awaiting-continue",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -327,19 +357,19 @@ function normalizePortrait(value: unknown): NormalizedPortrait {
       "Bubble portrait must be an object.",
     );
   }
-  requireExactKeys(value, ["base"], ["blink", "talk"], "Bubble portrait");
+  requireExactKeys(value, ["base"], ["blink", "lipSync"], "Bubble portrait");
   const blink =
     value.blink === undefined
       ? undefined
       : normalizeAnimation(value.blink, "Bubble portrait blink", 1);
-  const talk =
-    value.talk === undefined
+  const lipSync =
+    value.lipSync === undefined
       ? undefined
-      : normalizeAnimation(value.talk, "Bubble portrait talk", 1);
+      : normalizeAnimation(value.lipSync, "Bubble portrait lip-sync", 1);
   return Object.freeze({
     base: requireName(value.base, "Bubble portrait base"),
     ...(blink === undefined ? {} : { blink }),
-    ...(talk === undefined ? {} : { talk }),
+    ...(lipSync === undefined ? {} : { lipSync }),
   });
 }
 
@@ -355,12 +385,14 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     ["name", "textStyle"],
     [
       "placement",
+      "maxWidth",
+      "textLocale",
       "distance",
       "tailLength",
       "offset",
       "visualStyle",
       "portrait",
-      "advanceIndicator",
+      "continueIndicator",
     ],
     "Bubble style",
   );
@@ -368,12 +400,12 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     value.portrait === undefined
       ? undefined
       : normalizePortrait(value.portrait);
-  const advanceIndicator =
-    value.advanceIndicator === undefined
+  const continueIndicator =
+    value.continueIndicator === undefined
       ? undefined
       : normalizeAnimation(
-          value.advanceIndicator,
-          "Bubble advance indicator",
+          value.continueIndicator,
+          "Bubble continue indicator",
           2,
         );
   let placement: BubblePlacement;
@@ -417,20 +449,43 @@ function normalizeStyle(value: unknown): NormalizedStyle {
       `Unsupported Bubble visual style: ${String(visualStyle)}`,
     );
   }
+  let maxWidth: number | undefined;
+  if (value.maxWidth !== undefined) {
+    if (
+      typeof value.maxWidth !== "number" ||
+      !Number.isFinite(value.maxWidth) ||
+      value.maxWidth <= 0
+    ) {
+      throw new BubbleCompositionError(
+        "BUBBLE-COMPOSITION-001",
+        "Bubble style maxWidth must be a positive finite number.",
+      );
+    }
+    maxWidth = value.maxWidth;
+  }
+  const textLocale =
+    value.textLocale === undefined
+      ? undefined
+      : requireName(value.textLocale, "Bubble style text locale");
   return Object.freeze({
     name: requireName(value.name, "Bubble style name"),
     textStyle: requireName(value.textStyle, "Bubble text style name"),
+    ...(maxWidth === undefined ? {} : { maxWidth }),
+    ...(textLocale === undefined ? {} : { textLocale }),
     placement,
     distance,
     tailLength,
     offset,
     visualStyle: visualStyle as BubbleVisualStyle,
     ...(portrait === undefined ? {} : { portrait }),
-    ...(advanceIndicator === undefined ? {} : { advanceIndicator }),
+    ...(continueIndicator === undefined ? {} : { continueIndicator }),
   });
 }
 
-function validateAssetManager(value: unknown): BubbleAssetManager {
+function validateImageResolver(
+  value: unknown,
+): BubbleImageCapability | undefined {
+  if (value === undefined) return undefined;
   if (
     !isRecord(value) ||
     typeof value.applyToTarget !== "function" ||
@@ -438,10 +493,22 @@ function validateAssetManager(value: unknown): BubbleAssetManager {
     typeof value.isRegistered !== "function"
   ) {
     throw new TypeError(
-      "Bubble asset manager must provide applyToTarget, getMimeType, and isRegistered.",
+      "Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.",
     );
   }
-  return value as unknown as BubbleAssetManager;
+  return value as unknown as BubbleImageCapability;
+}
+
+function requireImageResolver(
+  value: BubbleImageCapability | undefined,
+): BubbleImageCapability {
+  if (value === undefined) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-006",
+      "Bubble image assets require an image capability. Provide options.imageResolver.",
+    );
+  }
+  return value;
 }
 
 function validateSvgText(value: unknown): BubbleSvgText {
@@ -479,10 +546,7 @@ function validateScheduler(value: unknown): BubbleScheduler {
   return value as unknown as BubbleScheduler;
 }
 
-function validateAssetTarget(
-  value: unknown,
-  label: string,
-): AssetManagerCompositionTarget {
+function validateAssetTarget(value: unknown, label: string): BubbleAssetTarget {
   if (
     !isRecord(value) ||
     typeof value.id !== "string" ||
@@ -494,10 +558,10 @@ function validateAssetTarget(
       `${label} must provide id and isStage.`,
     );
   }
-  return value as unknown as AssetManagerCompositionTarget;
+  return value as unknown as BubbleAssetTarget;
 }
 
-function validateTextTarget(value: unknown): SvgTextTarget {
+function validateTextTarget(value: unknown): BubbleTextTarget {
   if (
     !isRecord(value) ||
     typeof value.drawableID !== "number" ||
@@ -509,7 +573,7 @@ function validateTextTarget(value: unknown): SvgTextTarget {
       "Bubble text target must provide a non-negative integer drawableID.",
     );
   }
-  return value as unknown as SvgTextTarget;
+  return value as unknown as BubbleTextTarget;
 }
 
 function validateSurface(
@@ -520,6 +584,7 @@ function validateSurface(
     !isRecord(value) ||
     !isRecord(value.targets) ||
     typeof value.setLayerVisible !== "function" ||
+    typeof value.updateStyle !== "function" ||
     typeof value.show !== "function" ||
     typeof value.hide !== "function" ||
     typeof value.dispose !== "function"
@@ -549,22 +614,31 @@ function validateSurface(
   };
   requireLayerTarget("portraitBase", style.portrait !== undefined);
   requireLayerTarget("portraitBlink", style.portrait?.blink !== undefined);
-  requireLayerTarget("portraitTalk", style.portrait?.talk !== undefined);
-  requireLayerTarget("advanceIndicator", style.advanceIndicator !== undefined);
+  requireLayerTarget("portraitLipSync", style.portrait?.lipSync !== undefined);
+  requireLayerTarget(
+    "continueIndicator",
+    style.continueIndicator !== undefined,
+  );
   return value as unknown as BubbleSurface;
 }
 
 function requireImageAsset(
-  assetManager: BubbleAssetManager,
+  imageResolver: BubbleImageCapability | undefined,
   name: string,
 ): void {
-  if (!assetManager.isRegistered(name)) {
+  if (imageResolver === undefined) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-006",
+      `Bubble image capability is required for: ${name}. Provide options.imageResolver.`,
+    );
+  }
+  if (!imageResolver.isRegistered(name)) {
     throw new BubbleCompositionError(
       "BUBBLE-COMPOSITION-003",
       `Bubble image asset is not registered: ${name}`,
     );
   }
-  const mimeType = assetManager.getMimeType(name);
+  const mimeType = imageResolver.getMimeType(name);
   if (!mimeType.startsWith("image/")) {
     throw new BubbleCompositionError(
       "BUBBLE-COMPOSITION-003",
@@ -580,10 +654,35 @@ function styleAssetNames(style: NormalizedStyle): readonly string[] {
       : [
           style.portrait.base,
           ...(style.portrait.blink?.frames ?? []),
-          ...(style.portrait.talk?.frames ?? []),
+          ...(style.portrait.lipSync?.frames ?? []),
         ]),
-    ...(style.advanceIndicator?.frames ?? []),
+    ...(style.continueIndicator?.frames ?? []),
   ];
+}
+
+function formatBubbleText(
+  text: string,
+  style: BubbleStyle,
+  textCapability: BubbleSvgText,
+): string {
+  if (style.maxWidth === undefined) return text;
+  if (typeof textCapability.measureText !== "function") {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-007",
+      "Bubble style maxWidth requires the text capability measureText method.",
+    );
+  }
+  const layout = wrapText({
+    text,
+    maxWidth: style.maxWidth,
+    ...(style.textLocale === undefined ? {} : { locale: style.textLocale }),
+    measureText: (candidate) =>
+      textCapability.measureText?.({
+        styleName: style.textStyle,
+        text: candidate,
+      }) ?? 0,
+  });
+  return layout.lines.map(({ text: line }) => line).join("\n");
 }
 
 function aggregateErrors(errors: unknown[], message: string): void {
@@ -595,8 +694,8 @@ function createFrameLoop(options: {
   readonly actorKey: string;
   readonly layer: Exclude<BubbleLayer, "portraitBase">;
   readonly animation: NormalizedFrameAnimation;
-  readonly target: AssetManagerCompositionTarget;
-  readonly assetManager: BubbleAssetManager;
+  readonly target: BubbleAssetTarget;
+  readonly imageResolver: BubbleImageCapability;
   readonly scheduler: BubbleScheduler;
   readonly onError?: BubbleCompositionOptions["onAnimationError"];
 }): FrameLoop {
@@ -609,7 +708,7 @@ function createFrameLoop(options: {
   const applyFrame = async (index: number): Promise<void> => {
     const assetName = options.animation.frames[index];
     if (assetName === undefined) return;
-    await options.assetManager.applyToTarget(assetName, options.target);
+    await options.imageResolver.applyToTarget(assetName, options.target);
   };
 
   const reportError = (error: unknown, assetName: string): void => {
@@ -720,7 +819,7 @@ export function createBubbleComposition(
   if (!isRecord(options)) {
     throw new TypeError("Bubble composition options must be an object.");
   }
-  const assetManager = validateAssetManager(options.assetManager);
+  const imageResolver = validateImageResolver(options.imageResolver);
   const svgText = validateSvgText(options.svgText);
   if (typeof options.createSurface !== "function") {
     throw new TypeError("Bubble composition createSurface must be a function.");
@@ -773,9 +872,128 @@ export function createBubbleComposition(
         `Bubble style is not defined: ${input.styleName}`,
       );
     }
-    for (const assetName of new Set(styleAssetNames(style))) {
-      requireImageAsset(assetManager, assetName);
-    }
+    let activeStyle = style;
+    let currentText = input.text;
+    const resolveStyleImageCapability = (
+      nextStyle: BubbleStyle,
+    ): BubbleImageCapability | undefined => {
+      const assetNames = new Set(styleAssetNames(nextStyle));
+      const nextImageResolver =
+        assetNames.size === 0 ? undefined : requireImageResolver(imageResolver);
+      for (const assetName of assetNames) {
+        requireImageAsset(nextImageResolver, assetName);
+      }
+      return nextImageResolver;
+    };
+    const styleImageResolver = resolveStyleImageCapability(activeStyle);
+
+    const primeStyleImages = async (
+      nextStyle: BubbleStyle,
+      nextImageResolver: BubbleImageCapability | undefined,
+      nextSurface: BubbleSurface,
+    ): Promise<void> => {
+      const imageCapability =
+        styleAssetNames(nextStyle).length === 0
+          ? undefined
+          : requireImageResolver(nextImageResolver);
+      const operations: Array<Promise<void>> = [];
+      if (nextStyle.portrait) {
+        const capability = requireImageResolver(imageCapability);
+        operations.push(
+          Promise.resolve(
+            capability.applyToTarget(
+              nextStyle.portrait.base,
+              nextSurface.targets.portraitBase as BubbleAssetTarget,
+            ),
+          ),
+        );
+        const blinkFirst = nextStyle.portrait.blink?.frames[0];
+        if (blinkFirst !== undefined) {
+          operations.push(
+            Promise.resolve(
+              capability.applyToTarget(
+                blinkFirst,
+                nextSurface.targets.portraitBlink as BubbleAssetTarget,
+              ),
+            ),
+          );
+        }
+        const lipSyncFirst = nextStyle.portrait.lipSync?.frames[0];
+        if (lipSyncFirst !== undefined) {
+          operations.push(
+            Promise.resolve(
+              capability.applyToTarget(
+                lipSyncFirst,
+                nextSurface.targets.portraitLipSync as BubbleAssetTarget,
+              ),
+            ),
+          );
+        }
+      }
+      const continueFirst = nextStyle.continueIndicator?.frames[0];
+      if (continueFirst !== undefined) {
+        const capability = requireImageResolver(imageCapability);
+        operations.push(
+          Promise.resolve(
+            capability.applyToTarget(
+              continueFirst,
+              nextSurface.targets.continueIndicator as BubbleAssetTarget,
+            ),
+          ),
+        );
+      }
+      await Promise.all(operations);
+    };
+
+    const createStyleLoops = (
+      nextStyle: BubbleStyle,
+      nextImageResolver: BubbleImageCapability | undefined,
+      nextSurface: BubbleSurface,
+    ): void => {
+      blinkLoop =
+        nextStyle.portrait?.blink === undefined
+          ? undefined
+          : createFrameLoop({
+              actorKey: input.actorKey,
+              layer: "portraitBlink",
+              animation: nextStyle.portrait.blink,
+              target: nextSurface.targets.portraitBlink as BubbleAssetTarget,
+              imageResolver: requireImageResolver(nextImageResolver),
+              scheduler,
+              ...(options.onAnimationError === undefined
+                ? {}
+                : { onError: options.onAnimationError }),
+            });
+      lipSyncLoop =
+        nextStyle.portrait?.lipSync === undefined
+          ? undefined
+          : createFrameLoop({
+              actorKey: input.actorKey,
+              layer: "portraitLipSync",
+              animation: nextStyle.portrait.lipSync,
+              target: nextSurface.targets.portraitLipSync as BubbleAssetTarget,
+              imageResolver: requireImageResolver(nextImageResolver),
+              scheduler,
+              ...(options.onAnimationError === undefined
+                ? {}
+                : { onError: options.onAnimationError }),
+            });
+      indicatorLoop =
+        nextStyle.continueIndicator === undefined
+          ? undefined
+          : createFrameLoop({
+              actorKey: input.actorKey,
+              layer: "continueIndicator",
+              animation: nextStyle.continueIndicator,
+              target: nextSurface.targets
+                .continueIndicator as BubbleAssetTarget,
+              imageResolver: requireImageResolver(nextImageResolver),
+              scheduler,
+              ...(options.onAnimationError === undefined
+                ? {}
+                : { onError: options.onAnimationError }),
+            });
+    };
 
     const previous = active.get(input.actorKey);
     if (previous) await previous.close();
@@ -784,7 +1002,7 @@ export function createBubbleComposition(
     let textOwned = false;
     let surfaceVisible = false;
     let blinkLoop: FrameLoop | undefined;
-    let talkLoop: FrameLoop | undefined;
+    let lipSyncLoop: FrameLoop | undefined;
     let indicatorLoop: FrameLoop | undefined;
     try {
       surface = validateSurface(
@@ -793,101 +1011,20 @@ export function createBubbleComposition(
             actor: input.actor,
             actorKey: input.actorKey,
             kind: input.kind,
-            style,
+            style: activeStyle,
           }),
         ),
-        style,
+        activeStyle,
       );
       svgText.setText({
-        styleName: style.textStyle,
+        styleName: activeStyle.textStyle,
         target: surface.targets.text,
-        text: input.text,
+        text: formatBubbleText(input.text, activeStyle, svgText),
       });
       textOwned = true;
 
-      const primeOperations: Array<Promise<void>> = [];
-      if (style.portrait) {
-        primeOperations.push(
-          assetManager.applyToTarget(
-            style.portrait.base,
-            surface.targets.portraitBase as AssetManagerCompositionTarget,
-          ),
-        );
-        const blinkFirst = style.portrait.blink?.frames[0];
-        if (blinkFirst !== undefined) {
-          primeOperations.push(
-            assetManager.applyToTarget(
-              blinkFirst,
-              surface.targets.portraitBlink as AssetManagerCompositionTarget,
-            ),
-          );
-        }
-        const talkFirst = style.portrait.talk?.frames[0];
-        if (talkFirst !== undefined) {
-          primeOperations.push(
-            assetManager.applyToTarget(
-              talkFirst,
-              surface.targets.portraitTalk as AssetManagerCompositionTarget,
-            ),
-          );
-        }
-      }
-      const indicatorFirst = style.advanceIndicator?.frames[0];
-      if (indicatorFirst !== undefined) {
-        primeOperations.push(
-          assetManager.applyToTarget(
-            indicatorFirst,
-            surface.targets.advanceIndicator as AssetManagerCompositionTarget,
-          ),
-        );
-      }
-      await Promise.all(primeOperations);
-
-      blinkLoop =
-        style.portrait?.blink === undefined
-          ? undefined
-          : createFrameLoop({
-              actorKey: input.actorKey,
-              layer: "portraitBlink",
-              animation: style.portrait.blink,
-              target: surface.targets
-                .portraitBlink as AssetManagerCompositionTarget,
-              assetManager,
-              scheduler,
-              ...(options.onAnimationError === undefined
-                ? {}
-                : { onError: options.onAnimationError }),
-            });
-      talkLoop =
-        style.portrait?.talk === undefined
-          ? undefined
-          : createFrameLoop({
-              actorKey: input.actorKey,
-              layer: "portraitTalk",
-              animation: style.portrait.talk,
-              target: surface.targets
-                .portraitTalk as AssetManagerCompositionTarget,
-              assetManager,
-              scheduler,
-              ...(options.onAnimationError === undefined
-                ? {}
-                : { onError: options.onAnimationError }),
-            });
-      indicatorLoop =
-        style.advanceIndicator === undefined
-          ? undefined
-          : createFrameLoop({
-              actorKey: input.actorKey,
-              layer: "advanceIndicator",
-              animation: style.advanceIndicator,
-              target: surface.targets
-                .advanceIndicator as AssetManagerCompositionTarget,
-              assetManager,
-              scheduler,
-              ...(options.onAnimationError === undefined
-                ? {}
-                : { onError: options.onAnimationError }),
-            });
+      await primeStyleImages(activeStyle, styleImageResolver, surface);
+      createStyleLoops(activeStyle, styleImageResolver, surface);
 
       let currentAnimationMode: BubbleAnimationMode = "idle";
       let closed = false;
@@ -899,41 +1036,44 @@ export function createBubbleComposition(
         if (mode === currentAnimationMode) return;
         if (mode === "talking") {
           await indicatorLoop?.stop();
-          await surface?.setLayerVisible("advanceIndicator", false);
+          await surface?.setLayerVisible("continueIndicator", false);
           await surface?.setLayerVisible(
-            "portraitTalk",
-            talkLoop !== undefined,
+            "portraitLipSync",
+            lipSyncLoop !== undefined,
           );
-          await talkLoop?.start({ primed: true });
-        } else if (mode === "awaiting-advance") {
-          await talkLoop?.stop({ reset: true });
-          await surface?.setLayerVisible("portraitTalk", false);
+          await lipSyncLoop?.start({ primed: true });
+        } else if (mode === "awaiting-continue") {
+          await lipSyncLoop?.stop({ reset: true });
+          await surface?.setLayerVisible("portraitLipSync", false);
           await surface?.setLayerVisible(
-            "advanceIndicator",
+            "continueIndicator",
             indicatorLoop !== undefined,
           );
           await indicatorLoop?.start({ primed: true });
         } else {
           await Promise.all([
-            talkLoop?.stop({ reset: true }),
+            lipSyncLoop?.stop({ reset: true }),
             indicatorLoop?.stop(),
           ]);
           await Promise.all([
-            surface?.setLayerVisible("portraitTalk", false),
-            surface?.setLayerVisible("advanceIndicator", false),
+            surface?.setLayerVisible("portraitLipSync", false),
+            surface?.setLayerVisible("continueIndicator", false),
           ]);
         }
         currentAnimationMode = mode;
       };
 
       await Promise.all([
-        surface.setLayerVisible("portraitBase", style.portrait !== undefined),
+        surface.setLayerVisible(
+          "portraitBase",
+          activeStyle.portrait !== undefined,
+        ),
         surface.setLayerVisible(
           "portraitBlink",
-          style.portrait?.blink !== undefined,
+          activeStyle.portrait?.blink !== undefined,
         ),
-        surface.setLayerVisible("portraitTalk", false),
-        surface.setLayerVisible("advanceIndicator", false),
+        surface.setLayerVisible("portraitLipSync", false),
+        surface.setLayerVisible("continueIndicator", false),
       ]);
       await surface.show();
       surfaceVisible = true;
@@ -966,10 +1106,64 @@ export function createBubbleComposition(
           transitionTail = transitionTail.then(async () => {
             if (!surface) return;
             svgText.setText({
-              styleName: style.textStyle,
+              styleName: activeStyle.textStyle,
               target: surface.targets.text,
-              text,
+              text: formatBubbleText(text, activeStyle, svgText),
             });
+            currentText = text;
+            await surface.show();
+          });
+          return transitionTail;
+        },
+        updateStyle(styleInput: BubbleStyleInput): Promise<void> {
+          if (closed) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-005",
+                `Bubble is already closed: ${input.actorKey}`,
+              ),
+            );
+          }
+          let nextStyle: NormalizedStyle;
+          try {
+            nextStyle = normalizeStyle(styleInput);
+          } catch (error) {
+            return Promise.reject(error);
+          }
+          transitionTail = transitionTail.then(async () => {
+            if (!surface) return;
+            validateSurface(surface, nextStyle);
+            const nextImageResolver = resolveStyleImageCapability(nextStyle);
+            await Promise.all([
+              blinkLoop?.stop(),
+              lipSyncLoop?.stop(),
+              indicatorLoop?.stop(),
+            ]);
+            await primeStyleImages(nextStyle, nextImageResolver, surface);
+            await surface.updateStyle(nextStyle);
+            activeStyle = nextStyle;
+            svgText.setText({
+              styleName: nextStyle.textStyle,
+              target: surface.targets.text,
+              text: formatBubbleText(currentText, nextStyle, svgText),
+            });
+            createStyleLoops(nextStyle, nextImageResolver, surface);
+            await Promise.all([
+              surface.setLayerVisible(
+                "portraitBase",
+                nextStyle.portrait !== undefined,
+              ),
+              surface.setLayerVisible(
+                "portraitBlink",
+                nextStyle.portrait?.blink !== undefined,
+              ),
+              surface.setLayerVisible("portraitLipSync", false),
+              surface.setLayerVisible("continueIndicator", false),
+            ]);
+            const previousMode = currentAnimationMode;
+            currentAnimationMode = "idle";
+            await blinkLoop?.start({ primed: true });
+            await applyAnimationMode(previousMode);
             await surface.show();
           });
           return transitionTail;
@@ -1005,7 +1199,7 @@ export function createBubbleComposition(
           }
           for (const operation of [
             () => blinkLoop?.stop(),
-            () => talkLoop?.stop(),
+            () => lipSyncLoop?.stop(),
             () => indicatorLoop?.stop(),
             async () => {
               if (surfaceVisible) await surface?.hide();
@@ -1034,7 +1228,7 @@ export function createBubbleComposition(
       const cleanupErrors: unknown[] = [];
       const loopResults = await Promise.allSettled([
         blinkLoop?.stop(),
-        talkLoop?.stop(),
+        lipSyncLoop?.stop(),
         indicatorLoop?.stop(),
       ]);
       cleanupErrors.push(

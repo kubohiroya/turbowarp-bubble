@@ -93,10 +93,10 @@
       }
     },
     {
-      "opcode": "setTalkFrames",
+      "opcode": "setLipSyncFrames",
       "blockType": "COMMAND",
-      "text": "set talk frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
-      "description": "Sets comma-separated registered image assets for the portrait talk layer. An empty list removes talk animation.",
+      "text": "set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Sets comma-separated registered image assets for the portrait lip-sync layer. An empty list removes lip-sync animation.",
       "arguments": {
         "ASSETS": { "type": "STRING", "defaultValue": "MouthClosed,MouthOpen" },
         "SECONDS": { "type": "NUMBER", "defaultValue": 0.1 },
@@ -104,10 +104,10 @@
       }
     },
     {
-      "opcode": "setAdvanceFrames",
+      "opcode": "setContinueFrames",
       "blockType": "COMMAND",
-      "text": "set advance frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
-      "description": "Sets at least two comma-separated registered image assets for the awaiting-advance indicator. An empty list removes the indicator.",
+      "text": "set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Sets at least two comma-separated registered image assets for the awaiting-continue indicator. An empty list removes the indicator.",
       "arguments": {
         "ASSETS": { "type": "STRING", "defaultValue": "Next1,Next2" },
         "SECONDS": { "type": "NUMBER", "defaultValue": 0.2 },
@@ -138,20 +138,20 @@
       "opcode": "setBubbleAnimationMode",
       "blockType": "COMMAND",
       "text": "set this bubble animation mode [MODE]",
-      "description": "Changes this sprite's bubble animation mode. Awaiting advance stops talk animation and starts the configured advance frames.",
+      "description": "Changes this sprite's bubble animation mode. Awaiting continue stops lip-sync animation and starts the configured continue frames.",
       "arguments": {
         "MODE": {
           "type": "STRING",
-          "defaultValue": "awaiting-advance",
+          "defaultValue": "awaiting-continue",
           "menu": "animationMode"
         }
       }
     },
     {
-      "opcode": "waitForBubbleAdvance",
+      "opcode": "waitForBubbleContinue",
       "blockType": "COMMAND",
       "text": "wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds",
-      "description": "Switches to awaiting-advance mode, evaluates a Runtime Expression condition using variables updated by Async Input, and waits until the condition is true or the timeout expires. Zero disables the timeout.",
+      "description": "Switches to awaiting-continue mode, evaluates a Runtime Expression condition using variables updated by Async Input, and waits until the condition is true or the timeout expires. Zero disables the timeout.",
       "arguments": {
         "CONDITION": {
           "type": "STRING",
@@ -220,7 +220,7 @@
     },
     "animationMode": {
       "acceptReporters": true,
-      "items": ["talking", "awaiting-advance", "idle"]
+      "items": ["talking", "awaiting-continue", "idle"]
     }
   }
 }
