@@ -73,6 +73,19 @@ function embedRenderedSvg(renderedSvg, x, y, width, height) {
   </svg>`;
 }
 
+function inlineRenderedBubble(renderedSvg, x, y) {
+  const innerSvg = renderedSvg
+    .replace(/^<svg[^>]*>/u, "")
+    .replace(/<\/svg>\s*$/u, "");
+  const rendererMatch = renderedSvg.match(/data-bubble-renderer="([^"]+)"/u);
+  const styleMatch = renderedSvg.match(/data-bubble-style="([^"]+)"/u);
+  const markedInnerSvg = innerSvg.replace(
+    "<path ",
+    '<path data-animation-mode-bubble-path="union" ',
+  );
+  return `<g transform="translate(${x} ${y})" data-bubble-renderer="${rendererMatch?.[1] ?? "unknown"}"${styleMatch ? ` data-bubble-style="${styleMatch[1]}"` : ""} data-bubble-tail-direction="270">${markedInnerSvg}</g>`;
+}
+
 function panel(x, y, width, height, title) {
   return `<g>
     <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="20" fill="${colors.panel}" stroke="#d9deea" stroke-width="2"/>
@@ -887,17 +900,12 @@ function speechBubble({
     lines: [message],
     width: width + 48,
     height: height + 48,
-    tailDirection: 225,
+    // The actor portrait is centered to the left of the Bubble in this guide.
+    tailDirection: 270,
     fontSize,
     title: "Animation mode Bubble preview",
   });
-  const bubble = embedRenderedSvg(
-    rendered,
-    x - 24,
-    y - 24,
-    width + 48,
-    height + 48,
-  );
+  const bubble = inlineRenderedBubble(rendered, x - 24, y - 24);
   return `<g>
     ${bubble}
     ${
