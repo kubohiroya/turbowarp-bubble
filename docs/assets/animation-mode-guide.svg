@@ -28,10 +28,9 @@
     <ellipse cx="100" cy="267.4" rx="6.4799999999999995" ry="8.64" fill="#7c2945"/>
   </g>
     <g>
-    <rect x="163" y="196" width="190" height="112" rx="28" fill="#fff4cc" stroke="#725a42" stroke-width="3"/>
-    <path d="M 193 302 L 167 338 L 241 305 Z" fill="#fff4cc" stroke="#725a42" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M 189 308 H 245" stroke="#fff4cc" stroke-width="8"/>
-    <text x="199" y="266" style="fill:#25283a;font-size:17px;font-weight:700">海へ出発！</text>
+    <svg x="139" y="172" width="238" height="160" viewBox="0 0 238 160" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>Animation mode Bubble preview</title><path d="M 39.1842 135.7784 L 36.4377 135.1190 L 33.8282 134.0381 L 31.4199 132.5623 L 29.2721 130.7279 L 27.4377 128.5801 L 25.9619 126.1718 L 24.8810 123.5623 L 24.2216 120.8158 L 24.0000 118.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 196.0000 24.0000 L 198.8158 24.2216 L 201.5623 24.8810 L 204.1718 25.9619 L 206.5801 27.4377 L 208.7279 29.2721 L 210.5623 31.4199 L 212.0381 33.8282 L 213.1190 36.4377 L 213.7784 39.1842 L 214.0000 42.0000 L 214.0000 118.0000 L 213.7784 120.8158 L 213.1190 123.5623 L 212.0381 126.1718 L 210.5623 128.5801 L 208.7279 130.7279 L 206.5801 132.5623 L 204.1718 134.0381 L 201.5623 135.1190 L 198.8158 135.7784 L 196.0000 136.0000 L 72.0000 136.0000 L 50.2721 148.7279 L 54.0000 136.0000 L 42.0000 136.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="119" y="85.95" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="17">海へ出発！</text>
+  </svg>
 
   </g>
     <g transform="translate(0 0)">
@@ -63,10 +62,9 @@
     <path d="M 488.8 268.12 Q 496 271.72 503.2 268.12" fill="none" stroke="#7c2945" stroke-width="2.16" stroke-linecap="round"/>
   </g>
     <g>
-    <rect x="559" y="196" width="190" height="112" rx="28" fill="#fff4cc" stroke="#725a42" stroke-width="3"/>
-    <path d="M 589 302 L 563 338 L 637 305 Z" fill="#fff4cc" stroke="#725a42" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M 585 308 H 641" stroke="#fff4cc" stroke-width="8"/>
-    <text x="595" y="266" style="fill:#25283a;font-size:17px;font-weight:700">海へ出発！</text>
+    <svg x="535" y="172" width="238" height="160" viewBox="0 0 238 160" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>Animation mode Bubble preview</title><path d="M 39.1842 135.7784 L 36.4377 135.1190 L 33.8282 134.0381 L 31.4199 132.5623 L 29.2721 130.7279 L 27.4377 128.5801 L 25.9619 126.1718 L 24.8810 123.5623 L 24.2216 120.8158 L 24.0000 118.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 196.0000 24.0000 L 198.8158 24.2216 L 201.5623 24.8810 L 204.1718 25.9619 L 206.5801 27.4377 L 208.7279 29.2721 L 210.5623 31.4199 L 212.0381 33.8282 L 213.1190 36.4377 L 213.7784 39.1842 L 214.0000 42.0000 L 214.0000 118.0000 L 213.7784 120.8158 L 213.1190 123.5623 L 212.0381 126.1718 L 210.5623 128.5801 L 208.7279 130.7279 L 206.5801 132.5623 L 204.1718 134.0381 L 201.5623 135.1190 L 198.8158 135.7784 L 196.0000 136.0000 L 72.0000 136.0000 L 50.2721 148.7279 L 54.0000 136.0000 L 42.0000 136.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="119" y="85.95" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="17">海へ出発！</text>
+  </svg>
     <g transform="translate(0 0)">
              <path d="M 691 254 l 18 0 l -9 12 z" fill="#ff6680"/>
              <path d="M 691 273 l 18 0 l -9 12 z" fill="#d94b68"/>
@@ -101,10 +99,9 @@
     <path d="M 884.8 268.12 Q 892 271.72 899.2 268.12" fill="none" stroke="#7c2945" stroke-width="2.16" stroke-linecap="round"/>
   </g>
     <g>
-    <rect x="955" y="196" width="190" height="112" rx="28" fill="#fff4cc" stroke="#725a42" stroke-width="3"/>
-    <path d="M 985 302 L 959 338 L 1033 305 Z" fill="#fff4cc" stroke="#725a42" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M 981 308 H 1037" stroke="#fff4cc" stroke-width="8"/>
-    <text x="991" y="266" style="fill:#25283a;font-size:17px;font-weight:700">海へ出発！</text>
+    <svg x="931" y="172" width="238" height="160" viewBox="0 0 238 160" data-bubble-renderer="canonical" data-bubble-style="NORMAL" overflow="visible">
+    <title>Animation mode Bubble preview</title><path d="M 39.1842 135.7784 L 36.4377 135.1190 L 33.8282 134.0381 L 31.4199 132.5623 L 29.2721 130.7279 L 27.4377 128.5801 L 25.9619 126.1718 L 24.8810 123.5623 L 24.2216 120.8158 L 24.0000 118.0000 L 24.0000 42.0000 L 24.2216 39.1842 L 24.8810 36.4377 L 25.9619 33.8282 L 27.4377 31.4199 L 29.2721 29.2721 L 31.4199 27.4377 L 33.8282 25.9619 L 36.4377 24.8810 L 39.1842 24.2216 L 42.0000 24.0000 L 196.0000 24.0000 L 198.8158 24.2216 L 201.5623 24.8810 L 204.1718 25.9619 L 206.5801 27.4377 L 208.7279 29.2721 L 210.5623 31.4199 L 212.0381 33.8282 L 213.1190 36.4377 L 213.7784 39.1842 L 214.0000 42.0000 L 214.0000 118.0000 L 213.7784 120.8158 L 213.1190 123.5623 L 212.0381 126.1718 L 210.5623 128.5801 L 208.7279 130.7279 L 206.5801 132.5623 L 204.1718 134.0381 L 201.5623 135.1190 L 198.8158 135.7784 L 196.0000 136.0000 L 72.0000 136.0000 L 50.2721 148.7279 L 54.0000 136.0000 L 42.0000 136.0000 Z" fill="#fff4cc" stroke="#6f5b45" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" /><text x="119" y="85.95" text-anchor="middle" fill="#25283a" font-family="Noto Sans JP, sans-serif" font-size="17">海へ出発！</text>
+  </svg>
 
   </g>
     <g transform="translate(0 0)">
