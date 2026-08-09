@@ -1,6 +1,6 @@
 # TurboWarp Bubble
 
-`@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。紙芝居固有のDSLやシーン遷移には依存しません。
+`@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。
 
 ## 機能の全体像
 
@@ -135,7 +135,7 @@ Asset Managerを音声providerとして接続すると、次の音声を同じ�
 | `@kubohiroya/turbowarp-async-input`        | キー入力・タップをTemporary Variablesのruntime変数へ反映                  |
 | `@kubohiroya/turbowarp-runtime-expression` | runtime変数を参照する安全な待機条件の評価                                 |
 | `@kubohiroya/turbowarp-bubble`             | 吹き出しsurface、配置、say／think、表情レイヤー、animation mode、入力待機 |
-| アプリ／host                               | 必要に応じたDSLからcomposition APIへの変換                                |
+| アプリ／host                               | 必要に応じたアプリ固有の入力からcomposition APIへの変換                   |
 
 Bubbleは依存パッケージを再exportしません。SVG Textは現在の文字描画に必要ですが、Asset Manager、Async Input、Runtime Expressionは利用する機能がなければインストール不要です。Asset Managerを使う機能は画像だけでなく、フルボイス、タイプライター音、行・段落ごとの効果音などの外部メディアも対象にします。
 
@@ -258,7 +258,7 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図とTurboWarp Editorの本体drawableは、どちらも共有`renderBubbleSvg`から生成します。
+図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含む表示例です。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図とTurboWarp Editorの本体drawableは、どちらも共有`renderBubbleSvg`から生成します。
 
 ![Actor相対のdistance、tail length、offset、scaleを比較する図](docs/assets/actor-transform-guide.svg)
 
@@ -470,12 +470,6 @@ await bubble.close();
 ```
 
 返されたhandleの`setText(text)`は同じsurface上の本文を更新し、文字送りなどに利用できます。`handle.updateStyle(style)`は表示中のBubbleへstyle変更を即時適用します。同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、SVG Text target、surfaceを解放します。composition間で状態は共有しません。
-
-## DSL 4.0との関係
-
-このパッケージは`bubbleStyles`を含むDSLを解析しません。紙芝居アプリ側のadapterが、例えば`placement: north-northeast`、`placement: 33.75`、`placement: FOOTER_LIKE`を`defineStyle`へ渡し、表示ライフサイクルに合わせて`show`、`setAnimationMode`、`close`を呼び出します。
-
-アプリ統合は起動時固定・既定OFFのfeature flagで段階導入します。ロールバック時はflagをOFFにし、既存のTurboWarp say／think経路へ戻します。
 
 ## 開発
 
