@@ -247,7 +247,7 @@ https://unpkg.com/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js
 https://unpkg.com/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js
 
 # Bubble（必ず最後）
-https://unpkg.com/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js
+https://unpkg.com/@kubohiroya/turbowarp-bubble@0.3.0/dist/turbowarp-bubble.js
 ```
 
 TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発中は、リポジトリをローカルHTTPサーバーで配信して`dist/turbowarp-bubble.js`を指定できます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。
