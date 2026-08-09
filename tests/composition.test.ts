@@ -123,6 +123,7 @@ function createHarness() {
     measureText,
     scheduler,
     setText,
+    svgText,
     surface,
     visibility,
   };
@@ -189,6 +190,27 @@ describe("Bubble composition", () => {
     ).rejects.toMatchObject({
       code: "BUBBLE-COMPOSITION-006",
       message: expect.stringContaining("image capability"),
+    });
+  });
+
+  it("requires an audio capability only when a voice or reveal sound is shown", async () => {
+    const harness = createHarness();
+    harness.composition.defineStyle({
+      name: "voice",
+      textStyle: "default",
+      audio: { voice: "Voice" },
+    });
+    await expect(
+      harness.composition.show({
+        actor: {},
+        actorKey: "voice-actor",
+        kind: "say",
+        text: "hello",
+        styleName: "voice",
+      }),
+    ).rejects.toMatchObject({
+      code: "BUBBLE-COMPOSITION-006",
+      message: expect.stringContaining("audio capability"),
     });
   });
 
@@ -332,6 +354,79 @@ describe("Bubble composition", () => {
       text: "ab\ncd",
     });
     expect(harness.measureText).toHaveBeenCalled();
+    await handle.close();
+  });
+
+  it("reveals CHARACTER units, plays unit sounds, and reserves final layout", async () => {
+    const harness = createHarness();
+    const played: string[] = [];
+    const audio = {
+      playSound: vi.fn(async (name: unknown) => {
+        played.push(String(name));
+      }),
+    };
+    const composition = createBubbleComposition({
+      imageResolver: harness.imageResolver,
+      audio,
+      svgText: {
+        ...harness.svgText,
+      },
+      createSurface: harness.createSurface,
+      scheduler: harness.scheduler,
+    });
+    composition.defineStyle({
+      name: "reveal",
+      textStyle: "dialogue-text",
+      reveal: {
+        unit: "CHARACTER",
+        layout: "RESERVED",
+        intervalSeconds: 0,
+        sound: "Voice",
+      },
+    });
+    const handle = await composition.show({
+      actor: {},
+      actorKey: "Reveal",
+      kind: "say",
+      text: "ABC",
+      styleName: "reveal",
+    });
+    expect(harness.setText).toHaveBeenLastCalledWith(
+      expect.objectContaining({ text: "A" }),
+    );
+    expect(played).toEqual(["Voice"]);
+    expect(await handle.revealNext()).toBe(true);
+    expect(harness.setText).toHaveBeenLastCalledWith(
+      expect.objectContaining({ text: "AB" }),
+    );
+    await handle.revealAll();
+    expect(harness.setText).toHaveBeenLastCalledWith(
+      expect.objectContaining({ text: "ABC" }),
+    );
+    await handle.close();
+  });
+
+  it("supports finish conditions and surface motion", async () => {
+    const harness = createHarness();
+    const animate = vi.fn();
+    harness.surface.animate = animate;
+    const handle = await harness.composition.show({
+      actor: {},
+      actorKey: "Motion",
+      kind: "say",
+      text: "motion",
+      styleName: "dialogue",
+    });
+    await handle.animate({
+      name: "shake",
+      direction: 90,
+      count: 2,
+      ease: "easeOut",
+    });
+    expect(animate).toHaveBeenCalledWith(
+      expect.objectContaining({ name: "shake", ease: "easeOut" }),
+    );
+    await handle.finish({ condition: async () => true });
     await handle.close();
   });
 

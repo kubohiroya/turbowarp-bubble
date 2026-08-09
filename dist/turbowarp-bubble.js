@@ -226,6 +226,222 @@
         }
       },
       {
+        "opcode": "setBubbleReveal",
+        "blockType": "COMMAND",
+        "text": "set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]",
+        "description": "Sets CHARACTER, WORD, LINE, or BLOCK sequential reveal. WORD uses the configured delimiters; DYNAMIC reflows as text grows and RESERVED reserves the final text size.",
+        "arguments": {
+          "UNIT": {
+            "type": "STRING",
+            "defaultValue": "CHARACTER",
+            "menu": "revealUnit"
+          },
+          "SECONDS": {
+            "type": "NUMBER",
+            "defaultValue": .05
+          },
+          "LAYOUT": {
+            "type": "STRING",
+            "defaultValue": "DYNAMIC",
+            "menu": "revealLayout"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleWordDelimiters",
+        "blockType": "COMMAND",
+        "text": "set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]",
+        "description": "Sets the character set used by WORD reveal and chooses whether delimiters remain visible.",
+        "arguments": {
+          "DELIMITERS": {
+            "type": "STRING",
+            "defaultValue": " /"
+          },
+          "SHOW": {
+            "type": "STRING",
+            "defaultValue": "false",
+            "menu": "boolean"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleRevealSound",
+        "blockType": "COMMAND",
+        "text": "set bubble reveal sound [ASSET] for bubble style [STYLE]",
+        "description": "Sets a named audio asset played once per CHARACTER, WORD, LINE, or BLOCK reveal.",
+        "arguments": {
+          "ASSET": {
+            "type": "STRING",
+            "defaultValue": "Typewriter"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleVoice",
+        "blockType": "COMMAND",
+        "text": "set bubble voice [ASSET] for bubble style [STYLE]",
+        "description": "Sets the named full-voice audio asset played when the Bubble starts.",
+        "arguments": {
+          "ASSET": {
+            "type": "STRING",
+            "defaultValue": "Voice"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "finishBubbleReveal",
+        "blockType": "COMMAND",
+        "text": "finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds",
+        "description": "Reveals the remaining units and waits for the Runtime Expression condition or timeout before completing.",
+        "arguments": {
+          "UNIT": {
+            "type": "STRING",
+            "defaultValue": "CHARACTER",
+            "menu": "revealUnit"
+          },
+          "CONDITION": {
+            "type": "STRING",
+            "defaultValue": "input == \"pressed\""
+          },
+          "TIMEOUT": {
+            "type": "NUMBER",
+            "defaultValue": 10
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleShowAnimation",
+        "blockType": "COMMAND",
+        "text": "set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]",
+        "description": "Selects the animation played when a Bubble starts displaying.",
+        "arguments": {
+          "MOTION": {
+            "type": "STRING",
+            "defaultValue": "fadeIn",
+            "menu": "showMotion"
+          },
+          "SECONDS": {
+            "type": "NUMBER",
+            "defaultValue": .2
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "setBubbleHideAnimation",
+        "blockType": "COMMAND",
+        "text": "set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]",
+        "description": "Selects the animation played before a Bubble is closed. It works with both DYNAMIC and RESERVED layout.",
+        "arguments": {
+          "MOTION": {
+            "type": "STRING",
+            "defaultValue": "fadeOut",
+            "menu": "hideMotion"
+          },
+          "SECONDS": {
+            "type": "NUMBER",
+            "defaultValue": .2
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
+        "opcode": "animateBubble",
+        "blockType": "COMMAND",
+        "text": "animate this bubble [MOTION]",
+        "description": "Plays an immediate display animation such as shake, explode, or a named show/hide motion.",
+        "arguments": { "MOTION": {
+          "type": "STRING",
+          "defaultValue": "shake",
+          "menu": "motion"
+        } }
+      },
+      {
+        "opcode": "shakeBubble",
+        "blockType": "COMMAND",
+        "text": "shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]",
+        "description": "Shakes the complete Bubble surface, including portrait and text, with an easing selection.",
+        "arguments": {
+          "DIRECTION": {
+            "type": "NUMBER",
+            "defaultValue": 90
+          },
+          "COUNT": {
+            "type": "NUMBER",
+            "defaultValue": 2
+          },
+          "EASE": {
+            "type": "STRING",
+            "defaultValue": "easeInOut",
+            "menu": "ease"
+          }
+        }
+      },
+      {
+        "opcode": "explodeBubble",
+        "blockType": "COMMAND",
+        "text": "explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]",
+        "description": "Changes the complete Bubble surface size by a relative amount for the requested number of cycles.",
+        "arguments": {
+          "SCALE": {
+            "type": "NUMBER",
+            "defaultValue": 1.15
+          },
+          "COUNT": {
+            "type": "NUMBER",
+            "defaultValue": 2
+          },
+          "EASE": {
+            "type": "STRING",
+            "defaultValue": "easeOut",
+            "menu": "ease"
+          }
+        }
+      },
+      {
+        "opcode": "animateBubbleShape",
+        "blockType": "COMMAND",
+        "text": "animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds",
+        "description": "Transitions the Bubble outline to THINKING, DREAMING, YELLING, WAVY, WHISPERING, or another visual style.",
+        "arguments": {
+          "VISUAL_STYLE": {
+            "type": "STRING",
+            "defaultValue": "WAVY",
+            "menu": "visualStyle"
+          },
+          "SPEED": {
+            "type": "NUMBER",
+            "defaultValue": 1
+          },
+          "SECONDS": {
+            "type": "NUMBER",
+            "defaultValue": .5
+          }
+        }
+      },
+      {
         "opcode": "sayWithBubbleStyle",
         "blockType": "COMMAND",
         "text": "say [MESSAGE] with bubble style [STYLE]",
@@ -345,6 +561,66 @@
           "talking",
           "awaiting-continue",
           "idle"
+        ]
+      },
+      "revealUnit": {
+        "acceptReporters": true,
+        "items": [
+          "CHARACTER",
+          "WORD",
+          "LINE",
+          "BLOCK"
+        ]
+      },
+      "revealLayout": {
+        "acceptReporters": true,
+        "items": ["DYNAMIC", "RESERVED"]
+      },
+      "boolean": {
+        "acceptReporters": true,
+        "items": ["false", "true"]
+      },
+      "showMotion": {
+        "acceptReporters": true,
+        "items": [
+          "fadeIn",
+          "floatIn",
+          "zoomIn",
+          "riseUp"
+        ]
+      },
+      "hideMotion": {
+        "acceptReporters": true,
+        "items": [
+          "fadeOut",
+          "floatOut",
+          "zoomOut",
+          "sink"
+        ]
+      },
+      "motion": {
+        "acceptReporters": true,
+        "items": [
+          "fadeIn",
+          "floatIn",
+          "zoomIn",
+          "riseUp",
+          "fadeOut",
+          "floatOut",
+          "zoomOut",
+          "sink",
+          "shake",
+          "explode",
+          "animateBubbleShape"
+        ]
+      },
+      "ease": {
+        "acceptReporters": true,
+        "items": [
+          "linear",
+          "easeIn",
+          "easeOut",
+          "easeInOut"
         ]
       }
     }
@@ -8019,6 +8295,102 @@
     });
   }
   //#endregion
+  //#region src/reveal.ts
+  var bubbleRevealUnits = Object.freeze([
+    "CHARACTER",
+    "WORD",
+    "LINE",
+    "BLOCK"
+  ]);
+  function graphemes(text) {
+    const Segmenter = globalThis.Intl?.Segmenter;
+    if (typeof Segmenter === "function") return [...new Segmenter(void 0, { granularity: "grapheme" }).segment(text)].map(({ segment }) => segment);
+    return Array.from(text);
+  }
+  function requireUnit(value) {
+    if (typeof value !== "string" || !bubbleRevealUnits.includes(value)) throw new TypeError("Bubble reveal unit must be CHARACTER, WORD, LINE, or BLOCK.");
+    return value;
+  }
+  function normalizeBubbleReveal(value) {
+    if (typeof value !== "object" || value === null || Array.isArray(value)) throw new TypeError("Bubble reveal must be an object.");
+    const input = value;
+    const allowed = /* @__PURE__ */ new Set([
+      "unit",
+      "delimiters",
+      "showDelimiters",
+      "layout",
+      "intervalSeconds",
+      "sound"
+    ]);
+    if (Object.keys(input).filter((key) => !allowed.has(key)).length > 0 || input.unit === void 0) throw new TypeError("Bubble reveal has unknown or missing properties.");
+    const unit = requireUnit(input.unit);
+    const delimiters = input.delimiters ?? " \\t\\r\\n";
+    if (typeof delimiters !== "string" || delimiters.length === 0) throw new TypeError("Bubble WORD delimiters must be a non-empty string.");
+    const showDelimiters = input.showDelimiters ?? false;
+    if (typeof showDelimiters !== "boolean") throw new TypeError("Bubble reveal showDelimiters must be boolean.");
+    const layout = input.layout ?? "DYNAMIC";
+    if (layout !== "DYNAMIC" && layout !== "RESERVED") throw new TypeError("Bubble reveal layout must be DYNAMIC or RESERVED.");
+    const intervalSeconds = input.intervalSeconds ?? 0;
+    if (typeof intervalSeconds !== "number" || !Number.isFinite(intervalSeconds) || intervalSeconds < 0) throw new TypeError("Bubble reveal intervalSeconds must be zero or greater.");
+    const sound = input.sound;
+    if (sound !== void 0 && (typeof sound !== "string" || sound.trim() === "")) throw new TypeError("Bubble reveal sound must be a non-empty asset name.");
+    return Object.freeze({
+      unit,
+      delimiters,
+      showDelimiters,
+      layout,
+      intervalSeconds,
+      ...sound === void 0 ? {} : { sound: sound.trim() }
+    });
+  }
+  function splitWords(text, delimiters, showDelimiters) {
+    const delimiterSet = new Set(graphemes(delimiters));
+    const result = [];
+    let current = "";
+    for (const character of graphemes(text)) {
+      current += character;
+      if (delimiterSet.has(character)) {
+        if (showDelimiters || current.slice(0, -character.length).length > 0) result.push(showDelimiters ? current : current.slice(0, -character.length));
+        current = "";
+      }
+    }
+    if (current.length > 0) result.push(current);
+    return result.filter((part) => part.length > 0);
+  }
+  /** Returns append-only chunks; joining the first n chunks gives the visible text. */
+  function splitBubbleText(text, reveal) {
+    if (text.length === 0) return Object.freeze([""]);
+    if (reveal.unit === "CHARACTER") return Object.freeze(graphemes(text));
+    if (reveal.unit === "WORD") {
+      const parts = splitWords(text, reveal.delimiters, reveal.showDelimiters);
+      if (reveal.showDelimiters) return Object.freeze(parts);
+      const result = [];
+      let cursor = 0;
+      for (const part of parts) {
+        const index = text.indexOf(part, cursor);
+        if (index < 0) result.push(part);
+        else {
+          result.push(part);
+          cursor = index + part.length;
+          while (cursor < text.length && reveal.delimiters.includes(text[cursor] ?? "")) cursor += 1;
+        }
+      }
+      return Object.freeze(result);
+    }
+    const separator = reveal.unit === "LINE" ? /(?<=\n)/u : /\n{2,}/u;
+    const rawParts = text.split(separator).filter((part) => part.length > 0);
+    if (reveal.unit === "BLOCK") {
+      const separators = [...text.matchAll(/\n{2,}/gu)].map(([match]) => match);
+      const parts = rawParts.map((part, index) => index < separators.length ? `${part}${separators[index] ?? ""}` : part);
+      return Object.freeze(parts.length > 0 ? parts : [text]);
+    }
+    const parts = rawParts;
+    return Object.freeze(parts.length > 0 ? parts : [text]);
+  }
+  function revealedBubbleText(chunks, count) {
+    return chunks.slice(0, Math.max(0, Math.min(count, chunks.length))).join("");
+  }
+  //#endregion
   //#region src/composition.ts
   var BubbleCompositionError = class extends Error {
     constructor(code, message) {
@@ -8033,6 +8405,25 @@
     "idle",
     "talking",
     "awaiting-continue"
+  ]);
+  var validMotionNames = /* @__PURE__ */ new Set([
+    "fadeIn",
+    "fadeOut",
+    "floatIn",
+    "floatOut",
+    "zoomIn",
+    "zoomOut",
+    "riseUp",
+    "sink",
+    "shake",
+    "explode",
+    "animateBubbleShape"
+  ]);
+  var validEases = /* @__PURE__ */ new Set([
+    "linear",
+    "easeIn",
+    "easeOut",
+    "easeInOut"
   ]);
   function isRecord$1(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -8070,6 +8461,64 @@
       ...lipSync === void 0 ? {} : { lipSync }
     });
   }
+  function normalizeMotion(value, label) {
+    if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    requireExactKeys(value, ["name"], [
+      "durationSeconds",
+      "ease",
+      "direction",
+      "count",
+      "relativeScale",
+      "speed",
+      "visualStyle"
+    ], label);
+    if (!validMotionNames.has(value.name)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.name is not a supported Bubble motion.`);
+    const numberField = (key, minimum, integer = false) => {
+      const candidate = value[key];
+      if (candidate === void 0) return void 0;
+      if (typeof candidate !== "number" || !Number.isFinite(candidate) || candidate < minimum || integer && !Number.isInteger(candidate)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.${key} is invalid.`);
+      return candidate;
+    };
+    const durationSeconds = numberField("durationSeconds", 0);
+    const count = numberField("count", 1, true);
+    const relativeScale = numberField("relativeScale", 0);
+    const speed = numberField("speed", 0);
+    const direction = value.direction;
+    if (direction !== void 0 && typeof direction !== "number" && typeof direction !== "string") throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.direction is invalid.`);
+    const ease = value.ease ?? "easeInOut";
+    if (typeof ease !== "string" || !validEases.has(ease)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.ease is invalid.`);
+    const visualStyle = value.visualStyle;
+    if (visualStyle !== void 0 && (typeof visualStyle !== "string" || !bubbleVisualStyles.includes(visualStyle))) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.visualStyle is invalid.`);
+    return Object.freeze({
+      name: value.name,
+      ...durationSeconds === void 0 ? {} : { durationSeconds },
+      ease,
+      ...direction === void 0 ? {} : { direction },
+      ...count === void 0 ? {} : { count },
+      ...relativeScale === void 0 ? {} : { relativeScale },
+      ...speed === void 0 ? {} : { speed },
+      ...visualStyle === void 0 ? {} : { visualStyle }
+    });
+  }
+  function normalizeAudio(value) {
+    if (value === void 0) return void 0;
+    if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
+    requireExactKeys(value, [], [
+      "voice",
+      "reveal",
+      "finish"
+    ], "Bubble audio");
+    const result = {};
+    for (const key of [
+      "voice",
+      "reveal",
+      "finish"
+    ]) {
+      const asset = value[key];
+      if (asset !== void 0) result[key] = requireName(asset, `Bubble audio ${key}`);
+    }
+    return Object.freeze(result);
+  }
   function normalizeStyle(value) {
     if (!isRecord$1(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys(value, ["name", "textStyle"], [
@@ -8081,10 +8530,23 @@
       "offset",
       "visualStyle",
       "portrait",
-      "continueIndicator"
+      "continueIndicator",
+      "reveal",
+      "audio",
+      "showAnimation",
+      "hideAnimation"
     ], "Bubble style");
     const portrait = value.portrait === void 0 ? void 0 : normalizePortrait(value.portrait);
     const continueIndicator = value.continueIndicator === void 0 ? void 0 : normalizeAnimation(value.continueIndicator, "Bubble continue indicator", 2);
+    let reveal;
+    if (value.reveal !== void 0) try {
+      reveal = normalizeBubbleReveal(value.reveal);
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble reveal is invalid.");
+    }
+    const audio = normalizeAudio(value.audio);
+    const showAnimation = value.showAnimation === void 0 ? void 0 : normalizeMotion(value.showAnimation, "Bubble showAnimation");
+    const hideAnimation = value.hideAnimation === void 0 ? void 0 : normalizeMotion(value.hideAnimation, "Bubble hideAnimation");
     let placement;
     try {
       placement = normalizeBubblePlacement(value.placement ?? "up-right");
@@ -8120,12 +8582,23 @@
       offset,
       visualStyle,
       ...portrait === void 0 ? {} : { portrait },
-      ...continueIndicator === void 0 ? {} : { continueIndicator }
+      ...continueIndicator === void 0 ? {} : { continueIndicator },
+      ...reveal === void 0 ? {} : { reveal },
+      ...audio === void 0 ? {} : { audio },
+      ...showAnimation === void 0 ? {} : { showAnimation },
+      ...hideAnimation === void 0 ? {} : { hideAnimation }
     });
   }
   function validateImageResolver(value) {
     if (value === void 0) return void 0;
     if (!isRecord$1(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
+    return value;
+  }
+  function validateAudioCapability(value) {
+    if (value === void 0) return void 0;
+    if (!isRecord$1(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
+    if (value.isRegistered !== void 0 && typeof value.isRegistered !== "function") throw new TypeError("Bubble audio capability isRegistered must be a function.");
+    if (value.getMimeType !== void 0 && typeof value.getMimeType !== "function") throw new TypeError("Bubble audio capability getMimeType must be a function.");
     return value;
   }
   function requireImageResolver(value) {
@@ -8176,6 +8649,12 @@
     if (imageResolver === void 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-006", `Bubble image capability is required for: ${name}. Provide options.imageResolver.`);
     if (!imageResolver.isRegistered(name)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble image asset is not registered: ${name}`);
     if (!imageResolver.getMimeType(name).startsWith("image/")) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble asset is not an image: ${name}`);
+  }
+  function requireAudioAsset(audio, name) {
+    if (audio === void 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-006", `Bubble audio assets require an audio capability: ${name}. Provide options.audio.`);
+    if (audio.isRegistered?.(name) === false) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble audio asset is not registered: ${name}`);
+    const mimeType = audio.getMimeType?.(name);
+    if (mimeType !== void 0 && !mimeType.startsWith("audio/")) throw new BubbleCompositionError("BUBBLE-COMPOSITION-003", `Bubble asset is not audio: ${name}`);
   }
   function styleAssetNames(style) {
     return [...style.portrait === void 0 ? [] : [
@@ -8267,23 +8746,31 @@
       "kind",
       "text",
       "styleName"
-    ], ["animationMode"], "Show bubble input");
+    ], ["animationMode", "reveal"], "Show bubble input");
     if (!validKinds.has(value.kind)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
     if (typeof value.text !== "string") throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string.");
     const animationMode = value.animationMode ?? "talking";
     if (!validAnimationModes$1.has(animationMode)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid.");
+    let reveal;
+    if (value.reveal !== void 0) try {
+      reveal = normalizeBubbleReveal(value.reveal);
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble reveal is invalid.");
+    }
     return {
       actor: value.actor,
       actorKey: requireName(value.actorKey, "Bubble actor key"),
       kind: value.kind,
       text: value.text,
       styleName: requireName(value.styleName, "Bubble style name"),
-      animationMode
+      animationMode,
+      ...reveal === void 0 ? {} : { reveal }
     };
   }
   function createBubbleComposition(options) {
     if (!isRecord$1(options)) throw new TypeError("Bubble composition options must be an object.");
     const imageResolver = validateImageResolver(options.imageResolver);
+    const audio = validateAudioCapability(options.audio);
     const svgText = validateSvgText(options.svgText);
     if (typeof options.createSurface !== "function") throw new TypeError("Bubble composition createSurface must be a function.");
     if (options.onAnimationError !== void 0 && typeof options.onAnimationError !== "function") throw new TypeError("Bubble composition onAnimationError must be a function.");
@@ -8309,6 +8796,10 @@
       const style = styles.get(input.styleName);
       if (!style) throw new BubbleCompositionError("BUBBLE-COMPOSITION-002", `Bubble style is not defined: ${input.styleName}`);
       let activeStyle = style;
+      if (input.reveal !== void 0) activeStyle = Object.freeze({
+        ...style,
+        reveal: input.reveal
+      });
       let currentText = input.text;
       const resolveStyleImageCapability = (nextStyle) => {
         const assetNames = new Set(styleAssetNames(nextStyle));
@@ -8317,6 +8808,16 @@
         return nextImageResolver;
       };
       const styleImageResolver = resolveStyleImageCapability(activeStyle);
+      for (const audioAsset of [
+        activeStyle.audio?.voice,
+        activeStyle.audio?.reveal,
+        activeStyle.audio?.finish,
+        activeStyle.reveal?.sound
+      ]) if (audioAsset !== void 0) requireAudioAsset(audio, audioAsset);
+      const playAudio = async (assetName, untilDone = false) => {
+        if (assetName === void 0 || audio === void 0) return;
+        await audio.playSound(assetName, { untilDone });
+      };
       const primeStyleImages = async (nextStyle, nextImageResolver, nextSurface) => {
         const imageCapability = styleAssetNames(nextStyle).length === 0 ? void 0 : requireImageResolver(nextImageResolver);
         const operations = [];
@@ -8372,6 +8873,11 @@
       let blinkLoop;
       let lipSyncLoop;
       let indicatorLoop;
+      let reveal = activeStyle.reveal;
+      let revealChunks = reveal ? splitBubbleText(input.text, reveal) : Object.freeze([input.text]);
+      let revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
+      let revealTimer;
+      let revealGeneration = 0;
       try {
         surface = validateSurface(await options.createSurface(Object.freeze({
           actor: input.actor,
@@ -8379,10 +8885,19 @@
           kind: input.kind,
           style: activeStyle
         })), activeStyle);
+        const fullText = formatBubbleText(input.text, activeStyle, svgText);
+        if (reveal?.layout === "RESERVED") {
+          svgText.setText({
+            styleName: activeStyle.textStyle,
+            target: surface.targets.text,
+            text: fullText
+          });
+          surface.captureTextLayout?.();
+        }
         svgText.setText({
           styleName: activeStyle.textStyle,
           target: surface.targets.text,
-          text: formatBubbleText(input.text, activeStyle, svgText)
+          text: formatBubbleText(reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text, activeStyle, svgText)
         });
         textOwned = true;
         await primeStyleImages(activeStyle, styleImageResolver, surface);
@@ -8390,6 +8905,38 @@
         let currentAnimationMode = "idle";
         let closed = false;
         let transitionTail = Promise.resolve();
+        const renderVisibleText = async () => {
+          if (!surface) return;
+          const visible = reveal ? revealedBubbleText(revealChunks, revealedCount) : currentText;
+          svgText.setText({
+            styleName: activeStyle.textStyle,
+            target: surface.targets.text,
+            text: formatBubbleText(visible, activeStyle, svgText)
+          });
+          await surface.show();
+        };
+        const stopRevealTimer = () => {
+          revealGeneration += 1;
+          if (revealTimer !== void 0) scheduler.clearTimeout(revealTimer);
+          revealTimer = void 0;
+        };
+        const advanceReveal = async () => {
+          if (!reveal || revealedCount >= revealChunks.length) return false;
+          revealedCount += 1;
+          await renderVisibleText();
+          await playAudio(reveal.sound ?? activeStyle.audio?.reveal);
+          if (revealedCount >= revealChunks.length) stopRevealTimer();
+          return true;
+        };
+        const scheduleReveal = () => {
+          if (!reveal || reveal.intervalSeconds <= 0 || revealedCount >= revealChunks.length) return;
+          const expectedGeneration = revealGeneration;
+          revealTimer = scheduler.setTimeout(() => {
+            revealTimer = void 0;
+            if (closed || expectedGeneration !== revealGeneration) return;
+            transitionTail = transitionTail.then(() => advanceReveal()).then(() => scheduleReveal());
+          }, reveal.intervalSeconds * 1e3);
+        };
         const applyAnimationMode = async (mode) => {
           if (mode === currentAnimationMode) return;
           if (mode === "talking") {
@@ -8416,6 +8963,8 @@
         ]);
         await surface.show();
         surfaceVisible = true;
+        await playAudio(activeStyle.audio?.voice);
+        if (reveal !== void 0) await playAudio(reveal.sound ?? activeStyle.audio?.reveal);
         await blinkLoop?.start({ primed: true });
         await applyAnimationMode(input.animationMode);
         const handle = Object.freeze({
@@ -8429,13 +8978,22 @@
             if (typeof text !== "string") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string."));
             transitionTail = transitionTail.then(async () => {
               if (!surface) return;
-              svgText.setText({
-                styleName: activeStyle.textStyle,
-                target: surface.targets.text,
-                text: formatBubbleText(text, activeStyle, svgText)
-              });
+              stopRevealTimer();
               currentText = text;
-              await surface.show();
+              if (reveal) {
+                revealChunks = splitBubbleText(text, reveal);
+                revealedCount = Math.min(1, revealChunks.length);
+                if (reveal.layout === "RESERVED") {
+                  svgText.setText({
+                    styleName: activeStyle.textStyle,
+                    target: surface.targets.text,
+                    text: formatBubbleText(text, activeStyle, svgText)
+                  });
+                  surface.captureTextLayout?.();
+                }
+                await renderVisibleText();
+                scheduleReveal();
+              } else await renderVisibleText();
             });
             return transitionTail;
           },
@@ -8451,6 +9009,12 @@
               if (!surface) return;
               validateSurface(surface, nextStyle);
               const nextImageResolver = resolveStyleImageCapability(nextStyle);
+              for (const audioAsset of [
+                nextStyle.audio?.voice,
+                nextStyle.audio?.reveal,
+                nextStyle.audio?.finish,
+                nextStyle.reveal?.sound
+              ]) if (audioAsset !== void 0) requireAudioAsset(audio, audioAsset);
               await Promise.all([
                 blinkLoop?.stop(),
                 lipSyncLoop?.stop(),
@@ -8459,6 +9023,18 @@
               await primeStyleImages(nextStyle, nextImageResolver, surface);
               await surface.updateStyle(nextStyle);
               activeStyle = nextStyle;
+              reveal = nextStyle.reveal;
+              revealChunks = reveal ? splitBubbleText(currentText, reveal) : Object.freeze([currentText]);
+              revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
+              stopRevealTimer();
+              if (reveal?.layout === "RESERVED") {
+                svgText.setText({
+                  styleName: nextStyle.textStyle,
+                  target: surface.targets.text,
+                  text: formatBubbleText(currentText, nextStyle, svgText)
+                });
+                surface.captureTextLayout?.();
+              }
               svgText.setText({
                 styleName: nextStyle.textStyle,
                 target: surface.targets.text,
@@ -8475,7 +9051,9 @@
               currentAnimationMode = "idle";
               await blinkLoop?.start({ primed: true });
               await applyAnimationMode(previousMode);
-              await surface.show();
+              await renderVisibleText();
+              scheduleReveal();
+              await playAudio(activeStyle.audio?.voice);
             });
             return transitionTail;
           },
@@ -8485,16 +9063,128 @@
             transitionTail = transitionTail.then(() => applyAnimationMode(mode));
             return transitionTail;
           },
+          revealNext() {
+            if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
+            let advanced = false;
+            transitionTail = transitionTail.then(async () => {
+              advanced = await advanceReveal();
+              if (advanced) scheduleReveal();
+            });
+            return transitionTail.then(() => advanced);
+          },
+          revealAll() {
+            if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
+            transitionTail = transitionTail.then(async () => {
+              stopRevealTimer();
+              if (!reveal) return;
+              while (await advanceReveal());
+            });
+            return transitionTail;
+          },
+          finish(finishInput = {}) {
+            if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
+            const timeoutSeconds = finishInput.timeoutSeconds ?? 0;
+            if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble finish timeoutSeconds must be zero or greater."));
+            if (finishInput.condition !== void 0 && typeof finishInput.condition !== "function") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble finish condition must be a function."));
+            transitionTail = transitionTail.then(async () => {
+              stopRevealTimer();
+              if (finishInput.unit !== void 0) {
+                reveal = normalizeBubbleReveal({
+                  ...reveal ?? {},
+                  unit: finishInput.unit
+                });
+                revealChunks = splitBubbleText(currentText, reveal);
+                revealedCount = Math.min(1, revealChunks.length);
+                if (reveal.layout === "RESERVED" && surface) {
+                  svgText.setText({
+                    styleName: activeStyle.textStyle,
+                    target: surface.targets.text,
+                    text: formatBubbleText(currentText, activeStyle, svgText)
+                  });
+                  surface.captureTextLayout?.();
+                }
+              }
+              if (reveal) while (await advanceReveal());
+              const condition = finishInput.condition;
+              if (condition === void 0 && timeoutSeconds === 0) {
+                await playAudio(activeStyle.audio?.finish);
+                return;
+              }
+              await new Promise((resolve, reject) => {
+                let settled = false;
+                let timeoutHandle;
+                let pollHandle;
+                const settle = () => {
+                  if (settled) return;
+                  settled = true;
+                  if (timeoutHandle !== void 0) scheduler.clearTimeout(timeoutHandle);
+                  if (pollHandle !== void 0) scheduler.clearTimeout(pollHandle);
+                  playAudio(activeStyle.audio?.finish).then(resolve, reject);
+                };
+                if (timeoutSeconds > 0) timeoutHandle = scheduler.setTimeout(settle, timeoutSeconds * 1e3);
+                if (!condition) return;
+                const poll = () => {
+                  let result;
+                  try {
+                    result = condition();
+                  } catch (error) {
+                    if (!settled) {
+                      settled = true;
+                      if (timeoutHandle !== void 0) scheduler.clearTimeout(timeoutHandle);
+                      if (pollHandle !== void 0) scheduler.clearTimeout(pollHandle);
+                      reject(error);
+                    }
+                    return;
+                  }
+                  Promise.resolve(result).then((done) => {
+                    if (done) settle();
+                    else if (!settled) pollHandle = scheduler.setTimeout(poll, 16);
+                  }, (error) => {
+                    if (!settled) {
+                      settled = true;
+                      if (timeoutHandle !== void 0) scheduler.clearTimeout(timeoutHandle);
+                      if (pollHandle !== void 0) scheduler.clearTimeout(pollHandle);
+                      reject(error);
+                    }
+                  });
+                };
+                poll();
+              });
+            });
+            return transitionTail;
+          },
+          animate(motion) {
+            if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
+            let normalized;
+            try {
+              normalized = normalizeMotion(motion, "Bubble motion");
+            } catch (error) {
+              return Promise.reject(error);
+            }
+            transitionTail = transitionTail.then(async () => {
+              if (normalized.name === "animateBubbleShape" && normalized.visualStyle) {
+                activeStyle = Object.freeze({
+                  ...activeStyle,
+                  visualStyle: normalized.visualStyle
+                });
+                await surface?.updateStyle(activeStyle);
+              }
+              await surface?.animate?.(normalized);
+            });
+            return transitionTail;
+          },
           async close() {
             if (closed) return;
             closed = true;
             const errors = [];
+            stopRevealTimer();
             try {
               await transitionTail;
             } catch (error) {
               errors.push(error);
             }
             for (const operation of [
+              () => activeStyle.hideAnimation === void 0 ? void 0 : surface?.animate?.(activeStyle.hideAnimation),
               () => blinkLoop?.stop(),
               () => lipSyncLoop?.stop(),
               () => indicatorLoop?.stop(),
@@ -8515,8 +9205,11 @@
           }
         });
         active.set(input.actorKey, handle);
+        scheduleReveal();
+        if (activeStyle.showAnimation !== void 0) await handle.animate(activeStyle.showAnimation);
         return handle;
       } catch (error) {
+        active.delete(input.actorKey);
         const cleanupErrors = [];
         const loopResults = await Promise.allSettled([
           blinkLoop?.stop(),
@@ -8678,7 +9371,7 @@
     const vector = bubbleDirectionVector(direction);
     return (Math.atan2(-vector.x, -vector.y) * 180 / Math.PI % 360 + 360) % 360;
   }
-  function createSurface(runtime, actor, actorKey, style) {
+  function createSurface(runtime, actor, actorKey, style, scheduler) {
     const renderer = runtime.renderer;
     const sequence = surfaceSequence;
     surfaceSequence += 1;
@@ -8721,6 +9414,9 @@
       let disposed = false;
       let cachedBodySkinSignature = "";
       let currentStyle = style;
+      let reservedTextSize;
+      const layoutPositions = /* @__PURE__ */ new Map();
+      const layoutScales = /* @__PURE__ */ new Map();
       const updateVisibility = () => {
         const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
         renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && currentStyle.visualStyle !== "NO_BUBBLE");
@@ -8731,7 +9427,7 @@
       const position = () => {
         if (disposed) return;
         const scaleMultiplier = currentStyle.placement.basis === "actor" ? currentStyle.offset.scalePercent / 100 : 1;
-        const nativeTextSize = readSize(renderer, text, {
+        const nativeTextSize = reservedTextSize ?? readSize(renderer, text, {
           width: 180,
           height: 48
         });
@@ -8857,6 +9553,22 @@
         ]) if (target) renderer.updateDrawablePosition(target.drawableID, [portraitX, centerY]);
         renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
         if (continueIndicator) renderer.updateDrawablePosition(continueIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
+        const remember = (target, positionValue) => {
+          if (!target) return;
+          layoutPositions.set(target.drawableID, positionValue);
+        };
+        remember(body, [centerX - bodyCenterOffset.x, centerY + bodyCenterOffset.y]);
+        remember(text, [textX, centerY]);
+        remember(portraitBase, [portraitX, centerY]);
+        remember(portraitBlink, [portraitX, centerY]);
+        remember(portraitLipSync, [portraitX, centerY]);
+        layoutScales.set(body.drawableID, [100, 100]);
+        layoutScales.set(text.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        if (portraitBase) layoutScales.set(portraitBase.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        if (portraitBlink) layoutScales.set(portraitBlink.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        if (portraitLipSync) layoutScales.set(portraitLipSync.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        if (continueIndicator) layoutScales.set(continueIndicator.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        if (continueIndicator) remember(continueIndicator, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
         updateVisibility();
       };
       const originalVisualChange = actor.onTargetVisualChange;
@@ -8876,11 +9588,105 @@
           if (disposed) return;
           const wasActorRelative = currentStyle.placement.basis === "actor";
           currentStyle = nextStyle;
+          if (nextStyle.reveal?.layout !== "RESERVED") reservedTextSize = void 0;
           const isActorRelative = currentStyle.placement.basis === "actor";
           if (wasActorRelative && !isActorRelative) {
             if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
           } else if (!wasActorRelative && isActorRelative) actor.onTargetVisualChange = visualChangeHook;
           position();
+        },
+        captureTextLayout() {
+          if (disposed) return;
+          reservedTextSize = readSize(renderer, text, {
+            width: 180,
+            height: 48
+          });
+          position();
+        },
+        clearTextLayout() {
+          reservedTextSize = void 0;
+          position();
+        },
+        async animate(motion) {
+          if (disposed) return;
+          const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
+          const waitForDuration = async () => {
+            if (durationSeconds === 0) return;
+            await new Promise((resolve) => {
+              scheduler.setTimeout(resolve, durationSeconds * 1e3);
+            });
+          };
+          const motionTargets = [
+            body,
+            text,
+            portraitBase,
+            portraitBlink,
+            portraitLipSync,
+            continueIndicator
+          ].filter((target) => target !== void 0);
+          if (motion.name === "fadeIn" || motion.name === "floatIn" || motion.name === "zoomIn" || motion.name === "riseUp") {
+            surfaceVisible = true;
+            updateVisibility();
+            if (motion.name === "floatIn" || motion.name === "riseUp") for (const target of motionTargets) {
+              const base = layoutPositions.get(target.drawableID);
+              if (base) renderer.updateDrawablePosition(target.drawableID, [base[0], base[1] + 16]);
+            }
+            else if (motion.name === "zoomIn") for (const target of motionTargets) {
+              const base = layoutScales.get(target.drawableID) ?? [100, 100];
+              renderer.updateDrawableScale(target.drawableID, [base[0] * .01, base[1] * .01]);
+            }
+            await waitForDuration();
+            position();
+            return;
+          }
+          if (motion.name === "fadeOut" || motion.name === "floatOut" || motion.name === "zoomOut" || motion.name === "sink") {
+            if (motion.name === "floatOut" || motion.name === "sink") for (const target of motionTargets) {
+              const base = layoutPositions.get(target.drawableID);
+              if (base) renderer.updateDrawablePosition(target.drawableID, [base[0], base[1] - 16]);
+            }
+            else if (motion.name === "zoomOut") for (const target of motionTargets) {
+              const base = layoutScales.get(target.drawableID) ?? [100, 100];
+              renderer.updateDrawableScale(target.drawableID, [base[0] * .01, base[1] * .01]);
+            }
+            await waitForDuration();
+            surfaceVisible = false;
+            updateVisibility();
+            return;
+          }
+          if (motion.name === "shake") {
+            const count = Math.max(1, Math.floor(motion.count ?? 1));
+            const vector = bubbleDirectionVector(typeof motion.direction === "number" ? motion.direction : motion.direction ?? "right") ?? bubbleDirectionVector("right");
+            const dx = vector.x * 5;
+            const dy = vector.y * 5;
+            for (let index = 0; index < count; index += 1) {
+              for (const target of motionTargets) {
+                const base = layoutPositions.get(target.drawableID);
+                if (base) renderer.updateDrawablePosition(target.drawableID, [base[0] + dx, base[1] + dy]);
+              }
+              for (const target of motionTargets) {
+                const base = layoutPositions.get(target.drawableID);
+                if (base) renderer.updateDrawablePosition(target.drawableID, [base[0] - dx, base[1] - dy]);
+              }
+            }
+            position();
+            await waitForDuration();
+            return;
+          }
+          if (motion.name === "explode") {
+            const count = Math.max(1, Math.floor(motion.count ?? 1));
+            const factor = motion.relativeScale ?? 1.15;
+            for (let index = 0; index < count; index += 1) {
+              for (const target of motionTargets) {
+                const base = layoutScales.get(target.drawableID) ?? [100, 100];
+                renderer.updateDrawableScale(target.drawableID, [base[0] * factor, base[1] * factor]);
+              }
+              position();
+            }
+            position();
+            await waitForDuration();
+            return;
+          }
+          await waitForDuration();
         },
         show() {
           if (disposed) return;
@@ -8933,12 +9739,20 @@
           runtime.requestRedraw?.();
         }
       },
-      audio: options.audio ?? { async playSound(name, playOptions = {}) {
-        const extension = getAssetExtension();
-        const method = playOptions.untilDone ? extension?.playSoundUntilDone : extension?.playSound;
-        if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
-        await method.call(extension, { NAME: name });
-      } },
+      audio: options.audio ?? {
+        isRegistered(name) {
+          return getAssetExtension().isLoaded({ NAME: name });
+        },
+        getMimeType(name) {
+          return getAssetExtension().getAssetMimeType({ NAME: name });
+        },
+        async playSound(name, playOptions = {}) {
+          const extension = getAssetExtension();
+          const method = playOptions.untilDone ? extension?.playSoundUntilDone : extension?.playSound;
+          if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
+          await method.call(extension, { NAME: name });
+        }
+      },
       svgText: options.svgText ?? {
         setText({ styleName, target, text }) {
           svgTextExtension?.setText({
@@ -8957,7 +9771,10 @@
       },
       createSurface({ actor, actorKey, style }) {
         if (!isRecord(actor) || typeof actor.id !== "string") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-        return createSurface(runtime, actor, actorKey, style);
+        return createSurface(runtime, actor, actorKey, style, options.scheduler ?? {
+          setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
+          clearTimeout: (handle) => globalThis.clearTimeout(handle)
+        });
       },
       ...options.scheduler === void 0 ? {} : { scheduler: options.scheduler },
       ...options.onAnimationError === void 0 ? {} : { onAnimationError: options.onAnimationError }
@@ -8971,6 +9788,37 @@
     "idle",
     "talking",
     "awaiting-continue"
+  ]);
+  var validRevealUnits = /* @__PURE__ */ new Set([
+    "CHARACTER",
+    "WORD",
+    "LINE",
+    "BLOCK"
+  ]);
+  var showMotionNames = /* @__PURE__ */ new Set([
+    "fadeIn",
+    "floatIn",
+    "zoomIn",
+    "riseUp"
+  ]);
+  var hideMotionNames = /* @__PURE__ */ new Set([
+    "fadeOut",
+    "floatOut",
+    "zoomOut",
+    "sink"
+  ]);
+  var motionNames = /* @__PURE__ */ new Set([
+    ...showMotionNames,
+    ...hideMotionNames,
+    "shake",
+    "explode",
+    "animateBubbleShape"
+  ]);
+  var easeNames = /* @__PURE__ */ new Set([
+    "linear",
+    "easeIn",
+    "easeOut",
+    "easeInOut"
   ]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
   var EXTENSION_VERSION = "0.2.0";
@@ -9117,6 +9965,146 @@
       });
       this.installStyle(nextStyle);
     }
+    setBubbleReveal(args) {
+      const style = this.requireStyle(args.STYLE);
+      const unit = this.toString(args.UNIT).trim().toUpperCase();
+      if (!validRevealUnits.has(unit)) throw extensionError("reveal unit must be CHARACTER, WORD, LINE, or BLOCK.");
+      const seconds = Scratch.Cast.toNumber(args.SECONDS);
+      if (!Number.isFinite(seconds) || seconds < 0) throw extensionError("reveal interval must be zero or greater.");
+      const layout = this.toString(args.LAYOUT).trim().toUpperCase();
+      if (layout !== "DYNAMIC" && layout !== "RESERVED") throw extensionError("reveal layout must be DYNAMIC or RESERVED.");
+      const previous = style.reveal;
+      const reveal = Object.freeze({
+        unit,
+        ...previous?.delimiters === void 0 ? {} : { delimiters: previous.delimiters },
+        ...previous?.showDelimiters === void 0 ? {} : { showDelimiters: previous.showDelimiters },
+        layout,
+        intervalSeconds: seconds,
+        ...previous?.sound === void 0 ? {} : { sound: previous.sound }
+      });
+      this.installStyle(Object.freeze({
+        ...style,
+        reveal
+      }));
+    }
+    setBubbleWordDelimiters(args) {
+      const style = this.requireStyle(args.STYLE);
+      const delimiters = this.toString(args.DELIMITERS);
+      if (!delimiters) throw extensionError("word delimiters are empty.");
+      const show = this.toString(args.SHOW).trim().toLowerCase();
+      if (show !== "true" && show !== "false") throw extensionError("show delimiters must be true or false.");
+      const previous = style.reveal;
+      const reveal = Object.freeze({
+        unit: previous?.unit ?? "WORD",
+        delimiters,
+        showDelimiters: show === "true",
+        ...previous?.layout === void 0 ? {} : { layout: previous.layout },
+        ...previous?.intervalSeconds === void 0 ? {} : { intervalSeconds: previous.intervalSeconds },
+        ...previous?.sound === void 0 ? {} : { sound: previous.sound }
+      });
+      this.installStyle(Object.freeze({
+        ...style,
+        reveal
+      }));
+    }
+    setBubbleRevealSound(args) {
+      const style = this.requireStyle(args.STYLE);
+      const asset = this.toString(args.ASSET).trim();
+      const audio = style.audio;
+      const nextAudio = asset ? Object.freeze({
+        ...audio ?? {},
+        reveal: asset
+      }) : (() => {
+        if (!audio) return void 0;
+        const { reveal, ...withoutReveal } = audio;
+        return Object.freeze(withoutReveal);
+      })();
+      this.installStyle(Object.freeze({
+        ...style,
+        ...nextAudio === void 0 ? {} : { audio: nextAudio }
+      }));
+    }
+    setBubbleVoice(args) {
+      const style = this.requireStyle(args.STYLE);
+      const asset = this.toString(args.ASSET).trim();
+      const audio = style.audio;
+      const nextAudio = asset ? Object.freeze({
+        ...audio ?? {},
+        voice: asset
+      }) : (() => {
+        if (!audio) return void 0;
+        const { voice, ...withoutVoice } = audio;
+        return Object.freeze(withoutVoice);
+      })();
+      this.installStyle(Object.freeze({
+        ...style,
+        ...nextAudio === void 0 ? {} : { audio: nextAudio }
+      }));
+    }
+    setBubbleShowAnimation(args) {
+      const style = this.requireStyle(args.STYLE);
+      const motion = this.motionInput(args.MOTION, args.SECONDS, "show", showMotionNames);
+      this.installStyle(Object.freeze({
+        ...style,
+        showAnimation: motion
+      }));
+    }
+    setBubbleHideAnimation(args) {
+      const style = this.requireStyle(args.STYLE);
+      const motion = this.motionInput(args.MOTION, args.SECONDS, "hide", hideMotionNames);
+      this.installStyle(Object.freeze({
+        ...style,
+        hideAnimation: motion
+      }));
+    }
+    async animateBubble(args, util) {
+      const handle = this.requireHandle(util);
+      const name = this.toString(args.MOTION).trim();
+      if (!motionNames.has(name)) throw extensionError("unsupported Bubble motion.");
+      await handle.animate({ name });
+    }
+    async shakeBubble(args, util) {
+      const handle = this.requireHandle(util);
+      const count = Scratch.Cast.toNumber(args.COUNT);
+      if (!Number.isInteger(count) || count < 1) throw extensionError("shake count must be a positive integer.");
+      const ease = this.toString(args.EASE).trim();
+      if (!easeNames.has(ease)) throw extensionError("unsupported easing.");
+      await handle.animate({
+        name: "shake",
+        direction: Scratch.Cast.toNumber(args.DIRECTION),
+        count,
+        ease
+      });
+    }
+    async explodeBubble(args, util) {
+      const handle = this.requireHandle(util);
+      const scale = Scratch.Cast.toNumber(args.SCALE);
+      const count = Scratch.Cast.toNumber(args.COUNT);
+      if (!Number.isFinite(scale) || scale <= 0) throw extensionError("explode scale must be positive.");
+      if (!Number.isInteger(count) || count < 1) throw extensionError("explode count must be a positive integer.");
+      const ease = this.toString(args.EASE).trim();
+      if (!easeNames.has(ease)) throw extensionError("unsupported easing.");
+      await handle.animate({
+        name: "explode",
+        relativeScale: scale,
+        count,
+        ease
+      });
+    }
+    async animateBubbleShape(args, util) {
+      const handle = this.requireHandle(util);
+      const visualStyle = this.toString(args.VISUAL_STYLE).trim().toUpperCase();
+      if (!bubbleVisualStyles.includes(visualStyle)) throw extensionError("unsupported Bubble visual style.");
+      const speed = Scratch.Cast.toNumber(args.SPEED);
+      const seconds = Scratch.Cast.toNumber(args.SECONDS);
+      if (!Number.isFinite(speed) || speed < 0 || !Number.isFinite(seconds) || seconds < 0) throw extensionError("shape animation speed and duration must be zero or greater.");
+      await handle.animate({
+        name: "animateBubbleShape",
+        visualStyle,
+        speed,
+        durationSeconds: seconds
+      });
+    }
     sayWithBubbleStyle(args, util) {
       return this.show("say", args, util);
     }
@@ -9175,6 +10163,22 @@
         this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
         if (timeoutSeconds > 0) timeoutHandle = this.waitScheduler.setTimeout(() => finish(), timeoutSeconds * 1e3);
         checkCondition();
+      });
+    }
+    async finishBubbleReveal(args, util) {
+      const handle = this.requireHandle(util);
+      const unit = this.toString(args.UNIT).trim().toUpperCase();
+      if (!validRevealUnits.has(unit)) throw extensionError("reveal unit is invalid.");
+      const conditionText = this.toString(args.CONDITION).trim();
+      const timeoutSeconds = Scratch.Cast.toNumber(args.TIMEOUT);
+      if (!conditionText) throw extensionError("finish condition is empty.");
+      if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) throw extensionError("finish timeout must be zero or greater.");
+      const expression = this.runtime.ext_kubohiroyaruntimeexpression;
+      if (!this.isRecord(expression) || typeof expression.runtimeCondition !== "function") throw extensionError("Bubble finish requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.");
+      await handle.finish({
+        unit,
+        timeoutSeconds,
+        condition: () => expression.runtimeCondition({ EXPRESSION: conditionText })
       });
     }
     async closeBubble(_args, util) {
@@ -9264,6 +10268,16 @@
         frameIntervalSeconds: seconds
       });
     }
+    motionInput(value, secondsValue, label, valid) {
+      const name = this.toString(value).trim();
+      if (!valid.has(name)) throw extensionError(`${label} animation is invalid.`);
+      const seconds = Scratch.Cast.toNumber(secondsValue);
+      if (!Number.isFinite(seconds) || seconds < 0) throw extensionError(`${label} animation duration must be zero or greater.`);
+      return Object.freeze({
+        name,
+        durationSeconds: seconds
+      });
+    }
     setPortraitAnimation(field, args) {
       const style = this.requireStyle(args.STYLE);
       const portrait = style.portrait;
@@ -9292,6 +10306,12 @@
       const target = util?.target;
       if (!this.isTarget(target)) throw extensionError("target is unavailable.");
       return target;
+    }
+    requireHandle(util) {
+      const target = this.requireTarget(util);
+      const handle = this.handles.get(target.id);
+      if (!handle) throw extensionError("this target does not have an active bubble.");
+      return handle;
     }
     placementInput(placement) {
       return placement.basis === "actor" ? placement.direction : placement.region;

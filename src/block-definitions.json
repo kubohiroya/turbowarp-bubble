@@ -115,6 +115,163 @@
       }
     },
     {
+      "opcode": "setBubbleReveal",
+      "blockType": "COMMAND",
+      "text": "set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]",
+      "description": "Sets CHARACTER, WORD, LINE, or BLOCK sequential reveal. WORD uses the configured delimiters; DYNAMIC reflows as text grows and RESERVED reserves the final text size.",
+      "arguments": {
+        "UNIT": {
+          "type": "STRING",
+          "defaultValue": "CHARACTER",
+          "menu": "revealUnit"
+        },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.05 },
+        "LAYOUT": {
+          "type": "STRING",
+          "defaultValue": "DYNAMIC",
+          "menu": "revealLayout"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleWordDelimiters",
+      "blockType": "COMMAND",
+      "text": "set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]",
+      "description": "Sets the character set used by WORD reveal and chooses whether delimiters remain visible.",
+      "arguments": {
+        "DELIMITERS": { "type": "STRING", "defaultValue": " /" },
+        "SHOW": {
+          "type": "STRING",
+          "defaultValue": "false",
+          "menu": "boolean"
+        },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleRevealSound",
+      "blockType": "COMMAND",
+      "text": "set bubble reveal sound [ASSET] for bubble style [STYLE]",
+      "description": "Sets a named audio asset played once per CHARACTER, WORD, LINE, or BLOCK reveal.",
+      "arguments": {
+        "ASSET": { "type": "STRING", "defaultValue": "Typewriter" },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleVoice",
+      "blockType": "COMMAND",
+      "text": "set bubble voice [ASSET] for bubble style [STYLE]",
+      "description": "Sets the named full-voice audio asset played when the Bubble starts.",
+      "arguments": {
+        "ASSET": { "type": "STRING", "defaultValue": "Voice" },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "finishBubbleReveal",
+      "blockType": "COMMAND",
+      "text": "finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds",
+      "description": "Reveals the remaining units and waits for the Runtime Expression condition or timeout before completing.",
+      "arguments": {
+        "UNIT": {
+          "type": "STRING",
+          "defaultValue": "CHARACTER",
+          "menu": "revealUnit"
+        },
+        "CONDITION": {
+          "type": "STRING",
+          "defaultValue": "input == \"pressed\""
+        },
+        "TIMEOUT": { "type": "NUMBER", "defaultValue": 10 }
+      }
+    },
+    {
+      "opcode": "setBubbleShowAnimation",
+      "blockType": "COMMAND",
+      "text": "set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Selects the animation played when a Bubble starts displaying.",
+      "arguments": {
+        "MOTION": {
+          "type": "STRING",
+          "defaultValue": "fadeIn",
+          "menu": "showMotion"
+        },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.2 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "setBubbleHideAnimation",
+      "blockType": "COMMAND",
+      "text": "set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]",
+      "description": "Selects the animation played before a Bubble is closed. It works with both DYNAMIC and RESERVED layout.",
+      "arguments": {
+        "MOTION": {
+          "type": "STRING",
+          "defaultValue": "fadeOut",
+          "menu": "hideMotion"
+        },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.2 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
+      "opcode": "animateBubble",
+      "blockType": "COMMAND",
+      "text": "animate this bubble [MOTION]",
+      "description": "Plays an immediate display animation such as shake, explode, or a named show/hide motion.",
+      "arguments": {
+        "MOTION": {
+          "type": "STRING",
+          "defaultValue": "shake",
+          "menu": "motion"
+        }
+      }
+    },
+    {
+      "opcode": "shakeBubble",
+      "blockType": "COMMAND",
+      "text": "shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]",
+      "description": "Shakes the complete Bubble surface, including portrait and text, with an easing selection.",
+      "arguments": {
+        "DIRECTION": { "type": "NUMBER", "defaultValue": 90 },
+        "COUNT": { "type": "NUMBER", "defaultValue": 2 },
+        "EASE": {
+          "type": "STRING",
+          "defaultValue": "easeInOut",
+          "menu": "ease"
+        }
+      }
+    },
+    {
+      "opcode": "explodeBubble",
+      "blockType": "COMMAND",
+      "text": "explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]",
+      "description": "Changes the complete Bubble surface size by a relative amount for the requested number of cycles.",
+      "arguments": {
+        "SCALE": { "type": "NUMBER", "defaultValue": 1.15 },
+        "COUNT": { "type": "NUMBER", "defaultValue": 2 },
+        "EASE": { "type": "STRING", "defaultValue": "easeOut", "menu": "ease" }
+      }
+    },
+    {
+      "opcode": "animateBubbleShape",
+      "blockType": "COMMAND",
+      "text": "animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds",
+      "description": "Transitions the Bubble outline to THINKING, DREAMING, YELLING, WAVY, WHISPERING, or another visual style.",
+      "arguments": {
+        "VISUAL_STYLE": {
+          "type": "STRING",
+          "defaultValue": "WAVY",
+          "menu": "visualStyle"
+        },
+        "SPEED": { "type": "NUMBER", "defaultValue": 1 },
+        "SECONDS": { "type": "NUMBER", "defaultValue": 0.5 }
+      }
+    },
+    {
       "opcode": "sayWithBubbleStyle",
       "blockType": "COMMAND",
       "text": "say [MESSAGE] with bubble style [STYLE]",
@@ -221,6 +378,46 @@
     "animationMode": {
       "acceptReporters": true,
       "items": ["talking", "awaiting-continue", "idle"]
+    },
+    "revealUnit": {
+      "acceptReporters": true,
+      "items": ["CHARACTER", "WORD", "LINE", "BLOCK"]
+    },
+    "revealLayout": {
+      "acceptReporters": true,
+      "items": ["DYNAMIC", "RESERVED"]
+    },
+    "boolean": {
+      "acceptReporters": true,
+      "items": ["false", "true"]
+    },
+    "showMotion": {
+      "acceptReporters": true,
+      "items": ["fadeIn", "floatIn", "zoomIn", "riseUp"]
+    },
+    "hideMotion": {
+      "acceptReporters": true,
+      "items": ["fadeOut", "floatOut", "zoomOut", "sink"]
+    },
+    "motion": {
+      "acceptReporters": true,
+      "items": [
+        "fadeIn",
+        "floatIn",
+        "zoomIn",
+        "riseUp",
+        "fadeOut",
+        "floatOut",
+        "zoomOut",
+        "sink",
+        "shake",
+        "explode",
+        "animateBubbleShape"
+      ]
+    },
+    "ease": {
+      "acceptReporters": true,
+      "items": ["linear", "easeIn", "easeOut", "easeInOut"]
     }
   }
 }

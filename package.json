@@ -107,7 +107,9 @@
     "speech-bubble",
     "portrait",
     "lip-sync",
-    "continue-indicator"
+    "continue-indicator",
+    "sequential-reveal",
+    "bubble-animation"
   ],
   "dependencies": {
     "@cto.af/linebreak": "4.0.3"

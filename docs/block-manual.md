@@ -6,7 +6,7 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. SVG Text and Bubble are required for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, and future voice or display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
+The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. SVG Text and Bubble are required for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
 
 | Order | Extension                | URL                                                                                                               |
 | ----: | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
@@ -173,7 +173,22 @@ set continue frames [Next1,Next2]
 - An empty `ASSETS` input removes that animation.
 - An empty portrait base removes the whole portrait.
 
-## 5. Show dialogue and wait for input
+## 5. Sequential reveal, audio, and layout
+
+Bubble can reveal a message as `CHARACTER`, `WORD`, `LINE`, or `BLOCK` units. `WORD` does not perform morphological analysis; it uses whitespace or the configured delimiter character set. Delimiters can remain visible or be hidden.
+
+```text
+set bubble reveal unit [CHARACTER] every [0.05] seconds layout [RESERVED] for bubble style [hero-dialogue]
+set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
+set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
+set bubble voice [HeroVoice] for bubble style [hero-dialogue]
+say [Let's head for the sea!] with bubble style [hero-dialogue]
+finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] seconds
+```
+
+`DYNAMIC` recalculates the Bubble size and placement after each unit. `RESERVED` measures the final text first and reserves that layout while units appear. `set bubble reveal sound` plays a named Asset Manager audio asset per unit, while `set bubble voice` plays full voice audio when the Bubble starts. Text display remains available without audio.
+
+## 6. Show dialogue and wait for input
 
 `say` and `think` show a Bubble immediately, continue to the next block, and begin in `talking` animation mode.
 
@@ -198,7 +213,7 @@ If animated GIF playback is unavailable, use this static animation-mode comparis
 
 ![Blink, lip-sync, and continue-frame states in talking, awaiting-continue, and idle modes](./assets/animation-mode-guide.svg)
 
-## 6. Bubble animation modes
+## 7. Bubble animation modes
 
 | Mode                | Blink | Lip-sync     | Continue frames | Typical use                          |
 | ------------------- | ----- | ------------ | --------------- | ------------------------------------ |
@@ -208,7 +223,22 @@ If animated GIF playback is unavailable, use this static animation-mode comparis
 
 `set this bubble animation mode [MODE]` changes only the Bubble owned by the calling sprite, clone, or Stage. It reports an error if that target has not first run `say` or `think`.
 
-## 7. `say` and `think`
+## 8. Show, in-display, and hide animations
+
+Use `fadeIn`, `floatIn`, `zoomIn`, or `riseUp` when a Bubble starts displaying, and `fadeOut`, `floatOut`, `zoomOut`, or `sink` when it finishes displaying. These animations work with both `DYNAMIC` and `RESERVED` layout.
+
+```text
+set bubble show animation [fadeIn] for [0.2] seconds for bubble style [hero-dialogue]
+set bubble hide animation [fadeOut] for [0.2] seconds for bubble style [hero-dialogue]
+animate this bubble [shake]
+shake this bubble direction [90] count [2] ease [easeInOut]
+explode this bubble relative scale [1.15] count [2] ease [easeOut]
+animate bubble shape to [WAVY] speed [1] for [0.5] seconds
+```
+
+`shake` applies direction, count, and `ease` to the complete Bubble surface. `explode` changes the relative scale of text and portrait together. `animate bubble shape` switches the outline at the requested speed and duration to styles such as `THINKING`, `DREAMING`, `YELLING`, `WAVY`, or `WHISPERING`.
+
+## 9. `say` and `think`
 
 ```text
 say [MESSAGE] with bubble style [STYLE]
@@ -219,7 +249,7 @@ Both blocks support the same visual styles, portrait layers, placement, and anim
 
 Running a new `say` or `think` on the same sprite, clone, or Stage disposes the previous Bubble and its timers/drawables before replacing it. The Stage supports stage-relative placement only.
 
-## 8. Using Bubble with clones
+## 10. Using Bubble with clones
 
 Bubble style definitions are shared within the extension, but each sprite or clone owns its currently displayed Bubble.
 
@@ -229,28 +259,39 @@ Bubble style definitions are shared within the extension, but each sprite or clo
 
 When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables owned by that target are released automatically.
 
-## 9. Block reference
+## 11. Block reference
 
-| Block                                                                                  | Description                                                      |
-| -------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Define or redefine a Bubble style                                |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Set an actor direction/angle or a stage-relative region          |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Set the distance from actor bounds to the tail tip               |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Select one of ten SVG body shapes                                |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Set the nominal border-to-tip tail length                        |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | Set body position and whole-Bubble scale, including text         |
-| `set portrait base [ASSET] for bubble style [STYLE]`                                   | Set the portrait base image                                      |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | Set blink overlays and interval                                  |
-| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | Set lip-sync overlays and interval                               |
-| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | Set the animation shown during `awaiting-continue`               |
-| `say [MESSAGE] with bubble style [STYLE]`                                              | Start or replace a `say` Bubble in `talking` mode                |
-| `think [MESSAGE] with bubble style [STYLE]`                                            | Start or replace a `think` Bubble in `talking` mode              |
-| `set this bubble animation mode [MODE]`                                                | Select `talking`, `awaiting-continue`, or `idle` for this Bubble |
-| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Await a Runtime Expression condition or optional timeout         |
-| `close this bubble`                                                                    | Release this target's Bubble and owned resources                 |
-| `Bubble version`                                                                       | Report the Bubble implementation version                         |
+| Block                                                                                            | Description                                                      |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                                      | Define or redefine a Bubble style                                |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                      | Set an actor direction/angle or a stage-relative region          |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                                        | Set the distance from actor bounds to the tail tip               |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                | Select one of ten SVG body shapes                                |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                                       | Set the nominal border-to-tip tail length                        |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                         | Set body position and whole-Bubble scale, including text         |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                             | Set the portrait base image                                      |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                     | Set blink overlays and interval                                  |
+| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                  | Set lip-sync overlays and interval                               |
+| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                  | Set the animation shown during `awaiting-continue`               |
+| `set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]` | Configure CHARACTER/WORD/LINE/BLOCK sequential reveal            |
+| `set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]`                   | Configure WORD delimiters and visibility                         |
+| `set bubble reveal sound [ASSET] for bubble style [STYLE]`                                       | Set the per-unit reveal sound                                    |
+| `set bubble voice [ASSET] for bubble style [STYLE]`                                              | Set full voice played when display starts                        |
+| `finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds`                    | Reveal remaining units and wait for condition or timeout         |
+| `set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`              | Configure show animation                                         |
+| `set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`              | Configure hide animation                                         |
+| `animate this bubble [MOTION]`                                                                   | Play a whole-Bubble animation                                    |
+| `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                              | Shake the complete Bubble surface                                |
+| `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                           | Apply relative scale cycles to the Bubble                        |
+| `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                     | Transition the Bubble outline                                    |
+| `say [MESSAGE] with bubble style [STYLE]`                                                        | Start or replace a `say` Bubble in `talking` mode                |
+| `think [MESSAGE] with bubble style [STYLE]`                                                      | Start or replace a `think` Bubble in `talking` mode              |
+| `set this bubble animation mode [MODE]`                                                          | Select `talking`, `awaiting-continue`, or `idle` for this Bubble |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`           | Await a Runtime Expression condition or optional timeout         |
+| `close this bubble`                                                                              | Release this target's Bubble and owned resources                 |
+| `Bubble version`                                                                                 | Report the Bubble implementation version                         |
 
-## 10. Troubleshooting
+## 12. Troubleshooting
 
 | Symptom                              | Cause and solution                                                          |
 | ------------------------------------ | --------------------------------------------------------------------------- |
@@ -267,7 +308,7 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 | Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value  |
 | Eyes or mouth are misaligned         | Match canvas size, center, and transparent area across all portrait layers  |
 
-## 11. Automatic cleanup
+## 13. Automatic cleanup
 
 Bubble automatically releases its owned timers, SVG Text skins, and renderer drawables when:
 
@@ -280,7 +321,7 @@ Bubble automatically releases its owned timers, SVG Text skins, and renderer dra
 
 Assets registered with Asset Manager are not owned by Bubble. To remove an unused registered image from memory, close the Bubble first and then use Asset Manager's `delete asset [NAME] from memory` block.
 
-## 12. Regenerating the manual assets
+## 14. Regenerating the manual assets
 
 The diagrams and GIF are generated from scripts in this repository. GIF generation requires the ImageMagick `magick` command.
 

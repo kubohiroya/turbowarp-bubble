@@ -1,12 +1,36 @@
 import { type BubblePlacement, type BubblePlacementInput } from "./placement.js";
 import { type BubbleOffset, type BubbleOffsetInput } from "./actor-transform.js";
 import { type BubbleVisualStyle } from "./bubble-svg.js";
+import { type BubbleRevealInput, type BubbleRevealUnit, type NormalizedBubbleReveal } from "./reveal.js";
 export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type LineBreakProvider, type TextWidthMeasurer, type WrappedTextLayout, type WrappedTextLine, type WrapTextInput, } from "./text-layout.js";
 export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, defaultBubblePlacementInput, normalizeBubblePlacement, type BubbleActorPlacement, type BubbleBackgroundPlacement, type BubbleBackgroundRegion, type BubbleDirectionAlias, type BubbleDirectionName, type BubblePlacement, type BubblePlacementInput, } from "./placement.js";
 export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
 export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
+export { bubbleRevealUnits, normalizeBubbleReveal, revealedBubbleText, splitBubbleText, type BubbleRevealInput, type BubbleRevealLayout, type BubbleRevealUnit, type NormalizedBubbleReveal, } from "./reveal.js";
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
+export type BubbleEase = "linear" | "easeIn" | "easeOut" | "easeInOut";
+export type BubbleMotionName = "fadeIn" | "fadeOut" | "floatIn" | "floatOut" | "zoomIn" | "zoomOut" | "riseUp" | "sink" | "shake" | "explode" | "animateBubbleShape";
+export interface BubbleMotionInput {
+    readonly name: BubbleMotionName;
+    readonly durationSeconds?: number;
+    readonly ease?: BubbleEase;
+    readonly direction?: number | string;
+    readonly count?: number;
+    readonly relativeScale?: number;
+    readonly speed?: number;
+    readonly visualStyle?: BubbleVisualStyle;
+}
+export interface BubbleAudioInput {
+    readonly voice?: string;
+    readonly reveal?: string;
+    readonly finish?: string;
+}
+export interface BubbleFinishInput {
+    readonly unit?: BubbleRevealUnit;
+    readonly condition?: () => boolean | Promise<boolean>;
+    readonly timeoutSeconds?: number;
+}
 export type BubbleLayer = "portraitBase" | "portraitBlink" | "portraitLipSync" | "continueIndicator";
 export interface BubbleFrameAnimationInput {
     readonly frames: ReadonlyArray<string>;
@@ -29,6 +53,12 @@ export interface BubbleStyleInput {
     readonly visualStyle?: BubbleVisualStyle;
     readonly portrait?: BubblePortraitInput;
     readonly continueIndicator?: BubbleFrameAnimationInput;
+    readonly reveal?: BubbleRevealInput;
+    readonly audio?: BubbleAudioInput;
+    /** Animation played when the Bubble drawable first becomes visible. */
+    readonly showAnimation?: BubbleMotionInput;
+    /** Animation played before the Bubble drawable is hidden. */
+    readonly hideAnimation?: BubbleMotionInput;
 }
 export interface BubbleFrameAnimation {
     readonly frames: ReadonlyArray<string>;
@@ -51,6 +81,10 @@ export interface BubbleStyle {
     readonly visualStyle: BubbleVisualStyle;
     readonly portrait?: BubblePortrait;
     readonly continueIndicator?: BubbleFrameAnimation;
+    readonly reveal?: NormalizedBubbleReveal;
+    readonly audio?: BubbleAudioInput;
+    readonly showAnimation?: BubbleMotionInput;
+    readonly hideAnimation?: BubbleMotionInput;
 }
 export interface BubbleAssetTarget {
     readonly id: string;
@@ -65,6 +99,8 @@ export interface BubbleAudioCapability {
     readonly playSound: (name: unknown, options?: Readonly<{
         untilDone?: boolean;
     }>) => Promise<void>;
+    readonly isRegistered?: (name: unknown) => boolean;
+    readonly getMimeType?: (name: unknown) => string;
 }
 export interface BubbleTextTarget {
     readonly drawableID: number;
@@ -95,6 +131,11 @@ export interface BubbleSurface {
     show(): void | Promise<void>;
     hide(): void | Promise<void>;
     dispose(): void | Promise<void>;
+    /** Optional host-native motion implementation. */
+    animate?(motion: BubbleMotionInput): void | Promise<void>;
+    /** Captures the currently rendered text size for RESERVED reveal layout. */
+    captureTextLayout?(): void;
+    clearTextLayout?(): void;
 }
 export interface BubbleSurfaceFactoryInput {
     readonly actor: unknown;
@@ -127,6 +168,7 @@ export interface ShowBubbleInput {
     readonly text: string;
     readonly styleName: string;
     readonly animationMode?: BubbleAnimationMode;
+    readonly reveal?: BubbleRevealInput;
 }
 export interface BubbleHandle {
     readonly actorKey: string;
@@ -135,6 +177,10 @@ export interface BubbleHandle {
     setText(text: string): Promise<void>;
     updateStyle(style: BubbleStyleInput): Promise<void>;
     setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
+    revealNext(): Promise<boolean>;
+    revealAll(): Promise<void>;
+    finish(input?: BubbleFinishInput): Promise<void>;
+    animate(motion: BubbleMotionInput): Promise<void>;
     close(): Promise<void>;
 }
 export interface BubbleComposition {

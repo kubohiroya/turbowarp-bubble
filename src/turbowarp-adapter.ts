@@ -6,6 +6,7 @@ import {
   type BubbleAudioCapability,
   type BubbleImageCapability,
   type BubbleLayer,
+  type BubbleMotionInput,
   type BubbleScheduler,
   type BubbleSvgText,
   type BubbleStyle,
@@ -271,6 +272,7 @@ function createSurface(
   actor: TurboWarpBubbleTarget,
   actorKey: string,
   style: BubbleStyle,
+  scheduler: BubbleScheduler,
 ): BubbleSurface {
   const renderer = runtime.renderer;
   const sequence = surfaceSequence;
@@ -331,6 +333,9 @@ function createSurface(
     let disposed = false;
     let cachedBodySkinSignature = "";
     let currentStyle = style;
+    let reservedTextSize: DrawableSize | undefined;
+    const layoutPositions = new Map<number, [number, number]>();
+    const layoutScales = new Map<number, [number, number]>();
 
     const updateVisibility = (): void => {
       const actorVisible =
@@ -363,10 +368,12 @@ function createSurface(
         currentStyle.placement.basis === "actor"
           ? currentStyle.offset.scalePercent / 100
           : 1;
-      const nativeTextSize = readSize(renderer, text, {
-        width: 180,
-        height: 48,
-      });
+      const nativeTextSize =
+        reservedTextSize ??
+        readSize(renderer, text, {
+          width: 180,
+          height: 48,
+        });
       renderer.updateDrawableScale(text.drawableID, [
         scaleMultiplier * 100,
         scaleMultiplier * 100,
@@ -562,6 +569,58 @@ function createSurface(
             contentGap * scaleMultiplier,
         ]);
       }
+      const remember = (
+        target: DrawableTarget | undefined,
+        positionValue: [number, number],
+      ): void => {
+        if (!target) return;
+        layoutPositions.set(target.drawableID, positionValue);
+      };
+      remember(body, [
+        centerX - bodyCenterOffset.x,
+        centerY + bodyCenterOffset.y,
+      ]);
+      remember(text, [textX, centerY]);
+      remember(portraitBase, [portraitX, centerY]);
+      remember(portraitBlink, [portraitX, centerY]);
+      remember(portraitLipSync, [portraitX, centerY]);
+      layoutScales.set(body.drawableID, [100, 100]);
+      layoutScales.set(text.drawableID, [
+        scaleMultiplier * 100,
+        scaleMultiplier * 100,
+      ]);
+      if (portraitBase)
+        layoutScales.set(portraitBase.drawableID, [
+          scaleMultiplier * 100,
+          scaleMultiplier * 100,
+        ]);
+      if (portraitBlink)
+        layoutScales.set(portraitBlink.drawableID, [
+          scaleMultiplier * 100,
+          scaleMultiplier * 100,
+        ]);
+      if (portraitLipSync)
+        layoutScales.set(portraitLipSync.drawableID, [
+          scaleMultiplier * 100,
+          scaleMultiplier * 100,
+        ]);
+      if (continueIndicator)
+        layoutScales.set(continueIndicator.drawableID, [
+          scaleMultiplier * 100,
+          scaleMultiplier * 100,
+        ]);
+      if (continueIndicator) {
+        remember(continueIndicator, [
+          textX +
+            textSize.width / 2 -
+            indicatorSize.width / 2 -
+            contentGap * scaleMultiplier,
+          centerY -
+            textSize.height / 2 +
+            indicatorSize.height / 2 +
+            contentGap * scaleMultiplier,
+        ]);
+      }
       updateVisibility();
     };
 
@@ -585,6 +644,8 @@ function createSurface(
         if (disposed) return;
         const wasActorRelative = currentStyle.placement.basis === "actor";
         currentStyle = nextStyle;
+        if (nextStyle.reveal?.layout !== "RESERVED")
+          reservedTextSize = undefined;
         const isActorRelative = currentStyle.placement.basis === "actor";
         if (wasActorRelative && !isActorRelative) {
           if (actor.onTargetVisualChange === visualChangeHook) {
@@ -594,6 +655,146 @@ function createSurface(
           actor.onTargetVisualChange = visualChangeHook;
         }
         position();
+      },
+      captureTextLayout(): void {
+        if (disposed) return;
+        reservedTextSize = readSize(renderer, text, {
+          width: 180,
+          height: 48,
+        });
+        position();
+      },
+      clearTextLayout(): void {
+        reservedTextSize = undefined;
+        position();
+      },
+      async animate(motion: BubbleMotionInput): Promise<void> {
+        if (disposed) return;
+        const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
+        const waitForDuration = async (): Promise<void> => {
+          if (durationSeconds === 0) return;
+          await new Promise<void>((resolve) => {
+            scheduler.setTimeout(resolve, durationSeconds * 1000);
+          });
+        };
+        const motionTargets = [
+          body,
+          text,
+          portraitBase,
+          portraitBlink,
+          portraitLipSync,
+          continueIndicator,
+        ].filter((target): target is DrawableTarget => target !== undefined);
+        if (
+          motion.name === "fadeIn" ||
+          motion.name === "floatIn" ||
+          motion.name === "zoomIn" ||
+          motion.name === "riseUp"
+        ) {
+          surfaceVisible = true;
+          updateVisibility();
+          if (motion.name === "floatIn" || motion.name === "riseUp") {
+            for (const target of motionTargets) {
+              const base = layoutPositions.get(target.drawableID);
+              if (base)
+                renderer.updateDrawablePosition(target.drawableID, [
+                  base[0],
+                  base[1] + 16,
+                ]);
+            }
+          } else if (motion.name === "zoomIn") {
+            for (const target of motionTargets) {
+              const base = layoutScales.get(target.drawableID) ?? [100, 100];
+              renderer.updateDrawableScale(target.drawableID, [
+                base[0] * 0.01,
+                base[1] * 0.01,
+              ]);
+            }
+          }
+          await waitForDuration();
+          position();
+          return;
+        }
+        if (
+          motion.name === "fadeOut" ||
+          motion.name === "floatOut" ||
+          motion.name === "zoomOut" ||
+          motion.name === "sink"
+        ) {
+          if (motion.name === "floatOut" || motion.name === "sink") {
+            for (const target of motionTargets) {
+              const base = layoutPositions.get(target.drawableID);
+              if (base)
+                renderer.updateDrawablePosition(target.drawableID, [
+                  base[0],
+                  base[1] - 16,
+                ]);
+            }
+          } else if (motion.name === "zoomOut") {
+            for (const target of motionTargets) {
+              const base = layoutScales.get(target.drawableID) ?? [100, 100];
+              renderer.updateDrawableScale(target.drawableID, [
+                base[0] * 0.01,
+                base[1] * 0.01,
+              ]);
+            }
+          }
+          await waitForDuration();
+          surfaceVisible = false;
+          updateVisibility();
+          return;
+        }
+        if (motion.name === "shake") {
+          const count = Math.max(1, Math.floor(motion.count ?? 1));
+          const direction =
+            typeof motion.direction === "number"
+              ? motion.direction
+              : ((motion.direction as BubbleDirectionName | undefined) ??
+                "right");
+          const vector =
+            bubbleDirectionVector(direction) ?? bubbleDirectionVector("right");
+          const dx = vector.x * 5;
+          const dy = vector.y * 5;
+          for (let index = 0; index < count; index += 1) {
+            for (const target of motionTargets) {
+              const base = layoutPositions.get(target.drawableID);
+              if (base)
+                renderer.updateDrawablePosition(target.drawableID, [
+                  base[0] + dx,
+                  base[1] + dy,
+                ]);
+            }
+            for (const target of motionTargets) {
+              const base = layoutPositions.get(target.drawableID);
+              if (base)
+                renderer.updateDrawablePosition(target.drawableID, [
+                  base[0] - dx,
+                  base[1] - dy,
+                ]);
+            }
+          }
+          position();
+          await waitForDuration();
+          return;
+        }
+        if (motion.name === "explode") {
+          const count = Math.max(1, Math.floor(motion.count ?? 1));
+          const factor = motion.relativeScale ?? 1.15;
+          for (let index = 0; index < count; index += 1) {
+            for (const target of motionTargets) {
+              const base = layoutScales.get(target.drawableID) ?? [100, 100];
+              renderer.updateDrawableScale(target.drawableID, [
+                base[0] * factor,
+                base[1] * factor,
+              ]);
+            }
+            position();
+          }
+          position();
+          await waitForDuration();
+          return;
+        }
+        await waitForDuration();
       },
       show(): void {
         if (disposed) return;
@@ -681,6 +882,12 @@ export function createTurboWarpBubbleComposition(
     },
   };
   const audio: BubbleAudioCapability | undefined = options.audio ?? {
+    isRegistered(name: unknown): boolean {
+      return getAssetExtension().isLoaded({ NAME: name });
+    },
+    getMimeType(name: unknown): string {
+      return getAssetExtension().getAssetMimeType({ NAME: name });
+    },
     async playSound(
       name: unknown,
       playOptions: Readonly<{ untilDone?: boolean }> = {},
@@ -736,6 +943,12 @@ export function createTurboWarpBubbleComposition(
         actor as unknown as TurboWarpBubbleTarget,
         actorKey,
         style,
+        options.scheduler ?? {
+          setTimeout: (callback: () => void, milliseconds: number) =>
+            globalThis.setTimeout(callback, milliseconds),
+          clearTimeout: (handle: unknown) =>
+            globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
+        },
       );
     },
     ...(options.scheduler === undefined
