@@ -10,6 +10,7 @@ import {
 } from "@kubohiroya/turbowarp-bubble/composition";
 import {
   BubbleRuntimeAdapterError,
+  createSvgTextCompositionCapability,
   createTurboWarpBubbleComposition,
   type TurboWarpBubbleCompositionOptions,
   type TurboWarpBubbleRuntime,
@@ -20,11 +21,13 @@ declare const runtime: Parameters<
   typeof createSvgTextComposition
 >[0]["runtime"];
 const imageResolver = createAssetManagerComposition();
-const svgText = createSvgTextComposition({ runtime });
+const textCapability = createSvgTextCompositionCapability(
+  createSvgTextComposition({ runtime }),
+);
 
 const bubbles: BubbleComposition = createBubbleComposition({
   imageResolver,
-  svgText,
+  textCapability,
   createSurface(input) {
     return {
       targets: {

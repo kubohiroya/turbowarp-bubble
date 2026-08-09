@@ -8,12 +8,22 @@ import {
   type BubbleLayer,
   type BubbleMotionInput,
   type BubbleScheduler,
-  type BubbleSvgText,
+  type BubbleTextCapability,
   type BubbleStyle,
   type BubbleSurface,
   type BubbleSurfaceTargets,
   type BubbleVisualStyle,
 } from "./composition.js";
+import {
+  createTurboWarpSvgTextCapability,
+  type TurboWarpSvgTextExtension,
+} from "./turbowarp-svg-text-adapter.js";
+
+export {
+  createSvgTextCompositionCapability,
+  createTurboWarpSvgTextCapability,
+  type TurboWarpSvgTextExtension,
+} from "./turbowarp-svg-text-adapter.js";
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
 import { bubbleBodyCenterOffset, renderBubbleSvg } from "./bubble-svg.js";
 import {
@@ -80,15 +90,6 @@ export interface TurboWarpAssetManagerExtension {
   ): Readonly<{ skinId: number }> | Promise<Readonly<{ skinId: number }>>;
 }
 
-export interface TurboWarpSvgTextExtension {
-  setText(
-    args: Readonly<{ STYLE: unknown; TEXT: unknown }>,
-    util: Readonly<{ target: TurboWarpBubbleTarget }>,
-  ): void;
-  measureText?(styleName: unknown, text: unknown): number;
-  releaseTextActor(target: TurboWarpBubbleTarget): boolean;
-}
-
 export interface TurboWarpBubbleRuntime {
   readonly renderer: TurboWarpBubbleRenderer;
   readonly ext_kubohiroyaassetmanager?: TurboWarpAssetManagerExtension;
@@ -99,7 +100,7 @@ export interface TurboWarpBubbleRuntime {
 export interface TurboWarpBubbleCompositionOptions {
   readonly imageResolver?: BubbleImageCapability;
   readonly audio?: BubbleAudioCapability;
-  readonly svgText?: BubbleSvgText;
+  readonly textCapability?: BubbleTextCapability;
   readonly scheduler?: BubbleScheduler;
   readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];
 }
@@ -171,20 +172,6 @@ function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
     );
   }
   return value as unknown as TurboWarpAssetManagerExtension;
-}
-
-function requireSvgText(value: unknown): TurboWarpSvgTextExtension {
-  if (
-    !isRecord(value) ||
-    typeof value.setText !== "function" ||
-    typeof value.releaseTextActor !== "function"
-  ) {
-    throw new BubbleRuntimeAdapterError(
-      "BUBBLE-RUNTIME-003",
-      "Bubble requires SVG Text. Load @kubohiroya/turbowarp-svg-text before using Bubble blocks.",
-    );
-  }
-  return value as unknown as TurboWarpSvgTextExtension;
 }
 
 function targetBounds(target: TurboWarpBubbleTarget) {
@@ -986,9 +973,21 @@ export function createTurboWarpBubbleComposition(
   const renderer = requireRenderer(runtime.renderer);
   const getAssetExtension = (): TurboWarpAssetManagerExtension =>
     requireAssetManager(runtime.ext_kubohiroyaassetmanager);
-  const svgTextExtension = options.svgText
-    ? null
-    : requireSvgText(runtime.ext_kubohiroyasvgtext);
+  let textCapability: BubbleTextCapability;
+  if (options.textCapability !== undefined) {
+    textCapability = options.textCapability;
+  } else {
+    try {
+      textCapability = createTurboWarpSvgTextCapability(
+        runtime.ext_kubohiroyasvgtext,
+      );
+    } catch {
+      throw new BubbleRuntimeAdapterError(
+        "BUBBLE-RUNTIME-003",
+        "Bubble requires a text capability. Load @kubohiroya/turbowarp-svg-text or provide options.textCapability before using Bubble blocks.",
+      );
+    }
+  }
   const imageResolver: BubbleImageCapability = options.imageResolver ?? {
     isRegistered(name: unknown): boolean {
       return getAssetExtension().isLoaded({ NAME: name });
@@ -1043,32 +1042,10 @@ export function createTurboWarpBubbleComposition(
       await method.call(extension, { NAME: name });
     },
   };
-  const svgText: BubbleSvgText = options.svgText ?? {
-    setText({ styleName, target, text }): void {
-      svgTextExtension?.setText(
-        { STYLE: styleName, TEXT: text },
-        { target: target as TurboWarpBubbleTarget },
-      );
-    },
-    releaseTarget(target): void {
-      svgTextExtension?.releaseTextActor(target as TurboWarpBubbleTarget);
-    },
-    measureText({ styleName, text }): number {
-      const measureText = svgTextExtension?.measureText;
-      if (typeof measureText !== "function") {
-        throw new BubbleRuntimeAdapterError(
-          "BUBBLE-RUNTIME-003",
-          "SVG Text does not provide text measurement.",
-        );
-      }
-      return measureText.call(svgTextExtension, styleName, text);
-    },
-  };
-
   return createBubbleComposition({
     imageResolver,
     audio,
-    svgText,
+    textCapability,
     createSurface({ actor, actorKey, style }) {
       if (!isRecord(actor) || typeof actor.id !== "string") {
         throw new BubbleRuntimeAdapterError(

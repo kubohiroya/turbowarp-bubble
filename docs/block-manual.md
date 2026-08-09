@@ -6,7 +6,7 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. SVG Text and Bubble are required for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
+The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble uses SVG Text as its default `BubbleTextCapability` adapter for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
 
 | Order | Extension                | URL                                                                                                               |
 | ----: | ------------------------ | ----------------------------------------------------------------------------------------------------------------- |
@@ -15,9 +15,9 @@ The complete input-wait example uses six extensions. Add Temporary Variables fro
 |     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js`          |
 |     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`                    |
 |     5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                              |
-|     6 | Bubble 0.3.1             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.3.1/dist/turbowarp-bubble.js` |
+|     6 | Bubble 0.4.0             | After npm publication: `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.4.0/dist/turbowarp-bubble.js` |
 
-To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if SVG Text is missing when it displays a Bubble, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait.
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the default SVG Text adapter is missing when it displays a Bubble, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can use another text capability and does not require SVG Text.
 
 See also:
 
@@ -296,7 +296,7 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 | Symptom                              | Cause and solution                                                          |
 | ------------------------------------ | --------------------------------------------------------------------------- |
 | Asset Manager required error         | Load Asset Manager 0.7.x without sandbox before using image/media assets    |
-| SVG Text required error              | Load SVG Text 0.4.x without sandbox                                         |
+| Default text adapter required error  | Load SVG Text 0.4.x without sandbox                                         |
 | Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait         |
 | Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait  |
 | `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag |
@@ -310,7 +310,7 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 
 ## 13. Automatic cleanup
 
-Bubble automatically releases its owned timers, SVG Text skins, and renderer drawables when:
+Bubble automatically releases its owned timers, text skins, and renderer drawables when:
 
 - `close this bubble` runs;
 - the same sprite or clone runs another `say` or `think`;

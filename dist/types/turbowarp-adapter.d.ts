@@ -1,4 +1,6 @@
-import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudioCapability, type BubbleImageCapability, type BubbleScheduler, type BubbleSvgText } from "./composition.js";
+import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudioCapability, type BubbleImageCapability, type BubbleScheduler, type BubbleTextCapability } from "./composition.js";
+import { type TurboWarpSvgTextExtension } from "./turbowarp-svg-text-adapter.js";
+export { createSvgTextCompositionCapability, createTurboWarpSvgTextCapability, type TurboWarpSvgTextExtension, } from "./turbowarp-svg-text-adapter.js";
 export interface TurboWarpBubbleTarget {
     readonly id: string;
     readonly isStage: boolean;
@@ -48,16 +50,6 @@ export interface TurboWarpAssetManagerExtension {
         skinId: number;
     }>>;
 }
-export interface TurboWarpSvgTextExtension {
-    setText(args: Readonly<{
-        STYLE: unknown;
-        TEXT: unknown;
-    }>, util: Readonly<{
-        target: TurboWarpBubbleTarget;
-    }>): void;
-    measureText?(styleName: unknown, text: unknown): number;
-    releaseTextActor(target: TurboWarpBubbleTarget): boolean;
-}
 export interface TurboWarpBubbleRuntime {
     readonly renderer: TurboWarpBubbleRenderer;
     readonly ext_kubohiroyaassetmanager?: TurboWarpAssetManagerExtension;
@@ -67,7 +59,7 @@ export interface TurboWarpBubbleRuntime {
 export interface TurboWarpBubbleCompositionOptions {
     readonly imageResolver?: BubbleImageCapability;
     readonly audio?: BubbleAudioCapability;
-    readonly svgText?: BubbleSvgText;
+    readonly textCapability?: BubbleTextCapability;
     readonly scheduler?: BubbleScheduler;
     readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];
 }

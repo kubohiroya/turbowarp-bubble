@@ -2,6 +2,8 @@ import { type BubblePlacement, type BubblePlacementInput } from "./placement.js"
 import { type BubbleOffset, type BubbleOffsetInput } from "./actor-transform.js";
 import { type BubbleVisualStyle } from "./bubble-svg.js";
 import { type BubbleRevealInput, type BubbleRevealUnit, type NormalizedBubbleReveal } from "./reveal.js";
+import type { BubbleTextCapability, BubbleTextTarget } from "./text-capability.js";
+export type { BubbleTextCapability, BubbleTextTarget, } from "./text-capability.js";
 export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type LineBreakProvider, type TextWidthMeasurer, type WrappedTextLayout, type WrappedTextLine, type WrapTextInput, } from "./text-layout.js";
 export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, defaultBubblePlacementInput, normalizeBubblePlacement, type BubbleActorPlacement, type BubbleBackgroundPlacement, type BubbleBackgroundRegion, type BubbleDirectionAlias, type BubbleDirectionName, type BubblePlacement, type BubblePlacementInput, } from "./placement.js";
 export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
@@ -102,21 +104,6 @@ export interface BubbleAudioCapability {
     readonly isRegistered?: (name: unknown) => boolean;
     readonly getMimeType?: (name: unknown) => string;
 }
-export interface BubbleTextTarget {
-    readonly drawableID: number;
-}
-export interface BubbleSvgText {
-    readonly setText: (input: {
-        readonly styleName: string;
-        readonly target: BubbleTextTarget;
-        readonly text: string;
-    }) => void;
-    readonly releaseTarget: (target: BubbleTextTarget) => void;
-    readonly measureText?: (input: {
-        readonly styleName: string;
-        readonly text: string;
-    }) => number;
-}
 export interface BubbleSurfaceTargets {
     readonly text: BubbleTextTarget;
     readonly portraitBase?: BubbleAssetTarget;
@@ -156,7 +143,7 @@ export interface BubbleAnimationErrorContext {
 export interface BubbleCompositionOptions {
     readonly imageResolver?: BubbleImageCapability;
     readonly audio?: BubbleAudioCapability;
-    readonly svgText: BubbleSvgText;
+    readonly textCapability: BubbleTextCapability;
     readonly createSurface: BubbleSurfaceFactory;
     readonly scheduler?: BubbleScheduler;
     readonly onAnimationError?: (error: unknown, context: BubbleAnimationErrorContext) => void;

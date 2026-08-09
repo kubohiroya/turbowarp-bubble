@@ -4,7 +4,7 @@ import type {
   BubbleImageCapability,
   BubbleMotionInput,
   BubbleScheduler,
-  BubbleSvgText,
+  BubbleTextCapability,
 } from "../src/composition.js";
 import type {
   TurboWarpBubbleRenderer,
@@ -66,7 +66,7 @@ function createRuntime(
     assetManager?: boolean;
     asyncInput?: boolean;
     runtimeExpression?: boolean;
-    svgText?: boolean;
+    svgTextExtension?: boolean;
   } = {},
 ) {
   let nextDrawable = 1;
@@ -196,7 +196,7 @@ function createRuntime(
           },
         }
       : {}),
-    ...((options.svgText ?? true)
+    ...((options.svgTextExtension ?? true)
       ? { ext_kubohiroyasvgtext: { setText, releaseTextActor } }
       : {}),
   };
@@ -256,14 +256,17 @@ describe("TurboWarp composition adapter", () => {
   });
 
   it("accepts host-owned Asset Manager and SVG Text compositions", async () => {
-    const harness = createRuntime({ assetManager: false, svgText: false });
+    const harness = createRuntime({
+      assetManager: false,
+      svgTextExtension: false,
+    });
     const imageResolver: BubbleImageCapability = {
       isRegistered: () => true,
       getMimeType: () => "image/png",
       applyToTarget: vi.fn(),
     };
     const releaseTarget = vi.fn();
-    const svgText: BubbleSvgText = {
+    const textCapability: BubbleTextCapability = {
       setText: vi.fn(({ target }) => {
         harness.renderer.updateDrawableSkinId(Number(target.drawableID), 100);
       }),
@@ -271,7 +274,7 @@ describe("TurboWarp composition adapter", () => {
     };
     const composition = createTurboWarpBubbleComposition(harness.runtime, {
       imageResolver,
-      svgText,
+      textCapability,
     });
     composition.defineStyle({
       name: "dialogue",
@@ -288,7 +291,7 @@ describe("TurboWarp composition adapter", () => {
     });
     await handle.close();
 
-    expect(svgText.setText).toHaveBeenCalledOnce();
+    expect(textCapability.setText).toHaveBeenCalledOnce();
     expect(imageResolver.applyToTarget).toHaveBeenCalledWith(
       "Face",
       expect.objectContaining({ id: expect.any(String) }),
@@ -993,7 +996,7 @@ describe("Bubble extension", () => {
       ),
     ).rejects.toThrow("imageResolver capability");
 
-    const noText = createRuntime({ svgText: false });
+    const noText = createRuntime({ svgTextExtension: false });
     const second = new BubbleExtension(noText.runtime);
     second.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     await expect(

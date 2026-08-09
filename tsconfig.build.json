@@ -10,6 +10,8 @@
   "include": [
     "src/composition.ts",
     "src/turbowarp-adapter.ts",
+    "src/turbowarp-svg-text-adapter.ts",
+    "src/text-capability.ts",
     "src/jsclipper.d.ts"
   ]
 }

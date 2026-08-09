@@ -6,7 +6,7 @@ import {
   type BubbleLayer,
   type BubbleScheduler,
   type BubbleSurface,
-  type BubbleSvgText,
+  type BubbleTextCapability,
 } from "../src/composition.js";
 
 class TestScheduler implements BubbleScheduler {
@@ -63,7 +63,11 @@ function createHarness() {
   const setText = vi.fn();
   const measureText = vi.fn(({ text }: { text: string }) => text.length * 10);
   const releaseTarget = vi.fn();
-  const svgText: BubbleSvgText = { setText, measureText, releaseTarget };
+  const textCapability: BubbleTextCapability = {
+    setText,
+    measureText,
+    releaseTarget,
+  };
   const visibility: Array<{ layer: BubbleLayer; visible: boolean }> = [];
   const surface: BubbleSurface = {
     targets: {
@@ -86,7 +90,7 @@ function createHarness() {
   const animationErrors: unknown[] = [];
   const composition = createBubbleComposition({
     imageResolver,
-    svgText,
+    textCapability,
     createSurface,
     scheduler,
     onAnimationError(error, context) {
@@ -123,7 +127,7 @@ function createHarness() {
     measureText,
     scheduler,
     setText,
-    svgText,
+    textCapability,
     surface,
     visibility,
   };
@@ -140,7 +144,7 @@ describe("Bubble composition", () => {
       dispose: vi.fn(),
     };
     const composition = createBubbleComposition({
-      svgText: { setText: vi.fn(), releaseTarget: vi.fn() },
+      textCapability: { setText: vi.fn(), releaseTarget: vi.fn() },
       createSurface: vi.fn(() => surface),
     });
     composition.defineStyle({ name: "plain", textStyle: "default" });
@@ -170,7 +174,7 @@ describe("Bubble composition", () => {
       dispose: vi.fn(),
     };
     const composition = createBubbleComposition({
-      svgText: { setText: vi.fn(), releaseTarget: vi.fn() },
+      textCapability: { setText: vi.fn(), releaseTarget: vi.fn() },
       createSurface: vi.fn(() => surface),
     });
     composition.defineStyle({
@@ -368,8 +372,8 @@ describe("Bubble composition", () => {
     const composition = createBubbleComposition({
       imageResolver: harness.imageResolver,
       audio,
-      svgText: {
-        ...harness.svgText,
+      textCapability: {
+        ...harness.textCapability,
       },
       createSurface: harness.createSurface,
       scheduler: harness.scheduler,
@@ -681,7 +685,7 @@ describe("Bubble composition", () => {
           played.push(String(name));
         },
       },
-      svgText: harness.svgText,
+      textCapability: harness.textCapability,
       createSurface: harness.createSurface,
       scheduler: harness.scheduler,
     });
