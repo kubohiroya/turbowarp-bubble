@@ -296,6 +296,17 @@ describe("Bubble extension", () => {
       "setBlinkFrames",
       "setLipSyncFrames",
       "setContinueFrames",
+      "setBubbleReveal",
+      "setBubbleWordDelimiters",
+      "setBubbleRevealSound",
+      "setBubbleVoice",
+      "finishBubbleReveal",
+      "setBubbleShowAnimation",
+      "setBubbleHideAnimation",
+      "animateBubble",
+      "shakeBubble",
+      "explodeBubble",
+      "animateBubbleShape",
       "sayWithBubbleStyle",
       "thinkWithBubbleStyle",
       "setBubbleAnimationMode",
@@ -620,6 +631,38 @@ describe("Bubble extension", () => {
     await waiting;
     await extension.closeBubble({}, { target });
     expect(scheduler.size).toBe(0);
+  });
+
+  it("reveals units and exposes display animations through extension blocks", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "reveal", TEXT_STYLE: "default" });
+    extension.setBubbleReveal({
+      STYLE: "reveal",
+      UNIT: "CHARACTER",
+      SECONDS: 0,
+      LAYOUT: "RESERVED",
+    });
+    extension.setBubbleWordDelimiters({
+      STYLE: "reveal",
+      DELIMITERS: "/",
+      SHOW: "false",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "私の/名前", STYLE: "reveal" },
+      { target },
+    );
+    expect(harness.setText).toHaveBeenLastCalledWith(
+      { STYLE: "default", TEXT: "私" },
+      { target: expect.objectContaining({ drawableID: expect.any(Number) }) },
+    );
+    harness.conditionState.value = true;
+    await extension.finishBubbleReveal(
+      { UNIT: "CHARACTER", CONDITION: "true", TIMEOUT: 0 },
+      { target },
+    );
+    await extension.closeBubble({}, { target });
   });
 
   it("continues after the Bubble wait timeout", async () => {

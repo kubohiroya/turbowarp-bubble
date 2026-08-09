@@ -71,7 +71,7 @@
 <p>This manual explains how to use <code>turbowarp-bubble</code> as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated continue indicator.</p>
 <p><img src="./assets/block-quick-start.svg" alt="A quick-start block sequence that registers Next1 and Next2 separately, prepares input listeners, then uses Bubble&#39;s integrated wait"></p>
 <h2 id="requirements">1. Load the required extensions</h2>
-<p>The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp&#39;s extension library, then load the custom extensions needed by the selected features with <strong>Run without sandbox</strong> enabled. SVG Text and Bubble are required for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, and future voice or display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.</p>
+<p>The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp&#39;s extension library, then load the custom extensions needed by the selected features with <strong>Run without sandbox</strong> enabled. SVG Text and Bubble are required for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.</p>
 <table>
 <thead>
 <tr>
@@ -270,7 +270,17 @@ set continue frames [Next1,Next2]
 <li>An empty <code>ASSETS</code> input removes that animation.</li>
 <li>An empty portrait base removes the whole portrait.</li>
 </ul>
-<h2 id="lifecycle">5. Show dialogue and wait for input</h2>
+<h2 id="lifecycle">5. Sequential reveal, audio, and layout</h2>
+<p>Bubble can reveal a message as <code>CHARACTER</code>, <code>WORD</code>, <code>LINE</code>, or <code>BLOCK</code> units. <code>WORD</code> does not perform morphological analysis; it uses whitespace or the configured delimiter character set. Delimiters can remain visible or be hidden.</p>
+<pre><code class="language-text">set bubble reveal unit [CHARACTER] every [0.05] seconds layout [RESERVED] for bubble style [hero-dialogue]
+set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
+set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
+set bubble voice [HeroVoice] for bubble style [hero-dialogue]
+say [Let&#39;s head for the sea!] with bubble style [hero-dialogue]
+finish [CHARACTER] with condition [input == &quot;pressed&quot;] or timeout after [10] seconds
+</code></pre>
+<p><code>DYNAMIC</code> recalculates the Bubble size and placement after each unit. <code>RESERVED</code> measures the final text first and reserves that layout while units appear. <code>set bubble reveal sound</code> plays a named Asset Manager audio asset per unit, while <code>set bubble voice</code> plays full voice audio when the Bubble starts. Text display remains available without audio.</p>
+<h2 id="animation-modes">6. Show dialogue and wait for input</h2>
 <p><code>say</code> and <code>think</code> show a Bubble immediately, continue to the next block, and begin in <code>talking</code> animation mode.</p>
 <pre><code class="language-text">set runtime variable [input] to []
 listen for key [Space] set runtime var [input] to [pressed]
@@ -285,7 +295,7 @@ close this bubble
 <p><img src="./assets/bubble-lifecycle.gif" alt="A say Bubble lip-syncs, shows continue frames while awaiting continue, then closes after input"></p>
 <p>If animated GIF playback is unavailable, use this static animation-mode comparison:</p>
 <p><img src="./assets/animation-mode-guide.svg" alt="Blink, lip-sync, and continue-frame states in talking, awaiting-continue, and idle modes"></p>
-<h2 id="animation-modes">6. Bubble animation modes</h2>
+<h2 id="say-think">7. Bubble animation modes</h2>
 <table>
 <thead>
 <tr>
@@ -319,13 +329,23 @@ close this bubble
 </tr>
 </tbody></table>
 <p><code>set this bubble animation mode [MODE]</code> changes only the Bubble owned by the calling sprite, clone, or Stage. It reports an error if that target has not first run <code>say</code> or <code>think</code>.</p>
-<h2 id="say-think">7. <code>say</code> and <code>think</code></h2>
+<h2 id="clones">8. Show, in-display, and hide animations</h2>
+<p>Use <code>fadeIn</code>, <code>floatIn</code>, <code>zoomIn</code>, or <code>riseUp</code> when a Bubble starts displaying, and <code>fadeOut</code>, <code>floatOut</code>, <code>zoomOut</code>, or <code>sink</code> when it finishes displaying. These animations work with both <code>DYNAMIC</code> and <code>RESERVED</code> layout.</p>
+<pre><code class="language-text">set bubble show animation [fadeIn] for [0.2] seconds for bubble style [hero-dialogue]
+set bubble hide animation [fadeOut] for [0.2] seconds for bubble style [hero-dialogue]
+animate this bubble [shake]
+shake this bubble direction [90] count [2] ease [easeInOut]
+explode this bubble relative scale [1.15] count [2] ease [easeOut]
+animate bubble shape to [WAVY] speed [1] for [0.5] seconds
+</code></pre>
+<p><code>shake</code> applies direction, count, and <code>ease</code> to the complete Bubble surface. <code>explode</code> changes the relative scale of text and portrait together. <code>animate bubble shape</code> switches the outline at the requested speed and duration to styles such as <code>THINKING</code>, <code>DREAMING</code>, <code>YELLING</code>, <code>WAVY</code>, or <code>WHISPERING</code>.</p>
+<h2 id="reference">9. <code>say</code> and <code>think</code></h2>
 <pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]
 </code></pre>
 <p>Both blocks support the same visual styles, portrait layers, placement, and animation-mode control. The block name does not force a shape; explicitly choose <code>NORMAL</code>, <code>THINKING</code>, or another shape with <code>set bubble visual style</code>. The Composition API surface still receives a <code>say</code>/<code>think</code> kind, so a custom host can add its own kind-dependent behavior.</p>
 <p>Running a new <code>say</code> or <code>think</code> on the same sprite, clone, or Stage disposes the previous Bubble and its timers/drawables before replacing it. The Stage supports stage-relative placement only.</p>
-<h2 id="clones">8. Using Bubble with clones</h2>
+<h2 id="troubleshooting">10. Using Bubble with clones</h2>
 <p>Bubble style definitions are shared within the extension, but each sprite or clone owns its currently displayed Bubble.</p>
 <ol>
 <li>Define assets and styles once from the original sprite when the green flag is clicked.</li>
@@ -333,7 +353,7 @@ think [MESSAGE] with bubble style [STYLE]
 <li>Change the animation mode and close the Bubble from the same clone that displayed it.</li>
 </ol>
 <p>When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables owned by that target are released automatically.</p>
-<h2 id="reference">9. Block reference</h2>
+<h2 id="cleanup">11. Block reference</h2>
 <table>
 <thead>
 <tr>
@@ -382,6 +402,50 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Set the animation shown during <code>awaiting-continue</code></td>
 </tr>
 <tr>
+<td><code>set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]</code></td>
+<td>Configure CHARACTER/WORD/LINE/BLOCK sequential reveal</td>
+</tr>
+<tr>
+<td><code>set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]</code></td>
+<td>Configure WORD delimiters and visibility</td>
+</tr>
+<tr>
+<td><code>set bubble reveal sound [ASSET] for bubble style [STYLE]</code></td>
+<td>Set the per-unit reveal sound</td>
+</tr>
+<tr>
+<td><code>set bubble voice [ASSET] for bubble style [STYLE]</code></td>
+<td>Set full voice played when display starts</td>
+</tr>
+<tr>
+<td><code>finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds</code></td>
+<td>Reveal remaining units and wait for condition or timeout</td>
+</tr>
+<tr>
+<td><code>set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td>Configure show animation</td>
+</tr>
+<tr>
+<td><code>set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]</code></td>
+<td>Configure hide animation</td>
+</tr>
+<tr>
+<td><code>animate this bubble [MOTION]</code></td>
+<td>Play a whole-Bubble animation</td>
+</tr>
+<tr>
+<td><code>shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]</code></td>
+<td>Shake the complete Bubble surface</td>
+</tr>
+<tr>
+<td><code>explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]</code></td>
+<td>Apply relative scale cycles to the Bubble</td>
+</tr>
+<tr>
+<td><code>animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds</code></td>
+<td>Transition the Bubble outline</td>
+</tr>
+<tr>
 <td><code>say [MESSAGE] with bubble style [STYLE]</code></td>
 <td>Start or replace a <code>say</code> Bubble in <code>talking</code> mode</td>
 </tr>
@@ -406,7 +470,7 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Report the Bubble implementation version</td>
 </tr>
 </tbody></table>
-<h2 id="troubleshooting">10. Troubleshooting</h2>
+<h2 id="regeneration">12. Troubleshooting</h2>
 <table>
 <thead>
 <tr>
@@ -463,7 +527,7 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Match canvas size, center, and transparent area across all portrait layers</td>
 </tr>
 </tbody></table>
-<h2 id="cleanup">11. Automatic cleanup</h2>
+<h2>13. Automatic cleanup</h2>
 <p>Bubble automatically releases its owned timers, SVG Text skins, and renderer drawables when:</p>
 <ul>
 <li><code>close this bubble</code> runs;</li>
@@ -474,7 +538,7 @@ think [MESSAGE] with bubble style [STYLE]
 <li>the TurboWarp runtime is disposed.</li>
 </ul>
 <p>Assets registered with Asset Manager are not owned by Bubble. To remove an unused registered image from memory, close the Bubble first and then use Asset Manager&#39;s <code>delete asset [NAME] from memory</code> block.</p>
-<h2 id="regeneration">12. Regenerating the manual assets</h2>
+<h2>14. Regenerating the manual assets</h2>
 <p>The diagrams and GIF are generated from scripts in this repository. GIF generation requires the ImageMagick <code>magick</code> command.</p>
 <pre><code class="language-sh">pnpm docs:render
 pnpm docs:check

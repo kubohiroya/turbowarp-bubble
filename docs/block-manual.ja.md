@@ -6,7 +6,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。文字BubbleにはSVG TextとBubbleが必要です。portrait、lip-sync、continue indicator、将来のフルボイスや表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
+入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。文字BubbleにはSVG TextとBubbleが必要です。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -173,7 +173,22 @@ set continue frames [Next1,Next2]
 - `ASSETS`を空にすると、そのアニメーション設定を解除します。
 - 表情ベースを空にするとportrait全体を解除します。
 
-## 5. セリフを表示して入力を待つ
+## 5. 逐次表示、音声、表示サイズ
+
+Bubbleはセリフ全体を一度に描画するだけでなく、`CHARACTER`、`WORD`、`LINE`、`BLOCK`の単位で順次表示できます。`WORD`は形態素解析を行わず、空白または指定した区切り文字集合で分割します。区切り文字を表示するかどうかも選べます。
+
+```text
+set bubble reveal unit [CHARACTER] every [0.05] seconds layout [RESERVED] for bubble style [hero-dialogue]
+set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
+set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
+set bubble voice [HeroVoice] for bubble style [hero-dialogue]
+say [海へ出発！] with bubble style [hero-dialogue]
+finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] seconds
+```
+
+`DYNAMIC`は表示単位ごとに吹き出しの大きさと配置を再計算し、`RESERVED`は最終的な文字量を先に計測して表示中の外形を予約します。`set bubble reveal sound`は単位ごと、`set bubble voice`は表示開始時にAsset Managerの名前付き音声を再生します。音声がなくても文字表示は利用できます。
+
+## 6. セリフを表示して入力を待つ
 
 `say`または`think`はBubbleを表示するとすぐ次のブロックへ進み、初期animation modeは`talking`になります。
 
@@ -198,7 +213,7 @@ close this bubble
 
 ![talking、awaiting-continue、idleの目パチ、口パク、continue framesの状態比較](./assets/animation-mode-guide.svg)
 
-## 6. Animation modeの使い分け
+## 7. Animation modeの使い分け
 
 | mode                | 目パチ | 口パク       | continue frames | 主な用途                     |
 | ------------------- | ------ | ------------ | --------------- | ---------------------------- |
@@ -208,7 +223,22 @@ close this bubble
 
 `set this bubble animation mode [MODE]`は、呼び出したsprite、clone、またはStageが所有するBubbleだけを変更します。先に`say`または`think`を実行していない場合はエラーになります。
 
-## 7. sayとthink
+## 8. 表示開始・表示中・表示終了animation
+
+表示開始は`fadeIn`、`floatIn`、`zoomIn`、`riseUp`、表示終了は`fadeOut`、`floatOut`、`zoomOut`、`sink`から選べます。これらは`DYNAMIC`と`RESERVED`のどちらにも適用できます。
+
+```text
+set bubble show animation [fadeIn] for [0.2] seconds for bubble style [hero-dialogue]
+set bubble hide animation [fadeOut] for [0.2] seconds for bubble style [hero-dialogue]
+animate this bubble [shake]
+shake this bubble direction [90] count [2] ease [easeInOut]
+explode this bubble relative scale [1.15] count [2] ease [easeOut]
+animate bubble shape to [WAVY] speed [1] for [0.5] seconds
+```
+
+`shake`は吹き出し全体を方向・回数・`ease`付きで揺らし、`explode`はportraitと文字を含むsurface全体を相対倍率で変化させます。`animate bubble shape`は`THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などの外形を切り替えます。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。
+
+## 9. sayとthink
 
 ```text
 say [MESSAGE] with bubble style [STYLE]
@@ -219,7 +249,7 @@ think [MESSAGE] with bubble style [STYLE]
 
 同じsprite、clone、またはStageで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。
 
-## 8. cloneで使う
+## 10. cloneで使う
 
 Bubble styleの定義は拡張機能内で共有されますが、表示中のBubbleはsprite／cloneごとに所有されます。
 
@@ -229,28 +259,39 @@ Bubble styleの定義は拡張機能内で共有されますが、表示中のBu
 
 cloneが停止・削除された場合は、そのtargetに属するtimer、SVG Text skin、drawableが自動解放されます。
 
-## 9. ブロック一覧
+## 11. ブロック一覧
 
-| ブロック                                                                               | 説明                                                    |
-| -------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                            | Bubble styleを定義または再定義する                      |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                            | Actor相対方向・角度、または背景相対領域を設定する       |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                              | Actor boundsからtail先端までの距離を設定する            |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                      | Bubble本体のSVG形状を10種類から設定する                 |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                             | Bubble borderからtail先端までの基準長を設定する         |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`               | 本体位置と、文字を含む全体のscaleを設定する             |
-| `set portrait base [ASSET] for bubble style [STYLE]`                                   | portraitのベース画像を設定する                          |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`           | 目パチ差分と間隔を設定する                              |
-| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | 口パク差分と間隔を設定する                              |
-| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`        | `awaiting-continue`中の「次へ」アニメーションを設定する |
-| `say [MESSAGE] with bubble style [STYLE]`                                              | `talking` modeでsay表示を開始・置換する                 |
-| `think [MESSAGE] with bubble style [STYLE]`                                            | `talking` modeでthink表示を開始・置換する               |
-| `set this bubble animation mode [MODE]`                                                | `talking`、`awaiting-continue`、`idle`からmodeを選ぶ    |
-| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds` | Runtime Expressionの条件成立またはtimeoutまで待つ       |
-| `close this bubble`                                                                    | 自分のBubbleと所有resourceを解放する                    |
-| `Bubble version`                                                                       | Bubble実装versionを返す                                 |
+| ブロック                                                                                         | 説明                                                    |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                                      | Bubble styleを定義または再定義する                      |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                      | Actor相対方向・角度、または背景相対領域を設定する       |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                                        | Actor boundsからtail先端までの距離を設定する            |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                | Bubble本体のSVG形状を10種類から設定する                 |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                                       | Bubble borderからtail先端までの基準長を設定する         |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                         | 本体位置と、文字を含む全体のscaleを設定する             |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                             | portraitのベース画像を設定する                          |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                     | 目パチ差分と間隔を設定する                              |
+| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                  | 口パク差分と間隔を設定する                              |
+| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                  | `awaiting-continue`中の「次へ」アニメーションを設定する |
+| `set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]` | CHARACTER／WORD／LINE／BLOCKの逐次表示を設定する        |
+| `set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]`                   | WORDの区切り文字集合と表示可否を設定する                |
+| `set bubble reveal sound [ASSET] for bubble style [STYLE]`                                       | 表示単位ごとの効果音を設定する                          |
+| `set bubble voice [ASSET] for bubble style [STYLE]`                                              | 表示開始時のフルボイスを設定する                        |
+| `finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds`                    | 未表示単位を最後まで進め、条件またはtimeoutを待つ       |
+| `set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`              | 表示開始animationを設定する                             |
+| `set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`              | 表示終了animationを設定する                             |
+| `animate this bubble [MOTION]`                                                                   | Bubble全体のanimationを再生する                         |
+| `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                              | 吹き出し全体を指定方向へ揺らす                          |
+| `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                           | 吹き出し全体を相対倍率で変化させる                      |
+| `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                     | Bubble外形を時間経過で切り替える                        |
+| `say [MESSAGE] with bubble style [STYLE]`                                                        | `talking` modeでsay表示を開始・置換する                 |
+| `think [MESSAGE] with bubble style [STYLE]`                                                      | `talking` modeでthink表示を開始・置換する               |
+| `set this bubble animation mode [MODE]`                                                          | `talking`、`awaiting-continue`、`idle`からmodeを選ぶ    |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`           | Runtime Expressionの条件成立またはtimeoutまで待つ       |
+| `close this bubble`                                                                              | 自分のBubbleと所有resourceを解放する                    |
+| `Bubble version`                                                                                 | Bubble実装versionを返す                                 |
 
-## 10. よくあるエラー
+## 12. よくあるエラー
 
 | 状況                               | 原因と対処                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------ |
@@ -267,7 +308,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | placementが不正                    | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する                 |
 | 目や口がずれる                     | ベースと全差分のcanvasサイズ、中心、透明領域を揃える                     |
 
-## 11. 自動解放されるタイミング
+## 13. 自動解放されるタイミング
 
 次の場合、Bubbleが所有するtimer、SVG Text skin、renderer drawableは自動的に解放されます。
 
@@ -280,7 +321,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 
 Asset Managerへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Managerの`delete asset [NAME] from memory`を使います。
 
-## 12. マニュアル画像の再生成
+## 14. マニュアル画像の再生成
 
 図とGIFはリポジトリ内のスクリプトから再生成できます。GIF生成にはImageMagickの`magick`コマンドが必要です。
 

@@ -13,10 +13,13 @@ import type {
   BubbleAnimationMode,
   BubbleFrameAnimationInput,
   BubbleHandle,
+  BubbleMotionInput,
+  BubbleRevealInput,
   BubbleScheduler,
   BubblePlacementInput,
   BubblePortraitInput,
   BubbleStyleInput,
+  BubbleRevealUnit,
 } from "./composition.js";
 import { extensionConfig } from "./config.js";
 import {
@@ -79,6 +82,22 @@ const validAnimationModes = new Set<BubbleAnimationMode>([
   "talking",
   "awaiting-continue",
 ]);
+const validRevealUnits = new Set<BubbleRevealUnit>([
+  "CHARACTER",
+  "WORD",
+  "LINE",
+  "BLOCK",
+]);
+const showMotionNames = new Set(["fadeIn", "floatIn", "zoomIn", "riseUp"]);
+const hideMotionNames = new Set(["fadeOut", "floatOut", "zoomOut", "sink"]);
+const motionNames = new Set([
+  ...showMotionNames,
+  ...hideMotionNames,
+  "shake",
+  "explode",
+  "animateBubbleShape",
+]);
+const easeNames = new Set(["linear", "easeIn", "easeOut", "easeInOut"]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
 export const EXTENSION_VERSION = "0.2.0";
@@ -273,6 +292,203 @@ export class BubbleExtension implements TurboWarpExtension {
     this.installStyle(nextStyle);
   }
 
+  public setBubbleReveal(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const unit = this.toString(args.UNIT)
+      .trim()
+      .toUpperCase() as BubbleRevealUnit;
+    if (!validRevealUnits.has(unit))
+      throw extensionError(
+        "reveal unit must be CHARACTER, WORD, LINE, or BLOCK.",
+      );
+    const seconds = Scratch.Cast.toNumber(args.SECONDS);
+    if (!Number.isFinite(seconds) || seconds < 0)
+      throw extensionError("reveal interval must be zero or greater.");
+    const layout = this.toString(args.LAYOUT).trim().toUpperCase();
+    if (layout !== "DYNAMIC" && layout !== "RESERVED")
+      throw extensionError("reveal layout must be DYNAMIC or RESERVED.");
+    const previous = style.reveal;
+    const reveal: BubbleRevealInput = Object.freeze({
+      unit,
+      ...(previous?.delimiters === undefined
+        ? {}
+        : { delimiters: previous.delimiters }),
+      ...(previous?.showDelimiters === undefined
+        ? {}
+        : { showDelimiters: previous.showDelimiters }),
+      layout,
+      intervalSeconds: seconds,
+      ...(previous?.sound === undefined ? {} : { sound: previous.sound }),
+    });
+    this.installStyle(Object.freeze({ ...style, reveal }));
+  }
+
+  public setBubbleWordDelimiters(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const delimiters = this.toString(args.DELIMITERS);
+    if (!delimiters) throw extensionError("word delimiters are empty.");
+    const show = this.toString(args.SHOW).trim().toLowerCase();
+    if (show !== "true" && show !== "false")
+      throw extensionError("show delimiters must be true or false.");
+    const previous = style.reveal;
+    const reveal: BubbleRevealInput = Object.freeze({
+      unit: previous?.unit ?? "WORD",
+      delimiters,
+      showDelimiters: show === "true",
+      ...(previous?.layout === undefined ? {} : { layout: previous.layout }),
+      ...(previous?.intervalSeconds === undefined
+        ? {}
+        : { intervalSeconds: previous.intervalSeconds }),
+      ...(previous?.sound === undefined ? {} : { sound: previous.sound }),
+    });
+    this.installStyle(Object.freeze({ ...style, reveal }));
+  }
+
+  public setBubbleRevealSound(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const asset = this.toString(args.ASSET).trim();
+    const audio = style.audio;
+    const nextAudio = asset
+      ? Object.freeze({ ...(audio ?? {}), reveal: asset })
+      : (() => {
+          if (!audio) return undefined;
+          const { reveal, ...withoutReveal } = audio;
+          void reveal;
+          return Object.freeze(withoutReveal);
+        })();
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        ...(nextAudio === undefined ? {} : { audio: nextAudio }),
+      }),
+    );
+  }
+
+  public setBubbleVoice(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const asset = this.toString(args.ASSET).trim();
+    const audio = style.audio;
+    const nextAudio = asset
+      ? Object.freeze({ ...(audio ?? {}), voice: asset })
+      : (() => {
+          if (!audio) return undefined;
+          const { voice, ...withoutVoice } = audio;
+          void voice;
+          return Object.freeze(withoutVoice);
+        })();
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        ...(nextAudio === undefined ? {} : { audio: nextAudio }),
+      }),
+    );
+  }
+
+  public setBubbleShowAnimation(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const motion = this.motionInput(
+      args.MOTION,
+      args.SECONDS,
+      "show",
+      showMotionNames,
+    );
+    this.installStyle(Object.freeze({ ...style, showAnimation: motion }));
+  }
+
+  public setBubbleHideAnimation(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const motion = this.motionInput(
+      args.MOTION,
+      args.SECONDS,
+      "hide",
+      hideMotionNames,
+    );
+    this.installStyle(Object.freeze({ ...style, hideAnimation: motion }));
+  }
+
+  public async animateBubble(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const handle = this.requireHandle(util);
+    const name = this.toString(args.MOTION).trim();
+    if (!motionNames.has(name))
+      throw extensionError("unsupported Bubble motion.");
+    await handle.animate({ name: name as BubbleMotionInput["name"] });
+  }
+
+  public async shakeBubble(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const handle = this.requireHandle(util);
+    const count = Scratch.Cast.toNumber(args.COUNT);
+    if (!Number.isInteger(count) || count < 1)
+      throw extensionError("shake count must be a positive integer.");
+    const ease = this.toString(args.EASE).trim();
+    if (!easeNames.has(ease)) throw extensionError("unsupported easing.");
+    await handle.animate({
+      name: "shake",
+      direction: Scratch.Cast.toNumber(args.DIRECTION),
+      count,
+      ease: ease as NonNullable<BubbleMotionInput["ease"]>,
+    });
+  }
+
+  public async explodeBubble(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const handle = this.requireHandle(util);
+    const scale = Scratch.Cast.toNumber(args.SCALE);
+    const count = Scratch.Cast.toNumber(args.COUNT);
+    if (!Number.isFinite(scale) || scale <= 0)
+      throw extensionError("explode scale must be positive.");
+    if (!Number.isInteger(count) || count < 1)
+      throw extensionError("explode count must be a positive integer.");
+    const ease = this.toString(args.EASE).trim();
+    if (!easeNames.has(ease)) throw extensionError("unsupported easing.");
+    await handle.animate({
+      name: "explode",
+      relativeScale: scale,
+      count,
+      ease: ease as NonNullable<BubbleMotionInput["ease"]>,
+    });
+  }
+
+  public async animateBubbleShape(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const handle = this.requireHandle(util);
+    const visualStyle = this.toString(args.VISUAL_STYLE)
+      .trim()
+      .toUpperCase() as NonNullable<BubbleStyleInput["visualStyle"]>;
+    if (
+      !bubbleVisualStyles.includes(
+        visualStyle as (typeof bubbleVisualStyles)[number],
+      )
+    )
+      throw extensionError("unsupported Bubble visual style.");
+    const speed = Scratch.Cast.toNumber(args.SPEED);
+    const seconds = Scratch.Cast.toNumber(args.SECONDS);
+    if (
+      !Number.isFinite(speed) ||
+      speed < 0 ||
+      !Number.isFinite(seconds) ||
+      seconds < 0
+    )
+      throw extensionError(
+        "shape animation speed and duration must be zero or greater.",
+      );
+    await handle.animate({
+      name: "animateBubbleShape",
+      visualStyle,
+      speed,
+      durationSeconds: seconds,
+    });
+  }
+
   public sayWithBubbleStyle(
     args: BlockArguments,
     util: BlockUtility,
@@ -385,6 +601,38 @@ export class BubbleExtension implements TurboWarpExtension {
         );
       }
       checkCondition();
+    });
+  }
+
+  public async finishBubbleReveal(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const handle = this.requireHandle(util);
+    const unit = this.toString(args.UNIT)
+      .trim()
+      .toUpperCase() as BubbleRevealUnit;
+    if (!validRevealUnits.has(unit))
+      throw extensionError("reveal unit is invalid.");
+    const conditionText = this.toString(args.CONDITION).trim();
+    const timeoutSeconds = Scratch.Cast.toNumber(args.TIMEOUT);
+    if (!conditionText) throw extensionError("finish condition is empty.");
+    if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0)
+      throw extensionError("finish timeout must be zero or greater.");
+    const expression = this.runtime.ext_kubohiroyaruntimeexpression;
+    if (
+      !this.isRecord(expression) ||
+      typeof expression.runtimeCondition !== "function"
+    ) {
+      throw extensionError(
+        "Bubble finish requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.",
+      );
+    }
+    await handle.finish({
+      unit,
+      timeoutSeconds,
+      condition: () =>
+        expression.runtimeCondition({ EXPRESSION: conditionText }),
     });
   }
 
@@ -518,6 +766,26 @@ export class BubbleExtension implements TurboWarpExtension {
     });
   }
 
+  private motionInput(
+    value: unknown,
+    secondsValue: unknown,
+    label: string,
+    valid: Set<string>,
+  ): BubbleMotionInput {
+    const name = this.toString(value).trim();
+    if (!valid.has(name))
+      throw extensionError(`${label} animation is invalid.`);
+    const seconds = Scratch.Cast.toNumber(secondsValue);
+    if (!Number.isFinite(seconds) || seconds < 0)
+      throw extensionError(
+        `${label} animation duration must be zero or greater.`,
+      );
+    return Object.freeze({
+      name: name as BubbleMotionInput["name"],
+      durationSeconds: seconds,
+    });
+  }
+
   private setPortraitAnimation(
     field: AnimationField,
     args: BlockArguments,
@@ -562,6 +830,14 @@ export class BubbleExtension implements TurboWarpExtension {
     const target = util?.target;
     if (!this.isTarget(target)) throw extensionError("target is unavailable.");
     return target;
+  }
+
+  private requireHandle(util: BlockUtility): BubbleHandle {
+    const target = this.requireTarget(util);
+    const handle = this.handles.get(target.id);
+    if (!handle)
+      throw extensionError("this target does not have an active bubble.");
+    return handle;
   }
 
   private placementInput(placement: BubblePlacement): BubblePlacementInput {

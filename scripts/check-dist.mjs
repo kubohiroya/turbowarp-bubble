@@ -71,6 +71,9 @@ for (const name of [
   "BubbleVisualStyle",
   "LineBreakProvider",
   "WrappedTextLayout",
+  "BubbleRevealInput",
+  "BubbleMotionInput",
+  "BubbleFinishInput",
 ]) {
   if (!declaration.includes(name)) {
     throw new Error(`dist/types/composition.d.ts does not declare ${name}.`);
@@ -109,7 +112,7 @@ for (const value of [
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 16) {
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 27) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

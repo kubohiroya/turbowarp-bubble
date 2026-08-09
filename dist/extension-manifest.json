@@ -3,6 +3,36 @@
   "id": "kubohiroyabubble",
   "blocks": [
     {
+      "opcode": "animateBubble",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MOTION",
+          "type": "STRING",
+          "menu": "motion"
+        }
+      ]
+    },
+    {
+      "opcode": "animateBubbleShape",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "SECONDS",
+          "type": "NUMBER"
+        },
+        {
+          "id": "SPEED",
+          "type": "NUMBER"
+        },
+        {
+          "id": "VISUAL_STYLE",
+          "type": "STRING",
+          "menu": "visualStyle"
+        }
+      ]
+    },
+    {
       "opcode": "closeBubble",
       "blockType": "COMMAND",
       "arguments": []
@@ -18,6 +48,44 @@
         {
           "id": "TEXT_STYLE",
           "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "explodeBubble",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "COUNT",
+          "type": "NUMBER"
+        },
+        {
+          "id": "EASE",
+          "type": "STRING",
+          "menu": "ease"
+        },
+        {
+          "id": "SCALE",
+          "type": "NUMBER"
+        }
+      ]
+    },
+    {
+      "opcode": "finishBubbleReveal",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "CONDITION",
+          "type": "STRING"
+        },
+        {
+          "id": "TIMEOUT",
+          "type": "NUMBER"
+        },
+        {
+          "id": "UNIT",
+          "type": "STRING",
+          "menu": "revealUnit"
         }
       ]
     },
@@ -84,6 +152,25 @@
       ]
     },
     {
+      "opcode": "setBubbleHideAnimation",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MOTION",
+          "type": "STRING",
+          "menu": "hideMotion"
+        },
+        {
+          "id": "SECONDS",
+          "type": "NUMBER"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
       "opcode": "setBubbleOffset",
       "blockType": "COMMAND",
       "arguments": [
@@ -121,6 +208,63 @@
       ]
     },
     {
+      "opcode": "setBubbleReveal",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "LAYOUT",
+          "type": "STRING",
+          "menu": "revealLayout"
+        },
+        {
+          "id": "SECONDS",
+          "type": "NUMBER"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        },
+        {
+          "id": "UNIT",
+          "type": "STRING",
+          "menu": "revealUnit"
+        }
+      ]
+    },
+    {
+      "opcode": "setBubbleRevealSound",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "ASSET",
+          "type": "STRING"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "setBubbleShowAnimation",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MOTION",
+          "type": "STRING",
+          "menu": "showMotion"
+        },
+        {
+          "id": "SECONDS",
+          "type": "NUMBER"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
       "opcode": "setBubbleTailLength",
       "blockType": "COMMAND",
       "arguments": [
@@ -146,6 +290,39 @@
           "id": "VISUAL_STYLE",
           "type": "STRING",
           "menu": "visualStyle"
+        }
+      ]
+    },
+    {
+      "opcode": "setBubbleVoice",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "ASSET",
+          "type": "STRING"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "setBubbleWordDelimiters",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "DELIMITERS",
+          "type": "STRING"
+        },
+        {
+          "id": "SHOW",
+          "type": "STRING",
+          "menu": "boolean"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
         }
       ]
     },
@@ -200,6 +377,25 @@
       ]
     },
     {
+      "opcode": "shakeBubble",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "COUNT",
+          "type": "NUMBER"
+        },
+        {
+          "id": "DIRECTION",
+          "type": "NUMBER"
+        },
+        {
+          "id": "EASE",
+          "type": "STRING",
+          "menu": "ease"
+        }
+      ]
+    },
+    {
       "opcode": "thinkWithBubbleStyle",
       "blockType": "COMMAND",
       "arguments": [
@@ -234,7 +430,35 @@
       "acceptReporters": true
     },
     {
+      "id": "boolean",
+      "acceptReporters": true
+    },
+    {
+      "id": "ease",
+      "acceptReporters": true
+    },
+    {
+      "id": "hideMotion",
+      "acceptReporters": true
+    },
+    {
+      "id": "motion",
+      "acceptReporters": true
+    },
+    {
       "id": "placement",
+      "acceptReporters": true
+    },
+    {
+      "id": "revealLayout",
+      "acceptReporters": true
+    },
+    {
+      "id": "revealUnit",
+      "acceptReporters": true
+    },
+    {
+      "id": "showMotion",
       "acceptReporters": true
     },
     {

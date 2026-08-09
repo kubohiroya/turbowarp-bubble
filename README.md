@@ -2,6 +2,15 @@
 
 `@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。
 
+## READMEの読み方
+
+利用環境を先に決めると、必要な部分だけを読めます。
+
+1. TurboWarpでブロックを使う場合は、後述の[TurboWarp機能拡張](#turbowarp機能拡張)と[提供ブロック](#提供ブロック)を確認します。
+2. 独自Webアプリやhostから使う場合は、[Composition API](#composition-api)と[Styleと表示](#styleと表示)を確認します。
+3. 表示単位、改行、外形、portrait、animationの仕様を知りたい場合は、[概念と表示仕様](#概念と表示仕様)を参照します。
+4. Scratch公式エディターでの利用可否は、[Scratchとの互換性](#scratchとの互換性)に記載しています。
+
 ## 機能の全体像
 
 Bubbleは、文字を描くText provider、吹き出しの外形と配置を管理するBubble layer、画像・音声を解決する任意のAsset capabilityを組み合わせます。これにより、TurboWarpの機能拡張としても、アプリのhostから呼び出すcompositionとしても同じ表示モデルを利用できます。
@@ -16,25 +25,27 @@ flowchart LR
   body --> portrait[portraitレイヤー]
   portrait --> blink[blink]
   portrait --> lipsync[lip-sync]
-  body --> motion[入場・中間・退場animation]
+  body --> motion[表示開始・表示中・表示終了animation]
   body --> wait[continue待機]
   wait --> close[終了・resource解放]
 ```
 
 このREADMEでは、現在公開している機能と、3層構成で接続する表示仕様を同じ用語で説明します。公開APIにまだ現れていない仕様は「実装状況」欄で明示しています。
 
-| 領域                  | このREADMEで説明する内容                                                       | 現在の公開API                                               |
-| --------------------- | ------------------------------------------------------------------------------ | ----------------------------------------------------------- |
-| 文字描画・改行        | 名前付きstyle、実測幅、`maxWidth`、UAX #14準拠の改行                           | 実装済み（SVG Text capability）                             |
-| 逐次表示              | `CHARACTER`／`WORD`／`LINE`／`BLOCK`、区切り文字、単位ごとの効果音、finish条件 | 仕様を整理中。現行Bubbleは`show`／`setText`で全文を受け取る |
-| portrait              | ベース画像、`blink`、`lip-sync`の独立レイヤー                                  | 実装済み（Asset Manager capability）                        |
-| Bubble外形            | `NORMAL`等のvisual style、placement、tail、offset、scale                       | 実装済み                                                    |
-| 表示mode              | `talking`／`awaiting-continue`／`idle`                                         | 実装済み                                                    |
-| 入退場・中間animation | `fadeIn`、`floatIn`、`shake`、`animateBubbleShape`等                           | 仕様を整理中。現行APIは未公開                               |
+| 領域                                | このREADMEで説明する内容                                                       | 現在の公開API                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------- |
+| 文字描画・改行                      | 名前付きstyle、実測幅、`maxWidth`、UAX #14準拠の改行                           | 実装済み（SVG Text capability）                               |
+| 逐次表示                            | `CHARACTER`／`WORD`／`LINE`／`BLOCK`、区切り文字、単位ごとの効果音、finish条件 | 実装済み（`revealNext`／`revealAll`／`finish`、対応ブロック） |
+| portrait                            | ベース画像、`blink`、`lip-sync`の独立レイヤー                                  | 実装済み（Asset Manager capability）                          |
+| Bubble外形                          | `NORMAL`等のvisual style、placement、tail、offset、scale                       | 実装済み                                                      |
+| 表示mode                            | `talking`／`awaiting-continue`／`idle`                                         | 実装済み                                                      |
+| 表示開始・表示中・表示終了animation | `fadeIn`、`floatIn`、`shake`、`animateBubbleShape`等                           | 実装済み（`handle.animate`、style設定、対応ブロック）         |
 
-## 3層構成と責務
+## 概念と表示仕様
 
-依存の向きは、純粋なBubble compositionを中心に、TurboWarp adapterと各providerを外側へ置く構成です。
+### 3層構成と責務
+
+依存の向きは、純粋なBubble compositionを中心に、TurboWarp adapterと各providerを外側へ置く構成です。矢印は「利用する側」から「利用される側」へ向けています。
 
 ```mermaid
 flowchart TB
@@ -44,16 +55,18 @@ flowchart TB
   image[Image capability\nportrait・blink・lip-sync・continue画像]
   audio[Audio capability\nvoice・表示単位ごとの効果音]
   input[Async Input + Runtime Expression\n入力と待機条件]
-  core --> adapter
+  extension[TurboWarp extension\nblocks / Scratch target]
+  adapter --> core
   adapter --> text
   core -.任意Capability.-> image
   core -.任意Capability.-> audio
-  core -.任意Capability.-> input
+  extension --> core
+  extension -.optional.-> input
 ```
 
-`@kubohiroya/turbowarp-svg-text`は文字のSVG skinと文字幅の測定を担当し、吹き出しの外枠、tail、portraitの配置、入退場animationは担当しません。Asset Manager、Async Input、Runtime Expressionはoptional peer dependencyで、対応する機能を使う場合だけ接続します。
+`@kubohiroya/turbowarp-svg-text`は文字のSVG skinと文字幅の測定を担当し、吹き出しの外枠、tail、portraitの配置、表示開始・表示終了animationは担当しません。画像解決、音声再生、入力、条件評価はCapabilityとして切り離し、Asset Manager、Async Input、Runtime Expressionはoptional peer dependencyとして対応機能を使う場合だけ接続します。
 
-## 逐次表示の単位（CHARACTER / WORD / LINE / BLOCK）
+### 逐次表示の単位（CHARACTER / WORD / LINE / BLOCK）
 
 セリフ全体を一度に表示するだけでなく、表示対象を「どの単位で一つずつ増やすか」として扱います。`CHARACTER`は形態素解析ではなく、表示上の書記素クラスタ（結合文字や絵文字を途中で分割しない単位）を前提にします。
 
@@ -104,7 +117,7 @@ sequenceDiagram
   end
 ```
 
-`RESERVED`は表示中に外形が動きにくく、`DYNAMIC`は短い文では余白を抑えられます。いずれもBubble外形のanimationやportraitレイヤーとは独立したレイアウト方針です。現行の公開composition APIでは`show`と`handle.setText()`がこの接続点になり、逐次表示の分割・タイミングはhostが制御します。
+`RESERVED`は表示中に外形が動きにくく、`DYNAMIC`は短い文では余白を抑えられます。いずれもBubble外形のanimationやportraitレイヤーとは独立したレイアウト方針です。Composition APIではstyleの`reveal`、`handle.revealNext()`、`handle.revealAll()`が分割・タイミングの接続点になり、`intervalSeconds`を指定した自動送りにも対応します。
 
 逐次表示を最後まで進めてから待機へ移る場合は、表示単位を明示したfinish指定を使います。
 
@@ -114,9 +127,11 @@ finish [CHARACTER / WORD / LINE / BLOCK]
   or timeout after [TIMEOUT] seconds
 ```
 
-`CONDITION`が成立したら未表示の単位を最後まで進め、成立しない場合も`TIMEOUT`秒後に同じ完了処理へ移します。`TIMEOUT`を`0`にすると時間制限を設けません。完了後は`awaiting-continue`へ移すか、hostが`close`または退場animationを開始します。`finish`の公開block/APIは現在のBubbleにはまだなく、既存の`wait with this bubble ...`は全文表示後の入力待ちに対応します。
+`CONDITION`が成立したら未表示の単位を最後まで進め、成立しない場合も`TIMEOUT`秒後に同じ完了処理へ移します。`TIMEOUT`を`0`にすると時間制限を設けません。完了後は`awaiting-continue`へ移すか、hostが`close`または表示終了animationを開始します。Composition APIでは`handle.finish({ unit, condition, timeoutSeconds })`、手続き型拡張では`finish [UNIT] ...`ブロックを使います。
 
 ### 音声と表示単位
+
+`finish`は公開Composition APIの`handle.finish({ unit, condition, timeoutSeconds })`と、TurboWarpの`finish [UNIT] ...`ブロックで利用できます。これは逐次表示を最後まで進め、条件成立またはtimeoutで音声と待機状態を確定します。
 
 Asset Managerを音声providerとして接続すると、次の音声を同じ表示ライフサイクルに関連付けられます。
 
@@ -126,20 +141,20 @@ Asset Managerを音声providerとして接続すると、次の音声を同じ�
 
 表示単位ごとの効果音は、文字列を音声として合成する機能ではなく、名前付き音声assetを再生する経路です。音声がない場合でも、文字表示・portrait・Bubble外形は独立して利用できます。
 
-## パッケージ境界
+### パッケージ境界
 
-| パッケージ                                 | 責務                                                                      |
-| ------------------------------------------ | ------------------------------------------------------------------------- |
-| `@kubohiroya/turbowarp-asset-manager`      | アセット名の登録、画像種別の検証、画像targetへの適用、音声再生            |
-| `@kubohiroya/turbowarp-svg-text`           | 名前付き文字styleと、文字列からSVGスキンへの変換                          |
-| `@kubohiroya/turbowarp-async-input`        | キー入力・タップをTemporary Variablesのruntime変数へ反映                  |
-| `@kubohiroya/turbowarp-runtime-expression` | runtime変数を参照する安全な待機条件の評価                                 |
-| `@kubohiroya/turbowarp-bubble`             | 吹き出しsurface、配置、say／think、表情レイヤー、animation mode、入力待機 |
-| アプリ／host                               | 必要に応じたアプリ固有の入力からcomposition APIへの変換                   |
+| パッケージ                                 | 責務                                                                           |
+| ------------------------------------------ | ------------------------------------------------------------------------------ |
+| `@kubohiroya/turbowarp-asset-manager`      | 任意のImage／Audio capabilityをTurboWarp assetへ接続（画像解決・音声再生）     |
+| `@kubohiroya/turbowarp-svg-text`           | 名前付き文字styleと、文字列からSVGスキンへの変換                               |
+| `@kubohiroya/turbowarp-async-input`        | キー入力・タップをTemporary Variablesのruntime変数へ反映                       |
+| `@kubohiroya/turbowarp-runtime-expression` | runtime変数を参照する安全な待機条件の評価                                      |
+| `@kubohiroya/turbowarp-bubble`             | 吹き出しsurface、配置、逐次表示、say／think、表情レイヤー、animation、入力待機 |
+| アプリ／host                               | 必要に応じたアプリ固有の入力からcomposition APIへの変換                        |
 
-Bubbleは依存パッケージを再exportしません。SVG Textは現在の文字描画に必要ですが、Asset Manager、Async Input、Runtime Expressionは利用する機能がなければインストール不要です。Asset Managerを使う機能は画像だけでなく、フルボイス、タイプライター音、行・段落ごとの効果音などの外部メディアも対象にします。
+Bubbleは依存パッケージを再exportしません。SVG Textは現在の文字描画に必要ですが、画像・音声・入力・条件評価はCapabilityとして差し替えられます。TurboWarp adapterではAsset Managerを自動接続し、Composition APIでは`imageResolver`／`audio`をhostが任意に実装できます。Asset Managerを使う機能は画像だけでなく、フルボイス、タイプライター音、行・段落ごとの効果音などの外部メディアも対象にします。
 
-## 自動改行と禁則処理の基盤
+### 自動改行と禁則処理の基盤
 
 Bubbleの任意`maxWidth`による自動改行では、`@cto.af/linebreak`を利用してUnicode UAX #14準拠の改行可能位置を求めます。依存は`LineBreakProvider` interfaceの内側へ閉じ込め、実際のフォントで測った幅から、上限内に収まる最も後ろの候補をBubble側で選びます。
 
@@ -161,7 +176,7 @@ Composition APIのBubble styleへ`maxWidth`と任意の`textLocale`を渡すと�
 
 図の各行はproductionの`wrapText`を直接呼んだ結果です。図版専用の手作業改行は使っていません。
 
-## Bubble visual styleの形状
+### Bubble visual styleの形状
 
 形状候補は`NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`です。
 
@@ -173,16 +188,18 @@ standalone機能拡張では、`set bubble visual style`ブロックで形状を
 
 配布bundleに含まれる依存ライブラリのライセンスは、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
 
-## ライセンスとソースコード
+## 利用方法
 
-このパッケージのSource Code Formは[MPL-2.0](https://www.mozilla.org/MPL/2.0/)の条件で提供します。対応するソースコードは[GitHubリポジトリ](https://github.com/kubohiroya/turbowarp-bubble)から取得できます。npmおよびCDNで配布するJavaScript bundleに対応するソースコードも、このリポジトリの同じpackage versionから参照できます。
-
-配布物に組み込まれる第三者ソフトウェアの著作権表示とライセンス条件は、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にまとめています。
-
-## インストール
+### インストール
 
 ```sh
 pnpm add @kubohiroya/turbowarp-bubble @kubohiroya/turbowarp-svg-text
+```
+
+npmを使う場合は同じ依存を次のように追加します。
+
+```sh
+npm install @kubohiroya/turbowarp-bubble @kubohiroya/turbowarp-svg-text
 ```
 
 現在のpeer dependency範囲は、SVG Textが`>=0.4.0 <1`、Asset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。Asset Manager、Async Input、Runtime Expressionはoptional peer dependencyです。
@@ -195,11 +212,17 @@ pnpm add @kubohiroya/turbowarp-asset-manager \
   @kubohiroya/turbowarp-runtime-expression
 ```
 
-## TurboWarp機能拡張
+```sh
+npm install @kubohiroya/turbowarp-asset-manager \
+  @kubohiroya/turbowarp-async-input \
+  @kubohiroya/turbowarp-runtime-expression
+```
+
+### TurboWarp機能拡張
 
 ブロックの組み方、表情差分の準備、入力待ち、clone、エラー対処を含む手順は、ブロック利用マニュアル（[English](https://kubohiroya.github.io/turbowarp-bubble/) / [日本語](https://kubohiroya.github.io/turbowarp-bubble/ja/)）を参照してください。`talking`から`awaiting-continue`、入力成立、`close`までのアニメーション例も掲載しています。
 
-### TurboWarpでの導入
+#### TurboWarpでの導入
 
 TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget APIへ接続する**unsandboxedカスタム拡張機能**です。TurboWarp Editorでは、次の順で読み込みます。
 
@@ -229,7 +252,7 @@ https://unpkg.com/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js
 
 TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発中は、リポジトリをローカルHTTPサーバーで配信して`dist/turbowarp-bubble.js`を指定できます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。
 
-### Scratchとの互換性
+#### Scratchとの互換性
 
 Scratch公式エディター（Scratch 3.0）から、TurboWarp Bubbleをカスタム拡張機能として直接利用することはできません。Scratch公式にはTurboWarpのunsandboxed拡張機能、renderer内部API、target drawable APIがないためです。Scratch向けの.sb3プロジェクトへこのREADMEのURLを追加しても、Bubbleのブロックは登録されません。
 
@@ -246,7 +269,7 @@ Scratch互換の別runtimeで利用するには、そのruntimeがTurboWarpと�
 
 Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。SVG本体、文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
 
-### 提供ブロック
+#### 提供ブロック
 
 | ブロック                                                                               | 動作                                                              |
 | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
@@ -271,7 +294,7 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 
 visual styleを設定しない場合は`NORMAL`です。本体drawableは文字・表情より背面に生成され、close、対象停止、runtime破棄時にSVG skinとともに解放されます。
 
-### Placement
+#### Placement
 
 `PLACEMENT`はActor相対と背景相対の二系統です。省略時は`up-right`です。
 
@@ -301,7 +324,7 @@ Actor相対の`distance`はActorのStage座標AABB（axis-aligned bounding box�
 
 `offset x/y/scale`の既定値は`[0, 0, 100]`です。xは右、yは上が正です。scaleはBubble外形だけでなく、SVG Textの文字（フォントサイズ）、表情画像、次へアイコン、内部余白へ一体で適用します。scaleだけを変えた場合は、拡大量の半径分だけ本体中心をActorから離し、Actor側の間隔を維持します。その後x/y offsetを加え、固定したtail先端へ向けてtailを再生成するため、offset後の実長は`tail length`から変化し得ます。Stage端では全体が画面内に収まるようクランプします。これら3設定は背景相対placementでは無視します。
 
-### Portraitとblink / lip-sync
+#### Portraitとblink / lip-sync
 
 portraitは、位置合わせ済みの透明画像を重ねるレイヤーです。ベース画像と差分画像を同じcanvasサイズ・中心位置で用意すると、顔を描き直さずに目と口だけを更新できます。
 
@@ -331,37 +354,35 @@ flowchart TB
 
 ![portrait base、blink、lip-sync、continue indicatorを別レイヤーとして重ねる概念図](docs/assets/animation-mode-guide.svg)
 
-### Bubble animation
+#### Bubble animation
 
 Bubbleのanimationは、画像フレームのループ（blink、lip-sync、continue）と、Bubble surface自体の変形を分けて考えます。現在公開している`set this bubble animation mode`は前者の動作modeを切り替えます。後者は、同じsurfaceへ適用する汎用animation仕様として整理します。
 
 ```mermaid
 flowchart LR
-  start[表示開始] --> in[入場animation\nfadeIn / floatIn / zoomIn / riseUp]
+  start[表示開始] --> in[表示開始animation\nfadeIn / floatIn / zoomIn / riseUp]
   in --> visible[表示中]
   visible --> shake[shake\n方向・回数・ease]
   visible --> explode[explode\n相対サイズ・回数・ease]
   visible --> shape[animateBubbleShape\n速度・時間]
   visible --> waiting[awaiting-continue]
-  waiting --> out[退場animation\nfadeOut / floatOut / zoomOut / sink]
+  waiting --> out[表示終了animation\nfadeOut / floatOut / zoomOut / sink]
   out --> released[close・resource解放]
 ```
 
-#### 入場と退場
+##### 表示開始と表示終了
 
-PowerPointの用語に寄せ、入場には`fadeIn`、`floatIn`、`zoomIn`、`riseUp`、退場には`fadeOut`、`floatOut`、`zoomOut`、`sink`を使います。入場・退場animationは`RESERVED`だけに限定しません。`DYNAMIC`で表示サイズを更新しているBubbleにも適用でき、退場時には現在の外形を基準に終点を計算します。
+PowerPointの用語を参考にしつつ、Bubbleの仕様名は「表示開始animation」「表示終了animation」とします。表示開始には`fadeIn`、`floatIn`、`zoomIn`、`riseUp`、表示終了には`fadeOut`、`floatOut`、`zoomOut`、`sink`を使います。表示開始・表示終了animationは`RESERVED`だけに限定しません。`DYNAMIC`で表示サイズを更新しているBubbleにも適用でき、表示終了時には現在の外形を基準に終点を計算します。
 
-#### 表示中の変形
+##### 表示中の変形
 
 - `shake + direction + count + ease`: 吹き出し全体を指定方向へ揺らします。`direction`は水平・垂直・斜めを指定でき、`count`は往復回数、`ease`は各往復の速度曲線です。
 - `explode + relativeScale + count + ease`: 現在サイズを基準に拡大・縮小を繰り返します。portraitとTextを含むsurface全体へ同じ相対変化を適用します。
-- `animateBubbleShape + speed + duration`: `THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などの外形を時間経過で補間します。`visualStyle`の切替と、切替中の形状補間を分離できます。
+- `animateBubbleShape + speed + duration`: `THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などの外形を指定速度・時間で切り替えます。`visualStyle`の切替と、表示中のsurface animationを分離できます。
 
-animationは`show`、`handle.setAnimationMode()`、`handle.updateStyle()`、`handle.close()`のライフサイクルに接続します。新しいBubbleで同じ`actorKey`を置き換えると、旧animationのtimerとdrawableを先に解放します。
+animationは`show`、`handle.animate()`、`handle.setAnimationMode()`、`handle.updateStyle()`、`handle.close()`のライフサイクルに接続します。新しいBubbleで同じ`actorKey`を置き換えると、旧animationのtimerとdrawableを先に解放します。`shake`には`ease`を指定でき、`explode`には`relativeScale`、`count`、`ease`、`animateBubbleShape`には`speed`と`durationSeconds`を指定できます。
 
-> **実装状況:** 現在の公開composition APIで利用できるBubble motionは、visual styleの設定と`talking`／`awaiting-continue`／`idle`のmode切替です。上記の入場・退場・`shake`・`explode`・`animateBubbleShape`を外部hostから指定する正式なメソッド／ブロックは、後方互換性を壊さない形で追加する予定です。
-
-### Animation mode
+#### Animation mode
 
 | mode                | 目パチ | 口パク       | continue frames |
 | ------------------- | ------ | ------------ | --------------- |
@@ -371,7 +392,7 @@ animationは`show`、`handle.setAnimationMode()`、`handle.updateStyle()`、`han
 
 `say`／`think`ブロックは`talking`で表示を開始し、すぐ次のブロックへ進みます。`wait with this bubble ...`は自動的に`awaiting-continue`へ移り、Async Inputが更新するruntime変数をRuntime Expressionで評価します。条件成立またはtimeout後は`idle`へ移って次のブロックへ進みます。
 
-### ブロック構成例
+#### ブロック構成例
 
 ```text
 define bubble style [hero-dialogue] using text style [dialogue-text]
@@ -394,7 +415,7 @@ close this bubble
 
 プロジェクト開始・停止、対象sprite／cloneの停止、runtime破棄でも、所有するtimer、SVG text skin、drawableを自動解放します。依存拡張が未ロードの場合は、必要なnpmパッケージ名を含むerrorを返します。
 
-## Composition API
+### Composition API
 
 TurboWarp runtimeのrenderer、SVG Textへ直接接続するhostでは、公開adapterを利用できます。画像portrait、lip-sync、continue indicator、または音声アセットを使う場合だけ、Asset Managerを追加でロードしてください。
 
@@ -407,31 +428,27 @@ const bubbles = createTurboWarpBubbleComposition(runtime);
 描画surfaceをhost側で実装する場合は、以下の低レベルComposition APIを利用します。
 
 ```ts
-import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
-import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
-import { createBubbleComposition } from "@kubohiroya/turbowarp-bubble/composition";
+import {
+  createBubbleComposition,
+  type BubbleImageCapability,
+  type BubbleSurfaceFactory,
+  type BubbleSvgText,
+} from "@kubohiroya/turbowarp-bubble/composition";
 
-const imageResolver = createAssetManagerComposition();
-const svgText = createSvgTextComposition({ runtime });
-
-svgText.defineStyle({
-  name: "dialogue-text",
-  backgroundColor: "#ffffff",
-  textColor: "#332200",
-  font: "Noto Sans JP",
-  fontPercent: 100,
-  alignment: "left",
-});
+// These are host-owned capabilities. They may be backed by Asset Manager,
+// another asset service, or local application code.
+declare const imageResolver: BubbleImageCapability;
+declare const svgText: BubbleSvgText;
+declare const bubbleSurfaceHost: BubbleSurfaceFactory;
 
 const bubbles = createBubbleComposition({
   imageResolver,
   svgText,
-  async createSurface({ actor, actorKey, kind, style }) {
-    // hostがActorの近くへsurfaceを配置し、各レイヤー用のtargetを返します。
-    return bubbleSurfaceHost.create({ actor, actorKey, kind, style });
-  },
+  createSurface: bubbleSurfaceHost,
 });
 ```
+
+`declare`部分はサンプルを短くするための型宣言です。実際のhostでは、`BubbleSvgText`（文字skinの適用・解放）、`BubbleImageCapability`（画像名の解決）、`BubbleAudioCapability`（音声再生）、`BubbleSurfaceFactory`（外枠・text・portrait各targetの生成）を実装して渡します。TurboWarp runtimeを使う場合は、これらを個別に実装せず`createTurboWarpBubbleComposition(runtime)`を使えます。
 
 テキストだけを表示する場合は、Asset Managerのimport、`createAssetManagerComposition()`、`imageResolver`プロパティをすべて省略できます。Asset Managerは画像だけでなく、フルボイス、タイプライター音、行・段落ごとの効果音を登録・再生するためのメディア経路として利用します。音声付きBubble APIは表示機能と同じ名前付きアセットを使う設計にします。
 
@@ -447,7 +464,7 @@ surfaceは`updateStyle(style)`も実装し、吹き出しの位置・形状・�
 
 画像レイヤーのtarget IDは互いに異なる必要があります。styleで使わないレイヤーのtargetは省略できます。
 
-## Styleと表示
+#### Styleと表示
 
 ```ts
 bubbles.defineStyle({
@@ -473,6 +490,18 @@ bubbles.defineStyle({
     frames: ["Next1", "Next2"],
     frameIntervalSeconds: 0.2,
   },
+  reveal: {
+    unit: "CHARACTER",
+    layout: "RESERVED",
+    intervalSeconds: 0.05,
+    sound: "Typewriter",
+  },
+  audio: {
+    voice: "HeroVoice",
+    reveal: "Typewriter",
+  },
+  showAnimation: { name: "fadeIn", durationSeconds: 0.2 },
+  hideAnimation: { name: "fadeOut", durationSeconds: 0.2 },
 });
 
 bubbles.defineStyle({
@@ -501,10 +530,30 @@ await bubble.setAnimationMode("awaiting-continue");
 await bubble.setAnimationMode("idle");
 // 吹き出しを残したまま、口パクと「次へ」アイコンを停止します。
 
+await bubble.revealNext();
+await bubble.revealAll();
+await bubble.animate({
+  name: "shake",
+  direction: 90,
+  count: 2,
+  ease: "easeInOut",
+});
+await bubble.finish({
+  unit: "CHARACTER",
+  condition: () => inputState === "pressed",
+  timeoutSeconds: 10,
+});
+
 await bubble.close();
 ```
 
 返されたhandleの`setText(text)`は同じsurface上の本文を更新し、文字送りなどに利用できます。`handle.updateStyle(style)`は表示中のBubbleへstyle変更を即時適用します。同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、SVG Text target、surfaceを解放します。composition間で状態は共有しません。
+
+## ライセンスとソースコード
+
+このパッケージのSource Code Formは[MPL-2.0](https://www.mozilla.org/MPL/2.0/)の条件で提供します。対応するソースコードは[GitHubリポジトリ](https://github.com/kubohiroya/turbowarp-bubble)から取得できます。npmおよびCDNで配布するJavaScript bundleに対応するソースコードも、このリポジトリの同じpackage versionから参照できます。
+
+配布物に組み込まれる第三者ソフトウェアの著作権表示とライセンス条件は、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)にまとめています。
 
 ## 開発
 

@@ -16,6 +16,14 @@ import {
 } from "./actor-transform.js";
 import { bubbleVisualStyles, type BubbleVisualStyle } from "./bubble-svg.js";
 import { wrapText } from "./text-layout.js";
+import {
+  normalizeBubbleReveal,
+  revealedBubbleText,
+  splitBubbleText,
+  type BubbleRevealInput,
+  type BubbleRevealUnit,
+  type NormalizedBubbleReveal,
+} from "./reveal.js";
 
 export {
   UnicodeLineBreakProvider,
@@ -62,9 +70,55 @@ export {
   type BubbleVisualStyle,
   type RenderBubbleSvgInput,
 } from "./bubble-svg.js";
+export {
+  bubbleRevealUnits,
+  normalizeBubbleReveal,
+  revealedBubbleText,
+  splitBubbleText,
+  type BubbleRevealInput,
+  type BubbleRevealLayout,
+  type BubbleRevealUnit,
+  type NormalizedBubbleReveal,
+} from "./reveal.js";
 
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
+export type BubbleEase = "linear" | "easeIn" | "easeOut" | "easeInOut";
+export type BubbleMotionName =
+  | "fadeIn"
+  | "fadeOut"
+  | "floatIn"
+  | "floatOut"
+  | "zoomIn"
+  | "zoomOut"
+  | "riseUp"
+  | "sink"
+  | "shake"
+  | "explode"
+  | "animateBubbleShape";
+
+export interface BubbleMotionInput {
+  readonly name: BubbleMotionName;
+  readonly durationSeconds?: number;
+  readonly ease?: BubbleEase;
+  readonly direction?: number | string;
+  readonly count?: number;
+  readonly relativeScale?: number;
+  readonly speed?: number;
+  readonly visualStyle?: BubbleVisualStyle;
+}
+
+export interface BubbleAudioInput {
+  readonly voice?: string;
+  readonly reveal?: string;
+  readonly finish?: string;
+}
+
+export interface BubbleFinishInput {
+  readonly unit?: BubbleRevealUnit;
+  readonly condition?: () => boolean | Promise<boolean>;
+  readonly timeoutSeconds?: number;
+}
 export type BubbleLayer =
   "portraitBase" | "portraitBlink" | "portraitLipSync" | "continueIndicator";
 
@@ -91,6 +145,12 @@ export interface BubbleStyleInput {
   readonly visualStyle?: BubbleVisualStyle;
   readonly portrait?: BubblePortraitInput;
   readonly continueIndicator?: BubbleFrameAnimationInput;
+  readonly reveal?: BubbleRevealInput;
+  readonly audio?: BubbleAudioInput;
+  /** Animation played when the Bubble drawable first becomes visible. */
+  readonly showAnimation?: BubbleMotionInput;
+  /** Animation played before the Bubble drawable is hidden. */
+  readonly hideAnimation?: BubbleMotionInput;
 }
 
 export interface BubbleFrameAnimation {
@@ -116,6 +176,10 @@ export interface BubbleStyle {
   readonly visualStyle: BubbleVisualStyle;
   readonly portrait?: BubblePortrait;
   readonly continueIndicator?: BubbleFrameAnimation;
+  readonly reveal?: NormalizedBubbleReveal;
+  readonly audio?: BubbleAudioInput;
+  readonly showAnimation?: BubbleMotionInput;
+  readonly hideAnimation?: BubbleMotionInput;
 }
 
 export interface BubbleAssetTarget {
@@ -137,6 +201,8 @@ export interface BubbleAudioCapability {
     name: unknown,
     options?: Readonly<{ untilDone?: boolean }>,
   ) => Promise<void>;
+  readonly isRegistered?: (name: unknown) => boolean;
+  readonly getMimeType?: (name: unknown) => string;
 }
 
 export interface BubbleTextTarget {
@@ -171,6 +237,11 @@ export interface BubbleSurface {
   show(): void | Promise<void>;
   hide(): void | Promise<void>;
   dispose(): void | Promise<void>;
+  /** Optional host-native motion implementation. */
+  animate?(motion: BubbleMotionInput): void | Promise<void>;
+  /** Captures the currently rendered text size for RESERVED reveal layout. */
+  captureTextLayout?(): void;
+  clearTextLayout?(): void;
 }
 
 export interface BubbleSurfaceFactoryInput {
@@ -214,6 +285,7 @@ export interface ShowBubbleInput {
   readonly text: string;
   readonly styleName: string;
   readonly animationMode?: BubbleAnimationMode;
+  readonly reveal?: BubbleRevealInput;
 }
 
 export interface BubbleHandle {
@@ -223,6 +295,10 @@ export interface BubbleHandle {
   setText(text: string): Promise<void>;
   updateStyle(style: BubbleStyleInput): Promise<void>;
   setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
+  revealNext(): Promise<boolean>;
+  revealAll(): Promise<void>;
+  finish(input?: BubbleFinishInput): Promise<void>;
+  animate(motion: BubbleMotionInput): Promise<void>;
   close(): Promise<void>;
 }
 
@@ -278,6 +354,25 @@ const validAnimationModes = new Set<BubbleAnimationMode>([
   "idle",
   "talking",
   "awaiting-continue",
+]);
+const validMotionNames = new Set<BubbleMotionName>([
+  "fadeIn",
+  "fadeOut",
+  "floatIn",
+  "floatOut",
+  "zoomIn",
+  "zoomOut",
+  "riseUp",
+  "sink",
+  "shake",
+  "explode",
+  "animateBubbleShape",
+]);
+const validEases = new Set<BubbleEase>([
+  "linear",
+  "easeIn",
+  "easeOut",
+  "easeInOut",
 ]);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -373,6 +468,118 @@ function normalizePortrait(value: unknown): NormalizedPortrait {
   });
 }
 
+function normalizeMotion(value: unknown, label: string): BubbleMotionInput {
+  if (!isRecord(value)) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `${label} must be an object.`,
+    );
+  }
+  requireExactKeys(
+    value,
+    ["name"],
+    [
+      "durationSeconds",
+      "ease",
+      "direction",
+      "count",
+      "relativeScale",
+      "speed",
+      "visualStyle",
+    ],
+    label,
+  );
+  if (!validMotionNames.has(value.name as BubbleMotionName)) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `${label}.name is not a supported Bubble motion.`,
+    );
+  }
+  const numberField = (
+    key: string,
+    minimum: number,
+    integer = false,
+  ): number | undefined => {
+    const candidate = value[key];
+    if (candidate === undefined) return undefined;
+    if (
+      typeof candidate !== "number" ||
+      !Number.isFinite(candidate) ||
+      candidate < minimum ||
+      (integer && !Number.isInteger(candidate))
+    ) {
+      throw new BubbleCompositionError(
+        "BUBBLE-COMPOSITION-001",
+        `${label}.${key} is invalid.`,
+      );
+    }
+    return candidate;
+  };
+  const durationSeconds = numberField("durationSeconds", 0);
+  const count = numberField("count", 1, true);
+  const relativeScale = numberField("relativeScale", 0);
+  const speed = numberField("speed", 0);
+  const direction = value.direction;
+  if (
+    direction !== undefined &&
+    typeof direction !== "number" &&
+    typeof direction !== "string"
+  ) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `${label}.direction is invalid.`,
+    );
+  }
+  const ease = value.ease ?? "easeInOut";
+  if (typeof ease !== "string" || !validEases.has(ease as BubbleEase)) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `${label}.ease is invalid.`,
+    );
+  }
+  const visualStyle = value.visualStyle;
+  if (
+    visualStyle !== undefined &&
+    (typeof visualStyle !== "string" ||
+      !bubbleVisualStyles.includes(visualStyle as BubbleVisualStyle))
+  ) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      `${label}.visualStyle is invalid.`,
+    );
+  }
+  return Object.freeze({
+    name: value.name as BubbleMotionName,
+    ...(durationSeconds === undefined ? {} : { durationSeconds }),
+    ease: ease as BubbleEase,
+    ...(direction === undefined ? {} : { direction }),
+    ...(count === undefined ? {} : { count }),
+    ...(relativeScale === undefined ? {} : { relativeScale }),
+    ...(speed === undefined ? {} : { speed }),
+    ...(visualStyle === undefined
+      ? {}
+      : { visualStyle: visualStyle as BubbleVisualStyle }),
+  });
+}
+
+function normalizeAudio(value: unknown): BubbleAudioInput | undefined {
+  if (value === undefined) return undefined;
+  if (!isRecord(value)) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      "Bubble audio must be an object.",
+    );
+  }
+  requireExactKeys(value, [], ["voice", "reveal", "finish"], "Bubble audio");
+  const result: Record<string, string> = {};
+  for (const key of ["voice", "reveal", "finish"] as const) {
+    const asset = value[key];
+    if (asset !== undefined)
+      result[key] = requireName(asset, `Bubble audio ${key}`);
+  }
+  return Object.freeze(result);
+}
+
 function normalizeStyle(value: unknown): NormalizedStyle {
   if (!isRecord(value)) {
     throw new BubbleCompositionError(
@@ -393,6 +600,10 @@ function normalizeStyle(value: unknown): NormalizedStyle {
       "visualStyle",
       "portrait",
       "continueIndicator",
+      "reveal",
+      "audio",
+      "showAnimation",
+      "hideAnimation",
     ],
     "Bubble style",
   );
@@ -408,6 +619,26 @@ function normalizeStyle(value: unknown): NormalizedStyle {
           "Bubble continue indicator",
           2,
         );
+  let reveal: NormalizedBubbleReveal | undefined;
+  if (value.reveal !== undefined) {
+    try {
+      reveal = normalizeBubbleReveal(value.reveal);
+    } catch (error) {
+      throw new BubbleCompositionError(
+        "BUBBLE-COMPOSITION-001",
+        error instanceof Error ? error.message : "Bubble reveal is invalid.",
+      );
+    }
+  }
+  const audio = normalizeAudio(value.audio);
+  const showAnimation =
+    value.showAnimation === undefined
+      ? undefined
+      : normalizeMotion(value.showAnimation, "Bubble showAnimation");
+  const hideAnimation =
+    value.hideAnimation === undefined
+      ? undefined
+      : normalizeMotion(value.hideAnimation, "Bubble hideAnimation");
   let placement: BubblePlacement;
   try {
     placement = normalizeBubblePlacement(
@@ -479,6 +710,10 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     visualStyle: visualStyle as BubbleVisualStyle,
     ...(portrait === undefined ? {} : { portrait }),
     ...(continueIndicator === undefined ? {} : { continueIndicator }),
+    ...(reveal === undefined ? {} : { reveal }),
+    ...(audio === undefined ? {} : { audio }),
+    ...(showAnimation === undefined ? {} : { showAnimation }),
+    ...(hideAnimation === undefined ? {} : { hideAnimation }),
   });
 }
 
@@ -497,6 +732,32 @@ function validateImageResolver(
     );
   }
   return value as unknown as BubbleImageCapability;
+}
+
+function validateAudioCapability(
+  value: unknown,
+): BubbleAudioCapability | undefined {
+  if (value === undefined) return undefined;
+  if (!isRecord(value) || typeof value.playSound !== "function") {
+    throw new TypeError("Bubble audio capability must provide playSound.");
+  }
+  if (
+    value.isRegistered !== undefined &&
+    typeof value.isRegistered !== "function"
+  ) {
+    throw new TypeError(
+      "Bubble audio capability isRegistered must be a function.",
+    );
+  }
+  if (
+    value.getMimeType !== undefined &&
+    typeof value.getMimeType !== "function"
+  ) {
+    throw new TypeError(
+      "Bubble audio capability getMimeType must be a function.",
+    );
+  }
+  return value as unknown as BubbleAudioCapability;
 }
 
 function requireImageResolver(
@@ -647,6 +908,31 @@ function requireImageAsset(
   }
 }
 
+function requireAudioAsset(
+  audio: BubbleAudioCapability | undefined,
+  name: string,
+): void {
+  if (audio === undefined) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-006",
+      `Bubble audio assets require an audio capability: ${name}. Provide options.audio.`,
+    );
+  }
+  if (audio.isRegistered?.(name) === false) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-003",
+      `Bubble audio asset is not registered: ${name}`,
+    );
+  }
+  const mimeType = audio.getMimeType?.(name);
+  if (mimeType !== undefined && !mimeType.startsWith("audio/")) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-003",
+      `Bubble asset is not audio: ${name}`,
+    );
+  }
+}
+
 function styleAssetNames(style: NormalizedStyle): readonly string[] {
   return [
     ...(style.portrait === undefined
@@ -771,7 +1057,17 @@ function createFrameLoop(options: {
   });
 }
 
-function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
+interface NormalizedShowBubbleInput {
+  readonly actor: unknown;
+  readonly actorKey: string;
+  readonly kind: BubbleKind;
+  readonly text: string;
+  readonly styleName: string;
+  readonly animationMode: BubbleAnimationMode;
+  readonly reveal?: NormalizedBubbleReveal;
+}
+
+function normalizeShowInput(value: unknown): NormalizedShowBubbleInput {
   if (!isRecord(value)) {
     throw new BubbleCompositionError(
       "BUBBLE-COMPOSITION-001",
@@ -781,7 +1077,7 @@ function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
   requireExactKeys(
     value,
     ["actor", "actorKey", "kind", "text", "styleName"],
-    ["animationMode"],
+    ["animationMode", "reveal"],
     "Show bubble input",
   );
   if (!validKinds.has(value.kind as BubbleKind)) {
@@ -803,6 +1099,17 @@ function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
       "Bubble animation mode is invalid.",
     );
   }
+  let reveal: NormalizedBubbleReveal | undefined;
+  if (value.reveal !== undefined) {
+    try {
+      reveal = normalizeBubbleReveal(value.reveal);
+    } catch (error) {
+      throw new BubbleCompositionError(
+        "BUBBLE-COMPOSITION-001",
+        error instanceof Error ? error.message : "Bubble reveal is invalid.",
+      );
+    }
+  }
   return {
     actor: value.actor,
     actorKey: requireName(value.actorKey, "Bubble actor key"),
@@ -810,6 +1117,7 @@ function normalizeShowInput(value: unknown): Required<ShowBubbleInput> {
     text: value.text,
     styleName: requireName(value.styleName, "Bubble style name"),
     animationMode: animationMode as BubbleAnimationMode,
+    ...(reveal === undefined ? {} : { reveal }),
   };
 }
 
@@ -820,6 +1128,7 @@ export function createBubbleComposition(
     throw new TypeError("Bubble composition options must be an object.");
   }
   const imageResolver = validateImageResolver(options.imageResolver);
+  const audio = validateAudioCapability(options.audio);
   const svgText = validateSvgText(options.svgText);
   if (typeof options.createSurface !== "function") {
     throw new TypeError("Bubble composition createSurface must be a function.");
@@ -862,7 +1171,7 @@ export function createBubbleComposition(
   };
 
   const showNow = async (
-    input: Required<ShowBubbleInput>,
+    input: NormalizedShowBubbleInput,
   ): Promise<BubbleHandle> => {
     ensureActive();
     const style = styles.get(input.styleName);
@@ -872,7 +1181,10 @@ export function createBubbleComposition(
         `Bubble style is not defined: ${input.styleName}`,
       );
     }
-    let activeStyle = style;
+    let activeStyle: NormalizedStyle = style;
+    if (input.reveal !== undefined) {
+      activeStyle = Object.freeze({ ...style, reveal: input.reveal });
+    }
     let currentText = input.text;
     const resolveStyleImageCapability = (
       nextStyle: BubbleStyle,
@@ -886,6 +1198,21 @@ export function createBubbleComposition(
       return nextImageResolver;
     };
     const styleImageResolver = resolveStyleImageCapability(activeStyle);
+    for (const audioAsset of [
+      activeStyle.audio?.voice,
+      activeStyle.audio?.reveal,
+      activeStyle.audio?.finish,
+      activeStyle.reveal?.sound,
+    ]) {
+      if (audioAsset !== undefined) requireAudioAsset(audio, audioAsset);
+    }
+    const playAudio = async (
+      assetName: string | undefined,
+      untilDone = false,
+    ): Promise<void> => {
+      if (assetName === undefined || audio === undefined) return;
+      await audio.playSound(assetName, { untilDone });
+    };
 
     const primeStyleImages = async (
       nextStyle: BubbleStyle,
@@ -1004,6 +1331,13 @@ export function createBubbleComposition(
     let blinkLoop: FrameLoop | undefined;
     let lipSyncLoop: FrameLoop | undefined;
     let indicatorLoop: FrameLoop | undefined;
+    let reveal = activeStyle.reveal;
+    let revealChunks: readonly string[] = reveal
+      ? splitBubbleText(input.text, reveal)
+      : Object.freeze([input.text]);
+    let revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
+    let revealTimer: unknown;
+    let revealGeneration = 0;
     try {
       surface = validateSurface(
         await options.createSurface(
@@ -1016,10 +1350,23 @@ export function createBubbleComposition(
         ),
         activeStyle,
       );
+      const fullText = formatBubbleText(input.text, activeStyle, svgText);
+      if (reveal?.layout === "RESERVED") {
+        svgText.setText({
+          styleName: activeStyle.textStyle,
+          target: surface.targets.text,
+          text: fullText,
+        });
+        surface.captureTextLayout?.();
+      }
       svgText.setText({
         styleName: activeStyle.textStyle,
         target: surface.targets.text,
-        text: formatBubbleText(input.text, activeStyle, svgText),
+        text: formatBubbleText(
+          reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text,
+          activeStyle,
+          svgText,
+        ),
       });
       textOwned = true;
 
@@ -1029,6 +1376,48 @@ export function createBubbleComposition(
       let currentAnimationMode: BubbleAnimationMode = "idle";
       let closed = false;
       let transitionTail = Promise.resolve();
+
+      const renderVisibleText = async (): Promise<void> => {
+        if (!surface) return;
+        const visible = reveal
+          ? revealedBubbleText(revealChunks, revealedCount)
+          : currentText;
+        svgText.setText({
+          styleName: activeStyle.textStyle,
+          target: surface.targets.text,
+          text: formatBubbleText(visible, activeStyle, svgText),
+        });
+        await surface.show();
+      };
+      const stopRevealTimer = (): void => {
+        revealGeneration += 1;
+        if (revealTimer !== undefined) scheduler.clearTimeout(revealTimer);
+        revealTimer = undefined;
+      };
+      const advanceReveal = async (): Promise<boolean> => {
+        if (!reveal || revealedCount >= revealChunks.length) return false;
+        revealedCount += 1;
+        await renderVisibleText();
+        await playAudio(reveal.sound ?? activeStyle.audio?.reveal);
+        if (revealedCount >= revealChunks.length) stopRevealTimer();
+        return true;
+      };
+      const scheduleReveal = (): void => {
+        if (
+          !reveal ||
+          reveal.intervalSeconds <= 0 ||
+          revealedCount >= revealChunks.length
+        )
+          return;
+        const expectedGeneration = revealGeneration;
+        revealTimer = scheduler.setTimeout(() => {
+          revealTimer = undefined;
+          if (closed || expectedGeneration !== revealGeneration) return;
+          transitionTail = transitionTail
+            .then(() => advanceReveal())
+            .then(() => scheduleReveal());
+        }, reveal.intervalSeconds * 1000);
+      };
 
       const applyAnimationMode = async (
         mode: BubbleAnimationMode,
@@ -1077,6 +1466,9 @@ export function createBubbleComposition(
       ]);
       await surface.show();
       surfaceVisible = true;
+      await playAudio(activeStyle.audio?.voice);
+      if (reveal !== undefined)
+        await playAudio(reveal.sound ?? activeStyle.audio?.reveal);
       await blinkLoop?.start({ primed: true });
       await applyAnimationMode(input.animationMode);
 
@@ -1105,13 +1497,24 @@ export function createBubbleComposition(
           }
           transitionTail = transitionTail.then(async () => {
             if (!surface) return;
-            svgText.setText({
-              styleName: activeStyle.textStyle,
-              target: surface.targets.text,
-              text: formatBubbleText(text, activeStyle, svgText),
-            });
+            stopRevealTimer();
             currentText = text;
-            await surface.show();
+            if (reveal) {
+              revealChunks = splitBubbleText(text, reveal);
+              revealedCount = Math.min(1, revealChunks.length);
+              if (reveal.layout === "RESERVED") {
+                svgText.setText({
+                  styleName: activeStyle.textStyle,
+                  target: surface.targets.text,
+                  text: formatBubbleText(text, activeStyle, svgText),
+                });
+                surface.captureTextLayout?.();
+              }
+              await renderVisibleText();
+              scheduleReveal();
+            } else {
+              await renderVisibleText();
+            }
           });
           return transitionTail;
         },
@@ -1134,6 +1537,15 @@ export function createBubbleComposition(
             if (!surface) return;
             validateSurface(surface, nextStyle);
             const nextImageResolver = resolveStyleImageCapability(nextStyle);
+            for (const audioAsset of [
+              nextStyle.audio?.voice,
+              nextStyle.audio?.reveal,
+              nextStyle.audio?.finish,
+              nextStyle.reveal?.sound,
+            ]) {
+              if (audioAsset !== undefined)
+                requireAudioAsset(audio, audioAsset);
+            }
             await Promise.all([
               blinkLoop?.stop(),
               lipSyncLoop?.stop(),
@@ -1142,6 +1554,20 @@ export function createBubbleComposition(
             await primeStyleImages(nextStyle, nextImageResolver, surface);
             await surface.updateStyle(nextStyle);
             activeStyle = nextStyle;
+            reveal = nextStyle.reveal;
+            revealChunks = reveal
+              ? splitBubbleText(currentText, reveal)
+              : Object.freeze([currentText]);
+            revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
+            stopRevealTimer();
+            if (reveal?.layout === "RESERVED") {
+              svgText.setText({
+                styleName: nextStyle.textStyle,
+                target: surface.targets.text,
+                text: formatBubbleText(currentText, nextStyle, svgText),
+              });
+              surface.captureTextLayout?.();
+            }
             svgText.setText({
               styleName: nextStyle.textStyle,
               target: surface.targets.text,
@@ -1164,7 +1590,9 @@ export function createBubbleComposition(
             currentAnimationMode = "idle";
             await blinkLoop?.start({ primed: true });
             await applyAnimationMode(previousMode);
-            await surface.show();
+            await renderVisibleText();
+            scheduleReveal();
+            await playAudio(activeStyle.audio?.voice);
           });
           return transitionTail;
         },
@@ -1188,16 +1616,200 @@ export function createBubbleComposition(
           transitionTail = transitionTail.then(() => applyAnimationMode(mode));
           return transitionTail;
         },
+        revealNext(): Promise<boolean> {
+          if (closed) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-005",
+                `Bubble is already closed: ${input.actorKey}`,
+              ),
+            );
+          }
+          let advanced = false;
+          transitionTail = transitionTail.then(async () => {
+            advanced = await advanceReveal();
+            if (advanced) scheduleReveal();
+          });
+          return transitionTail.then(() => advanced);
+        },
+        revealAll(): Promise<void> {
+          if (closed) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-005",
+                `Bubble is already closed: ${input.actorKey}`,
+              ),
+            );
+          }
+          transitionTail = transitionTail.then(async () => {
+            stopRevealTimer();
+            if (!reveal) return;
+            while (await advanceReveal()) {
+              // Advance through every remaining unit so each unit sound is emitted.
+            }
+          });
+          return transitionTail;
+        },
+        finish(finishInput: BubbleFinishInput = {}): Promise<void> {
+          if (closed) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-005",
+                `Bubble is already closed: ${input.actorKey}`,
+              ),
+            );
+          }
+          const timeoutSeconds = finishInput.timeoutSeconds ?? 0;
+          if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-001",
+                "Bubble finish timeoutSeconds must be zero or greater.",
+              ),
+            );
+          }
+          if (
+            finishInput.condition !== undefined &&
+            typeof finishInput.condition !== "function"
+          ) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-001",
+                "Bubble finish condition must be a function.",
+              ),
+            );
+          }
+          transitionTail = transitionTail.then(async () => {
+            stopRevealTimer();
+            if (finishInput.unit !== undefined) {
+              reveal = normalizeBubbleReveal({
+                ...(reveal ?? {}),
+                unit: finishInput.unit,
+              });
+              revealChunks = splitBubbleText(currentText, reveal);
+              revealedCount = Math.min(1, revealChunks.length);
+              if (reveal.layout === "RESERVED" && surface) {
+                svgText.setText({
+                  styleName: activeStyle.textStyle,
+                  target: surface.targets.text,
+                  text: formatBubbleText(currentText, activeStyle, svgText),
+                });
+                surface.captureTextLayout?.();
+              }
+            }
+            if (reveal) {
+              while (await advanceReveal()) {
+                // Finish emits the same per-unit audio cues as automatic reveal.
+              }
+            }
+            const condition = finishInput.condition;
+            if (condition === undefined && timeoutSeconds === 0) {
+              await playAudio(activeStyle.audio?.finish);
+              return;
+            }
+            await new Promise<void>((resolve, reject) => {
+              let settled = false;
+              let timeoutHandle: unknown;
+              let pollHandle: unknown;
+              const settle = (): void => {
+                if (settled) return;
+                settled = true;
+                if (timeoutHandle !== undefined)
+                  scheduler.clearTimeout(timeoutHandle);
+                if (pollHandle !== undefined)
+                  scheduler.clearTimeout(pollHandle);
+                void playAudio(activeStyle.audio?.finish).then(resolve, reject);
+              };
+              if (timeoutSeconds > 0) {
+                timeoutHandle = scheduler.setTimeout(
+                  settle,
+                  timeoutSeconds * 1000,
+                );
+              }
+              if (!condition) return;
+              const poll = (): void => {
+                let result: boolean | Promise<boolean>;
+                try {
+                  result = condition();
+                } catch (error) {
+                  if (!settled) {
+                    settled = true;
+                    if (timeoutHandle !== undefined)
+                      scheduler.clearTimeout(timeoutHandle);
+                    if (pollHandle !== undefined)
+                      scheduler.clearTimeout(pollHandle);
+                    reject(error);
+                  }
+                  return;
+                }
+                Promise.resolve(result).then(
+                  (done) => {
+                    if (done) settle();
+                    else if (!settled)
+                      pollHandle = scheduler.setTimeout(poll, 16);
+                  },
+                  (error) => {
+                    if (!settled) {
+                      settled = true;
+                      if (timeoutHandle !== undefined)
+                        scheduler.clearTimeout(timeoutHandle);
+                      if (pollHandle !== undefined)
+                        scheduler.clearTimeout(pollHandle);
+                      reject(error);
+                    }
+                  },
+                );
+              };
+              poll();
+            });
+          });
+          return transitionTail;
+        },
+        animate(motion: BubbleMotionInput): Promise<void> {
+          if (closed) {
+            return Promise.reject(
+              new BubbleCompositionError(
+                "BUBBLE-COMPOSITION-005",
+                `Bubble is already closed: ${input.actorKey}`,
+              ),
+            );
+          }
+          let normalized: BubbleMotionInput;
+          try {
+            normalized = normalizeMotion(motion, "Bubble motion");
+          } catch (error) {
+            return Promise.reject(error);
+          }
+          transitionTail = transitionTail.then(async () => {
+            if (
+              normalized.name === "animateBubbleShape" &&
+              normalized.visualStyle
+            ) {
+              activeStyle = Object.freeze({
+                ...activeStyle,
+                visualStyle: normalized.visualStyle,
+              });
+              await surface?.updateStyle(activeStyle);
+            }
+            await surface?.animate?.(normalized);
+          });
+          return transitionTail;
+        },
         async close(): Promise<void> {
           if (closed) return;
           closed = true;
           const errors: unknown[] = [];
+          stopRevealTimer();
           try {
             await transitionTail;
           } catch (error) {
             errors.push(error);
           }
           for (const operation of [
+            () =>
+              activeStyle.hideAnimation === undefined
+                ? undefined
+                : surface?.animate?.(activeStyle.hideAnimation),
             () => blinkLoop?.stop(),
             () => lipSyncLoop?.stop(),
             () => indicatorLoop?.stop(),
@@ -1223,8 +1835,12 @@ export function createBubbleComposition(
         },
       });
       active.set(input.actorKey, handle);
+      scheduleReveal();
+      if (activeStyle.showAnimation !== undefined)
+        await handle.animate(activeStyle.showAnimation);
       return handle;
     } catch (error) {
+      active.delete(input.actorKey);
       const cleanupErrors: unknown[] = [];
       const loopResults = await Promise.allSettled([
         blinkLoop?.stop(),
