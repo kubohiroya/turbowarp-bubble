@@ -380,6 +380,10 @@ PowerPointの用語を参考にしつつ、Bubbleの仕様名は「表示開始a
 - `explode + relativeScale + count + ease`: 現在サイズを基準に拡大・縮小を繰り返します。portraitとTextを含むsurface全体へ同じ相対変化を適用します。
 - `animateBubbleShape + speed + duration`: `THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などの外形を指定速度・時間で切り替えます。`visualStyle`の切替と、表示中のsurface animationを分離できます。
 
+TurboWarp adapterは16ms単位のscheduler tickで各animationを進め、`ease`を各フレームの進行率へ適用します。`fadeIn`／`fadeOut`はrendererの`ghost`効果、`float`／`rise`／`sink`は位置、`zoom`／`explode`は倍率をText・portrait・Bubble本体へ同じように適用します。`shake`は指定回数の往復を行い、`explode`は拡大と復帰を繰り返します。`durationSeconds`を省略した`shake`／`explode`には、回数に応じた既定時間を使います。
+
+`animateBubbleShape`は、現在形状と指定形状を各フレームでcross-fadeするSVG body skinへ更新します。Textとportraitは再生成せず、外形だけを連続的に切り替えます。`speed`は指定時間内の形状遷移速度倍率です。
+
 animationは`show`、`handle.animate()`、`handle.setAnimationMode()`、`handle.updateStyle()`、`handle.close()`のライフサイクルに接続します。新しいBubbleで同じ`actorKey`を置き換えると、旧animationのtimerとdrawableを先に解放します。`shake`には`ease`を指定でき、`explode`には`relativeScale`、`count`、`ease`、`animateBubbleShape`には`speed`と`durationSeconds`を指定できます。
 
 #### Animation mode

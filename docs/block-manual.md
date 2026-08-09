@@ -236,7 +236,7 @@ explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 ```
 
-`shake` applies direction, count, and `ease` to the complete Bubble surface. `explode` changes the relative scale of text and portrait together. `animate bubble shape` switches the outline at the requested speed and duration to styles such as `THINKING`, `DREAMING`, `YELLING`, `WAVY`, or `WHISPERING`.
+The TurboWarp adapter advances these motions on scheduler frames and applies `ease` to each frame. `shake` applies direction and count to the complete Bubble surface, `explode` expands and returns the relative scale of text and portrait together, and `animate bubble shape` cross-fades the current outline into styles such as `THINKING`, `DREAMING`, `YELLING`, `WAVY`, or `WHISPERING` during the requested speed and duration.
 
 ## 9. `say` and `think`
 

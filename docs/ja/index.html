@@ -338,7 +338,7 @@ shake this bubble direction [90] count [2] ease [easeInOut]
 explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </code></pre>
-<p><code>shake</code>は吹き出し全体を方向・回数・<code>ease</code>付きで揺らし、<code>explode</code>はportraitと文字を含むsurface全体を相対倍率で変化させます。<code>animate bubble shape</code>は<code>THINKING</code>、<code>DREAMING</code>、<code>YELLING</code>、<code>WAVY</code>、<code>WHISPERING</code>などの外形を切り替えます。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。</p>
+<p>TurboWarp adapterはこれらをschedulerのフレームごとに進め、各フレームの進行率へ<code>ease</code>を適用します。<code>shake</code>は吹き出し全体を方向・回数付きで揺らし、<code>explode</code>はportraitと文字を含むsurface全体を拡大して元へ戻し、<code>animate bubble shape</code>は指定時間中に現在の外形から<code>THINKING</code>、<code>DREAMING</code>、<code>YELLING</code>、<code>WAVY</code>、<code>WHISPERING</code>などへcross-fadeします。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。</p>
 <h2 id="reference">9. sayとthink</h2>
 <pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
 think [MESSAGE] with bubble style [STYLE]

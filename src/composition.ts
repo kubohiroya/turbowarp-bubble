@@ -67,6 +67,7 @@ export {
   bubbleVisualStyles,
   renderBubbleSvg,
   type BubbleBodyCenterOffsetInput,
+  type BubbleShapeTransition,
   type BubbleVisualStyle,
   type RenderBubbleSvgInput,
 } from "./bubble-svg.js";
@@ -1785,11 +1786,17 @@ export function createBubbleComposition(
               normalized.name === "animateBubbleShape" &&
               normalized.visualStyle
             ) {
-              activeStyle = Object.freeze({
+              const nextStyle = Object.freeze({
                 ...activeStyle,
                 visualStyle: normalized.visualStyle,
               });
+              // Keep the current style on the surface while it produces the
+              // transition frames. Commit the target style only after the
+              // motion has reached its final frame.
+              await surface?.animate?.(normalized);
+              activeStyle = nextStyle;
               await surface?.updateStyle(activeStyle);
+              return;
             }
             await surface?.animate?.(normalized);
           });

@@ -16,6 +16,16 @@ export interface RenderBubbleSvgInput {
     readonly fontFamily?: string;
     readonly fontSize?: number;
     readonly title?: string;
+    /**
+     * Cross-fades two Bubble body geometries while keeping the text layer
+     * stable. This is used by the runtime adapter for animateBubbleShape.
+     */
+    readonly shapeTransition?: BubbleShapeTransition;
+}
+export interface BubbleShapeTransition {
+    readonly from: BubbleVisualStyle;
+    readonly to: BubbleVisualStyle;
+    readonly progress: number;
 }
 export interface BubbleBodyCenterOffsetInput {
     readonly style: BubbleVisualStyle;

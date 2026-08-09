@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BubbleExtension } from "../src/extension.js";
 import type {
   BubbleImageCapability,
+  BubbleMotionInput,
   BubbleScheduler,
   BubbleSvgText,
 } from "../src/composition.js";
@@ -37,6 +38,13 @@ class TestScheduler implements BubbleScheduler {
     if (!callback) throw new Error("no scheduled callback");
     this.callbacks.delete(id);
     callback();
+  }
+
+  public async runAll(): Promise<void> {
+    while (this.callbacks.size > 0) {
+      this.runNewest();
+      await Promise.resolve();
+    }
   }
 }
 
@@ -79,6 +87,10 @@ function createRuntime(
   const createdSvgSkins: string[] = [];
   const visibility = new Map<number, boolean>();
   const positions = new Map<number, [number, number]>();
+  const positionHistory: Array<[number, [number, number]]> = [];
+  const scales = new Map<number, [number, number]>();
+  const scaleHistory: Array<[number, [number, number]]> = [];
+  const ghostHistory: Array<[number, number]> = [];
   const renderer: TurboWarpBubbleRenderer = {
     createSVGSkin: vi.fn((svg) => {
       const skinId = nextSvgSkin;
@@ -107,14 +119,23 @@ function createRuntime(
     }),
     getNativeSize: vi.fn(() => [480, 360]),
     updateDrawablePosition: vi.fn((id, position) => {
-      positions.set(id, position);
+      const nextPosition: [number, number] = [position[0], position[1]];
+      positions.set(id, nextPosition);
+      positionHistory.push([id, nextPosition]);
     }),
-    updateDrawableScale: vi.fn(),
+    updateDrawableScale: vi.fn((id, scale) => {
+      const nextScale: [number, number] = [scale[0], scale[1]];
+      scales.set(id, nextScale);
+      scaleHistory.push([id, nextScale]);
+    }),
     updateDrawableSkinId: vi.fn((id, skinId) => {
       drawableSkins.set(id, skinId);
     }),
     updateDrawableVisible: vi.fn((id, visible) => {
       visibility.set(id, visible);
+    }),
+    updateDrawableEffect: vi.fn((id, effectName, value) => {
+      if (effectName === "ghost") ghostHistory.push([id, value]);
     }),
     setDrawableOrder: vi.fn(),
   };
@@ -192,6 +213,10 @@ function createRuntime(
     drawableSkins,
     emit,
     positions,
+    positionHistory,
+    scales,
+    scaleHistory,
+    ghostHistory,
     releaseTextActor,
     renderer,
     runtime,
@@ -270,6 +295,150 @@ describe("TurboWarp composition adapter", () => {
     );
     expect(releaseTarget).toHaveBeenCalledOnce();
     expect(harness.destroyed).toHaveLength(3);
+  });
+
+  it("renders time-based motion frames with easing and shape transitions", async () => {
+    const harness = createRuntime();
+    const scheduler = new TestScheduler();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      scheduler,
+    });
+    composition.defineStyle({
+      name: "motion",
+      textStyle: "default",
+      visualStyle: "NORMAL",
+    });
+    const handle = await composition.show({
+      actor: actor(),
+      actorKey: "motion",
+      kind: "say",
+      text: "motion",
+      styleName: "motion",
+    });
+    const bodyId = harness.created[0]!;
+    const initialPosition = harness.positions.get(bodyId);
+    expect(initialPosition).toBeDefined();
+    const runMotion = async (motion: BubbleMotionInput): Promise<void> => {
+      const promise = handle.animate(motion);
+      await Promise.resolve();
+      await Promise.resolve();
+      await scheduler.runAll();
+      await promise;
+    };
+
+    await runMotion({
+      name: "shake",
+      direction: 90,
+      count: 2,
+      durationSeconds: 0.048,
+      ease: "linear",
+    });
+    expect(
+      harness.positionHistory.some(
+        ([id, position]) =>
+          id === bodyId &&
+          (position[0] !== initialPosition?.[0] ||
+            position[1] !== initialPosition?.[1]),
+      ),
+    ).toBe(true);
+    expect(harness.positions.get(bodyId)).toEqual(initialPosition);
+
+    await runMotion({
+      name: "explode",
+      relativeScale: 1.2,
+      count: 2,
+      ease: "easeInOut",
+    });
+    expect(
+      harness.scaleHistory.some(
+        ([id, scale]) => id === bodyId && scale[0] > 100,
+      ),
+    ).toBe(true);
+    expect(harness.scales.get(bodyId)).toEqual([100, 100]);
+
+    await runMotion({
+      name: "fadeIn",
+      durationSeconds: 0.032,
+      ease: "easeOut",
+    });
+    const ghostValues = harness.ghostHistory
+      .filter(([id]) => id === bodyId)
+      .map(([, value]) => value);
+    expect(ghostValues.some((value) => value > 0 && value < 100)).toBe(true);
+    expect(ghostValues.at(-1)).toBe(0);
+
+    const positionHistoryBeforeEntry = harness.positionHistory.length;
+    await runMotion({
+      name: "floatIn",
+      durationSeconds: 0.032,
+      ease: "easeIn",
+    });
+    expect(
+      harness.positionHistory
+        .slice(positionHistoryBeforeEntry)
+        .some(
+          ([id, position]) =>
+            id === bodyId && position[1] !== initialPosition?.[1],
+        ),
+    ).toBe(true);
+
+    const scaleHistoryBeforeEntry = harness.scaleHistory.length;
+    await runMotion({
+      name: "zoomIn",
+      durationSeconds: 0.032,
+      ease: "easeOut",
+    });
+    expect(
+      harness.scaleHistory
+        .slice(scaleHistoryBeforeEntry)
+        .some(([id, scale]) => id === bodyId && scale[0] < 100),
+    ).toBe(true);
+
+    await runMotion({
+      name: "riseUp",
+      durationSeconds: 0.032,
+      ease: "linear",
+    });
+
+    await runMotion({
+      name: "fadeOut",
+      durationSeconds: 0.032,
+      ease: "easeIn",
+    });
+    expect(harness.visibility.get(bodyId)).toBe(false);
+
+    await runMotion({
+      name: "floatOut",
+      durationSeconds: 0.032,
+      ease: "linear",
+    });
+    await runMotion({
+      name: "zoomOut",
+      durationSeconds: 0.032,
+      ease: "linear",
+    });
+    await runMotion({
+      name: "sink",
+      durationSeconds: 0.032,
+      ease: "linear",
+    });
+
+    await runMotion({
+      name: "animateBubbleShape",
+      visualStyle: "WAVY",
+      speed: 1,
+      durationSeconds: 0.032,
+      ease: "linear",
+    });
+    expect(
+      harness.createdSvgSkins.some((svg) =>
+        svg.includes('data-bubble-shape-transition-to="WAVY"'),
+      ),
+    ).toBe(true);
+    expect(harness.createdSvgSkins.at(-1)).toContain(
+      'data-bubble-style="WAVY"',
+    );
+    await handle.close();
   });
 });
 

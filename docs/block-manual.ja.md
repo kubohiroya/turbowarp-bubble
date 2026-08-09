@@ -236,7 +236,7 @@ explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 ```
 
-`shake`は吹き出し全体を方向・回数・`ease`付きで揺らし、`explode`はportraitと文字を含むsurface全体を相対倍率で変化させます。`animate bubble shape`は`THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などの外形を切り替えます。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。
+TurboWarp adapterはこれらをschedulerのフレームごとに進め、各フレームの進行率へ`ease`を適用します。`shake`は吹き出し全体を方向・回数付きで揺らし、`explode`はportraitと文字を含むsurface全体を拡大して元へ戻し、`animate bubble shape`は指定時間中に現在の外形から`THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などへcross-fadeします。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。
 
 ## 9. sayとthink
 

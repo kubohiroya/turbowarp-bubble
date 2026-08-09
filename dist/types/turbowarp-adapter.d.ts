@@ -25,6 +25,8 @@ export interface TurboWarpBubbleRenderer {
     updateDrawableScale(drawableId: number, scale: [number, number]): void;
     updateDrawableSkinId(drawableId: number, skinId: number): void;
     updateDrawableVisible(drawableId: number, visible: boolean): void;
+    /** Scratch/TurboWarp's ghost effect is used to implement fade motions. */
+    updateDrawableEffect?(drawableId: number, effectName: string, value: number): void;
     setDrawableOrder?(drawableId: number, order: number, layerGroup: string, relative?: boolean): void;
 }
 export interface TurboWarpAssetManagerExtension {
