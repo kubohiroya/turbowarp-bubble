@@ -1,6 +1,6 @@
 # TurboWarp Bubble
 
-`@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。紙芝居固有のDSLやシーン遷移には依存しません。
+`@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。
 
 ## 機能の全体像
 
@@ -61,14 +61,14 @@ flowchart TB
 
 ```mermaid
 flowchart LR
-  source[全文: 私の/名前は/中野/です] --> mode{表示単位}
-  mode -->|CHARACTER| c[私 → 私の → 私の/ → …]
-  mode -->|WORD| w[私の → 私の/名前は → …]
-  mode -->|LINE| l[1行ずつ追加]
-  mode -->|BLOCK| b[複数行／段落をまとめて追加]
-  delimiter[任意の区切り文字集合\n例: /、空白、|] -.-> w
-  visibility{区切り文字の表示} -->|visible| shown[区切り文字も描画]
-  visibility -->|invisible| hidden[区切り文字を隠して描画]
+  source["全文: 私の/名前は/中野/です"] --> mode{"表示単位"}
+  mode -->|CHARACTER| c["私 → 私の → 私の/ → …"]
+  mode -->|WORD| w["私の → 私の/名前は → …"]
+  mode -->|LINE| l["1行ずつ追加"]
+  mode -->|BLOCK| b["複数行／段落をまとめて追加"]
+  delimiter["任意の区切り文字集合<br/>例: スラッシュ、空白、縦線"] -.-> w
+  visibility{"区切り文字の表示"} -->|visible| shown["区切り文字も描画"]
+  visibility -->|invisible| hidden["区切り文字を隠して描画"]
   delimiter --> visibility
 ```
 
@@ -135,7 +135,7 @@ Asset Managerを音声providerとして接続すると、次の音声を同じ�
 | `@kubohiroya/turbowarp-async-input`        | キー入力・タップをTemporary Variablesのruntime変数へ反映                  |
 | `@kubohiroya/turbowarp-runtime-expression` | runtime変数を参照する安全な待機条件の評価                                 |
 | `@kubohiroya/turbowarp-bubble`             | 吹き出しsurface、配置、say／think、表情レイヤー、animation mode、入力待機 |
-| アプリ／host                               | 必要に応じたDSLからcomposition APIへの変換                                |
+| アプリ／host                               | 必要に応じたアプリ固有の入力からcomposition APIへの変換                   |
 
 Bubbleは依存パッケージを再exportしません。SVG Textは現在の文字描画に必要ですが、Asset Manager、Async Input、Runtime Expressionは利用する機能がなければインストール不要です。Asset Managerを使う機能は画像だけでなく、フルボイス、タイプライター音、行・段落ごとの効果音などの外部メディアも対象にします。
 
@@ -199,15 +199,50 @@ pnpm add @kubohiroya/turbowarp-asset-manager \
 
 ブロックの組み方、表情差分の準備、入力待ち、clone、エラー対処を含む手順は、ブロック利用マニュアル（[English](https://kubohiroya.github.io/turbowarp-bubble/) / [日本語](https://kubohiroya.github.io/turbowarp-bubble/ja/)）を参照してください。`talking`から`awaiting-continue`、入力成立、`close`までのアニメーション例も掲載しています。
 
-TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、「カスタム拡張機能」からSVG TextとBubbleをサンドボックスなしで読み込みます。portrait、lip-sync、continue indicator、または音声アセットを使う場合だけAsset Managerを追加し、待機ブロックを使う場合だけAsync InputとRuntime Expressionを追加します。各依存が必要な機能を実行する前にロードしてください。
+### TurboWarpでの導入
+
+TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget APIへ接続する**unsandboxedカスタム拡張機能**です。TurboWarp Editorでは、次の順で読み込みます。
+
+1. TurboWarp Editorでプロジェクトを開き、拡張機能の追加からTemporary Variablesを追加します。
+2. 「カスタム拡張機能」を選び、サンドボックスなし（Run without sandbox）で実行できる状態にします。
+3. SVG Textを読み込みます。Bubbleの文字style定義と文字幅計測に必要です。
+4. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Managerを読み込みます。
+5. `wait with this bubble until condition ...`を使う場合はAsync InputとRuntime Expressionを読み込みます。
+6. 最後にBubbleを読み込みます。依存拡張を先に読み込むと、対応するブロックとcapabilityが接続されます。
+
+最小構成はTemporary Variables、SVG Text、Bubbleです。Asset Manager、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。拡張機能を読み込んだ後、`define text style`、`define bubble style`、`say`または`think`の順でブロックを配置します。
 
 ```text
-https://unpkg.com/@kubohiroya/turbowarp-asset-manager/dist/asset-manager.js
-https://unpkg.com/@kubohiroya/turbowarp-svg-text/dist/svg-text.js
-https://unpkg.com/@kubohiroya/turbowarp-async-input/dist/async-input.js
-https://unpkg.com/@kubohiroya/turbowarp-runtime-expression/dist/runtime-expression.js
-https://unpkg.com/@kubohiroya/turbowarp-bubble/dist/turbowarp-bubble.js
+# SVG Text（必須）
+https://unpkg.com/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js
+
+# portrait／blink／lip-sync／continue／音声を使う場合だけ追加
+https://unpkg.com/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js
+
+# 条件待ちを使う場合だけ追加
+https://unpkg.com/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js
+https://unpkg.com/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js
+
+# Bubble（必ず最後）
+https://unpkg.com/@kubohiroya/turbowarp-bubble@0.2.0/dist/turbowarp-bubble.js
 ```
+
+TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発中は、リポジトリをローカルHTTPサーバーで配信して`dist/turbowarp-bubble.js`を指定できます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。
+
+### Scratchとの互換性
+
+Scratch公式エディター（Scratch 3.0）から、TurboWarp Bubbleをカスタム拡張機能として直接利用することはできません。Scratch公式にはTurboWarpのunsandboxed拡張機能、renderer内部API、target drawable APIがないためです。Scratch向けの.sb3プロジェクトへこのREADMEのURLを追加しても、Bubbleのブロックは登録されません。
+
+利用環境ごとの位置付けは次のとおりです。
+
+| 環境                            | 利用方法                                                              | 対応                         |
+| ------------------------------- | --------------------------------------------------------------------- | ---------------------------- |
+| TurboWarp Editor                | `dist/turbowarp-bubble.js`をunsandboxedカスタム拡張機能として読み込む | 対応                         |
+| TurboWarp Packager／互換runtime | unsandboxedカスタム拡張機能とrenderer APIが利用できる構成で読み込む   | 対応（環境ごとに確認が必要） |
+| Scratch公式エディター           | 公式拡張機能またはサンドボックス拡張機能として読み込む                | 非対応                       |
+| 独自Webアプリ／ホスト           | npmのcomposition APIまたはTurboWarp adapterをJavaScriptから利用する   | 対応                         |
+
+Scratch互換の別runtimeで利用するには、そのruntimeがTurboWarpと同じunsandboxed APIとrenderer契約を実装している必要があります。独自Webアプリでは、TurboWarp用のブロック拡張機能ではなく、`@kubohiroya/turbowarp-bubble/composition`または`@kubohiroya/turbowarp-bubble/turbowarp-adapter`を利用してください。
 
 Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所有します。SVG本体、文字、表情ベース、目パチ、口パク、次へアイコンのrenderer drawableは自動生成されるため、レイヤー用spriteをプロジェクトへ追加する必要はありません。Stageから表示できるのは背景相対placementを使うstyleだけです。
 
@@ -258,7 +293,7 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対の16方向・角度指定と、背景相対の3配置を比較する図](docs/assets/placement-guide.svg)
 
-図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含むミニシーンです。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図とTurboWarp Editorの本体drawableは、どちらも共有`renderBubbleSvg`から生成します。
+図中の16方向は、それぞれActor、実際のBubble外形、tail、文字を含む表示例です。本体とtailはJSClipperのunionによる単一pathなので、接合部に内部border線はありません。背景相対3図はStage外枠、安全領域、外形寸法、水平中央線、基準辺／中心を示します。図とTurboWarp Editorの本体drawableは、どちらも共有`renderBubbleSvg`から生成します。
 
 ![Actor相対のdistance、tail length、offset、scaleを比較する図](docs/assets/actor-transform-guide.svg)
 
@@ -470,12 +505,6 @@ await bubble.close();
 ```
 
 返されたhandleの`setText(text)`は同じsurface上の本文を更新し、文字送りなどに利用できます。`handle.updateStyle(style)`は表示中のBubbleへstyle変更を即時適用します。同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、SVG Text target、surfaceを解放します。composition間で状態は共有しません。
-
-## DSL 4.0との関係
-
-このパッケージは`bubbleStyles`を含むDSLを解析しません。紙芝居アプリ側のadapterが、例えば`placement: north-northeast`、`placement: 33.75`、`placement: FOOTER_LIKE`を`defineStyle`へ渡し、表示ライフサイクルに合わせて`show`、`setAnimationMode`、`close`を呼び出します。
-
-アプリ統合は起動時固定・既定OFFのfeature flagで段階導入します。ロールバック時はflagをOFFにし、既存のTurboWarp say／think経路へ戻します。
 
 ## 開発
 

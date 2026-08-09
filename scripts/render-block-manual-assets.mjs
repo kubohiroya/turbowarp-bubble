@@ -875,14 +875,31 @@ function speechBubble({
   width,
   height,
   message,
+  fontSize = 28,
   indicator = false,
   indicatorOffset = 0,
 }) {
+  // Keep this guide in lockstep with the canonical Bubble renderer. The
+  // renderer's viewport includes a 24px margin around the body, so expand the
+  // source viewport and shift the embedded SVG to preserve the card geometry.
+  const rendered = renderBubbleSvg({
+    style: "NORMAL",
+    lines: [message],
+    width: width + 48,
+    height: height + 48,
+    tailDirection: 225,
+    fontSize,
+    title: "Animation mode Bubble preview",
+  });
+  const bubble = embedRenderedSvg(
+    rendered,
+    x - 24,
+    y - 24,
+    width + 48,
+    height + 48,
+  );
   return `<g>
-    <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="28" fill="#fff4cc" stroke="#725a42" stroke-width="3"/>
-    <path d="M ${x + 30} ${y + height - 6} L ${x + 4} ${y + height + 30} L ${x + 78} ${y + height - 3} Z" fill="#fff4cc" stroke="#725a42" stroke-width="3" stroke-linejoin="round"/>
-    <path d="M ${x + 26} ${y + height} H ${x + 82}" stroke="#fff4cc" stroke-width="8"/>
-    <text x="${x + 36}" y="${y + 70}" style="fill:${colors.ink};font-size:28px;font-weight:700">${escapeXml(message)}</text>
+    ${bubble}
     ${
       indicator
         ? `<g transform="translate(0 ${indicatorOffset})">
@@ -916,9 +933,10 @@ function phaseCard({
       width: 190,
       height: 112,
       message: "海へ出発！",
+      fontSize: 17,
       indicator,
       indicatorOffset: 0,
-    }).replace("font-size:28px", "font-size:17px")}
+    })}
     ${labels
       .map(
         (

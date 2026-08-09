@@ -250,6 +250,22 @@ for (const style of [
 for (const mode of ["talking", "awaiting-continue", "idle"]) {
   requireText(animationModeGuide, mode, "Animation-mode-guide SVG");
 }
+const animationModeBubbles = animationModeGuide.match(
+  /data-bubble-renderer="canonical"/gu,
+);
+if (animationModeBubbles?.length !== 3) {
+  throw new Error(
+    `Animation-mode-guide SVG must contain 3 canonical Bubble previews, found ${animationModeBubbles?.length ?? 0}.`,
+  );
+}
+const animationModeUnionedTails = animationModeGuide.match(
+  /data-boolean-operation="union"/gu,
+);
+if (animationModeUnionedTails?.length !== 3) {
+  throw new Error(
+    `Animation-mode-guide SVG must contain 3 unioned Bubble tails, found ${animationModeUnionedTails?.length ?? 0}.`,
+  );
+}
 forbidText(
   animationModeGuide,
   "set this bubble phase",
