@@ -4,8 +4,15 @@ import {
   revealedBubbleText,
   splitBubbleText,
 } from "../src/reveal.js";
+import * as composition from "../src/composition.js";
 
 describe("Bubble sequential reveal", () => {
+  it("re-exports the same implementation from the composition entry", () => {
+    expect(composition.normalizeBubbleReveal).toBe(normalizeBubbleReveal);
+    expect(composition.splitBubbleText).toBe(splitBubbleText);
+    expect(composition.revealedBubbleText).toBe(revealedBubbleText);
+  });
+
   it("splits grapheme characters without breaking emoji", () => {
     const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
     const chunks = splitBubbleText("A👩‍🚀B", reveal);

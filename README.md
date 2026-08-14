@@ -206,6 +206,18 @@ npmを使う場合は同じ依存を次のように追加します。
 npm install @kubohiroya/turbowarp-bubble
 ```
 
+逐次表示の正規化と文字列分割だけが必要な利用側は、Bubble composition全体を含めずに小さな`reveal` entryをimportできます。
+
+```ts
+import {
+  normalizeBubbleReveal,
+  splitBubbleText,
+} from "@kubohiroya/turbowarp-bubble/reveal";
+
+const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
+const chunks = splitBubbleText("A👩‍🚀B", reveal);
+```
+
 現在のpeer dependency範囲は、SVG Textが`>=0.4.0 <1`、Asset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。4つすべてoptional peer dependencyで、SVG TextはTurboWarp adapterの既定adapterを使う場合だけ必要です。別の`textCapability`を注入するhostはSVG Textをインストールする必要がありません。
 
 TurboWarp adapterの既定文字経路を使う場合は、SVG Textを追加します。
@@ -257,7 +269,7 @@ https://unpkg.com/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js
 https://unpkg.com/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js
 
 # Bubble（必ず最後）
-https://unpkg.com/@kubohiroya/turbowarp-bubble@0.5.0/dist/turbowarp-bubble.js
+https://unpkg.com/@kubohiroya/turbowarp-bubble@0.6.0/dist/turbowarp-bubble.js
 ```
 
 TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発中は、リポジトリをローカルHTTPサーバーで配信して`dist/turbowarp-bubble.js`を指定できます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。

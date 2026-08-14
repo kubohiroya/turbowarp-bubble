@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -21,6 +21,10 @@
     "./composition": {
       "types": "./dist/types/composition.d.ts",
       "import": "./dist/composition.js"
+    },
+    "./reveal": {
+      "types": "./dist/types/reveal.d.ts",
+      "import": "./dist/reveal.js"
     },
     "./turbowarp-adapter": {
       "types": "./dist/types/turbowarp-adapter.d.ts",
@@ -46,13 +50,14 @@
   "packageManager": "pnpm@11.18.0",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "build": "pnpm build:extension && pnpm build:composition && pnpm build:turbowarp-adapter && pnpm build:types",
+    "build": "pnpm build:extension && pnpm build:composition && pnpm build:reveal && pnpm build:turbowarp-adapter && pnpm build:types",
     "build:extension": "vite build",
     "build:composition": "vite build --config vite.composition.config.ts",
+    "build:reveal": "vite build --config vite.reveal.config.ts",
     "build:turbowarp-adapter": "vite build --config vite.turbowarp-adapter.config.ts",
     "build:types": "tsc --project tsconfig.build.json",
     "types:composition:check": "tsc --project tsconfig.composition-consumer.json",
-    "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts vite.turbowarp-adapter.config.ts eslint.config.mjs",
+    "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts vite.reveal.config.ts vite.turbowarp-adapter.config.ts eslint.config.mjs",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
     "docs:render": "node scripts/render-block-manual-assets.mjs && pnpm docs:pages",

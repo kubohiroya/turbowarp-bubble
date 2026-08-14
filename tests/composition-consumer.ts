@@ -16,6 +16,11 @@ import {
   type TurboWarpBubbleRuntime,
   type TurboWarpBubbleTarget,
 } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
+import {
+  normalizeBubbleReveal,
+  splitBubbleText,
+  type NormalizedBubbleReveal,
+} from "@kubohiroya/turbowarp-bubble/reveal";
 
 declare const runtime: Parameters<
   typeof createSvgTextComposition
@@ -117,3 +122,9 @@ const turboWarpError: Error = new BubbleRuntimeAdapterError(
 void turboWarpBubbles;
 void turboWarpTarget;
 void turboWarpError;
+
+const reveal: NormalizedBubbleReveal = normalizeBubbleReveal({
+  unit: "CHARACTER",
+});
+const revealChunks: readonly string[] = splitBubbleText("A👩‍🚀B", reveal);
+void revealChunks;
