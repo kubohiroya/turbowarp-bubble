@@ -2,6 +2,8 @@
 
 This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated continue indicator.
 
+> **Kamishibai DSL 4.0 bundle:** In the combined runtime palette, click the documentation button directly below the **Bubble** member heading to open this manual. The bundled blocks keep the styles, placement, portrait, reveal, audio, wait, animation, clone, and cleanup behavior documented here; their member namespace and Bubble icon identify their origin.
+
 ![A quick-start block sequence that registers Next1 and Next2 separately, prepares input listeners, then uses Bubble's integrated wait](./assets/block-quick-start.svg)
 
 ## 1. Load the required extensions
@@ -11,10 +13,10 @@ The complete input-wait example uses six extensions. Add Temporary Variables fro
 | Order | Extension                | URL                                                                                                      |
 | ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |     1 | Temporary Variables      | Add from the TurboWarp extension library                                                                 |
-|     2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`               |
-|     3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
-|     4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
-|     5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                     |
+|     2 | Async Input 0.4.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js`               |
+|     3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
+|     4 | Asset Manager 0.11.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.11.0/dist/asset-manager.js`          |
+|     5 | SVG Text 0.5.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.5.0/dist/svg-text.js`                     |
 |     6 | Bubble 0.7.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.7.0/dist/turbowarp-bubble.js`               |
 
 To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the default SVG Text adapter is missing when it displays a Bubble, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can use another text capability and does not require SVG Text.

@@ -2,6 +2,8 @@
 
 このマニュアルでは、`turbowarp-bubble`をTurboWarpのカスタム拡張機能として使い、SVG本体、文字、キャラクター表情、目パチ、口パク、「次へ」アイコンを組み合わせたBubbleを表示します。
 
+> **紙芝居DSL 4.0集約ランタイム：** 集約ランタイムのパレットで**Bubble**見出し直下のドキュメントボタンを押すと、このマニュアルを開けます。集約されたブロックも、ここで説明するstyle、配置、portrait、逐次表示、音声、待機、animation、clone、自動解放の動作を保ち、拡張機能別の名前空間とBubbleアイコンで由来を識別できます。
+
 ![Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例](./assets/block-quick-start.svg)
 
 ## 1. 必要な拡張機能
@@ -11,10 +13,10 @@
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |    1 | Temporary Variables      | TurboWarpの拡張機能ライブラリから追加                                                                    |
-|    2 | Async Input 0.3.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js`               |
-|    3 | Runtime Expression 0.3.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.3.0/dist/runtime-expression.js` |
-|    4 | Asset Manager 0.7.0      | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js`           |
-|    5 | SVG Text 0.4.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.4.0/dist/svg-text.js`                     |
+|    2 | Async Input 0.4.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js`               |
+|    3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
+|    4 | Asset Manager 0.11.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.11.0/dist/asset-manager.js`          |
+|    5 | SVG Text 0.5.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.5.0/dist/svg-text.js`                     |
 |    6 | Bubble 0.7.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.7.0/dist/turbowarp-bubble.js`               |
 
 開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時に既定のSVG Text adapterが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入でき、その場合SVG Textは不要です。
