@@ -9,6 +9,7 @@
   },
   "include": [
     "src/composition.ts",
+    "src/reveal.ts",
     "src/turbowarp-adapter.ts",
     "src/turbowarp-svg-text-adapter.ts",
     "src/text-capability.ts",

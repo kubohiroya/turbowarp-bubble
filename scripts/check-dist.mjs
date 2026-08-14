@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import { URL } from "node:url";
 
@@ -7,6 +8,14 @@ const composition = await readFile(
 );
 const declaration = await readFile(
   new URL("../dist/types/composition.d.ts", import.meta.url),
+  "utf8",
+);
+const reveal = await readFile(
+  new URL("../dist/reveal.js", import.meta.url),
+  "utf8",
+);
+const revealDeclaration = await readFile(
+  new URL("../dist/types/reveal.d.ts", import.meta.url),
   "utf8",
 );
 const turboWarpAdapter = await readFile(
@@ -62,6 +71,44 @@ for (const name of [
 }
 
 for (const name of [
+  "bubbleRevealUnits",
+  "normalizeBubbleReveal",
+  "revealedBubbleText",
+  "splitBubbleText",
+]) {
+  if (!reveal.includes(name)) {
+    throw new Error(`dist/reveal.js does not export ${name}.`);
+  }
+}
+
+for (const name of [
+  "BubbleRevealInput",
+  "BubbleRevealLayout",
+  "BubbleRevealUnit",
+  "NormalizedBubbleReveal",
+]) {
+  if (!revealDeclaration.includes(name)) {
+    throw new Error(`dist/types/reveal.d.ts does not declare ${name}.`);
+  }
+}
+
+if (Buffer.byteLength(reveal, "utf8") > 12 * 1024) {
+  throw new Error("dist/reveal.js exceeds the 12 KiB standalone budget.");
+}
+
+for (const bundledCompositionMarker of [
+  "createBubbleComposition",
+  "renderBubbleSvg",
+  "ClipperLib",
+]) {
+  if (reveal.includes(bundledCompositionMarker)) {
+    throw new Error(
+      `dist/reveal.js unexpectedly contains ${bundledCompositionMarker}.`,
+    );
+  }
+}
+
+for (const name of [
   "createTurboWarpBubbleComposition",
   "BubbleRuntimeAdapterError",
 ]) {
@@ -103,6 +150,7 @@ for (const name of [
 for (const nodeApi of ["node:", "process.", "Buffer."]) {
   for (const [fileName, output] of [
     ["dist/composition.js", composition],
+    ["dist/reveal.js", reveal],
     ["dist/turbowarp-adapter.js", turboWarpAdapter],
     ["dist/turbowarp-bubble.js", extension],
   ]) {
