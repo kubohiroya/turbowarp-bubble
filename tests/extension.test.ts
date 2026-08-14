@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { BubbleExtension } from "../src/extension.js";
+import { BLOCK_ICON_URI, BubbleExtension } from "../src/extension.js";
 import type {
   BubbleImageCapability,
   BubbleMotionInput,
@@ -453,10 +453,18 @@ describe("Bubble extension", () => {
       blocks: Array<{ opcode: string }>;
       docsURI: string;
       id: string;
+      blockIconURI: string;
       menus: Record<string, unknown>;
     };
     expect(info.id).toBe("kubohiroyabubble");
     expect(info.docsURI).toBe("https://kubohiroya.github.io/turbowarp-bubble/");
+    expect(info.blockIconURI).toBe(BLOCK_ICON_URI);
+    const iconSvg = decodeURIComponent(
+      BLOCK_ICON_URI.slice("data:image/svg+xml,".length),
+    );
+    expect(iconSvg).toContain('viewBox="0 0 64 64"');
+    expect(iconSvg).toContain('<circle cx="32" cy="30" r="3"/>');
+    expect(iconSvg).not.toContain("<rect");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
       "defineBubbleStyle",
       "setBubblePlacement",
