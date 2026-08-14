@@ -3,6 +3,9 @@ import {
   normalizeBubbleDistance,
   normalizeBubbleOffset,
   normalizeBubblePlacement,
+  normalizeBubblePortraitCornerRadius,
+  normalizeBubblePortraitOffset,
+  normalizeBubblePortraitPlacement,
   normalizeBubbleTailLength,
   bubbleVisualStyles,
   type BubblePlacement,
@@ -18,6 +21,7 @@ import type {
   BubbleScheduler,
   BubblePlacementInput,
   BubblePortraitInput,
+  BubblePortraitPlacement,
   BubbleStyleInput,
   BubbleRevealUnit,
 } from "./composition.js";
@@ -186,6 +190,55 @@ export class BubbleExtension implements TurboWarpExtension {
           return Object.freeze(withoutPortrait);
         })();
     this.installStyle(nextStyle);
+  }
+
+  public setPortraitLayout(args: BlockArguments): void {
+    const style = this.requireStyle(args.STYLE);
+    const placementValue = this.toString(args.PLACEMENT).trim().toLowerCase();
+    if (placementValue === "none") {
+      const { portrait, ...withoutPortrait } = style;
+      void portrait;
+      this.installStyle(Object.freeze(withoutPortrait));
+      return;
+    }
+    if (!style.portrait?.base) {
+      throw extensionError("set the portrait base before portrait layout.");
+    }
+    let placement: BubblePortraitPlacement;
+    let offset;
+    let cornerRadius: number;
+    try {
+      placement = normalizeBubblePortraitPlacement(args.PLACEMENT);
+      offset = normalizeBubblePortraitOffset([
+        Scratch.Cast.toNumber(args.X),
+        Scratch.Cast.toNumber(args.Y),
+        Scratch.Cast.toNumber(args.ZOOM),
+      ]);
+      cornerRadius = normalizeBubblePortraitCornerRadius(
+        Scratch.Cast.toNumber(args.RADIUS),
+      );
+    } catch (error) {
+      throw extensionError(
+        error instanceof Error
+          ? error.message
+          : "Bubble portrait layout is invalid.",
+      );
+    }
+    this.installStyle(
+      Object.freeze({
+        ...style,
+        portrait: Object.freeze({
+          ...style.portrait,
+          placement,
+          offset: Object.freeze([
+            offset.x,
+            offset.y,
+            offset.zoomPercent,
+          ] as const),
+          cornerRadius,
+        }),
+      }),
+    );
   }
 
   public setBubblePlacement(args: BlockArguments): void {
@@ -806,15 +859,16 @@ export class BubbleExtension implements TurboWarpExtension {
       frames.length === 0
         ? undefined
         : this.animationInput(frames, args.SECONDS, field);
+    const { blink, lipSync, ...portraitLayout } = portrait;
     const nextPortrait: BubblePortraitInput = Object.freeze({
-      base: portrait.base,
+      ...portraitLayout,
       ...(field === "blink"
         ? {
             ...(animation ? { blink: animation } : {}),
-            ...(portrait.lipSync ? { lipSync: portrait.lipSync } : {}),
+            ...(lipSync ? { lipSync } : {}),
           }
         : {
-            ...(portrait.blink ? { blink: portrait.blink } : {}),
+            ...(blink ? { blink } : {}),
             ...(animation ? { lipSync: animation } : {}),
           }),
     });

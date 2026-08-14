@@ -28,6 +28,17 @@ import type {
   BubbleTextCapability,
   BubbleTextTarget,
 } from "./text-capability.js";
+import {
+  defaultBubblePortraitCornerRadius,
+  defaultBubblePortraitOffset,
+  defaultBubblePortraitPlacement,
+  normalizeBubblePortraitCornerRadius,
+  normalizeBubblePortraitOffset,
+  normalizeBubblePortraitPlacement,
+  type BubblePortraitOffset,
+  type BubblePortraitOffsetInput,
+  type BubblePortraitPlacement,
+} from "./portrait-layout.js";
 
 export type {
   BubbleTextCapability,
@@ -90,6 +101,18 @@ export {
   type BubbleRevealUnit,
   type NormalizedBubbleReveal,
 } from "./reveal.js";
+export {
+  bubblePortraitPlacements,
+  defaultBubblePortraitCornerRadius,
+  defaultBubblePortraitOffset,
+  defaultBubblePortraitPlacement,
+  normalizeBubblePortraitCornerRadius,
+  normalizeBubblePortraitOffset,
+  normalizeBubblePortraitPlacement,
+  type BubblePortraitOffset,
+  type BubblePortraitOffsetInput,
+  type BubblePortraitPlacement,
+} from "./portrait-layout.js";
 
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
@@ -141,6 +164,11 @@ export interface BubblePortraitInput {
   readonly base: string;
   readonly blink?: BubbleFrameAnimationInput;
   readonly lipSync?: BubbleFrameAnimationInput;
+  readonly placement?: BubblePortraitPlacement;
+  /** Portrait-local [x, y, zoom percent]. */
+  readonly offset?: BubblePortraitOffsetInput;
+  /** Radius in pixels. */
+  readonly cornerRadius?: number;
 }
 
 export interface BubbleStyleInput {
@@ -172,6 +200,9 @@ export interface BubblePortrait {
   readonly base: string;
   readonly blink?: BubbleFrameAnimation;
   readonly lipSync?: BubbleFrameAnimation;
+  readonly placement: BubblePortraitPlacement;
+  readonly offset: BubblePortraitOffset;
+  readonly cornerRadius: number;
 }
 
 export interface BubbleStyle {
@@ -455,7 +486,12 @@ function normalizePortrait(value: unknown): NormalizedPortrait {
       "Bubble portrait must be an object.",
     );
   }
-  requireExactKeys(value, ["base"], ["blink", "lipSync"], "Bubble portrait");
+  requireExactKeys(
+    value,
+    ["base"],
+    ["blink", "lipSync", "placement", "offset", "cornerRadius"],
+    "Bubble portrait",
+  );
   const blink =
     value.blink === undefined
       ? undefined
@@ -464,10 +500,37 @@ function normalizePortrait(value: unknown): NormalizedPortrait {
     value.lipSync === undefined
       ? undefined
       : normalizeAnimation(value.lipSync, "Bubble portrait lip-sync", 1);
+  let placement: BubblePortraitPlacement;
+  let offset: BubblePortraitOffset;
+  let cornerRadius: number;
+  try {
+    placement = normalizeBubblePortraitPlacement(
+      value.placement ?? defaultBubblePortraitPlacement,
+    );
+    offset =
+      value.offset === undefined
+        ? defaultBubblePortraitOffset
+        : normalizeBubblePortraitOffset(
+            value.offset as BubblePortraitOffsetInput,
+          );
+    cornerRadius = normalizeBubblePortraitCornerRadius(
+      value.cornerRadius ?? defaultBubblePortraitCornerRadius,
+    );
+  } catch (error) {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-001",
+      error instanceof Error
+        ? error.message
+        : "Bubble portrait layout is invalid.",
+    );
+  }
   return Object.freeze({
     base: requireAssetName(value.base, "Bubble portrait base"),
     ...(blink === undefined ? {} : { blink }),
     ...(lipSync === undefined ? {} : { lipSync }),
+    placement,
+    offset,
+    cornerRadius,
   });
 }
 

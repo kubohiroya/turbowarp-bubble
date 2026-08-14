@@ -252,6 +252,7 @@ left / left-up-left / up-left / up-up-left
 <p><code>NEGATIVE</code> is not a separate style because it can be expressed with fill and border colors. Orientation and segments are also not public inputs; dimensions are calculated from width, font, character count, and the number of lines after wrapping.</p>
 <p>Now configure the portrait and continue animation layers:</p>
 <pre><code class="language-text">set portrait base [HeroFace] for bubble style [hero-dialogue]
+set portrait [top-left] offset x [-4] y [6] zoom [120] % corner radius [12] px for bubble style [hero-dialogue]
 
 set blink frames [HeroEyesOpen,HeroEyesClosed]
   every [0.4] seconds for bubble style [hero-dialogue]
@@ -268,7 +269,10 @@ set continue frames [Next1,Next2]
 <li>Use two or more continue frames so the loop is visible.</li>
 <li><code>SECONDS</code> must be a finite number greater than zero.</li>
 <li>An empty <code>ASSETS</code> input removes that animation.</li>
-<li>An empty portrait base removes the whole portrait.</li>
+<li>Portrait placement defaults to <code>left</code>. <code>left</code> and <code>right</code> center the image vertically at the corresponding edge; <code>top-left</code>, <code>top-right</code>, <code>bottom-left</code>, and <code>bottom-right</code> align it to that corner. The portrait keeps its own column, so it does not overlap the text unless a large offset moves it there.</li>
+<li>Portrait x is positive to the right and y is positive upward. Zoom is a positive percentage of the 96 px portrait box and is applied before the whole-Bubble scale. Corner radius is zero or greater in pixels and is capped at half of the displayed portrait width or height.</li>
+<li>Selecting <code>none</code>, or using an empty portrait base, removes the whole portrait including blink and lip-sync settings. Set the base again before choosing another layout.</li>
+<li>Rounded corners use the Bubble fill as a mask over the base, blink, and lip-sync layers. <code>NO_BUBBLE</code> has no fill to supply that mask, so its portrait remains rectangular.</li>
 </ul>
 <h2 id="lifecycle">5. Sequential reveal, audio, and layout</h2>
 <p>Bubble can reveal a message as <code>CHARACTER</code>, <code>WORD</code>, <code>LINE</code>, or <code>BLOCK</code> units. <code>WORD</code> does not perform morphological analysis; it uses whitespace or the configured delimiter character set. Delimiters can remain visible or be hidden.</p>
@@ -388,6 +392,10 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td><code>set portrait base [ASSET] for bubble style [STYLE]</code></td>
 <td>Set the portrait base image</td>
+</tr>
+<tr>
+<td><code>set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]</code></td>
+<td>Set portrait visibility, edge/corner placement, transform, and rounding</td>
 </tr>
 <tr>
 <td><code>set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>

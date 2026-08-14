@@ -127,6 +127,10 @@ interface DrawableSize {
   readonly width: number;
 }
 
+interface FittedDrawableSize extends DrawableSize {
+  readonly scalePercent: number;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -275,7 +279,7 @@ function fitDrawable(
   target: DrawableTarget,
   boxSize: number,
   scaleMultiplier = 1,
-): DrawableSize {
+): FittedDrawableSize {
   const native = readSize(renderer, target, {
     width: boxSize,
     height: boxSize,
@@ -289,7 +293,21 @@ function fitDrawable(
   return {
     width: native.width * effectiveScale,
     height: native.height * effectiveScale,
+    scalePercent: effectiveScale * 100,
   };
+}
+
+function renderPortraitCornerMaskSvg(
+  width: number,
+  height: number,
+  radius: number,
+): string {
+  const roundedRadius = Math.min(radius, width / 2, height / 2);
+  const right = width - roundedRadius;
+  const bottom = height - roundedRadius;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+  <path d="M0 0H${width}V${height}H0Z M${roundedRadius} 0H${right}A${roundedRadius} ${roundedRadius} 0 0 1 ${width} ${roundedRadius}V${bottom}A${roundedRadius} ${roundedRadius} 0 0 1 ${right} ${height}H${roundedRadius}A${roundedRadius} ${roundedRadius} 0 0 1 0 ${bottom}V${roundedRadius}A${roundedRadius} ${roundedRadius} 0 0 1 ${roundedRadius} 0Z" fill="#fff4cc" fill-rule="evenodd" data-bubble-portrait-corner-radius="${roundedRadius}"/>
+</svg>`;
 }
 
 function clamp(value: number, minimum: number, maximum: number): number {
@@ -337,6 +355,7 @@ function createSurface(
   surfaceSequence += 1;
   const drawables: DrawableTarget[] = [];
   let bodySkinId: number | undefined;
+  let portraitMaskSkinId: number | undefined;
 
   const createTarget = (layer: string): DrawableTarget => {
     const drawableID = renderer.createDrawable(spriteLayer);
@@ -368,6 +387,9 @@ function createSurface(
     const portraitLipSync = style.portrait?.lipSync
       ? createTarget("portrait-lip-sync")
       : undefined;
+    const portraitMask = style.portrait
+      ? createTarget("portrait-corner-mask")
+      : undefined;
     const text = createTarget("text");
     const continueIndicator = style.continueIndicator
       ? createTarget("continue-indicator")
@@ -390,6 +412,7 @@ function createSurface(
     let surfaceVisible = false;
     let disposed = false;
     let cachedBodySkinSignature = "";
+    let cachedPortraitMaskSignature = "";
     let currentStyle = style;
     let reservedTextSize: DrawableSize | undefined;
     const layoutPositions = new Map<number, [number, number]>();
@@ -455,6 +478,18 @@ function createSurface(
             (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
         );
       }
+      if (portraitMask) {
+        renderer.updateDrawableVisible(
+          portraitMask.drawableID,
+          surfaceVisible &&
+            actorVisible &&
+            currentStyle.portrait !== undefined &&
+            currentStyle.portrait.cornerRadius > 0 &&
+            currentStyle.visualStyle !== "NO_BUBBLE" &&
+            (layerVisibility.get("portraitBase") ?? false) &&
+            (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
+        );
+      }
       applyMotionTransforms();
       runtime.requestRedraw?.();
     };
@@ -479,12 +514,36 @@ function createSurface(
         width: nativeTextSize.width * scaleMultiplier,
         height: nativeTextSize.height * scaleMultiplier,
       };
-      const portraitSize = portraitBase
-        ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier)
-        : { width: 0, height: 0 };
+      const portraitZoomMultiplier =
+        (currentStyle.portrait?.offset.zoomPercent ?? 100) / 100;
+      const portraitFitBoxSize = portraitBoxSize * portraitZoomMultiplier;
+      const hasPortrait =
+        portraitBase !== undefined && currentStyle.portrait !== undefined;
+      const portraitSize = hasPortrait
+        ? fitDrawable(
+            renderer,
+            portraitBase,
+            portraitFitBoxSize,
+            scaleMultiplier,
+          )
+        : { width: 0, height: 0, scalePercent: 0 };
+      const portraitLayerScales = new Map<number, number>();
+      if (hasPortrait) {
+        portraitLayerScales.set(
+          portraitBase.drawableID,
+          portraitSize.scalePercent,
+        );
+      }
       for (const target of [portraitBlink, portraitLipSync]) {
-        if (target)
-          fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
+        if (target && hasPortrait) {
+          const fitted = fitDrawable(
+            renderer,
+            target,
+            portraitFitBoxSize,
+            scaleMultiplier,
+          );
+          portraitLayerScales.set(target.drawableID, fitted.scalePercent);
+        }
       }
       const indicatorSize = continueIndicator
         ? fitDrawable(
@@ -493,10 +552,10 @@ function createSurface(
             indicatorBoxSize,
             scaleMultiplier,
           )
-        : { width: 0, height: 0 };
+        : { width: 0, height: 0, scalePercent: 0 };
       const totalWidth =
         portraitSize.width +
-        (portraitBase ? contentGap * scaleMultiplier : 0) +
+        (hasPortrait ? contentGap * scaleMultiplier : 0) +
         textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
       const baseBubbleWidth = totalWidth / scaleMultiplier + bubblePadding * 2;
@@ -641,19 +700,81 @@ function createSurface(
         centerY + bodyCenterOffset.y,
       ]);
       const left = centerX - totalWidth / 2;
-      const portraitX = left + portraitSize.width / 2;
+      const portraitPlacement = currentStyle.portrait?.placement ?? "left";
+      const portraitOnRight = portraitPlacement.endsWith("right");
+      const portraitOffsetX =
+        (currentStyle.portrait?.offset.x ?? 0) * scaleMultiplier;
+      const portraitOffsetY =
+        (currentStyle.portrait?.offset.y ?? 0) * scaleMultiplier;
+      const portraitX =
+        (portraitOnRight
+          ? left + textSize.width + contentGap * scaleMultiplier
+          : left) +
+        portraitSize.width / 2 +
+        portraitOffsetX;
+      let portraitY = centerY;
+      if (portraitPlacement.startsWith("top-")) {
+        portraitY = centerY + contentHeight / 2 - portraitSize.height / 2;
+      } else if (portraitPlacement.startsWith("bottom-")) {
+        portraitY = centerY - contentHeight / 2 + portraitSize.height / 2;
+      }
+      portraitY += portraitOffsetY;
       const textX =
-        left +
-        portraitSize.width +
-        (portraitBase ? contentGap * scaleMultiplier : 0) +
+        (portraitOnRight || !hasPortrait
+          ? left
+          : left + portraitSize.width + contentGap * scaleMultiplier) +
         textSize.width / 2;
       for (const target of [portraitBase, portraitBlink, portraitLipSync]) {
         if (target) {
           renderer.updateDrawablePosition(target.drawableID, [
             portraitX,
-            centerY,
+            portraitY,
           ]);
         }
+      }
+      if (portraitMask) {
+        const maskWidth = portraitSize.width / scaleMultiplier;
+        const maskHeight = portraitSize.height / scaleMultiplier;
+        const radius = Math.min(
+          currentStyle.portrait?.cornerRadius ?? 0,
+          maskWidth / 2,
+          maskHeight / 2,
+        );
+        const nextPortraitMaskSignature =
+          radius > 0 ? JSON.stringify({ maskHeight, maskWidth, radius }) : "";
+        if (nextPortraitMaskSignature !== cachedPortraitMaskSignature) {
+          const previousPortraitMaskSkinId = portraitMaskSkinId;
+          portraitMaskSkinId = undefined;
+          cachedPortraitMaskSignature = nextPortraitMaskSignature;
+          if (radius > 0) {
+            const nextSkinId = renderer.createSVGSkin(
+              renderPortraitCornerMaskSvg(maskWidth, maskHeight, radius),
+            );
+            if (!Number.isInteger(nextSkinId) || nextSkinId < 0) {
+              throw new BubbleRuntimeAdapterError(
+                "BUBBLE-RUNTIME-001",
+                "TurboWarp did not create the Bubble portrait corner mask SVG skin.",
+              );
+            }
+            try {
+              renderer.updateDrawableSkinId(
+                portraitMask.drawableID,
+                nextSkinId,
+              );
+              portraitMaskSkinId = nextSkinId;
+            } catch (error) {
+              renderer.destroySkin(nextSkinId);
+              throw error;
+            }
+          }
+          if (previousPortraitMaskSkinId !== undefined) {
+            renderer.destroySkin(previousPortraitMaskSkinId);
+          }
+        }
+        renderer.updateDrawablePosition(portraitMask.drawableID, [
+          portraitX,
+          portraitY,
+        ]);
       }
       renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
       if (continueIndicator) {
@@ -680,33 +801,30 @@ function createSurface(
         centerY + bodyCenterOffset.y,
       ]);
       remember(text, [textX, centerY]);
-      remember(portraitBase, [portraitX, centerY]);
-      remember(portraitBlink, [portraitX, centerY]);
-      remember(portraitLipSync, [portraitX, centerY]);
+      remember(portraitBase, [portraitX, portraitY]);
+      remember(portraitBlink, [portraitX, portraitY]);
+      remember(portraitLipSync, [portraitX, portraitY]);
+      remember(portraitMask, [portraitX, portraitY]);
       layoutScales.set(body.drawableID, [100, 100]);
       layoutScales.set(text.drawableID, [
         scaleMultiplier * 100,
         scaleMultiplier * 100,
       ]);
-      if (portraitBase)
-        layoutScales.set(portraitBase.drawableID, [
+      for (const target of [portraitBase, portraitBlink, portraitLipSync]) {
+        if (!target) continue;
+        const portraitScale = portraitLayerScales.get(target.drawableID) ?? 0;
+        layoutScales.set(target.drawableID, [portraitScale, portraitScale]);
+      }
+      if (portraitMask) {
+        layoutScales.set(portraitMask.drawableID, [
           scaleMultiplier * 100,
           scaleMultiplier * 100,
         ]);
-      if (portraitBlink)
-        layoutScales.set(portraitBlink.drawableID, [
-          scaleMultiplier * 100,
-          scaleMultiplier * 100,
-        ]);
-      if (portraitLipSync)
-        layoutScales.set(portraitLipSync.drawableID, [
-          scaleMultiplier * 100,
-          scaleMultiplier * 100,
-        ]);
+      }
       if (continueIndicator)
         layoutScales.set(continueIndicator.drawableID, [
-          scaleMultiplier * 100,
-          scaleMultiplier * 100,
+          indicatorSize.scalePercent,
+          indicatorSize.scalePercent,
         ]);
       if (continueIndicator) {
         remember(continueIndicator, [
@@ -947,6 +1065,10 @@ function createSurface(
           renderer.destroySkin(bodySkinId);
           bodySkinId = undefined;
         }
+        if (portraitMaskSkinId !== undefined) {
+          renderer.destroySkin(portraitMaskSkinId);
+          portraitMaskSkinId = undefined;
+        }
         runtime.requestRedraw?.();
       },
     });
@@ -955,6 +1077,8 @@ function createSurface(
       renderer.destroyDrawable(target.drawableID, spriteLayer);
     }
     if (bodySkinId !== undefined) renderer.destroySkin(bodySkinId);
+    if (portraitMaskSkinId !== undefined)
+      renderer.destroySkin(portraitMaskSkinId);
     throw error;
   }
 }

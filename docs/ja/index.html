@@ -252,6 +252,7 @@ left / left-up-left / up-left / up-up-left
 <p><code>NEGATIVE</code>はfill colorとborder colorで表現できるため独立styleにはしません。orientationとsegmentsも公開入力にせず、幅、フォント、文字数、禁則処理後の行数から外形寸法を自動計算する方針です。</p>
 <p>続けて、表情レイヤーと入力待ちアイコンを設定します。</p>
 <pre><code class="language-text">set portrait base [HeroFace] for bubble style [hero-dialogue]
+set portrait [top-left] offset x [-4] y [6] zoom [120] % corner radius [12] px for bubble style [hero-dialogue]
 
 set blink frames [HeroEyesOpen,HeroEyesClosed]
   every [0.4] seconds for bubble style [hero-dialogue]
@@ -268,7 +269,10 @@ set continue frames [Next1,Next2]
 <li>「次へ」はループが分かるよう2枚以上必要です。</li>
 <li><code>SECONDS</code>は0より大きい秒数です。</li>
 <li><code>ASSETS</code>を空にすると、そのアニメーション設定を解除します。</li>
-<li>表情ベースを空にするとportrait全体を解除します。</li>
+<li>portrait配置の既定値は<code>left</code>です。<code>left</code>／<code>right</code>は対応する端の上下中央、<code>top-left</code>／<code>top-right</code>／<code>bottom-left</code>／<code>bottom-right</code>は対応する隅へ揃えます。portrait用の列は維持されるため、大きなoffsetで移動しない限り文字と重なりません。</li>
+<li>portraitのxは右正、yは上正です。zoomは96pxのportrait枠に対する0より大きい百分率で、Bubble全体のscaleより先に適用します。角丸半径は0以上のpixel値で、表示幅または表示高の半分を上限にします。</li>
+<li><code>none</code>を選ぶか表情ベースを空にすると、目パチ・口パク設定を含むportrait全体を解除します。別の配置へ戻すときは、先に表情ベースを再設定します。</li>
+<li>角丸はBubbleのfill色でベース・目パチ・口パクの各レイヤーをmaskします。<code>NO_BUBBLE</code>にはmaskに使うfillがないため、portraitは矩形表示のままです。</li>
 </ul>
 <h2 id="lifecycle">5. 逐次表示、音声、表示サイズ</h2>
 <p>Bubbleはセリフ全体を一度に描画するだけでなく、<code>CHARACTER</code>、<code>WORD</code>、<code>LINE</code>、<code>BLOCK</code>の単位で順次表示できます。<code>WORD</code>は形態素解析を行わず、空白または指定した区切り文字集合で分割します。区切り文字を表示するかどうかも選べます。</p>
@@ -388,6 +392,10 @@ think [MESSAGE] with bubble style [STYLE]
 <tr>
 <td><code>set portrait base [ASSET] for bubble style [STYLE]</code></td>
 <td>portraitのベース画像を設定する</td>
+</tr>
+<tr>
+<td><code>set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]</code></td>
+<td>portraitの有無、端／隅の配置、変形、角丸を設定する</td>
 </tr>
 <tr>
 <td><code>set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]</code></td>

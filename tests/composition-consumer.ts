@@ -61,6 +61,9 @@ bubbles.defineStyle({
   visualStyle: "WAVY",
   portrait: {
     base: "HeroFace",
+    placement: "top-left",
+    offset: [-4, 6, 120],
+    cornerRadius: 12,
     blink: { frames: ["EyesOpen", "EyesClosed"], frameIntervalSeconds: 0.4 },
     lipSync: {
       frames: ["MouthClosed", "MouthOpen"],

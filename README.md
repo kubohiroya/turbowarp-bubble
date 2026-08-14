@@ -190,6 +190,17 @@ Composition APIのBubble styleへ`maxWidth`と任意の`textLocale`を渡すと�
 
 standalone機能拡張では、`set bubble visual style`ブロックで形状を選択できます。runtimeは共有`renderBubbleSvg`から本体用SVG skinを生成し、文字・表情より背面の専用drawableへ適用します。Actor相対ではActorを向くtailを生成し、背景相対ではtailを付けません。`NO_BUBBLE`では本体を非表示にして文字・表情などだけを表示します。`NEGATIVE`はfill colorとborder colorで表現できるため独立styleにせず、orientationとsegmentsも公開入力にしません。
 
+portraitは`left`／`right`／`top-left`／`top-right`／`bottom-left`／`bottom-right`へ配置し、portrait固有の`[x, y, zoom]`と角丸半径を指定できます。standalone機能拡張では`set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px ...`を使い、`none`でportrait全体を解除します。Composition APIでは次のようにstyleへ含めます。
+
+```ts
+portrait: {
+  base: "HeroFace",
+  placement: "top-left",
+  offset: [-4, 6, 120],
+  cornerRadius: 12,
+}
+```
+
 配布bundleに含まれる依存ライブラリのライセンスは、[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)を参照してください。
 
 ## 利用方法

@@ -377,6 +377,37 @@
       ]
     },
     {
+      "opcode": "setPortraitLayout",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "PLACEMENT",
+          "type": "STRING",
+          "menu": "portraitPlacement"
+        },
+        {
+          "id": "RADIUS",
+          "type": "NUMBER"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        },
+        {
+          "id": "X",
+          "type": "NUMBER"
+        },
+        {
+          "id": "Y",
+          "type": "NUMBER"
+        },
+        {
+          "id": "ZOOM",
+          "type": "NUMBER"
+        }
+      ]
+    },
+    {
       "opcode": "shakeBubble",
       "blockType": "COMMAND",
       "arguments": [
@@ -447,6 +478,10 @@
     },
     {
       "id": "placement",
+      "acceptReporters": true
+    },
+    {
+      "id": "portraitPlacement",
       "acceptReporters": true
     },
     {

@@ -18,6 +18,7 @@ describe("extension API manifest", () => {
       expect.arrayContaining([
         expect.objectContaining({ opcode: "finishBubbleReveal" }),
         expect.objectContaining({ opcode: "setBubbleReveal" }),
+        expect.objectContaining({ opcode: "setPortraitLayout" }),
         expect.objectContaining({ opcode: "shakeBubble" }),
         expect.objectContaining({ opcode: "explodeBubble" }),
         expect.objectContaining({ opcode: "animateBubbleShape" }),

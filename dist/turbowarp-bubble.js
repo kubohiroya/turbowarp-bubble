@@ -93,6 +93,39 @@
         }
       },
       {
+        "opcode": "setPortraitLayout",
+        "blockType": "COMMAND",
+        "text": "set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]",
+        "description": "Places the portrait at a bubble edge or corner with a local offset, zoom, and rounded corners. NONE removes the portrait.",
+        "arguments": {
+          "PLACEMENT": {
+            "type": "STRING",
+            "defaultValue": "left",
+            "menu": "portraitPlacement"
+          },
+          "X": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "Y": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "ZOOM": {
+            "type": "NUMBER",
+            "defaultValue": 100
+          },
+          "RADIUS": {
+            "type": "NUMBER",
+            "defaultValue": 0
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "dialogue"
+          }
+        }
+      },
+      {
         "opcode": "setBubbleDistance",
         "blockType": "COMMAND",
         "text": "set bubble distance [DISTANCE] for bubble style [STYLE]",
@@ -516,6 +549,18 @@
       }
     ],
     menus: {
+      "portraitPlacement": {
+        "acceptReporters": true,
+        "items": [
+          "none",
+          "left",
+          "right",
+          "top-left",
+          "top-right",
+          "bottom-left",
+          "bottom-right"
+        ]
+      },
       "visualStyle": {
         "acceptReporters": true,
         "items": [
@@ -8397,6 +8442,45 @@
     return chunks.slice(0, Math.max(0, Math.min(count, chunks.length))).join("");
   }
   //#endregion
+  //#region src/portrait-layout.ts
+  var bubblePortraitPlacements = Object.freeze([
+    "left",
+    "right",
+    "top-left",
+    "top-right",
+    "bottom-left",
+    "bottom-right"
+  ]);
+  var defaultBubblePortraitOffset = Object.freeze({
+    x: 0,
+    y: 0,
+    zoomPercent: 100
+  });
+  function normalizeBubblePortraitPlacement(value) {
+    if (typeof value !== "string") throw new TypeError("Bubble portrait placement must be a string.");
+    const normalized = value.trim().toLowerCase().replaceAll("_", "-");
+    if (!bubblePortraitPlacements.includes(normalized)) throw new TypeError(`Unsupported Bubble portrait placement: ${value}`);
+    return normalized;
+  }
+  function normalizeBubblePortraitOffset(value) {
+    if (!Array.isArray(value) || value.length !== 2 && value.length !== 3) throw new TypeError("Bubble portrait offset must be [x, y] or [x, y, zoom].");
+    const [x, y, zoomPercent = 100] = value;
+    if (![
+      x,
+      y,
+      zoomPercent
+    ].every(Number.isFinite) || zoomPercent <= 0) throw new TypeError("Bubble portrait offset values must be finite and zoom positive.");
+    return Object.freeze({
+      x,
+      y,
+      zoomPercent
+    });
+  }
+  function normalizeBubblePortraitCornerRadius(value) {
+    if (typeof value !== "number" || !Number.isFinite(value) || value < 0) throw new TypeError("Bubble portrait corner radius must be zero or greater.");
+    return value;
+  }
+  //#endregion
   //#region src/composition.ts
   var BubbleCompositionError = class extends Error {
     constructor(code, message) {
@@ -8462,13 +8546,32 @@
   }
   function normalizePortrait(value) {
     if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
-    requireExactKeys(value, ["base"], ["blink", "lipSync"], "Bubble portrait");
+    requireExactKeys(value, ["base"], [
+      "blink",
+      "lipSync",
+      "placement",
+      "offset",
+      "cornerRadius"
+    ], "Bubble portrait");
     const blink = value.blink === void 0 ? void 0 : normalizeAnimation(value.blink, "Bubble portrait blink", 1);
     const lipSync = value.lipSync === void 0 ? void 0 : normalizeAnimation(value.lipSync, "Bubble portrait lip-sync", 1);
+    let placement;
+    let offset;
+    let cornerRadius;
+    try {
+      placement = normalizeBubblePortraitPlacement(value.placement ?? "left");
+      offset = value.offset === void 0 ? defaultBubblePortraitOffset : normalizeBubblePortraitOffset(value.offset);
+      cornerRadius = normalizeBubblePortraitCornerRadius(value.cornerRadius ?? 0);
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble portrait layout is invalid.");
+    }
     return Object.freeze({
       base: requireAssetName(value.base, "Bubble portrait base"),
       ...blink === void 0 ? {} : { blink },
-      ...lipSync === void 0 ? {} : { lipSync }
+      ...lipSync === void 0 ? {} : { lipSync },
+      placement,
+      offset,
+      cornerRadius
     });
   }
   function normalizeMotion(value, label) {
@@ -9441,8 +9544,17 @@
     renderer.updateDrawableScale(target.drawableID, [effectiveScale * 100, effectiveScale * 100]);
     return {
       width: native.width * effectiveScale,
-      height: native.height * effectiveScale
+      height: native.height * effectiveScale,
+      scalePercent: effectiveScale * 100
     };
+  }
+  function renderPortraitCornerMaskSvg(width, height, radius) {
+    const roundedRadius = Math.min(radius, width / 2, height / 2);
+    const right = width - roundedRadius;
+    const bottom = height - roundedRadius;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+    <path d="M0 0H${width}V${height}H0Z M${roundedRadius} 0H${right}A${roundedRadius} ${roundedRadius} 0 0 1 ${width} ${roundedRadius}V${bottom}A${roundedRadius} ${roundedRadius} 0 0 1 ${right} ${height}H${roundedRadius}A${roundedRadius} ${roundedRadius} 0 0 1 0 ${bottom}V${roundedRadius}A${roundedRadius} ${roundedRadius} 0 0 1 ${roundedRadius} 0Z" fill="#fff4cc" fill-rule="evenodd" data-bubble-portrait-corner-radius="${roundedRadius}"/>
+  </svg>`;
   }
   function clamp(value, minimum, maximum) {
     if (maximum < minimum) return (minimum + maximum) / 2;
@@ -9463,6 +9575,7 @@
     surfaceSequence += 1;
     const drawables = [];
     let bodySkinId;
+    let portraitMaskSkinId;
     const createTarget = (layer) => {
       const drawableID = renderer.createDrawable(spriteLayer);
       if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", `TurboWarp did not create the Bubble ${layer} drawable.`);
@@ -9481,6 +9594,7 @@
       const portraitBase = style.portrait ? createTarget("portrait-base") : void 0;
       const portraitBlink = style.portrait?.blink ? createTarget("portrait-blink") : void 0;
       const portraitLipSync = style.portrait?.lipSync ? createTarget("portrait-lip-sync") : void 0;
+      const portraitMask = style.portrait ? createTarget("portrait-corner-mask") : void 0;
       const text = createTarget("text");
       const continueIndicator = style.continueIndicator ? createTarget("continue-indicator") : void 0;
       const targets = Object.freeze({
@@ -9499,6 +9613,7 @@
       let surfaceVisible = false;
       let disposed = false;
       let cachedBodySkinSignature = "";
+      let cachedPortraitMaskSignature = "";
       let currentStyle = style;
       let reservedTextSize;
       const layoutPositions = /* @__PURE__ */ new Map();
@@ -9521,6 +9636,7 @@
         renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && currentStyle.visualStyle !== "NO_BUBBLE" && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
         renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
         for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false) && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
+        if (portraitMask) renderer.updateDrawableVisible(portraitMask.drawableID, surfaceVisible && actorVisible && currentStyle.portrait !== void 0 && currentStyle.portrait.cornerRadius > 0 && currentStyle.visualStyle !== "NO_BUBBLE" && (layerVisibility.get("portraitBase") ?? false) && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
         applyMotionTransforms();
         runtime.requestRedraw?.();
       };
@@ -9536,16 +9652,25 @@
           width: nativeTextSize.width * scaleMultiplier,
           height: nativeTextSize.height * scaleMultiplier
         };
-        const portraitSize = portraitBase ? fitDrawable(renderer, portraitBase, portraitBoxSize, scaleMultiplier) : {
+        const portraitFitBoxSize = portraitBoxSize * ((currentStyle.portrait?.offset.zoomPercent ?? 100) / 100);
+        const hasPortrait = portraitBase !== void 0 && currentStyle.portrait !== void 0;
+        const portraitSize = hasPortrait ? fitDrawable(renderer, portraitBase, portraitFitBoxSize, scaleMultiplier) : {
           width: 0,
-          height: 0
+          height: 0,
+          scalePercent: 0
         };
-        for (const target of [portraitBlink, portraitLipSync]) if (target) fitDrawable(renderer, target, portraitBoxSize, scaleMultiplier);
+        const portraitLayerScales = /* @__PURE__ */ new Map();
+        if (hasPortrait) portraitLayerScales.set(portraitBase.drawableID, portraitSize.scalePercent);
+        for (const target of [portraitBlink, portraitLipSync]) if (target && hasPortrait) {
+          const fitted = fitDrawable(renderer, target, portraitFitBoxSize, scaleMultiplier);
+          portraitLayerScales.set(target.drawableID, fitted.scalePercent);
+        }
         const indicatorSize = continueIndicator ? fitDrawable(renderer, continueIndicator, indicatorBoxSize, scaleMultiplier) : {
           width: 0,
-          height: 0
+          height: 0,
+          scalePercent: 0
         };
-        const totalWidth = portraitSize.width + (portraitBase ? contentGap * scaleMultiplier : 0) + textSize.width;
+        const totalWidth = portraitSize.width + (hasPortrait ? contentGap * scaleMultiplier : 0) + textSize.width;
         const contentHeight = Math.max(portraitSize.height, textSize.height);
         const baseBubbleWidth = totalWidth / scaleMultiplier + 48;
         const baseBubbleHeight = contentHeight / scaleMultiplier + 48;
@@ -9646,13 +9771,49 @@
         renderer.updateDrawableScale(body.drawableID, [100, 100]);
         renderer.updateDrawablePosition(body.drawableID, [centerX - bodyCenterOffset.x, centerY + bodyCenterOffset.y]);
         const left = centerX - totalWidth / 2;
-        const portraitX = left + portraitSize.width / 2;
-        const textX = left + portraitSize.width + (portraitBase ? contentGap * scaleMultiplier : 0) + textSize.width / 2;
+        const portraitPlacement = currentStyle.portrait?.placement ?? "left";
+        const portraitOnRight = portraitPlacement.endsWith("right");
+        const portraitOffsetX = (currentStyle.portrait?.offset.x ?? 0) * scaleMultiplier;
+        const portraitOffsetY = (currentStyle.portrait?.offset.y ?? 0) * scaleMultiplier;
+        const portraitX = (portraitOnRight ? left + textSize.width + contentGap * scaleMultiplier : left) + portraitSize.width / 2 + portraitOffsetX;
+        let portraitY = centerY;
+        if (portraitPlacement.startsWith("top-")) portraitY = centerY + contentHeight / 2 - portraitSize.height / 2;
+        else if (portraitPlacement.startsWith("bottom-")) portraitY = centerY - contentHeight / 2 + portraitSize.height / 2;
+        portraitY += portraitOffsetY;
+        const textX = (portraitOnRight || !hasPortrait ? left : left + portraitSize.width + contentGap * scaleMultiplier) + textSize.width / 2;
         for (const target of [
           portraitBase,
           portraitBlink,
           portraitLipSync
-        ]) if (target) renderer.updateDrawablePosition(target.drawableID, [portraitX, centerY]);
+        ]) if (target) renderer.updateDrawablePosition(target.drawableID, [portraitX, portraitY]);
+        if (portraitMask) {
+          const maskWidth = portraitSize.width / scaleMultiplier;
+          const maskHeight = portraitSize.height / scaleMultiplier;
+          const radius = Math.min(currentStyle.portrait?.cornerRadius ?? 0, maskWidth / 2, maskHeight / 2);
+          const nextPortraitMaskSignature = radius > 0 ? JSON.stringify({
+            maskHeight,
+            maskWidth,
+            radius
+          }) : "";
+          if (nextPortraitMaskSignature !== cachedPortraitMaskSignature) {
+            const previousPortraitMaskSkinId = portraitMaskSkinId;
+            portraitMaskSkinId = void 0;
+            cachedPortraitMaskSignature = nextPortraitMaskSignature;
+            if (radius > 0) {
+              const nextSkinId = renderer.createSVGSkin(renderPortraitCornerMaskSvg(maskWidth, maskHeight, radius));
+              if (!Number.isInteger(nextSkinId) || nextSkinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "TurboWarp did not create the Bubble portrait corner mask SVG skin.");
+              try {
+                renderer.updateDrawableSkinId(portraitMask.drawableID, nextSkinId);
+                portraitMaskSkinId = nextSkinId;
+              } catch (error) {
+                renderer.destroySkin(nextSkinId);
+                throw error;
+              }
+            }
+            if (previousPortraitMaskSkinId !== void 0) renderer.destroySkin(previousPortraitMaskSkinId);
+          }
+          renderer.updateDrawablePosition(portraitMask.drawableID, [portraitX, portraitY]);
+        }
         renderer.updateDrawablePosition(text.drawableID, [textX, centerY]);
         if (continueIndicator) renderer.updateDrawablePosition(continueIndicator.drawableID, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
         const remember = (target, positionValue) => {
@@ -9661,15 +9822,23 @@
         };
         remember(body, [centerX - bodyCenterOffset.x, centerY + bodyCenterOffset.y]);
         remember(text, [textX, centerY]);
-        remember(portraitBase, [portraitX, centerY]);
-        remember(portraitBlink, [portraitX, centerY]);
-        remember(portraitLipSync, [portraitX, centerY]);
+        remember(portraitBase, [portraitX, portraitY]);
+        remember(portraitBlink, [portraitX, portraitY]);
+        remember(portraitLipSync, [portraitX, portraitY]);
+        remember(portraitMask, [portraitX, portraitY]);
         layoutScales.set(body.drawableID, [100, 100]);
         layoutScales.set(text.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
-        if (portraitBase) layoutScales.set(portraitBase.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
-        if (portraitBlink) layoutScales.set(portraitBlink.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
-        if (portraitLipSync) layoutScales.set(portraitLipSync.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
-        if (continueIndicator) layoutScales.set(continueIndicator.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        for (const target of [
+          portraitBase,
+          portraitBlink,
+          portraitLipSync
+        ]) {
+          if (!target) continue;
+          const portraitScale = portraitLayerScales.get(target.drawableID) ?? 0;
+          layoutScales.set(target.drawableID, [portraitScale, portraitScale]);
+        }
+        if (portraitMask) layoutScales.set(portraitMask.drawableID, [scaleMultiplier * 100, scaleMultiplier * 100]);
+        if (continueIndicator) layoutScales.set(continueIndicator.drawableID, [indicatorSize.scalePercent, indicatorSize.scalePercent]);
         if (continueIndicator) remember(continueIndicator, [textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap * scaleMultiplier, centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap * scaleMultiplier]);
         applyMotionTransforms();
         updateVisibility();
@@ -9842,12 +10011,17 @@
             renderer.destroySkin(bodySkinId);
             bodySkinId = void 0;
           }
+          if (portraitMaskSkinId !== void 0) {
+            renderer.destroySkin(portraitMaskSkinId);
+            portraitMaskSkinId = void 0;
+          }
           runtime.requestRedraw?.();
         }
       });
     } catch (error) {
       for (const target of [...drawables].reverse()) renderer.destroyDrawable(target.drawableID, spriteLayer);
       if (bodySkinId !== void 0) renderer.destroySkin(bodySkinId);
+      if (portraitMaskSkinId !== void 0) renderer.destroySkin(portraitMaskSkinId);
       throw error;
     }
   }
@@ -10017,6 +10191,42 @@
         return Object.freeze(withoutPortrait);
       })();
       this.installStyle(nextStyle);
+    }
+    setPortraitLayout(args) {
+      const style = this.requireStyle(args.STYLE);
+      if (this.toString(args.PLACEMENT).trim().toLowerCase() === "none") {
+        const { portrait, ...withoutPortrait } = style;
+        this.installStyle(Object.freeze(withoutPortrait));
+        return;
+      }
+      if (!style.portrait?.base) throw extensionError("set the portrait base before portrait layout.");
+      let placement;
+      let offset;
+      let cornerRadius;
+      try {
+        placement = normalizeBubblePortraitPlacement(args.PLACEMENT);
+        offset = normalizeBubblePortraitOffset([
+          Scratch.Cast.toNumber(args.X),
+          Scratch.Cast.toNumber(args.Y),
+          Scratch.Cast.toNumber(args.ZOOM)
+        ]);
+        cornerRadius = normalizeBubblePortraitCornerRadius(Scratch.Cast.toNumber(args.RADIUS));
+      } catch (error) {
+        throw extensionError(error instanceof Error ? error.message : "Bubble portrait layout is invalid.");
+      }
+      this.installStyle(Object.freeze({
+        ...style,
+        portrait: Object.freeze({
+          ...style.portrait,
+          placement,
+          offset: Object.freeze([
+            offset.x,
+            offset.y,
+            offset.zoomPercent
+          ]),
+          cornerRadius
+        })
+      }));
     }
     setBubblePlacement(args) {
       const style = this.requireStyle(args.STYLE);
@@ -10412,13 +10622,14 @@
       if (!portrait?.base) throw extensionError("set the portrait base before portrait animation frames.");
       const frames = this.parseFrames(args.ASSETS);
       const animation = frames.length === 0 ? void 0 : this.animationInput(frames, args.SECONDS, field);
+      const { blink, lipSync, ...portraitLayout } = portrait;
       const nextPortrait = Object.freeze({
-        base: portrait.base,
+        ...portraitLayout,
         ...field === "blink" ? {
           ...animation ? { blink: animation } : {},
-          ...portrait.lipSync ? { lipSync: portrait.lipSync } : {}
+          ...lipSync ? { lipSync } : {}
         } : {
-          ...portrait.blink ? { blink: portrait.blink } : {},
+          ...blink ? { blink } : {},
           ...animation ? { lipSync: animation } : {}
         }
       });

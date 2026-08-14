@@ -36,6 +36,24 @@
       }
     },
     {
+      "opcode": "setPortraitLayout",
+      "blockType": "COMMAND",
+      "text": "set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]",
+      "description": "Places the portrait at a bubble edge or corner with a local offset, zoom, and rounded corners. NONE removes the portrait.",
+      "arguments": {
+        "PLACEMENT": {
+          "type": "STRING",
+          "defaultValue": "left",
+          "menu": "portraitPlacement"
+        },
+        "X": { "type": "NUMBER", "defaultValue": 0 },
+        "Y": { "type": "NUMBER", "defaultValue": 0 },
+        "ZOOM": { "type": "NUMBER", "defaultValue": 100 },
+        "RADIUS": { "type": "NUMBER", "defaultValue": 0 },
+        "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
+      }
+    },
+    {
       "opcode": "setBubbleDistance",
       "blockType": "COMMAND",
       "text": "set bubble distance [DISTANCE] for bubble style [STYLE]",
@@ -336,6 +354,18 @@
     }
   ],
   "menus": {
+    "portraitPlacement": {
+      "acceptReporters": true,
+      "items": [
+        "none",
+        "left",
+        "right",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right"
+      ]
+    },
     "visualStyle": {
       "acceptReporters": true,
       "items": [
