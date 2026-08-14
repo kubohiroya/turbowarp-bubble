@@ -62,6 +62,9 @@ for (const name of [
   "BubbleCompositionError",
   "UnicodeLineBreakProvider",
   "normalizeBubblePlacement",
+  "normalizeBubblePortraitPlacement",
+  "normalizeBubblePortraitOffset",
+  "normalizeBubblePortraitCornerRadius",
   "renderBubbleSvg",
   "wrapText",
 ]) {
@@ -134,6 +137,8 @@ for (const name of [
   "BubbleHandle",
   "BubbleStyleInput",
   "BubblePlacement",
+  "BubblePortraitPlacement",
+  "BubblePortraitOffsetInput",
   "BubbleBodyCenterOffsetInput",
   "BubbleVisualStyle",
   "LineBreakProvider",
@@ -168,6 +173,7 @@ for (const value of [
   "setBubbleVisualStyle",
   "setBubbleTailLength",
   "setBubbleOffset",
+  "setPortraitLayout",
   "https://kubohiroya.github.io/turbowarp-bubble/",
   "sayWithBubbleStyle",
   "setBubbleAnimationMode",
@@ -180,7 +186,7 @@ for (const value of [
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 27) {
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 28) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

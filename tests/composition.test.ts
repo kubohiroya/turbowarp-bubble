@@ -197,6 +197,42 @@ describe("Bubble composition", () => {
     });
   });
 
+  it("normalizes portrait placement, offset, zoom, and corner radius", async () => {
+    const harness = createHarness();
+    harness.composition.defineStyle({
+      name: "portrait-layout",
+      textStyle: "default",
+      portrait: {
+        base: "Face",
+        placement: "bottom-right",
+        offset: [7, -9, 150],
+        cornerRadius: 14,
+      },
+    });
+
+    const handle = await harness.composition.show({
+      actor: {},
+      actorKey: "portrait-layout-actor",
+      kind: "say",
+      text: "hello",
+      styleName: "portrait-layout",
+    });
+
+    expect(harness.createSurface).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        style: expect.objectContaining({
+          portrait: {
+            base: "Face",
+            placement: "bottom-right",
+            offset: { x: 7, y: -9, zoomPercent: 150 },
+            cornerRadius: 14,
+          },
+        }),
+      }),
+    );
+    await handle.close();
+  });
+
   it("requires an audio capability only when a voice or reveal sound is shown", async () => {
     const harness = createHarness();
     harness.composition.defineStyle({

@@ -154,6 +154,7 @@ Now configure the portrait and continue animation layers:
 
 ```text
 set portrait base [HeroFace] for bubble style [hero-dialogue]
+set portrait [top-left] offset x [-4] y [6] zoom [120] % corner radius [12] px for bubble style [hero-dialogue]
 
 set blink frames [HeroEyesOpen,HeroEyesClosed]
   every [0.4] seconds for bubble style [hero-dialogue]
@@ -171,7 +172,10 @@ set continue frames [Next1,Next2]
 - Use two or more continue frames so the loop is visible.
 - `SECONDS` must be a finite number greater than zero.
 - An empty `ASSETS` input removes that animation.
-- An empty portrait base removes the whole portrait.
+- Portrait placement defaults to `left`. `left` and `right` center the image vertically at the corresponding edge; `top-left`, `top-right`, `bottom-left`, and `bottom-right` align it to that corner. The portrait keeps its own column, so it does not overlap the text unless a large offset moves it there.
+- Portrait x is positive to the right and y is positive upward. Zoom is a positive percentage of the 96 px portrait box and is applied before the whole-Bubble scale. Corner radius is zero or greater in pixels and is capped at half of the displayed portrait width or height.
+- Selecting `none`, or using an empty portrait base, removes the whole portrait including blink and lip-sync settings. Set the base again before choosing another layout.
+- Rounded corners use the Bubble fill as a mask over the base, blink, and lip-sync layers. `NO_BUBBLE` has no fill to supply that mask, so its portrait remains rectangular.
 
 ## 5. Sequential reveal, audio, and layout
 
@@ -261,35 +265,36 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 
 ## 11. Block reference
 
-| Block                                                                                            | Description                                                      |
-| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                                      | Define or redefine a Bubble style                                |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                      | Set an actor direction/angle or a stage-relative region          |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                                        | Set the distance from actor bounds to the tail tip               |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                | Select one of ten SVG body shapes                                |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                                       | Set the nominal border-to-tip tail length                        |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                         | Set body position and whole-Bubble scale, including text         |
-| `set portrait base [ASSET] for bubble style [STYLE]`                                             | Set the portrait base image                                      |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                     | Set blink overlays and interval                                  |
-| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                  | Set lip-sync overlays and interval                               |
-| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                  | Set the animation shown during `awaiting-continue`               |
-| `set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]` | Configure CHARACTER/WORD/LINE/BLOCK sequential reveal            |
-| `set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]`                   | Configure WORD delimiters and visibility                         |
-| `set bubble reveal sound [ASSET] for bubble style [STYLE]`                                       | Set the per-unit reveal sound                                    |
-| `set bubble voice [ASSET] for bubble style [STYLE]`                                              | Set full voice played when display starts                        |
-| `finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds`                    | Reveal remaining units and wait for condition or timeout         |
-| `set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`              | Configure show animation                                         |
-| `set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`              | Configure hide animation                                         |
-| `animate this bubble [MOTION]`                                                                   | Play a whole-Bubble animation                                    |
-| `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                              | Shake the complete Bubble surface                                |
-| `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                           | Apply relative scale cycles to the Bubble                        |
-| `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                     | Transition the Bubble outline                                    |
-| `say [MESSAGE] with bubble style [STYLE]`                                                        | Start or replace a `say` Bubble in `talking` mode                |
-| `think [MESSAGE] with bubble style [STYLE]`                                                      | Start or replace a `think` Bubble in `talking` mode              |
-| `set this bubble animation mode [MODE]`                                                          | Select `talking`, `awaiting-continue`, or `idle` for this Bubble |
-| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`           | Await a Runtime Expression condition or optional timeout         |
-| `close this bubble`                                                                              | Release this target's Bubble and owned resources                 |
-| `Bubble version`                                                                                 | Report the Bubble implementation version                         |
+| Block                                                                                                          | Description                                                             |
+| -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Define or redefine a Bubble style                                       |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Set an actor direction/angle or a stage-relative region                 |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Set the distance from actor bounds to the tail tip                      |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Select one of ten SVG body shapes                                       |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                                                     | Set the nominal border-to-tip tail length                               |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                                       | Set body position and whole-Bubble scale, including text                |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                                           | Set the portrait base image                                             |
+| `set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]` | Set portrait visibility, edge/corner placement, transform, and rounding |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                   | Set blink overlays and interval                                         |
+| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                | Set lip-sync overlays and interval                                      |
+| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                | Set the animation shown during `awaiting-continue`                      |
+| `set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]`               | Configure CHARACTER/WORD/LINE/BLOCK sequential reveal                   |
+| `set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]`                                 | Configure WORD delimiters and visibility                                |
+| `set bubble reveal sound [ASSET] for bubble style [STYLE]`                                                     | Set the per-unit reveal sound                                           |
+| `set bubble voice [ASSET] for bubble style [STYLE]`                                                            | Set full voice played when display starts                               |
+| `finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds`                                  | Reveal remaining units and wait for condition or timeout                |
+| `set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`                            | Configure show animation                                                |
+| `set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`                            | Configure hide animation                                                |
+| `animate this bubble [MOTION]`                                                                                 | Play a whole-Bubble animation                                           |
+| `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                                            | Shake the complete Bubble surface                                       |
+| `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                                         | Apply relative scale cycles to the Bubble                               |
+| `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                                   | Transition the Bubble outline                                           |
+| `say [MESSAGE] with bubble style [STYLE]`                                                                      | Start or replace a `say` Bubble in `talking` mode                       |
+| `think [MESSAGE] with bubble style [STYLE]`                                                                    | Start or replace a `think` Bubble in `talking` mode                     |
+| `set this bubble animation mode [MODE]`                                                                        | Select `talking`, `awaiting-continue`, or `idle` for this Bubble        |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Await a Runtime Expression condition or optional timeout                |
+| `close this bubble`                                                                                            | Release this target's Bubble and owned resources                        |
+| `Bubble version`                                                                                               | Report the Bubble implementation version                                |
 
 ## 12. Troubleshooting
 

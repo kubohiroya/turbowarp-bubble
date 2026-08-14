@@ -3,12 +3,14 @@ import { type BubbleOffset, type BubbleOffsetInput } from "./actor-transform.js"
 import { type BubbleVisualStyle } from "./bubble-svg.js";
 import { type BubbleRevealInput, type BubbleRevealUnit, type NormalizedBubbleReveal } from "./reveal.js";
 import type { BubbleTextCapability, BubbleTextTarget } from "./text-capability.js";
+import { type BubblePortraitOffset, type BubblePortraitOffsetInput, type BubblePortraitPlacement } from "./portrait-layout.js";
 export type { BubbleTextCapability, BubbleTextTarget, } from "./text-capability.js";
 export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type LineBreakProvider, type TextWidthMeasurer, type WrappedTextLayout, type WrappedTextLine, type WrapTextInput, } from "./text-layout.js";
 export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, defaultBubblePlacementInput, normalizeBubblePlacement, type BubbleActorPlacement, type BubbleBackgroundPlacement, type BubbleBackgroundRegion, type BubbleDirectionAlias, type BubbleDirectionName, type BubblePlacement, type BubblePlacementInput, } from "./placement.js";
 export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
 export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleShapeTransition, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
 export { bubbleRevealUnits, normalizeBubbleReveal, revealedBubbleText, splitBubbleText, type BubbleRevealInput, type BubbleRevealLayout, type BubbleRevealUnit, type NormalizedBubbleReveal, } from "./reveal.js";
+export { bubblePortraitPlacements, defaultBubblePortraitCornerRadius, defaultBubblePortraitOffset, defaultBubblePortraitPlacement, normalizeBubblePortraitCornerRadius, normalizeBubblePortraitOffset, normalizeBubblePortraitPlacement, type BubblePortraitOffset, type BubblePortraitOffsetInput, type BubblePortraitPlacement, } from "./portrait-layout.js";
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
 export type BubbleEase = "linear" | "easeIn" | "easeOut" | "easeInOut";
@@ -42,6 +44,11 @@ export interface BubblePortraitInput {
     readonly base: string;
     readonly blink?: BubbleFrameAnimationInput;
     readonly lipSync?: BubbleFrameAnimationInput;
+    readonly placement?: BubblePortraitPlacement;
+    /** Portrait-local [x, y, zoom percent]. */
+    readonly offset?: BubblePortraitOffsetInput;
+    /** Radius in pixels. */
+    readonly cornerRadius?: number;
 }
 export interface BubbleStyleInput {
     readonly name: string;
@@ -70,6 +77,9 @@ export interface BubblePortrait {
     readonly base: string;
     readonly blink?: BubbleFrameAnimation;
     readonly lipSync?: BubbleFrameAnimation;
+    readonly placement: BubblePortraitPlacement;
+    readonly offset: BubblePortraitOffset;
+    readonly cornerRadius: number;
 }
 export interface BubbleStyle {
     readonly name: string;

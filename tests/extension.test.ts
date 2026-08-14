@@ -297,7 +297,7 @@ describe("TurboWarp composition adapter", () => {
       expect.objectContaining({ id: expect.any(String) }),
     );
     expect(releaseTarget).toHaveBeenCalledOnce();
-    expect(harness.destroyed).toHaveLength(3);
+    expect(harness.destroyed).toHaveLength(4);
   });
 
   it("renders time-based motion frames with easing and shape transitions", async () => {
@@ -469,6 +469,7 @@ describe("Bubble extension", () => {
       "defineBubbleStyle",
       "setBubblePlacement",
       "setPortraitBase",
+      "setPortraitLayout",
       "setBubbleDistance",
       "setBubbleVisualStyle",
       "setBubbleTailLength",
@@ -497,6 +498,18 @@ describe("Bubble extension", () => {
     expect(info.menus.animationMode).toEqual({
       acceptReporters: true,
       items: ["talking", "awaiting-continue", "idle"],
+    });
+    expect(info.menus.portraitPlacement).toEqual({
+      acceptReporters: true,
+      items: [
+        "none",
+        "left",
+        "right",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right",
+      ],
     });
     expect(info.menus.placement).toEqual({
       acceptReporters: true,
@@ -600,6 +613,71 @@ describe("Bubble extension", () => {
     );
     // The requested x position is 168; stage-edge clamping keeps it visible.
     expect(harness.positions.get(textDrawable)).toEqual([132, -12]);
+  });
+
+  it("places, offsets, zooms, and rounds the portrait inside the bubble", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "portrait", TEXT_STYLE: "default" });
+    extension.setPortraitBase({ STYLE: "portrait", ASSET: "Face" });
+    extension.setPortraitLayout({
+      STYLE: "portrait",
+      PLACEMENT: "top-right",
+      X: 10,
+      Y: 5,
+      ZOOM: 25,
+      RADIUS: 12,
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "portrait", STYLE: "portrait" },
+      { target },
+    );
+
+    const portraitPosition = harness.positions.get(2);
+    const maskPosition = harness.positions.get(3);
+    const textPosition = harness.positions.get(4);
+    expect(portraitPosition).toBeDefined();
+    expect(textPosition).toBeDefined();
+    expect(portraitPosition![0] - textPosition![0]).toBe(120);
+    expect(portraitPosition![1] - textPosition![1]).toBe(17);
+    expect(maskPosition).toEqual(portraitPosition);
+    expect(harness.scales.get(2)).toEqual([25, 25]);
+    expect(harness.visibility.get(3)).toBe(true);
+    expect(
+      harness.createdSvgSkins.some((svg) =>
+        svg.includes('data-bubble-portrait-corner-radius="12"'),
+      ),
+    ).toBe(true);
+
+    await extension.closeBubble({}, { target });
+    expect(harness.destroyedSkins).toHaveLength(2);
+  });
+
+  it("removes the complete portrait through the none layout", async () => {
+    const harness = createRuntime();
+    const extension = new BubbleExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
+    extension.setPortraitBase({ STYLE: "plain", ASSET: "Face" });
+    extension.setPortraitLayout({
+      STYLE: "plain",
+      PLACEMENT: "none",
+      X: 0,
+      Y: 0,
+      ZOOM: 100,
+      RADIUS: 0,
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "text only", STYLE: "plain" },
+      { target },
+    );
+
+    expect(harness.created).toHaveLength(2);
+    expect(harness.drawableSkins.has(2)).toBe(true);
+    await extension.closeBubble({}, { target });
   });
 
   it("renders the selected SVG body behind actor-relative content", async () => {
@@ -754,7 +832,7 @@ describe("Bubble extension", () => {
       { target },
     );
 
-    expect(harness.created).toHaveLength(6);
+    expect(harness.created).toHaveLength(7);
     expect(harness.setText).toHaveBeenCalledWith(
       { STYLE: "dialogue-text", TEXT: "こんにちは" },
       { target: expect.objectContaining({ drawableID: expect.any(Number) }) },
@@ -770,7 +848,7 @@ describe("Bubble extension", () => {
 
     await extension.closeBubble({}, { target });
     expect(scheduler.size).toBe(0);
-    expect(harness.destroyed).toHaveLength(6);
+    expect(harness.destroyed).toHaveLength(7);
     expect(harness.destroyedSkins).toHaveLength(1);
     expect(harness.releaseTextActor).toHaveBeenCalledOnce();
   });
