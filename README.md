@@ -282,7 +282,7 @@ const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
 const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
-現在のpeer dependency範囲は、SVG Textが`>=0.6.0 <0.7.0`、Asset Managerが`>=0.12.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。4つすべてoptional peer dependencyで、SVG TextはTurboWarp adapterの既定adapterまたはSVG overlay adapterを使う場合だけ必要です。別のtext capabilityを注入するhostはSVG Textをインストールする必要がありません。
+現在のpeer dependency範囲は、SVG Textが`>=0.4.0 <1`、Asset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。4つすべてoptional peer dependencyで、SVG TextはTurboWarp adapterの既定adapterまたはSVG overlay adapterを使う場合だけ必要です。既存の`scratch-render`利用者との互換性を維持するため、peer全体の範囲はoverlay固有の最低versionへ狭めません。SVG overlay adapterを使う場合は、上記のとおりSVG Text 0.6.xとAsset Manager 0.12.0以降が必要です。別のtext capabilityを注入するhostはSVG Textをインストールする必要がありません。
 
 TurboWarp adapterの既定文字経路を使う場合は、SVG Textを追加します。
 

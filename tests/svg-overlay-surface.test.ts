@@ -208,6 +208,104 @@ describe("SVG overlay backend", () => {
     expect(textBackground?.getAttribute("fill")).toBe("#f0f0f0");
     expect(harness.renderer.createSVGSkin).not.toHaveBeenCalled();
 
+    harness.setNativeSize([960, 720]);
+    harness.emit("NativeSizeChanged");
+    const resizedExpected = textLayouts.layoutText({
+      nativeSize: [960, 720],
+      styleName: "body",
+      text: "Hello\nworld",
+    });
+    const resizedText = harness.window.document.querySelector("text");
+    const resizedTspans = resizedText?.querySelectorAll("tspan");
+    expect(resizedText?.getAttribute("font-size")).toBe(
+      String(resizedExpected.style.fontSize),
+    );
+    resizedExpected.lines.forEach((line, index) => {
+      expect(resizedTspans?.[index]?.getAttribute("x")).toBe(
+        String(line.x - resizedExpected.width / 2),
+      );
+      expect(resizedTspans?.[index]?.getAttribute("y")).toBe(
+        String(line.baseline - resizedExpected.height / 2),
+      );
+    });
+    expect(
+      resizedText?.parentElement?.querySelector("rect")?.getAttribute("width"),
+    ).toBe(String(resizedExpected.width));
+
+    await handle.close();
+  });
+
+  it("relayouts both reserved full text and currently revealed text", async () => {
+    const harness = createHarness();
+    const layoutText = vi.fn(
+      ({
+        nativeSize,
+        text,
+      }: Parameters<BubbleSvgOverlayTextCapability["layoutText"]>[0]) => {
+        const scale = nativeSize.width / 480;
+        return {
+          alignment: "left" as const,
+          backgroundColor: "#ffffff",
+          fill: "#25283a",
+          fontFamily: "Helvetica",
+          fontSize: 14 * scale,
+          height: 40 * scale,
+          lineHeight: 16 * scale,
+          lines: [text],
+          width: Math.max(1, text.length * 10 * scale),
+        };
+      },
+    );
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      bubbleRenderBackend: "svg-overlay",
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: { layoutText },
+    });
+    composition.defineStyle({
+      name: "reserved",
+      textStyle: "body",
+      reveal: {
+        unit: "CHARACTER",
+        layout: "RESERVED",
+        intervalSeconds: 0,
+      },
+    });
+    const handle = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "reserved",
+      text: "ABC",
+    });
+    expect(harness.window.document.querySelector("text")?.textContent).toBe(
+      "A",
+    );
+
+    layoutText.mockClear();
+    harness.setNativeSize([960, 720]);
+    harness.emit("NativeSizeChanged");
+
+    expect(layoutText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nativeSize: { width: 960, height: 720 },
+        text: "ABC",
+      }),
+    );
+    expect(layoutText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        nativeSize: { width: 960, height: 720 },
+        text: "A",
+      }),
+    );
+    expect(harness.window.document.querySelector("text")?.textContent).toBe(
+      "A",
+    );
+    expect(
+      harness.window.document
+        .querySelector('[data-bubble-layer="text"] rect')
+        ?.getAttribute("width"),
+    ).toBe("20");
+
     await handle.close();
   });
 
@@ -242,6 +340,29 @@ describe("SVG overlay backend", () => {
     expect(harness.renderer.removeOverlay).not.toHaveBeenCalled();
     await second.close();
     expect(harness.renderer.removeOverlay).toHaveBeenCalledOnce();
+  });
+
+  it("updates the overlay transform only once per zero-duration motion frame", async () => {
+    const harness = createHarness();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      bubbleRenderBackend: "svg-overlay",
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: harness.textCapability,
+    });
+    composition.defineStyle({ name: "dialog", textStyle: "body" });
+    const handle = await composition.show({
+      actor: actor("sprite"),
+      actorKey: "sprite",
+      kind: "say",
+      styleName: "dialog",
+      text: "Motion",
+    });
+    vi.mocked(harness.renderer.getNativeSize).mockClear();
+
+    await handle.animate({ name: "fadeIn", durationSeconds: 0 });
+
+    expect(harness.renderer.getNativeSize).toHaveBeenCalledTimes(3);
+    await handle.close();
   });
 
   it("releases every capability-owned blob URL on close", async () => {
@@ -307,6 +428,53 @@ describe("SVG overlay backend", () => {
     await handle.close();
     expect(releases.get("portrait-2")?.[0]).toHaveBeenCalledOnce();
     expect(releases.get("continue")?.[1]).toHaveBeenCalledOnce();
+  });
+
+  it("releases image leases when renderer cleanup reports errors", async () => {
+    const harness = createHarness();
+    const release = vi.fn();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      bubbleRenderBackend: "svg-overlay",
+      document: harness.window.document as unknown as Document,
+      svgOverlayImageCapability: {
+        isRegistered: () => true,
+        getMimeType: () => "image/png",
+        resolveImage: () => ({
+          height: 80,
+          mimeType: "image/png",
+          release,
+          src: "blob:https://example.test/portrait",
+          width: 60,
+        }),
+      },
+      svgOverlayTextCapability: harness.textCapability,
+    });
+    composition.defineStyle({
+      name: "dialog",
+      textStyle: "body",
+      portrait: { base: "portrait" },
+    });
+    const handle = await composition.show({
+      actor: actor("sprite"),
+      actorKey: "sprite",
+      kind: "say",
+      styleName: "dialog",
+      text: "Cleanup",
+    });
+    harness.renderer.off = vi.fn(() => {
+      throw new Error("listener cleanup failed");
+    });
+    harness.renderer.removeOverlay = vi.fn(() => {
+      throw new Error("overlay cleanup failed");
+    });
+
+    await expect(handle.close()).rejects.toThrow(
+      "Failed to dispose SVG overlay Bubble surface",
+    );
+    expect(release).toHaveBeenCalledOnce();
+    expect(
+      harness.window.document.querySelector("[data-bubble-surface]"),
+    ).toBeNull();
   });
 
   it("renders an Asset Manager SVG resource through the Bubble-owned adapter", async () => {

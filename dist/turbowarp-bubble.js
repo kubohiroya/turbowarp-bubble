@@ -9552,57 +9552,88 @@
       width: 180,
       height: 48
     };
+    let layoutProvider;
+    let capturedLayoutProvider;
+    let capturedSize;
+    const applyLayout = (layoutInput) => {
+      const layout = normalizeTextLayout(layoutInput);
+      const children = [];
+      if (layout.backgroundColor !== void 0 && layout.backgroundColor !== "transparent") {
+        const background = document.createElementNS(svgNamespace, "rect");
+        background.setAttribute("x", String(-layout.width / 2));
+        background.setAttribute("y", String(-layout.height / 2));
+        background.setAttribute("width", String(layout.width));
+        background.setAttribute("height", String(layout.height));
+        background.setAttribute("fill", layout.backgroundColor);
+        if (layout.backgroundCornerRadius !== void 0) background.setAttribute("rx", String(layout.backgroundCornerRadius));
+        children.push(background);
+      }
+      const text = document.createElementNS(svgNamespace, "text");
+      const anchor = layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle";
+      const x = layout.alignment === "left" ? -layout.width / 2 : layout.alignment === "right" ? layout.width / 2 : 0;
+      text.setAttribute("text-anchor", anchor);
+      text.setAttribute("fill", layout.fill);
+      text.setAttribute("font-family", layout.fontFamily);
+      text.setAttribute("font-size", String(layout.fontSize));
+      if (layout.preserveWhitespace !== false) text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
+      if (layout.fontStyle !== void 0) text.setAttribute("font-style", layout.fontStyle);
+      if (layout.fontWeight !== void 0) text.setAttribute("font-weight", String(layout.fontWeight));
+      const firstBaseline = -Math.max(layout.fontSize, (layout.lines.length - 1) * layout.lineHeight + layout.fontSize) / 2 + layout.fontSize;
+      layout.lines.forEach((line, index) => {
+        const tspan = document.createElementNS(svgNamespace, "tspan");
+        const positionedLine = typeof line === "string" ? void 0 : line;
+        tspan.setAttribute("x", String(positionedLine?.x ?? x));
+        tspan.setAttribute("y", String(positionedLine?.baseline ?? firstBaseline + index * layout.lineHeight));
+        tspan.textContent = typeof line === "string" ? line : line.text;
+        text.appendChild(tspan);
+      });
+      children.push(text);
+      group.replaceChildren(...children);
+      size = {
+        width: layout.width,
+        height: layout.height
+      };
+    };
     return Object.freeze({
       [overlayTextTargetMarker]: true,
       group,
+      captureLayout() {
+        capturedLayoutProvider = layoutProvider;
+        capturedSize = { ...size };
+      },
       clear() {
         group.replaceChildren();
         size = {
           width: 180,
           height: 48
         };
+        layoutProvider = void 0;
+        capturedLayoutProvider = void 0;
+        capturedSize = void 0;
+      },
+      clearCapturedLayout() {
+        capturedLayoutProvider = void 0;
+        capturedSize = void 0;
+      },
+      getCapturedSize() {
+        return capturedSize;
       },
       getSize() {
         return size;
       },
-      render(layoutInput) {
-        const layout = normalizeTextLayout(layoutInput);
-        const children = [];
-        if (layout.backgroundColor !== void 0 && layout.backgroundColor !== "transparent") {
-          const background = document.createElementNS(svgNamespace, "rect");
-          background.setAttribute("x", String(-layout.width / 2));
-          background.setAttribute("y", String(-layout.height / 2));
-          background.setAttribute("width", String(layout.width));
-          background.setAttribute("height", String(layout.height));
-          background.setAttribute("fill", layout.backgroundColor);
-          if (layout.backgroundCornerRadius !== void 0) background.setAttribute("rx", String(layout.backgroundCornerRadius));
-          children.push(background);
+      refresh() {
+        if (capturedLayoutProvider !== void 0) {
+          const capturedLayout = normalizeTextLayout(capturedLayoutProvider());
+          capturedSize = {
+            width: capturedLayout.width,
+            height: capturedLayout.height
+          };
         }
-        const text = document.createElementNS(svgNamespace, "text");
-        const anchor = layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle";
-        const x = layout.alignment === "left" ? -layout.width / 2 : layout.alignment === "right" ? layout.width / 2 : 0;
-        text.setAttribute("text-anchor", anchor);
-        text.setAttribute("fill", layout.fill);
-        text.setAttribute("font-family", layout.fontFamily);
-        text.setAttribute("font-size", String(layout.fontSize));
-        if (layout.preserveWhitespace !== false) text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
-        if (layout.fontStyle !== void 0) text.setAttribute("font-style", layout.fontStyle);
-        if (layout.fontWeight !== void 0) text.setAttribute("font-weight", String(layout.fontWeight));
-        const firstBaseline = -Math.max(layout.fontSize, (layout.lines.length - 1) * layout.lineHeight + layout.fontSize) / 2 + layout.fontSize;
-        layout.lines.forEach((line, index) => {
-          const tspan = document.createElementNS(svgNamespace, "tspan");
-          const positionedLine = typeof line === "string" ? void 0 : line;
-          tspan.setAttribute("x", String(positionedLine?.x ?? x));
-          tspan.setAttribute("y", String(positionedLine?.baseline ?? firstBaseline + index * layout.lineHeight));
-          tspan.textContent = typeof line === "string" ? line : line.text;
-          text.appendChild(tspan);
-        });
-        children.push(text);
-        group.replaceChildren(...children);
-        size = {
-          width: layout.width,
-          height: layout.height
-        };
+        if (layoutProvider !== void 0) applyLayout(layoutProvider());
+      },
+      render(layout, nextLayoutProvider) {
+        layoutProvider = nextLayoutProvider;
+        applyLayout(layout);
       }
     });
   }
@@ -9616,12 +9647,13 @@
     const capability = capabilityInput;
     return Object.freeze({
       setText({ styleName, target, text }) {
-        const nativeSize = readNativeSize(renderer);
-        requireTextTarget(target).render(capability.layoutText({
-          nativeSize,
+        const overlayTarget = requireTextTarget(target);
+        const layoutProvider = () => capability.layoutText({
+          nativeSize: readNativeSize(renderer),
           styleName,
           text
-        }));
+        });
+        overlayTarget.render(layoutProvider(), layoutProvider);
       },
       releaseTarget(target) {
         requireTextTarget(target).clear();
@@ -9922,15 +9954,13 @@
     let currentStyle = style;
     let disposed = false;
     let surfaceVisible = false;
-    let reservedTextSize;
     let bodySignature = "";
     let motionTranslation = [0, 0];
     let motionScaleMultiplier = 1;
     let motionOpacity = 1;
     let center = [0, 0];
     let shapeTransition;
-    const applyMotionTransform = () => {
-      const native = manager.updateNativeSize();
+    const applyMotionTransform = (native = manager.updateNativeSize()) => {
       const centerX = native.width / 2 + center[0];
       const centerY = native.height / 2 - center[1];
       const translatedX = centerX + motionTranslation[0];
@@ -9944,20 +9974,20 @@
       if (layer === "portraitBlink") return currentStyle.portrait?.blink !== void 0;
       return currentStyle.portrait?.lipSync !== void 0;
     };
-    const updateVisibility = () => {
+    const updateVisibility = (nativeSize) => {
       const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
       const visible = surfaceVisible && actorVisible && motionOpacity > 0;
       surfaceGroup.setAttribute("visibility", visible ? "visible" : "hidden");
       bodyGroup.setAttribute("visibility", visible && currentStyle.visualStyle !== "NO_BUBBLE" ? "visible" : "hidden");
       textGroup.setAttribute("visibility", visible ? "visible" : "hidden");
       for (const [layer, target] of layerTargets) target.setVisible(visible && layerAllowedByStyle(layer) && (layerVisibility.get(layer) ?? false));
-      applyMotionTransform();
+      applyMotionTransform(nativeSize);
     };
     const position = () => {
       if (disposed) return;
       const native = manager.updateNativeSize();
       const scaleMultiplier = currentStyle.placement.basis === "actor" ? currentStyle.offset.scalePercent / 100 : 1;
-      const nativeTextSize = reservedTextSize ?? text.getSize();
+      const nativeTextSize = text.getCapturedSize() ?? text.getSize();
       const textSize = {
         width: nativeTextSize.width * scaleMultiplier,
         height: nativeTextSize.height * scaleMultiplier
@@ -10091,15 +10121,17 @@
         portraitLipSync
       ]) if (radius > 0) target.group.setAttribute("clip-path", `url(#${clipId})`);
       else target.group.removeAttribute("clip-path");
-      applyMotionTransform();
-      updateVisibility();
+      updateVisibility(native);
     };
     const originalVisualChange = actor.onTargetVisualChange;
     const visualChangeHook = (changedTarget) => {
       originalVisualChange?.(changedTarget);
       position();
     };
-    const nativeSizeHook = () => position();
+    const nativeSizeHook = () => {
+      text.refresh();
+      position();
+    };
     manager.acquire(surfaceGroup);
     if (currentStyle.placement.basis === "actor") actor.onTargetVisualChange = visualChangeHook;
     renderer.on?.("NativeSizeChanged", nativeSizeHook);
@@ -10119,7 +10151,7 @@
         motionOpacity = 1;
         shapeTransition = void 0;
         bodySignature = "";
-        if (nextStyle.reveal?.layout !== "RESERVED") reservedTextSize = void 0;
+        if (nextStyle.reveal?.layout !== "RESERVED") text.clearCapturedLayout();
         const isActorRelative = currentStyle.placement.basis === "actor";
         if (wasActorRelative && !isActorRelative) {
           if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
@@ -10128,11 +10160,11 @@
       },
       captureTextLayout() {
         if (disposed) return;
-        reservedTextSize = text.getSize();
+        text.captureLayout();
         position();
       },
       clearTextLayout() {
-        reservedTextSize = void 0;
+        text.clearCapturedLayout();
         position();
       },
       async animate(motion) {
@@ -10140,7 +10172,6 @@
         const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
         const setFrame = () => {
           if (disposed) return;
-          applyMotionTransform();
           updateVisibility();
         };
         const eased = (progress) => easeMotionProgress(progress, motion.ease ?? "easeInOut");
@@ -10246,11 +10277,24 @@
       async dispose() {
         if (disposed) return;
         disposed = true;
-        if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
-        renderer.off?.("NativeSizeChanged", nativeSizeHook);
-        manager.release(surfaceGroup);
-        text.clear();
-        await Promise.all([...layerTargets.values()].map((target) => target.release()));
+        const cleanupErrors = [];
+        const runCleanup = (operation) => {
+          try {
+            operation();
+          } catch (error) {
+            cleanupErrors.push(error);
+          }
+        };
+        runCleanup(() => {
+          if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
+        });
+        runCleanup(() => renderer.off?.("NativeSizeChanged", nativeSizeHook));
+        runCleanup(() => manager.release(surfaceGroup));
+        runCleanup(() => text.clear());
+        const releaseResults = await Promise.allSettled([...layerTargets.values()].map((target) => target.release()));
+        cleanupErrors.push(...releaseResults.flatMap((result) => result.status === "rejected" ? [result.reason] : []));
+        if (cleanupErrors.length === 1) throw cleanupErrors[0];
+        if (cleanupErrors.length > 1) throw new AggregateError(cleanupErrors, "Failed to dispose SVG overlay Bubble surface.");
       }
     });
   }

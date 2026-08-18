@@ -16,9 +16,10 @@
 
 - `svg-overlay`でshow、text更新、shake、shape animationを行っても、Bubbleから`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼ばない（許容値: 0回）。
 - 2つのBubbleが1つのrootを共有し、最後のclose後に`removeOverlay()`を1回呼ぶ（許容値: 残存root 0、重複remove 0）。
-- native size変更後にrootの`viewBox`を同期する。
+- native size変更後にrootの`viewBox`を同期し、現在表示中のtextと`RESERVED`全文layoutを再計算する。
 - `script`、event handler、`foreignObject`、未許可data URLを拒否する。
 - capability所有のblob URLをreplacement／close時に各1回解放する。
+- renderer cleanupが失敗した場合も、残りのlistener、DOM、image leaseの解放を継続してerrorを集約する。
 - Asset Managerのsanitize済みSVG resourceをBubble側adapter経由で描画し、close時にleaseを1回解放する。
 - SVG Textのhost-neutral layoutをBubble側adapterで変換し、renderer skinを生成せず行座標を維持する。
 

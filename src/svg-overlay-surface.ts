@@ -135,9 +135,16 @@ interface DrawableSize {
 interface BubbleSvgOverlayTextTarget {
   readonly [overlayTextTargetMarker]: true;
   readonly group: SVGGElement;
+  captureLayout(): void;
   clear(): void;
+  clearCapturedLayout(): void;
+  getCapturedSize(): DrawableSize | undefined;
   getSize(): DrawableSize;
-  render(layout: BubbleSvgOverlayTextLayout): void;
+  refresh(): void;
+  render(
+    layout: BubbleSvgOverlayTextLayout,
+    layoutProvider?: () => BubbleSvgOverlayTextLayout,
+  ): void;
 }
 
 interface BubbleSvgOverlayImageTarget extends BubbleAssetTarget {
@@ -310,80 +317,115 @@ function createTextTarget(
   group: SVGGElement,
 ): BubbleSvgOverlayTextTarget {
   let size: DrawableSize = { width: 180, height: 48 };
+  let layoutProvider: (() => BubbleSvgOverlayTextLayout) | undefined;
+  let capturedLayoutProvider: (() => BubbleSvgOverlayTextLayout) | undefined;
+  let capturedSize: DrawableSize | undefined;
+
+  const applyLayout = (layoutInput: BubbleSvgOverlayTextLayout): void => {
+    const layout = normalizeTextLayout(layoutInput);
+    const children: SVGElement[] = [];
+    if (
+      layout.backgroundColor !== undefined &&
+      layout.backgroundColor !== "transparent"
+    ) {
+      const background = document.createElementNS(svgNamespace, "rect");
+      background.setAttribute("x", String(-layout.width / 2));
+      background.setAttribute("y", String(-layout.height / 2));
+      background.setAttribute("width", String(layout.width));
+      background.setAttribute("height", String(layout.height));
+      background.setAttribute("fill", layout.backgroundColor);
+      if (layout.backgroundCornerRadius !== undefined) {
+        background.setAttribute("rx", String(layout.backgroundCornerRadius));
+      }
+      children.push(background);
+    }
+    const text = document.createElementNS(svgNamespace, "text");
+    const anchor =
+      layout.alignment === "left"
+        ? "start"
+        : layout.alignment === "right"
+          ? "end"
+          : "middle";
+    const x =
+      layout.alignment === "left"
+        ? -layout.width / 2
+        : layout.alignment === "right"
+          ? layout.width / 2
+          : 0;
+    text.setAttribute("text-anchor", anchor);
+    text.setAttribute("fill", layout.fill);
+    text.setAttribute("font-family", layout.fontFamily);
+    text.setAttribute("font-size", String(layout.fontSize));
+    if (layout.preserveWhitespace !== false) {
+      text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
+    }
+    if (layout.fontStyle !== undefined)
+      text.setAttribute("font-style", layout.fontStyle);
+    if (layout.fontWeight !== undefined)
+      text.setAttribute("font-weight", String(layout.fontWeight));
+    const contentHeight = Math.max(
+      layout.fontSize,
+      (layout.lines.length - 1) * layout.lineHeight + layout.fontSize,
+    );
+    const firstBaseline = -contentHeight / 2 + layout.fontSize;
+    layout.lines.forEach((line, index) => {
+      const tspan = document.createElementNS(svgNamespace, "tspan");
+      const positionedLine = typeof line === "string" ? undefined : line;
+      tspan.setAttribute("x", String(positionedLine?.x ?? x));
+      tspan.setAttribute(
+        "y",
+        String(
+          positionedLine?.baseline ?? firstBaseline + index * layout.lineHeight,
+        ),
+      );
+      tspan.textContent = typeof line === "string" ? line : line.text;
+      text.appendChild(tspan);
+    });
+    children.push(text);
+    group.replaceChildren(...children);
+    size = { width: layout.width, height: layout.height };
+  };
+
   return Object.freeze({
     [overlayTextTargetMarker]: true as const,
     group,
+    captureLayout(): void {
+      capturedLayoutProvider = layoutProvider;
+      capturedSize = { ...size };
+    },
     clear(): void {
       group.replaceChildren();
       size = { width: 180, height: 48 };
+      layoutProvider = undefined;
+      capturedLayoutProvider = undefined;
+      capturedSize = undefined;
+    },
+    clearCapturedLayout(): void {
+      capturedLayoutProvider = undefined;
+      capturedSize = undefined;
+    },
+    getCapturedSize(): DrawableSize | undefined {
+      return capturedSize;
     },
     getSize(): DrawableSize {
       return size;
     },
-    render(layoutInput: BubbleSvgOverlayTextLayout): void {
-      const layout = normalizeTextLayout(layoutInput);
-      const children: SVGElement[] = [];
-      if (
-        layout.backgroundColor !== undefined &&
-        layout.backgroundColor !== "transparent"
-      ) {
-        const background = document.createElementNS(svgNamespace, "rect");
-        background.setAttribute("x", String(-layout.width / 2));
-        background.setAttribute("y", String(-layout.height / 2));
-        background.setAttribute("width", String(layout.width));
-        background.setAttribute("height", String(layout.height));
-        background.setAttribute("fill", layout.backgroundColor);
-        if (layout.backgroundCornerRadius !== undefined) {
-          background.setAttribute("rx", String(layout.backgroundCornerRadius));
-        }
-        children.push(background);
+    refresh(): void {
+      if (capturedLayoutProvider !== undefined) {
+        const capturedLayout = normalizeTextLayout(capturedLayoutProvider());
+        capturedSize = {
+          width: capturedLayout.width,
+          height: capturedLayout.height,
+        };
       }
-      const text = document.createElementNS(svgNamespace, "text");
-      const anchor =
-        layout.alignment === "left"
-          ? "start"
-          : layout.alignment === "right"
-            ? "end"
-            : "middle";
-      const x =
-        layout.alignment === "left"
-          ? -layout.width / 2
-          : layout.alignment === "right"
-            ? layout.width / 2
-            : 0;
-      text.setAttribute("text-anchor", anchor);
-      text.setAttribute("fill", layout.fill);
-      text.setAttribute("font-family", layout.fontFamily);
-      text.setAttribute("font-size", String(layout.fontSize));
-      if (layout.preserveWhitespace !== false) {
-        text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
-      }
-      if (layout.fontStyle !== undefined)
-        text.setAttribute("font-style", layout.fontStyle);
-      if (layout.fontWeight !== undefined)
-        text.setAttribute("font-weight", String(layout.fontWeight));
-      const contentHeight = Math.max(
-        layout.fontSize,
-        (layout.lines.length - 1) * layout.lineHeight + layout.fontSize,
-      );
-      const firstBaseline = -contentHeight / 2 + layout.fontSize;
-      layout.lines.forEach((line, index) => {
-        const tspan = document.createElementNS(svgNamespace, "tspan");
-        const positionedLine = typeof line === "string" ? undefined : line;
-        tspan.setAttribute("x", String(positionedLine?.x ?? x));
-        tspan.setAttribute(
-          "y",
-          String(
-            positionedLine?.baseline ??
-              firstBaseline + index * layout.lineHeight,
-          ),
-        );
-        tspan.textContent = typeof line === "string" ? line : line.text;
-        text.appendChild(tspan);
-      });
-      children.push(text);
-      group.replaceChildren(...children);
-      size = { width: layout.width, height: layout.height };
+      if (layoutProvider !== undefined) applyLayout(layoutProvider());
+    },
+    render(
+      layout: BubbleSvgOverlayTextLayout,
+      nextLayoutProvider?: () => BubbleSvgOverlayTextLayout,
+    ): void {
+      layoutProvider = nextLayoutProvider;
+      applyLayout(layout);
     },
   });
 }
@@ -415,10 +457,14 @@ export function createSvgOverlayTextAdapter(
       target,
       text,
     }: Parameters<BubbleTextCapability["setText"]>[0]): void {
-      const nativeSize = readNativeSize(renderer);
-      requireTextTarget(target).render(
-        capability.layoutText({ nativeSize, styleName, text }),
-      );
+      const overlayTarget = requireTextTarget(target);
+      const layoutProvider = (): BubbleSvgOverlayTextLayout =>
+        capability.layoutText({
+          nativeSize: readNativeSize(renderer),
+          styleName,
+          text,
+        });
+      overlayTarget.render(layoutProvider(), layoutProvider);
     },
     releaseTarget(
       target: Parameters<BubbleTextCapability["releaseTarget"]>[0],
@@ -829,7 +875,6 @@ export function createSvgOverlaySurface(
   let currentStyle = style;
   let disposed = false;
   let surfaceVisible = false;
-  let reservedTextSize: DrawableSize | undefined;
   let bodySignature = "";
   let motionTranslation: [number, number] = [0, 0];
   let motionScaleMultiplier = 1;
@@ -843,8 +888,7 @@ export function createSvgOverlaySurface(
       }
     | undefined;
 
-  const applyMotionTransform = (): void => {
-    const native = manager.updateNativeSize();
+  const applyMotionTransform = (native = manager.updateNativeSize()): void => {
     const centerX = native.width / 2 + center[0];
     const centerY = native.height / 2 - center[1];
     const translatedX = centerX + motionTranslation[0];
@@ -865,7 +909,9 @@ export function createSvgOverlaySurface(
     return currentStyle.portrait?.lipSync !== undefined;
   };
 
-  const updateVisibility = (): void => {
+  const updateVisibility = (
+    nativeSize?: Readonly<{ height: number; width: number }>,
+  ): void => {
     const actorVisible =
       currentStyle.placement.basis === "background" || actor.visible !== false;
     const visible = surfaceVisible && actorVisible && motionOpacity > 0;
@@ -884,7 +930,7 @@ export function createSvgOverlaySurface(
           (layerVisibility.get(layer) ?? false),
       );
     }
-    applyMotionTransform();
+    applyMotionTransform(nativeSize);
   };
 
   const position = (): void => {
@@ -894,7 +940,7 @@ export function createSvgOverlaySurface(
       currentStyle.placement.basis === "actor"
         ? currentStyle.offset.scalePercent / 100
         : 1;
-    const nativeTextSize = reservedTextSize ?? text.getSize();
+    const nativeTextSize = text.getCapturedSize() ?? text.getSize();
     const textSize = {
       width: nativeTextSize.width * scaleMultiplier,
       height: nativeTextSize.height * scaleMultiplier,
@@ -1112,8 +1158,7 @@ export function createSvgOverlaySurface(
       if (radius > 0) target.group.setAttribute("clip-path", `url(#${clipId})`);
       else target.group.removeAttribute("clip-path");
     }
-    applyMotionTransform();
-    updateVisibility();
+    updateVisibility(native);
   };
 
   const originalVisualChange = actor.onTargetVisualChange;
@@ -1121,7 +1166,10 @@ export function createSvgOverlaySurface(
     originalVisualChange?.(changedTarget);
     position();
   };
-  const nativeSizeHook = (): void => position();
+  const nativeSizeHook = (): void => {
+    text.refresh();
+    position();
+  };
   manager.acquire(surfaceGroup);
   if (currentStyle.placement.basis === "actor") {
     actor.onTargetVisualChange = visualChangeHook;
@@ -1144,7 +1192,7 @@ export function createSvgOverlaySurface(
       motionOpacity = 1;
       shapeTransition = undefined;
       bodySignature = "";
-      if (nextStyle.reveal?.layout !== "RESERVED") reservedTextSize = undefined;
+      if (nextStyle.reveal?.layout !== "RESERVED") text.clearCapturedLayout();
       const isActorRelative = currentStyle.placement.basis === "actor";
       if (wasActorRelative && !isActorRelative) {
         if (actor.onTargetVisualChange === visualChangeHook)
@@ -1156,11 +1204,11 @@ export function createSvgOverlaySurface(
     },
     captureTextLayout(): void {
       if (disposed) return;
-      reservedTextSize = text.getSize();
+      text.captureLayout();
       position();
     },
     clearTextLayout(): void {
-      reservedTextSize = undefined;
+      text.clearCapturedLayout();
       position();
     },
     async animate(motion: BubbleMotionInput): Promise<void> {
@@ -1168,7 +1216,6 @@ export function createSvgOverlaySurface(
       const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
       const setFrame = (): void => {
         if (disposed) return;
-        applyMotionTransform();
         updateVisibility();
       };
       const eased = (progress: number): number =>
@@ -1312,14 +1359,36 @@ export function createSvgOverlaySurface(
     async dispose(): Promise<void> {
       if (disposed) return;
       disposed = true;
-      if (actor.onTargetVisualChange === visualChangeHook)
-        actor.onTargetVisualChange = originalVisualChange ?? null;
-      renderer.off?.("NativeSizeChanged", nativeSizeHook);
-      manager.release(surfaceGroup);
-      text.clear();
-      await Promise.all(
+      const cleanupErrors: unknown[] = [];
+      const runCleanup = (operation: () => void): void => {
+        try {
+          operation();
+        } catch (error) {
+          cleanupErrors.push(error);
+        }
+      };
+      runCleanup(() => {
+        if (actor.onTargetVisualChange === visualChangeHook)
+          actor.onTargetVisualChange = originalVisualChange ?? null;
+      });
+      runCleanup(() => renderer.off?.("NativeSizeChanged", nativeSizeHook));
+      runCleanup(() => manager.release(surfaceGroup));
+      runCleanup(() => text.clear());
+      const releaseResults = await Promise.allSettled(
         [...layerTargets.values()].map((target) => target.release()),
       );
+      cleanupErrors.push(
+        ...releaseResults.flatMap((result) =>
+          result.status === "rejected" ? [result.reason] : [],
+        ),
+      );
+      if (cleanupErrors.length === 1) throw cleanupErrors[0];
+      if (cleanupErrors.length > 1) {
+        throw new AggregateError(
+          cleanupErrors,
+          "Failed to dispose SVG overlay Bubble surface.",
+        );
+      }
     },
   });
 }
