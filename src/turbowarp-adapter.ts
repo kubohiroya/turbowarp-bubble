@@ -18,6 +18,11 @@ import {
   createTurboWarpSvgTextCapability,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
+export {
+  createAssetManagerSvgOverlayImageCapability,
+  type AssetManagerDOMImageCapability,
+  type AssetManagerDOMImageResource,
+} from "./asset-manager-image-adapter.js";
 
 export {
   createSvgTextCompositionCapability,

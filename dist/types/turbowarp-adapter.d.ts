@@ -1,5 +1,6 @@
 import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudioCapability, type BubbleImageCapability, type BubbleScheduler, type BubbleTextCapability } from "./composition.js";
 import { type TurboWarpSvgTextExtension } from "./turbowarp-svg-text-adapter.js";
+export { createAssetManagerSvgOverlayImageCapability, type AssetManagerDOMImageCapability, type AssetManagerDOMImageResource, } from "./asset-manager-image-adapter.js";
 export { createSvgTextCompositionCapability, createTurboWarpSvgTextCapability, type TurboWarpSvgTextExtension, } from "./turbowarp-svg-text-adapter.js";
 import { type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayTextCapability } from "./svg-overlay-surface.js";
 export { createSvgOverlayImageAdapter, createSvgOverlaySurface, createSvgOverlaySurfaceManager, createSvgOverlayTextAdapter, bubbleRenderBackends, defaultBubbleOverlayUnsupportedBehavior, defaultBubbleRenderBackend, type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayActor, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayImageResource, type BubbleSvgOverlayRenderer, type BubbleSvgOverlaySurfaceManager, type BubbleSvgOverlayTextCapability, type BubbleSvgOverlayTextLayout, } from "./svg-overlay-surface.js";

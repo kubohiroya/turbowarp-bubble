@@ -6,6 +6,7 @@
 - 初期既定値`"scratch-render"`と既存backendを保持する。
 - `renderer.addOverlay(root, "scale")`上の共有SVG rootにBubble surfaceを描画する。
 - host-neutralな`svgOverlayTextCapability`と、解放可能な`svgOverlayImageCapability`を公開する。
+- Bubble側の`createAssetManagerSvgOverlayImageCapability()`でAsset Managerの汎用DOM resourceを変換する。依存方向はBubbleからAsset Managerへの一方向を維持する。
 - overlay API／text capability未対応hostは`BUBBLE-RUNTIME-004`を返す。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ既存backendへ戻る。
 
 ## 自動検証結果
@@ -17,6 +18,7 @@
 - native size変更後にrootの`viewBox`を同期する。
 - `script`、event handler、`foreignObject`、未許可data URLを拒否する。
 - capability所有のblob URLをreplacement／close時に各1回解放する。
+- Asset Managerのsanitize済みSVG resourceをBubble側adapter経由で描画し、close時にleaseを1回解放する。
 
 ## release前のmanual gate
 

@@ -74,19 +74,28 @@ flowchart TB
 `bubbleRenderBackend`を省略した場合の初期既定値は`"scratch-render"`です。既存経路は従来どおりBubbleごとにrenderer drawableとSVG skinを使います。`"svg-overlay"`を選ぶと、`renderer.addOverlay(root, "scale")`でstage canvas上に共有SVG rootを置き、body、tail、text、portrait、corner clip、continue indicatorをDOM要素として描画します。この経路ではBubbleの表示、text更新、style更新、animationのために`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼びません。
 
 ```ts
-import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
+import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
+import {
+  createAssetManagerSvgOverlayImageCapability,
+  createTurboWarpBubbleComposition,
+} from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
+
+const assets = createAssetManagerComposition();
 
 const bubbles = createTurboWarpBubbleComposition(runtime, {
   bubbleRenderBackend: "svg-overlay",
   svgOverlayUnsupportedBehavior: "error",
   svgOverlayTextCapability,
-  svgOverlayImageCapability,
+  svgOverlayImageCapability:
+    createAssetManagerSvgOverlayImageCapability(assets),
 });
 ```
 
-`svgOverlayTextCapability`はnamed styleをhost-neutralな行layoutへ変換する公開契約です。portrait等を使う場合の`svgOverlayImageCapability`は、検証済みMIME type、intrinsic size、`blob:` URLまたは許可済みraster data URL、およびblob URLの`release()`を返します。SVG画像resourceはproviderによるsanitize済みmetadataも必須です。Bubbleは任意SVG文字列を挿入せず、canonical bodyから`path`、`group`等の許可要素・属性だけを`createElementNS()`で再構築します。`script`、event handler、`foreignObject`、外部URLは受け付けません。overlay rootは`pointer-events: none`、`aria-hidden="true"`です。
+`svgOverlayTextCapability`はnamed styleをhost-neutralな行layoutへ変換する公開契約です。portrait等を使う場合、Bubble所有の`createAssetManagerSvgOverlayImageCapability()`がAsset Managerの汎用DOM resourceをBubbleの画像契約へ変換します。依存方向はBubbleからAsset Managerへの一方向であり、Asset ManagerはBubbleの型やsecurity markerを参照しません。adapterは両者が許可するMIME typeだけを公開し、検証済みMIME type、intrinsic size、`blob:` URL、`release()`を引き継ぎ、Asset ManagerがsanitizeしたSVGへBubble側のmetadataを付与します。Bubbleは任意SVG文字列を挿入せず、canonical bodyから`path`、`group`等の許可要素・属性だけを`createElementNS()`で再構築します。`script`、event handler、`foreignObject`、外部URLは受け付けません。overlay rootは`pointer-events: none`、`aria-hidden="true"`です。
 
-現行公開版のSVG Text／Asset Managerにはこのskin非依存契約がまだありません。private field参照やskinからの抽出では代替せず、[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)を上流依存として追跡します。必要な公開capabilityがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。明示的に`svgOverlayUnsupportedBehavior: "fallback"`を指定した場合だけ`scratch-render`へ戻ります。
+上記adapterには`resolveDOMImageResource()`を公開するAsset Manager 0.12.0以降が必要です。
+
+SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)で追跡します。上流release後にBubbleの開発・配布versionを更新します。private field参照やskinからの抽出では代替しません。必要な公開capabilityがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。明示的に`svgOverlayUnsupportedBehavior: "fallback"`を指定した場合だけ`scratch-render`へ戻ります。
 
 | host／取得方法                            | `scratch-render` | `svg-overlay`                                          |
 | ----------------------------------------- | ---------------- | ------------------------------------------------------ |

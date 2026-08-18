@@ -10,8 +10,10 @@ import {
 } from "@kubohiroya/turbowarp-bubble/composition";
 import {
   BubbleRuntimeAdapterError,
+  createAssetManagerSvgOverlayImageCapability,
   createSvgTextCompositionCapability,
   createTurboWarpBubbleComposition,
+  type AssetManagerDOMImageCapability,
   type TurboWarpBubbleCompositionOptions,
   type TurboWarpBubbleRuntime,
   type TurboWarpBubbleTarget,
@@ -108,7 +110,12 @@ const bubbleSvg: string = renderBubbleSvg({
 void bubbleSvg;
 
 declare const turboWarpRuntime: TurboWarpBubbleRuntime;
-const turboWarpOptions: TurboWarpBubbleCompositionOptions = {};
+declare const assetManagerDOMImages: AssetManagerDOMImageCapability;
+const turboWarpOptions: TurboWarpBubbleCompositionOptions = {
+  svgOverlayImageCapability: createAssetManagerSvgOverlayImageCapability(
+    assetManagerDOMImages,
+  ),
+};
 const turboWarpBubbles: BubbleComposition = createTurboWarpBubbleComposition(
   turboWarpRuntime,
   turboWarpOptions,

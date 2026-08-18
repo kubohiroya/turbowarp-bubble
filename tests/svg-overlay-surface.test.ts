@@ -1,6 +1,7 @@
 import { Window } from "happy-dom";
 import { describe, expect, it, vi } from "vitest";
 import {
+  createAssetManagerSvgOverlayImageCapability,
   createTurboWarpBubbleComposition,
   type BubbleRuntimeAdapterError,
   type BubbleSvgOverlayImageCapability,
@@ -252,6 +253,49 @@ describe("SVG overlay backend", () => {
     await handle.close();
     expect(releases.get("portrait-2")?.[0]).toHaveBeenCalledOnce();
     expect(releases.get("continue")?.[1]).toHaveBeenCalledOnce();
+  });
+
+  it("renders an Asset Manager SVG resource through the Bubble-owned adapter", async () => {
+    const harness = createHarness();
+    const release = vi.fn();
+    const imageCapability = createAssetManagerSvgOverlayImageCapability({
+      getMimeType: () => "image/svg+xml",
+      isRegistered: () => true,
+      async resolveDOMImageResource() {
+        return {
+          height: 80,
+          mimeType: "image/svg+xml",
+          release,
+          url: "blob:https://example.test/sanitized-portrait",
+          width: 60,
+        };
+      },
+    });
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      bubbleRenderBackend: "svg-overlay",
+      document: harness.window.document as unknown as Document,
+      svgOverlayImageCapability: imageCapability,
+      svgOverlayTextCapability: harness.textCapability,
+    });
+    composition.defineStyle({
+      name: "dialog",
+      textStyle: "body",
+      portrait: { base: "portrait" },
+    });
+
+    const handle = await composition.show({
+      actor: actor("sprite"),
+      actorKey: "sprite",
+      kind: "say",
+      styleName: "dialog",
+      text: "Asset Manager portrait",
+    });
+
+    expect(
+      harness.window.document.querySelector("image")?.getAttribute("href"),
+    ).toBe("blob:https://example.test/sanitized-portrait");
+    await handle.close();
+    expect(release).toHaveBeenCalledOnce();
   });
 
   it("rejects unsafe image URLs and cleans up the root", async () => {
