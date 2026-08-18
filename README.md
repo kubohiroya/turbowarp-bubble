@@ -69,6 +69,38 @@ flowchart TB
 
 この構成では、Bubble coreが`BubbleTextCapability`というホスト非依存の契約だけを参照します。`@kubohiroya/turbowarp-svg-text`は、その契約をTurboWarpのSVG skin・named style・文字幅計測へ接続するadapterです。吹き出しの外枠、tail、portraitの配置、表示開始・表示終了animationは担当しません。TurboWarp adapterはSVG Text adapterを既定値として解決しますが、Composition APIのhostは別の実装を`textCapability`として注入できます。画像解決、音声再生、入力、条件評価もCapabilityとして切り離し、Asset Manager、Async Input、Runtime Expressionは対応機能を使う場合だけ接続します。
 
+### 描画backend（SVG overlayはopt-in）
+
+`bubbleRenderBackend`を省略した場合の初期既定値は`"scratch-render"`です。既存経路は従来どおりBubbleごとにrenderer drawableとSVG skinを使います。`"svg-overlay"`を選ぶと、`renderer.addOverlay(root, "scale")`でstage canvas上に共有SVG rootを置き、body、tail、text、portrait、corner clip、continue indicatorをDOM要素として描画します。この経路ではBubbleの表示、text更新、style更新、animationのために`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼びません。
+
+```ts
+import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
+
+const bubbles = createTurboWarpBubbleComposition(runtime, {
+  bubbleRenderBackend: "svg-overlay",
+  svgOverlayUnsupportedBehavior: "error",
+  svgOverlayTextCapability,
+  svgOverlayImageCapability,
+});
+```
+
+`svgOverlayTextCapability`はnamed styleをhost-neutralな行layoutへ変換する公開契約です。portrait等を使う場合の`svgOverlayImageCapability`は、検証済みMIME type、intrinsic size、`blob:` URLまたは許可済みraster data URL、およびblob URLの`release()`を返します。SVG画像resourceはproviderによるsanitize済みmetadataも必須です。Bubbleは任意SVG文字列を挿入せず、canonical bodyから`path`、`group`等の許可要素・属性だけを`createElementNS()`で再構築します。`script`、event handler、`foreignObject`、外部URLは受け付けません。overlay rootは`pointer-events: none`、`aria-hidden="true"`です。
+
+現行公開版のSVG Text／Asset Managerにはこのskin非依存契約がまだありません。private field参照やskinからの抽出では代替せず、[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)を上流依存として追跡します。必要な公開capabilityがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。明示的に`svgOverlayUnsupportedBehavior: "fallback"`を指定した場合だけ`scratch-render`へ戻ります。
+
+| host／取得方法                            | `scratch-render` | `svg-overlay`                                          |
+| ----------------------------------------- | ---------------- | ------------------------------------------------------ |
+| TurboWarp Web／Desktop                    | 対応             | overlay APIと上記公開capabilityがある構成で対応        |
+| TurboWarp Packager／player HTML           | 対応             | 同上。packaged DOMにoverlay rootを保持できる場合に対応 |
+| `renderer.addOverlay`非対応host           | 対応             | 既定は明示error。設定時だけfallback                    |
+| OS screenshot／画面収録                   | 表示される       | 最終browser compositeに表示される                      |
+| `renderer.canvas.toDataURL()`／`toBlob()` | 表示される       | raw WebGL canvasには含まれない                         |
+| `renderer.canvas.captureStream()`         | 表示される       | raw WebGL streamには含まれない                         |
+
+stage native size変更ではrootの`viewBox`と全surfaceを更新し、fullscreenとhigh-DPIのCSS scalingはrendererの`scale` overlay modeへ委譲します。stop、project reload、target／clone破棄、composition disposeではlistener、DOM、capability所有resourceを解放し、最後のBubbleが閉じた時点で`removeOverlay(root)`を呼びます。
+
+自動回帰テストでは、表示、text更新、shake、shape animation中のBubble由来renderer skin／drawable作成が0回であること、native size更新、共有root、許可属性、object URL解放を検証します。Web／Desktop／Packagerでのvisual parityとframe time／memory測定は上流capabilityのrelease後に実施し、結果を[SVG overlay release note](docs/release-notes-0.8.0.md)へ記録してから既定値変更を検討します。既定値変更は本導入のスコープ外です。
+
 ### 逐次表示の単位（CHARACTER / WORD / LINE / BLOCK）
 
 セリフ全体を一度に表示するだけでなく、表示対象を「どの単位で一つずつ増やすか」として扱います。`CHARACTER`は形態素解析ではなく、表示上の書記素クラスタ（結合文字や絵文字を途中で分割しない単位）を前提にします。

@@ -1,6 +1,8 @@
 import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudioCapability, type BubbleImageCapability, type BubbleScheduler, type BubbleTextCapability } from "./composition.js";
 import { type TurboWarpSvgTextExtension } from "./turbowarp-svg-text-adapter.js";
 export { createSvgTextCompositionCapability, createTurboWarpSvgTextCapability, type TurboWarpSvgTextExtension, } from "./turbowarp-svg-text-adapter.js";
+import { type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayTextCapability } from "./svg-overlay-surface.js";
+export { createSvgOverlayImageAdapter, createSvgOverlaySurface, createSvgOverlaySurfaceManager, createSvgOverlayTextAdapter, bubbleRenderBackends, defaultBubbleOverlayUnsupportedBehavior, defaultBubbleRenderBackend, type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayActor, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayImageResource, type BubbleSvgOverlayRenderer, type BubbleSvgOverlaySurfaceManager, type BubbleSvgOverlayTextCapability, type BubbleSvgOverlayTextLayout, } from "./svg-overlay-surface.js";
 export interface TurboWarpBubbleTarget {
     readonly id: string;
     readonly isStage: boolean;
@@ -30,6 +32,10 @@ export interface TurboWarpBubbleRenderer {
     /** Scratch/TurboWarp's ghost effect is used to implement fade motions. */
     updateDrawableEffect?(drawableId: number, effectName: string, value: number): void;
     setDrawableOrder?(drawableId: number, order: number, layerGroup: string, relative?: boolean): void;
+    addOverlay?(element: Element, mode?: string): unknown;
+    removeOverlay?(element: Element): void;
+    on?(event: string, listener: (...args: unknown[]) => void): void;
+    off?(event: string, listener: (...args: unknown[]) => void): void;
 }
 export interface TurboWarpAssetManagerExtension {
     isLoaded(args: Readonly<{
@@ -57,13 +63,23 @@ export interface TurboWarpBubbleRuntime {
     requestRedraw?(): void;
 }
 export interface TurboWarpBubbleCompositionOptions {
+    /** Defaults to scratch-render; svg-overlay is explicitly opt-in. */
+    readonly bubbleRenderBackend?: BubbleRenderBackend;
+    /** Defaults to error so an opt-in request never silently changes semantics. */
+    readonly svgOverlayUnsupportedBehavior?: BubbleOverlayUnsupportedBehavior;
+    /** Host-neutral text layout supplied by turbowarp-svg-text or another host. */
+    readonly svgOverlayTextCapability?: BubbleSvgOverlayTextCapability;
+    /** Releasable DOM image resources supplied by Asset Manager or another host. */
+    readonly svgOverlayImageCapability?: BubbleSvgOverlayImageCapability;
+    /** Browser document override for packaged players and deterministic tests. */
+    readonly document?: Document;
     readonly imageResolver?: BubbleImageCapability;
     readonly audio?: BubbleAudioCapability;
     readonly textCapability?: BubbleTextCapability;
     readonly scheduler?: BubbleScheduler;
     readonly onAnimationError?: BubbleCompositionOptions["onAnimationError"];
 }
-export type BubbleRuntimeAdapterErrorCode = "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002" | "BUBBLE-RUNTIME-003";
+export type BubbleRuntimeAdapterErrorCode = "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002" | "BUBBLE-RUNTIME-003" | "BUBBLE-RUNTIME-004";
 export declare class BubbleRuntimeAdapterError extends Error {
     readonly code: BubbleRuntimeAdapterErrorCode;
     constructor(code: BubbleRuntimeAdapterErrorCode, message: string);

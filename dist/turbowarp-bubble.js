@@ -8515,7 +8515,7 @@
     "easeOut",
     "easeInOut"
   ]);
-  function isRecord$2(value) {
+  function isRecord$3(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
   function requireExactKeys(value, required, optional, label) {
@@ -8533,7 +8533,7 @@
     return value;
   }
   function normalizeAnimation(value, label, minimumFrames) {
-    if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
     requireExactKeys(value, ["frames", "frameIntervalSeconds"], [], label);
     if (!Array.isArray(value.frames) || value.frames.length < minimumFrames) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.frames must contain at least ${minimumFrames} image asset name${minimumFrames === 1 ? "" : "s"}.`);
     const frames = Object.freeze(value.frames.map((frame, index) => requireAssetName(frame, `${label}.frames[${index}]`)));
@@ -8545,7 +8545,7 @@
     });
   }
   function normalizePortrait(value) {
-    if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
+    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
     requireExactKeys(value, ["base"], [
       "blink",
       "lipSync",
@@ -8575,7 +8575,7 @@
     });
   }
   function normalizeMotion(value, label) {
-    if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
     requireExactKeys(value, ["name"], [
       "durationSeconds",
       "ease",
@@ -8615,7 +8615,7 @@
   }
   function normalizeAudio(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
+    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
     requireExactKeys(value, [], [
       "voice",
       "reveal",
@@ -8633,7 +8633,7 @@
     return Object.freeze(result);
   }
   function normalizeStyle(value) {
-    if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
+    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys(value, ["name", "textStyle"], [
       "placement",
       "maxWidth",
@@ -8704,12 +8704,12 @@
   }
   function validateImageResolver(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$2(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
+    if (!isRecord$3(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
     return value;
   }
   function validateAudioCapability(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$2(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
+    if (!isRecord$3(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
     if (value.isRegistered !== void 0 && typeof value.isRegistered !== "function") throw new TypeError("Bubble audio capability isRegistered must be a function.");
     if (value.getMimeType !== void 0 && typeof value.getMimeType !== "function") throw new TypeError("Bubble audio capability getMimeType must be a function.");
     return value;
@@ -8719,7 +8719,7 @@
     return value;
   }
   function validateTextCapability(value) {
-    if (!isRecord$2(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble text capability must provide setText and releaseTarget.");
+    if (!isRecord$3(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble text capability must provide setText and releaseTarget.");
     return value;
   }
   function defaultScheduler() {
@@ -8729,11 +8729,11 @@
     });
   }
   function validateScheduler(value) {
-    if (!isRecord$2(value) || typeof value.setTimeout !== "function" || typeof value.clearTimeout !== "function") throw new TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
+    if (!isRecord$3(value) || typeof value.setTimeout !== "function" || typeof value.clearTimeout !== "function") throw new TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
     return value;
   }
   function validateAssetTarget(value, label) {
-    if (!isRecord$2(value) || typeof value.id !== "string" || value.id.length === 0 || typeof value.isStage !== "boolean") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", `${label} must provide id and isStage.`);
+    if (!isRecord$3(value) || typeof value.id !== "string" || value.id.length === 0 || typeof value.isStage !== "boolean") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", `${label} must provide id and isStage.`);
     return value;
   }
   function validateTextTarget(value) {
@@ -8741,7 +8741,7 @@
     return value;
   }
   function validateSurface(value, style) {
-    if (!isRecord$2(value) || !isRecord$2(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
+    if (!isRecord$3(value) || !isRecord$3(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
     const targets = value.targets;
     validateTextTarget(targets.text);
     const assetTargetIds = /* @__PURE__ */ new Set();
@@ -8852,7 +8852,7 @@
     });
   }
   function normalizeShowInput(value) {
-    if (!isRecord$2(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
+    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
     requireExactKeys(value, [
       "actor",
       "actorKey",
@@ -8881,7 +8881,7 @@
     };
   }
   function createBubbleComposition(options) {
-    if (!isRecord$2(options)) throw new TypeError("Bubble composition options must be an object.");
+    if (!isRecord$3(options)) throw new TypeError("Bubble composition options must be an object.");
     const imageResolver = validateImageResolver(options.imageResolver);
     const audio = validateAudioCapability(options.audio);
     const textCapability = validateTextCapability(options.textCapability);
@@ -9390,11 +9390,11 @@
   }
   //#endregion
   //#region src/turbowarp-svg-text-adapter.ts
-  function isRecord$1(value) {
+  function isRecord$2(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
   function validateExtension(value) {
-    if (!isRecord$1(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
+    if (!isRecord$2(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
     return value;
   }
   /**
@@ -9416,6 +9416,823 @@
       measureText({ styleName, text }) {
         if (typeof extension.measureText !== "function") throw new Error("TurboWarp SVG Text does not provide text measurement.");
         return extension.measureText(styleName, text);
+      }
+    });
+  }
+  //#endregion
+  //#region src/surface-motion.ts
+  function clampMotionProgress(value) {
+    return Math.max(0, Math.min(1, value));
+  }
+  function easeMotionProgress(value, ease) {
+    const progress = clampMotionProgress(value);
+    switch (ease) {
+      case "linear": return progress;
+      case "easeIn": return progress * progress;
+      case "easeOut": return 1 - (1 - progress) * (1 - progress);
+      case "easeInOut": return progress < .5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      default: return progress;
+    }
+  }
+  /**
+  * Drive a motion with Bubble's scheduler so tests and non-browser hosts can
+  * provide deterministic time without requestAnimationFrame.
+  */
+  function runMotionTimeline(scheduler, durationSeconds, onFrame) {
+    const durationMilliseconds = Math.max(0, durationSeconds * 1e3);
+    if (durationMilliseconds === 0) {
+      onFrame(1);
+      return Promise.resolve();
+    }
+    return new Promise((resolve, reject) => {
+      let elapsed = 0;
+      let timer;
+      const tick = () => {
+        const step = Math.min(16, durationMilliseconds - elapsed);
+        elapsed += step;
+        try {
+          onFrame(clampMotionProgress(elapsed / durationMilliseconds));
+        } catch (error) {
+          if (timer !== void 0) scheduler.clearTimeout(timer);
+          reject(error);
+          return;
+        }
+        if (elapsed >= durationMilliseconds) {
+          resolve();
+          return;
+        }
+        timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds - elapsed));
+      };
+      timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds));
+    });
+  }
+  //#endregion
+  //#region src/svg-overlay-surface.ts
+  var svgNamespace = "http://www.w3.org/2000/svg";
+  var xmlNamespace = "http://www.w3.org/XML/1998/namespace";
+  var portraitBoxSize$1 = 96;
+  var indicatorBoxSize$1 = 18;
+  var contentGap$1 = 8;
+  var stageSafeMargin$1 = 16;
+  var overlayTextTargetMarker = Symbol("BubbleSvgOverlayTextTarget");
+  var overlayImageTargetMarker = Symbol("BubbleSvgOverlayImageTarget");
+  var overlaySurfaceSequence = 0;
+  Object.freeze(["scratch-render", "svg-overlay"]);
+  function isRecord$1(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+  function readNativeSize(renderer) {
+    const raw = renderer.getNativeSize();
+    const width = Array.isArray(raw) ? Number(raw[0]) : NaN;
+    const height = Array.isArray(raw) ? Number(raw[1]) : NaN;
+    return Object.freeze({
+      width: width > 0 ? width : 480,
+      height: height > 0 ? height : 360
+    });
+  }
+  function requireFiniteDimension(value, label) {
+    const result = Number(value);
+    if (!Number.isFinite(result) || result <= 0) throw new TypeError(`${label} must be a positive finite number.`);
+    return result;
+  }
+  function requireSafeColor(value, label) {
+    if (typeof value !== "string" || value.length === 0 || value.length > 128) throw new TypeError(`${label} must be a non-empty color string.`);
+    if (/url\s*\(|[<>;]/iu.test(value)) throw new TypeError(`${label} contains a disallowed SVG value.`);
+    return value;
+  }
+  function requireSafeFontFamily(value) {
+    if (typeof value !== "string" || value.length === 0 || value.length > 256 || /url\s*\(|[<>{};]/iu.test(value)) throw new TypeError("SVG overlay fontFamily is invalid.");
+    return value;
+  }
+  function normalizeTextLayout(value) {
+    if (!isRecord$1(value) || !Array.isArray(value.lines)) throw new TypeError("SVG overlay text layout is invalid.");
+    const alignment = value.alignment;
+    if (alignment !== "left" && alignment !== "center" && alignment !== "right") throw new TypeError("SVG overlay text alignment is invalid.");
+    const fontStyle = value.fontStyle;
+    if (fontStyle !== void 0 && fontStyle !== "normal" && fontStyle !== "italic") throw new TypeError("SVG overlay fontStyle is invalid.");
+    const fontWeight = value.fontWeight;
+    if (fontWeight !== void 0 && fontWeight !== "normal" && fontWeight !== "bold" && (!Number.isFinite(fontWeight) || Number(fontWeight) < 1 || Number(fontWeight) > 1e3)) throw new TypeError("SVG overlay fontWeight is invalid.");
+    const lines = Object.freeze(value.lines.map((line) => {
+      if (typeof line !== "string") throw new TypeError("SVG overlay text lines must be strings.");
+      return line;
+    }));
+    const backgroundColor = value.backgroundColor === void 0 ? void 0 : requireSafeColor(value.backgroundColor, "SVG overlay backgroundColor");
+    return Object.freeze({
+      alignment,
+      fill: requireSafeColor(value.fill, "SVG overlay text fill"),
+      fontFamily: requireSafeFontFamily(value.fontFamily),
+      fontSize: requireFiniteDimension(value.fontSize, "SVG overlay fontSize"),
+      height: requireFiniteDimension(value.height, "SVG overlay text height"),
+      lineHeight: requireFiniteDimension(value.lineHeight, "SVG overlay lineHeight"),
+      lines,
+      width: requireFiniteDimension(value.width, "SVG overlay text width"),
+      ...backgroundColor === void 0 ? {} : { backgroundColor },
+      ...fontStyle === void 0 ? {} : { fontStyle },
+      ...fontWeight === void 0 ? {} : { fontWeight }
+    });
+  }
+  function createTextTarget(document, group) {
+    let size = {
+      width: 180,
+      height: 48
+    };
+    return Object.freeze({
+      [overlayTextTargetMarker]: true,
+      group,
+      clear() {
+        group.replaceChildren();
+        size = {
+          width: 180,
+          height: 48
+        };
+      },
+      getSize() {
+        return size;
+      },
+      render(layoutInput) {
+        const layout = normalizeTextLayout(layoutInput);
+        const children = [];
+        if (layout.backgroundColor !== void 0 && layout.backgroundColor !== "transparent") {
+          const background = document.createElementNS(svgNamespace, "rect");
+          background.setAttribute("x", String(-layout.width / 2));
+          background.setAttribute("y", String(-layout.height / 2));
+          background.setAttribute("width", String(layout.width));
+          background.setAttribute("height", String(layout.height));
+          background.setAttribute("fill", layout.backgroundColor);
+          children.push(background);
+        }
+        const text = document.createElementNS(svgNamespace, "text");
+        const anchor = layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle";
+        const x = layout.alignment === "left" ? -layout.width / 2 : layout.alignment === "right" ? layout.width / 2 : 0;
+        text.setAttribute("text-anchor", anchor);
+        text.setAttribute("fill", layout.fill);
+        text.setAttribute("font-family", layout.fontFamily);
+        text.setAttribute("font-size", String(layout.fontSize));
+        text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
+        if (layout.fontStyle !== void 0) text.setAttribute("font-style", layout.fontStyle);
+        if (layout.fontWeight !== void 0) text.setAttribute("font-weight", String(layout.fontWeight));
+        const firstBaseline = -Math.max(layout.fontSize, (layout.lines.length - 1) * layout.lineHeight + layout.fontSize) / 2 + layout.fontSize;
+        layout.lines.forEach((line, index) => {
+          const tspan = document.createElementNS(svgNamespace, "tspan");
+          tspan.setAttribute("x", String(x));
+          tspan.setAttribute("y", String(firstBaseline + index * layout.lineHeight));
+          tspan.textContent = line;
+          text.appendChild(tspan);
+        });
+        children.push(text);
+        group.replaceChildren(...children);
+        size = {
+          width: layout.width,
+          height: layout.height
+        };
+      }
+    });
+  }
+  function requireTextTarget(value) {
+    const candidate = value;
+    if (candidate?.[overlayTextTargetMarker] !== true) throw new TypeError("SVG overlay text target is invalid.");
+    return candidate;
+  }
+  function createSvgOverlayTextAdapter(capabilityInput, renderer) {
+    if (!isRecord$1(capabilityInput) || typeof capabilityInput.layoutText !== "function") throw new TypeError("SVG overlay backend requires a text layout capability.");
+    const capability = capabilityInput;
+    return Object.freeze({
+      setText({ styleName, target, text }) {
+        const nativeSize = readNativeSize(renderer);
+        requireTextTarget(target).render(capability.layoutText({
+          nativeSize,
+          styleName,
+          text
+        }));
+      },
+      releaseTarget(target) {
+        requireTextTarget(target).clear();
+      },
+      measureText({ styleName, text }) {
+        const nativeSize = readNativeSize(renderer);
+        return requireFiniteDimension(capability.measureText?.({
+          nativeSize,
+          styleName,
+          text
+        }) ?? capability.layoutText({
+          nativeSize,
+          styleName,
+          text
+        }).width, "SVG overlay measured text width");
+      }
+    });
+  }
+  function isSafeImageSource(resource) {
+    if (!(/* @__PURE__ */ new Set([
+      "image/avif",
+      "image/gif",
+      "image/jpeg",
+      "image/png",
+      "image/svg+xml",
+      "image/webp"
+    ])).has(resource.mimeType.toLowerCase())) return false;
+    if (resource.mimeType.toLowerCase() === "image/svg+xml" && resource.svgSecurity !== "sanitized") return false;
+    if (resource.src.startsWith("blob:")) return typeof resource.release === "function";
+    return /^data:image\/(?:avif|gif|jpeg|png|webp);base64,/iu.test(resource.src);
+  }
+  async function releaseImageResource(resource) {
+    await resource?.release?.();
+  }
+  function createImageTarget(document, id, group) {
+    const image = document.createElementNS(svgNamespace, "image");
+    image.setAttribute("preserveAspectRatio", "xMidYMid meet");
+    group.appendChild(image);
+    let resource;
+    let displaySize = {
+      width: 1,
+      height: 1
+    };
+    let resourceGeneration = 0;
+    const applyDisplaySize = () => {
+      image.setAttribute("x", String(-displaySize.width / 2));
+      image.setAttribute("y", String(-displaySize.height / 2));
+      image.setAttribute("width", String(displaySize.width));
+      image.setAttribute("height", String(displaySize.height));
+    };
+    applyDisplaySize();
+    return Object.freeze({
+      id,
+      isStage: false,
+      [overlayImageTargetMarker]: true,
+      group,
+      async applyResource(nextResource) {
+        const generation = resourceGeneration + 1;
+        resourceGeneration = generation;
+        try {
+          requireFiniteDimension(nextResource.width, "SVG overlay image width");
+          requireFiniteDimension(nextResource.height, "SVG overlay image height");
+          if (typeof nextResource.mimeType !== "string" || !nextResource.mimeType.startsWith("image/") || typeof nextResource.src !== "string" || !isSafeImageSource(nextResource)) throw new TypeError("SVG overlay image resources must use a supported MIME type, a releasable blob URL or approved raster data URL, and sanitized SVG metadata when applicable.");
+        } catch (error) {
+          await releaseImageResource(nextResource);
+          throw error;
+        }
+        if (generation !== resourceGeneration) {
+          await releaseImageResource(nextResource);
+          return;
+        }
+        const previous = resource;
+        resource = nextResource;
+        image.setAttribute("href", nextResource.src);
+        await releaseImageResource(previous);
+      },
+      getSize() {
+        return resource ? {
+          width: resource.width,
+          height: resource.height
+        } : {
+          width: 1,
+          height: 1
+        };
+      },
+      async release() {
+        resourceGeneration += 1;
+        const previous = resource;
+        resource = void 0;
+        image.removeAttribute("href");
+        await releaseImageResource(previous);
+      },
+      setDisplaySize(nextSize) {
+        displaySize = nextSize;
+        applyDisplaySize();
+      },
+      setVisible(visible) {
+        group.setAttribute("visibility", visible ? "visible" : "hidden");
+      }
+    });
+  }
+  function requireImageTarget(value) {
+    const candidate = value;
+    if (candidate?.[overlayImageTargetMarker] !== true) throw new TypeError("SVG overlay image target is invalid.");
+    return candidate;
+  }
+  function createSvgOverlayImageAdapter(capabilityInput) {
+    if (!isRecord$1(capabilityInput) || typeof capabilityInput.isRegistered !== "function" || typeof capabilityInput.getMimeType !== "function" || typeof capabilityInput.resolveImage !== "function") throw new TypeError("SVG overlay image capability is invalid.");
+    const capability = capabilityInput;
+    return Object.freeze({
+      isRegistered(name) {
+        return capability.isRegistered(name);
+      },
+      getMimeType(name) {
+        return capability.getMimeType(name);
+      },
+      async applyToTarget(name, target) {
+        await requireImageTarget(target).applyResource(await capability.resolveImage(name));
+      }
+    });
+  }
+  function createSvgOverlaySurfaceManager(renderer, documentInput) {
+    const root = documentInput.createElementNS(svgNamespace, "svg");
+    root.setAttribute("xmlns", svgNamespace);
+    root.setAttribute("aria-hidden", "true");
+    root.setAttribute("focusable", "false");
+    root.setAttribute("data-bubble-render-backend", "svg-overlay");
+    root.style.display = "block";
+    root.style.overflow = "hidden";
+    root.style.pointerEvents = "none";
+    const groups = /* @__PURE__ */ new Set();
+    let attached = false;
+    const updateNativeSize = () => {
+      const size = readNativeSize(renderer);
+      root.setAttribute("width", String(size.width));
+      root.setAttribute("height", String(size.height));
+      root.setAttribute("viewBox", `0 0 ${size.width} ${size.height}`);
+      return size;
+    };
+    return Object.freeze({
+      document: documentInput,
+      renderer,
+      acquire(group) {
+        if (groups.has(group)) return;
+        updateNativeSize();
+        if (!attached) try {
+          renderer.addOverlay(root, "scale");
+          attached = true;
+        } catch (error) {
+          renderer.removeOverlay(root);
+          throw error;
+        }
+        root.appendChild(group);
+        groups.add(group);
+      },
+      release(group) {
+        if (!groups.delete(group)) return;
+        group.remove();
+        if (groups.size === 0 && attached) {
+          renderer.removeOverlay(root);
+          attached = false;
+        }
+      },
+      updateNativeSize
+    });
+  }
+  function targetBounds$1(target) {
+    try {
+      const bounds = target.getBoundsForBubble?.();
+      if (bounds && [
+        bounds.bottom,
+        bounds.left,
+        bounds.right,
+        bounds.top
+      ].every((value) => Number.isFinite(value))) return bounds;
+    } catch {}
+    const x = Number.isFinite(target.x) ? Number(target.x) : 0;
+    const y = Number.isFinite(target.y) ? Number(target.y) : 0;
+    return {
+      bottom: y,
+      left: x,
+      right: x,
+      top: y
+    };
+  }
+  function clamp$1(value, minimum, maximum) {
+    if (maximum < minimum) return (minimum + maximum) / 2;
+    return Math.min(maximum, Math.max(minimum, value));
+  }
+  function tailDirectionForPlacement$1(direction) {
+    const vector = bubbleDirectionVector(direction);
+    return (Math.atan2(-vector.x, -vector.y) * 180 / Math.PI % 360 + 360) % 360;
+  }
+  var allowedBodyElements = /* @__PURE__ */ new Set([
+    "circle",
+    "g",
+    "path",
+    "rect",
+    "title"
+  ]);
+  var allowedBodyAttributes = /* @__PURE__ */ new Set([
+    "cx",
+    "cy",
+    "d",
+    "data-boolean-operation",
+    "data-tail-base-on-border",
+    "fill",
+    "fill-rule",
+    "height",
+    "opacity",
+    "r",
+    "rx",
+    "stroke",
+    "stroke-dasharray",
+    "stroke-linejoin",
+    "stroke-width",
+    "transform",
+    "width",
+    "x",
+    "y"
+  ]);
+  function copyAllowedBodyNode(source, document) {
+    const name = source.localName;
+    if (!allowedBodyElements.has(name)) throw new TypeError(`Bubble body SVG element is not allowed: ${name}`);
+    const result = document.createElementNS(svgNamespace, name);
+    for (const attribute of source.getAttributeNames()) {
+      if (!allowedBodyAttributes.has(attribute)) throw new TypeError(`Bubble body SVG attribute is not allowed: ${attribute}`);
+      const value = source.getAttribute(attribute) ?? "";
+      if (/javascript:|url\s*\(/iu.test(value)) throw new TypeError("Bubble body SVG contains an unsafe attribute value.");
+      result.setAttribute(attribute, value);
+    }
+    if (name === "title") result.textContent = source.textContent ?? "";
+    for (const child of Array.from(source.children)) result.appendChild(copyAllowedBodyNode(child, document));
+    return result;
+  }
+  function replaceBodyFromCanonicalSvg(group, svg, document) {
+    const Parser = document.defaultView?.DOMParser;
+    if (!Parser) throw new TypeError("SVG overlay backend requires DOMParser.");
+    const parsed = new Parser().parseFromString(svg, "image/svg+xml");
+    if (parsed.querySelector("parsererror")) throw new TypeError("Canonical Bubble body SVG could not be parsed.");
+    const children = Array.from(parsed.documentElement.children).map((child) => copyAllowedBodyNode(child, document));
+    group.replaceChildren(...children);
+  }
+  function fitImage(target, boxSize, scaleMultiplier = 1) {
+    const native = target.getSize();
+    const scale = Math.min(boxSize / native.width, boxSize / native.height);
+    const size = {
+      width: native.width * scale * scaleMultiplier,
+      height: native.height * scale * scaleMultiplier
+    };
+    target.setDisplaySize(size);
+    return size;
+  }
+  function createSvgOverlaySurface(manager, actor, actorKey, style, scheduler) {
+    const { document, renderer } = manager;
+    const sequence = overlaySurfaceSequence;
+    overlaySurfaceSequence += 1;
+    const surfaceGroup = document.createElementNS(svgNamespace, "g");
+    surfaceGroup.setAttribute("data-bubble-surface", `${actorKey}:${sequence}`);
+    const bodyGroup = document.createElementNS(svgNamespace, "g");
+    bodyGroup.setAttribute("data-bubble-layer", "body");
+    surfaceGroup.appendChild(bodyGroup);
+    const createLayerGroup = (layer) => {
+      const group = document.createElementNS(svgNamespace, "g");
+      group.setAttribute("data-bubble-layer", layer);
+      group.setAttribute("visibility", "hidden");
+      surfaceGroup.appendChild(group);
+      return group;
+    };
+    const portraitBase = createImageTarget(document, `bubble:${actorKey}:${sequence}:portrait-base`, createLayerGroup("portrait-base"));
+    const portraitBlink = createImageTarget(document, `bubble:${actorKey}:${sequence}:portrait-blink`, createLayerGroup("portrait-blink"));
+    const portraitLipSync = createImageTarget(document, `bubble:${actorKey}:${sequence}:portrait-lip-sync`, createLayerGroup("portrait-lip-sync"));
+    const textGroup = createLayerGroup("text");
+    const text = createTextTarget(document, textGroup);
+    const continueIndicator = createImageTarget(document, `bubble:${actorKey}:${sequence}:continue-indicator`, createLayerGroup("continue-indicator"));
+    const targets = Object.freeze({
+      text,
+      portraitBase,
+      portraitBlink,
+      portraitLipSync,
+      continueIndicator
+    });
+    const layerTargets = /* @__PURE__ */ new Map([
+      ["portraitBase", portraitBase],
+      ["portraitBlink", portraitBlink],
+      ["portraitLipSync", portraitLipSync],
+      ["continueIndicator", continueIndicator]
+    ]);
+    const layerVisibility = /* @__PURE__ */ new Map();
+    const clipId = `bubble-portrait-clip-${sequence}`;
+    const definitions = document.createElementNS(svgNamespace, "defs");
+    const clipPath = document.createElementNS(svgNamespace, "clipPath");
+    const clipRect = document.createElementNS(svgNamespace, "rect");
+    clipPath.setAttribute("id", clipId);
+    clipPath.appendChild(clipRect);
+    definitions.appendChild(clipPath);
+    surfaceGroup.insertBefore(definitions, bodyGroup);
+    let currentStyle = style;
+    let disposed = false;
+    let surfaceVisible = false;
+    let reservedTextSize;
+    let bodySignature = "";
+    let motionTranslation = [0, 0];
+    let motionScaleMultiplier = 1;
+    let motionOpacity = 1;
+    let center = [0, 0];
+    let shapeTransition;
+    const applyMotionTransform = () => {
+      const native = manager.updateNativeSize();
+      const centerX = native.width / 2 + center[0];
+      const centerY = native.height / 2 - center[1];
+      const translatedX = centerX + motionTranslation[0];
+      const translatedY = centerY - motionTranslation[1];
+      surfaceGroup.setAttribute("transform", `translate(${translatedX} ${translatedY}) scale(${motionScaleMultiplier}) translate(${-centerX} ${-centerY})`);
+      surfaceGroup.setAttribute("opacity", String(motionOpacity));
+    };
+    const layerAllowedByStyle = (layer) => {
+      if (layer === "continueIndicator") return currentStyle.continueIndicator !== void 0;
+      if (layer === "portraitBase") return currentStyle.portrait !== void 0;
+      if (layer === "portraitBlink") return currentStyle.portrait?.blink !== void 0;
+      return currentStyle.portrait?.lipSync !== void 0;
+    };
+    const updateVisibility = () => {
+      const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
+      const visible = surfaceVisible && actorVisible && motionOpacity > 0;
+      surfaceGroup.setAttribute("visibility", visible ? "visible" : "hidden");
+      bodyGroup.setAttribute("visibility", visible && currentStyle.visualStyle !== "NO_BUBBLE" ? "visible" : "hidden");
+      textGroup.setAttribute("visibility", visible ? "visible" : "hidden");
+      for (const [layer, target] of layerTargets) target.setVisible(visible && layerAllowedByStyle(layer) && (layerVisibility.get(layer) ?? false));
+      applyMotionTransform();
+    };
+    const position = () => {
+      if (disposed) return;
+      const native = manager.updateNativeSize();
+      const scaleMultiplier = currentStyle.placement.basis === "actor" ? currentStyle.offset.scalePercent / 100 : 1;
+      const nativeTextSize = reservedTextSize ?? text.getSize();
+      const textSize = {
+        width: nativeTextSize.width * scaleMultiplier,
+        height: nativeTextSize.height * scaleMultiplier
+      };
+      const portraitZoomMultiplier = (currentStyle.portrait?.offset.zoomPercent ?? 100) / 100;
+      const hasPortrait = currentStyle.portrait !== void 0;
+      const portraitSize = hasPortrait ? fitImage(portraitBase, portraitBoxSize$1 * portraitZoomMultiplier, scaleMultiplier) : {
+        width: 0,
+        height: 0
+      };
+      for (const target of [portraitBlink, portraitLipSync]) if (hasPortrait) fitImage(target, portraitBoxSize$1 * portraitZoomMultiplier, scaleMultiplier);
+      const indicatorSize = fitImage(continueIndicator, indicatorBoxSize$1, scaleMultiplier);
+      const totalWidth = portraitSize.width + (hasPortrait ? contentGap$1 * scaleMultiplier : 0) + textSize.width;
+      const contentHeight = Math.max(portraitSize.height, textSize.height);
+      const baseBubbleWidth = totalWidth / scaleMultiplier + 48;
+      const baseBubbleHeight = contentHeight / scaleMultiplier + 48;
+      const stageLeft = -native.width / 2;
+      const stageRight = native.width / 2;
+      const stageTop = native.height / 2;
+      const stageBottom = -native.height / 2;
+      let centerX;
+      let centerY;
+      if (currentStyle.placement.basis === "background") {
+        centerX = 0;
+        if (currentStyle.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin$1 - contentHeight / 2;
+        else if (currentStyle.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin$1 + contentHeight / 2;
+        else centerY = 0;
+      } else {
+        const nextCenter = actorRelativeBubbleCenter({
+          bounds: targetBounds$1(actor),
+          bubbleWidth: totalWidth,
+          bubbleHeight: contentHeight,
+          direction: currentStyle.placement.direction,
+          distance: currentStyle.distance,
+          tailLength: currentStyle.tailLength,
+          offset: currentStyle.offset
+        });
+        centerX = nextCenter.x;
+        centerY = nextCenter.y;
+      }
+      centerX = clamp$1(centerX, stageLeft + totalWidth / 2, stageRight - totalWidth / 2);
+      centerY = clamp$1(centerY, stageBottom + contentHeight / 2, stageTop - contentHeight / 2);
+      center = [centerX, centerY];
+      const tailDirection = currentStyle.placement.basis === "actor" ? tailDirectionForPlacement$1(currentStyle.placement.direction) : null;
+      const bodyOffset = currentStyle.placement.basis === "actor" ? [
+        currentStyle.offset.x,
+        currentStyle.offset.y,
+        currentStyle.offset.scalePercent
+      ] : [
+        0,
+        0,
+        100
+      ];
+      const bodyCenterOffset = tailDirection === null ? {
+        x: 0,
+        y: 0
+      } : bubbleBodyCenterOffset({
+        style: currentStyle.visualStyle,
+        width: baseBubbleWidth,
+        height: baseBubbleHeight,
+        tailDirection,
+        tailLength: currentStyle.tailLength,
+        offset: bodyOffset
+      });
+      const nextBodySignature = JSON.stringify({
+        baseBubbleHeight,
+        baseBubbleWidth,
+        bodyOffset,
+        shapeTransition,
+        tailDirection,
+        tailLength: currentStyle.tailLength,
+        visualStyle: currentStyle.visualStyle
+      });
+      if (nextBodySignature !== bodySignature) {
+        replaceBodyFromCanonicalSvg(bodyGroup, renderBubbleSvg({
+          style: currentStyle.visualStyle,
+          lines: [],
+          width: baseBubbleWidth,
+          height: baseBubbleHeight,
+          tailDirection,
+          tailLength: currentStyle.tailLength,
+          offset: bodyOffset,
+          title: `${currentStyle.name} Bubble body`,
+          ...shapeTransition === void 0 ? {} : { shapeTransition }
+        }), document);
+        bodySignature = nextBodySignature;
+      }
+      bodyGroup.setAttribute("data-bubble-style", currentStyle.visualStyle);
+      if (shapeTransition === void 0) {
+        bodyGroup.removeAttribute("data-bubble-shape-transition-from");
+        bodyGroup.removeAttribute("data-bubble-shape-transition-to");
+        bodyGroup.removeAttribute("data-bubble-shape-transition-progress");
+      } else {
+        bodyGroup.setAttribute("data-bubble-shape-transition-from", shapeTransition.from);
+        bodyGroup.setAttribute("data-bubble-shape-transition-to", shapeTransition.to);
+        bodyGroup.setAttribute("data-bubble-shape-transition-progress", String(shapeTransition.progress));
+      }
+      const bodyDrawableX = centerX - bodyCenterOffset.x;
+      const bodyDrawableY = centerY + bodyCenterOffset.y;
+      bodyGroup.setAttribute("transform", `translate(${native.width / 2 + bodyDrawableX - baseBubbleWidth / 2} ${native.height / 2 - bodyDrawableY - baseBubbleHeight / 2})`);
+      const left = centerX - totalWidth / 2;
+      const portraitPlacement = currentStyle.portrait?.placement ?? "left";
+      const portraitOnRight = portraitPlacement.endsWith("right");
+      const portraitOffsetX = (currentStyle.portrait?.offset.x ?? 0) * scaleMultiplier;
+      const portraitOffsetY = (currentStyle.portrait?.offset.y ?? 0) * scaleMultiplier;
+      const portraitX = (portraitOnRight ? left + textSize.width + contentGap$1 * scaleMultiplier : left) + portraitSize.width / 2 + portraitOffsetX;
+      let portraitY = centerY;
+      if (portraitPlacement.startsWith("top-")) portraitY = centerY + contentHeight / 2 - portraitSize.height / 2;
+      else if (portraitPlacement.startsWith("bottom-")) portraitY = centerY - contentHeight / 2 + portraitSize.height / 2;
+      portraitY += portraitOffsetY;
+      const textX = (portraitOnRight || !hasPortrait ? left : left + portraitSize.width + contentGap$1 * scaleMultiplier) + textSize.width / 2;
+      const toDomTransform = (x, y) => `translate(${native.width / 2 + x} ${native.height / 2 - y})`;
+      for (const target of [
+        portraitBase,
+        portraitBlink,
+        portraitLipSync
+      ]) target.group.setAttribute("transform", toDomTransform(portraitX, portraitY));
+      textGroup.setAttribute("transform", `${toDomTransform(textX, centerY)} scale(${scaleMultiplier})`);
+      const indicatorX = textX + textSize.width / 2 - indicatorSize.width / 2 - contentGap$1 * scaleMultiplier;
+      const indicatorY = centerY - textSize.height / 2 + indicatorSize.height / 2 + contentGap$1 * scaleMultiplier;
+      continueIndicator.group.setAttribute("transform", toDomTransform(indicatorX, indicatorY));
+      const radius = Math.min(currentStyle.portrait?.cornerRadius ?? 0, portraitSize.width / 2, portraitSize.height / 2);
+      clipRect.setAttribute("x", String(-portraitSize.width / 2));
+      clipRect.setAttribute("y", String(-portraitSize.height / 2));
+      clipRect.setAttribute("width", String(portraitSize.width));
+      clipRect.setAttribute("height", String(portraitSize.height));
+      clipRect.setAttribute("rx", String(radius));
+      for (const target of [
+        portraitBase,
+        portraitBlink,
+        portraitLipSync
+      ]) if (radius > 0) target.group.setAttribute("clip-path", `url(#${clipId})`);
+      else target.group.removeAttribute("clip-path");
+      applyMotionTransform();
+      updateVisibility();
+    };
+    const originalVisualChange = actor.onTargetVisualChange;
+    const visualChangeHook = (changedTarget) => {
+      originalVisualChange?.(changedTarget);
+      position();
+    };
+    const nativeSizeHook = () => position();
+    manager.acquire(surfaceGroup);
+    if (currentStyle.placement.basis === "actor") actor.onTargetVisualChange = visualChangeHook;
+    renderer.on?.("NativeSizeChanged", nativeSizeHook);
+    return Object.freeze({
+      targets,
+      setLayerVisible(layer, visible) {
+        if (disposed) return;
+        layerVisibility.set(layer, visible);
+        updateVisibility();
+      },
+      updateStyle(nextStyle) {
+        if (disposed) return;
+        const wasActorRelative = currentStyle.placement.basis === "actor";
+        currentStyle = nextStyle;
+        motionTranslation = [0, 0];
+        motionScaleMultiplier = 1;
+        motionOpacity = 1;
+        shapeTransition = void 0;
+        bodySignature = "";
+        if (nextStyle.reveal?.layout !== "RESERVED") reservedTextSize = void 0;
+        const isActorRelative = currentStyle.placement.basis === "actor";
+        if (wasActorRelative && !isActorRelative) {
+          if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
+        } else if (!wasActorRelative && isActorRelative) actor.onTargetVisualChange = visualChangeHook;
+        position();
+      },
+      captureTextLayout() {
+        if (disposed) return;
+        reservedTextSize = text.getSize();
+        position();
+      },
+      clearTextLayout() {
+        reservedTextSize = void 0;
+        position();
+      },
+      async animate(motion) {
+        if (disposed) return;
+        const durationSeconds = Math.max(0, motion.durationSeconds ?? 0);
+        const setFrame = () => {
+          if (disposed) return;
+          applyMotionTransform();
+          updateVisibility();
+        };
+        const eased = (progress) => easeMotionProgress(progress, motion.ease ?? "easeInOut");
+        if (motion.name === "fadeIn" || motion.name === "floatIn" || motion.name === "zoomIn" || motion.name === "riseUp") {
+          surfaceVisible = true;
+          const startingTranslation = motion.name === "floatIn" || motion.name === "riseUp" ? [0, 16] : [0, 0];
+          const startingScale = motion.name === "zoomIn" ? .01 : 1;
+          motionTranslation = startingTranslation;
+          motionScaleMultiplier = startingScale;
+          motionOpacity = motion.name === "fadeIn" ? 0 : 1;
+          setFrame();
+          await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+            const easedProgress = eased(progress);
+            motionTranslation = [startingTranslation[0] * (1 - easedProgress), startingTranslation[1] * (1 - easedProgress)];
+            motionScaleMultiplier = startingScale + (1 - startingScale) * easedProgress;
+            motionOpacity = motion.name === "fadeIn" ? easedProgress : 1;
+            setFrame();
+          });
+          motionTranslation = [0, 0];
+          motionScaleMultiplier = 1;
+          motionOpacity = 1;
+          position();
+          return;
+        }
+        if (motion.name === "fadeOut" || motion.name === "floatOut" || motion.name === "zoomOut" || motion.name === "sink") {
+          const endingTranslation = motion.name === "floatOut" || motion.name === "sink" ? [0, -16] : [0, 0];
+          const endingScale = motion.name === "zoomOut" ? .01 : 1;
+          await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+            const easedProgress = eased(progress);
+            motionTranslation = [endingTranslation[0] * easedProgress, endingTranslation[1] * easedProgress];
+            motionScaleMultiplier = 1 + (endingScale - 1) * easedProgress;
+            motionOpacity = motion.name === "fadeOut" ? 1 - easedProgress : 1;
+            setFrame();
+          });
+          surfaceVisible = false;
+          updateVisibility();
+          motionTranslation = [0, 0];
+          motionScaleMultiplier = 1;
+          motionOpacity = 1;
+          return;
+        }
+        if (motion.name === "shake") {
+          const count = Math.max(1, Math.floor(motion.count ?? 1));
+          const animationDuration = durationSeconds > 0 ? durationSeconds : count * .08;
+          const vector = bubbleDirectionVector(typeof motion.direction === "number" ? motion.direction : motion.direction ?? "right");
+          await runMotionTimeline(scheduler, animationDuration, (progress) => {
+            const displacement = Math.sin(eased(progress) * count * Math.PI * 2) * 5;
+            motionTranslation = [vector.x * displacement, vector.y * displacement];
+            setFrame();
+          });
+          motionTranslation = [0, 0];
+          position();
+          return;
+        }
+        if (motion.name === "explode") {
+          const count = Math.max(1, Math.floor(motion.count ?? 1));
+          const animationDuration = durationSeconds > 0 ? durationSeconds : count * .12;
+          const factor = motion.relativeScale ?? 1.15;
+          await runMotionTimeline(scheduler, animationDuration, (progress) => {
+            const wave = Math.abs(Math.sin(eased(progress) * count * Math.PI));
+            motionScaleMultiplier = 1 + (factor - 1) * wave;
+            setFrame();
+          });
+          motionScaleMultiplier = 1;
+          position();
+          return;
+        }
+        if (motion.name === "animateBubbleShape") {
+          const targetStyle = motion.visualStyle ?? currentStyle.visualStyle;
+          const fromStyle = currentStyle.visualStyle;
+          const speed = motion.speed === void 0 ? 1 : Math.max(0, motion.speed);
+          shapeTransition = {
+            from: fromStyle,
+            to: targetStyle,
+            progress: 0
+          };
+          position();
+          await runMotionTimeline(scheduler, durationSeconds, (progress) => {
+            const speedProgress = durationSeconds === 0 ? 1 : clampMotionProgress(progress * Math.max(speed, 1));
+            shapeTransition = {
+              from: fromStyle,
+              to: targetStyle,
+              progress: easeMotionProgress(speedProgress, motion.ease ?? "easeInOut")
+            };
+            bodySignature = "";
+            position();
+          });
+          shapeTransition = void 0;
+          bodySignature = "";
+          position();
+        }
+      },
+      show() {
+        if (disposed) return;
+        surfaceVisible = true;
+        position();
+      },
+      hide() {
+        if (disposed) return;
+        surfaceVisible = false;
+        updateVisibility();
+      },
+      async dispose() {
+        if (disposed) return;
+        disposed = true;
+        if (actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
+        renderer.off?.("NativeSizeChanged", nativeSizeHook);
+        manager.release(surfaceGroup);
+        text.clear();
+        await Promise.all([...layerTargets.values()].map((target) => target.release()));
       }
     });
   }
@@ -9455,6 +10272,28 @@
     if (methods.some((method) => typeof value[method] !== "function")) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", `Bubble renderer must provide ${methods.join(", ")}.`);
     return value;
   }
+  function normalizeRenderBackend(value) {
+    const backend = value ?? "scratch-render";
+    if (backend !== "scratch-render" && backend !== "svg-overlay") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", "Bubble bubbleRenderBackend must be scratch-render or svg-overlay.");
+    return backend;
+  }
+  function normalizeOverlayUnsupportedBehavior(value) {
+    const behavior = value ?? "error";
+    if (behavior !== "error" && behavior !== "fallback") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", "Bubble svgOverlayUnsupportedBehavior must be error or fallback.");
+    return behavior;
+  }
+  function resolveOverlayDocument(value) {
+    const documentValue = value ?? (typeof globalThis.document === "undefined" ? void 0 : globalThis.document);
+    if (documentValue === void 0) return void 0;
+    if (!isRecord(documentValue) || typeof documentValue.createElementNS !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", "Bubble SVG overlay document must provide createElementNS().");
+    return documentValue;
+  }
+  function overlayUnavailableReason(renderer, documentValue, textCapability) {
+    if (typeof renderer.addOverlay !== "function" || typeof renderer.removeOverlay !== "function") return "the renderer does not provide addOverlay() and removeOverlay()";
+    if (documentValue === void 0) return "the host does not provide a DOM document";
+    if (typeof documentValue.defaultView?.DOMParser !== "function") return "the host document does not provide DOMParser";
+    if (!isRecord(textCapability) || typeof textCapability.layoutText !== "function") return "a host-neutral svgOverlayTextCapability is not available";
+  }
   function requireAssetManager(value) {
     if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
     return value;
@@ -9488,52 +10327,6 @@
       width,
       height
     };
-  }
-  function clamp01(value) {
-    return Math.max(0, Math.min(1, value));
-  }
-  function easeProgress(value, ease) {
-    const progress = clamp01(value);
-    switch (ease) {
-      case "linear": return progress;
-      case "easeIn": return progress * progress;
-      case "easeOut": return 1 - (1 - progress) * (1 - progress);
-      case "easeInOut": return progress < .5 ? 2 * progress * progress : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-      default: return progress;
-    }
-  }
-  /**
-  * Drives a motion with the same scheduler used by frame loops and reveal.
-  * The adapter intentionally does not depend on requestAnimationFrame so a
-  * host can provide deterministic time in tests and non-browser runtimes.
-  */
-  function runMotionTimeline(scheduler, durationSeconds, onFrame) {
-    const durationMilliseconds = Math.max(0, durationSeconds * 1e3);
-    if (durationMilliseconds === 0) {
-      onFrame(1);
-      return Promise.resolve();
-    }
-    return new Promise((resolve, reject) => {
-      let elapsed = 0;
-      let timer;
-      const tick = () => {
-        const step = Math.min(16, durationMilliseconds - elapsed);
-        elapsed += step;
-        try {
-          onFrame(clamp01(elapsed / durationMilliseconds));
-        } catch (error) {
-          if (timer !== void 0) scheduler.clearTimeout(timer);
-          reject(error);
-          return;
-        }
-        if (elapsed >= durationMilliseconds) {
-          resolve();
-          return;
-        }
-        timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds - elapsed));
-      };
-      timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds));
-    });
   }
   function fitDrawable(renderer, target, boxSize, scaleMultiplier = 1) {
     const native = readSize(renderer, target, {
@@ -9891,7 +10684,7 @@
             applyMotionTransforms();
             updateVisibility();
           };
-          const eased = (progress) => easeProgress(progress, motion.ease ?? "easeInOut");
+          const eased = (progress) => easeMotionProgress(progress, motion.ease ?? "easeInOut");
           if (motion.name === "fadeIn" || motion.name === "floatIn" || motion.name === "zoomIn" || motion.name === "riseUp") {
             surfaceVisible = true;
             const startingTranslation = motion.name === "floatIn" || motion.name === "riseUp" ? [0, 16] : [0, 0];
@@ -9979,11 +10772,11 @@
             };
             position();
             await runMotionTimeline(scheduler, durationSeconds, (progress) => {
-              const speedProgress = durationSeconds === 0 ? 1 : clamp01(progress * Math.max(speed, 1) / 1);
+              const speedProgress = durationSeconds === 0 ? 1 : clampMotionProgress(progress * Math.max(speed, 1) / 1);
               shapeTransition = {
                 from: fromStyle,
                 to: targetStyle,
-                progress: easeProgress(speedProgress, motion.ease ?? "easeInOut")
+                progress: easeMotionProgress(speedProgress, motion.ease ?? "easeInOut")
               };
               position();
             });
@@ -10029,52 +10822,74 @@
     if (!isRecord(runtimeInput)) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
     const runtime = runtimeInput;
     const renderer = requireRenderer(runtime.renderer);
+    const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
+    const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(options.svgOverlayUnsupportedBehavior);
+    const overlayDocument = requestedBackend === "svg-overlay" ? resolveOverlayDocument(options.document) : void 0;
+    const unavailableReason = requestedBackend === "svg-overlay" ? overlayUnavailableReason(renderer, overlayDocument, options.svgOverlayTextCapability) : void 0;
+    if (requestedBackend === "svg-overlay" && unavailableReason !== void 0 && unsupportedBehavior === "error") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay backend is unavailable because ${unavailableReason}. Use scratch-render or install the required public upstream capability.`);
+    const renderBackend = requestedBackend === "svg-overlay" && unavailableReason === void 0 ? "svg-overlay" : "scratch-render";
+    const scheduler = options.scheduler ?? {
+      setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
+      clearTimeout: (handle) => globalThis.clearTimeout(handle)
+    };
     const getAssetExtension = () => requireAssetManager(runtime.ext_kubohiroyaassetmanager);
     let textCapability;
-    if (options.textCapability !== void 0) textCapability = options.textCapability;
+    if (renderBackend === "svg-overlay") try {
+      textCapability = createSvgOverlayTextAdapter(options.svgOverlayTextCapability, renderer);
+    } catch (error) {
+      throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay text capability is invalid: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    else if (options.textCapability !== void 0) textCapability = options.textCapability;
     else try {
       textCapability = createTurboWarpSvgTextCapability(runtime.ext_kubohiroyasvgtext);
     } catch {
       throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-003", "Bubble requires a text capability. Load @kubohiroya/turbowarp-svg-text or provide options.textCapability before using Bubble blocks.");
     }
+    let imageResolver;
+    if (renderBackend === "svg-overlay") {
+      if (options.svgOverlayImageCapability !== void 0) try {
+        imageResolver = createSvgOverlayImageAdapter(options.svgOverlayImageCapability);
+      } catch (error) {
+        throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    } else imageResolver = options.imageResolver ?? {
+      isRegistered(name) {
+        return getAssetExtension().isLoaded({ NAME: name });
+      },
+      getMimeType(name) {
+        return getAssetExtension().getAssetMimeType({ NAME: name });
+      },
+      async applyToTarget(name, target) {
+        const drawableID = target.drawableID;
+        if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
+        const skin = await getAssetExtension().resolveSkin(name);
+        if (!isRecord(skin) || !Number.isInteger(skin.skinId) || skin.skinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(name)}`);
+        renderer.updateDrawableSkinId(drawableID, skin.skinId);
+        runtime.requestRedraw?.();
+      }
+    };
+    const audio = options.audio ?? {
+      isRegistered(name) {
+        return getAssetExtension().isLoaded({ NAME: name });
+      },
+      getMimeType(name) {
+        return getAssetExtension().getAssetMimeType({ NAME: name });
+      },
+      async playSound(name, playOptions = {}) {
+        const extension = getAssetExtension();
+        const method = playOptions.untilDone ? extension?.playSoundUntilDone : extension?.playSound;
+        if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
+        await method.call(extension, { NAME: name });
+      }
+    };
+    const overlayManager = renderBackend === "svg-overlay" ? createSvgOverlaySurfaceManager(renderer, overlayDocument) : void 0;
     return createBubbleComposition({
-      imageResolver: options.imageResolver ?? {
-        isRegistered(name) {
-          return getAssetExtension().isLoaded({ NAME: name });
-        },
-        getMimeType(name) {
-          return getAssetExtension().getAssetMimeType({ NAME: name });
-        },
-        async applyToTarget(name, target) {
-          const drawableID = target.drawableID;
-          if (!Number.isInteger(drawableID) || drawableID < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
-          const skin = await getAssetExtension().resolveSkin(name);
-          if (!isRecord(skin) || !Number.isInteger(skin.skinId) || skin.skinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(name)}`);
-          renderer.updateDrawableSkinId(drawableID, skin.skinId);
-          runtime.requestRedraw?.();
-        }
-      },
-      audio: options.audio ?? {
-        isRegistered(name) {
-          return getAssetExtension().isLoaded({ NAME: name });
-        },
-        getMimeType(name) {
-          return getAssetExtension().getAssetMimeType({ NAME: name });
-        },
-        async playSound(name, playOptions = {}) {
-          const extension = getAssetExtension();
-          const method = playOptions.untilDone ? extension?.playSoundUntilDone : extension?.playSound;
-          if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
-          await method.call(extension, { NAME: name });
-        }
-      },
+      ...imageResolver === void 0 ? {} : { imageResolver },
+      audio,
       textCapability,
       createSurface({ actor, actorKey, style }) {
         if (!isRecord(actor) || typeof actor.id !== "string") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-        return createSurface(runtime, actor, actorKey, style, options.scheduler ?? {
-          setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
-          clearTimeout: (handle) => globalThis.clearTimeout(handle)
-        });
+        return renderBackend === "svg-overlay" ? createSvgOverlaySurface(overlayManager, actor, actorKey, style, scheduler) : createSurface(runtime, actor, actorKey, style, scheduler);
       },
       ...options.scheduler === void 0 ? {} : { scheduler: options.scheduler },
       ...options.onAnimationError === void 0 ? {} : { onAnimationError: options.onAnimationError }

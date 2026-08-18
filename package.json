@@ -100,6 +100,7 @@
     "@kubohiroya/vite-plugin-turbowarp-extension": "0.1.1",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
+    "happy-dom": "20.0.8",
     "jsclipper": "github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1",
     "marked": "18.0.9",
     "prettier": "^3.9.6",

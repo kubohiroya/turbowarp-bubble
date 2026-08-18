@@ -30,6 +30,44 @@ import {
   bubbleDirectionVector,
   type BubbleDirectionName,
 } from "./placement.js";
+import {
+  clampMotionProgress,
+  easeMotionProgress,
+  runMotionTimeline,
+} from "./surface-motion.js";
+import {
+  createSvgOverlayImageAdapter,
+  createSvgOverlaySurface,
+  createSvgOverlaySurfaceManager,
+  createSvgOverlayTextAdapter,
+  defaultBubbleOverlayUnsupportedBehavior,
+  defaultBubbleRenderBackend,
+  type BubbleOverlayUnsupportedBehavior,
+  type BubbleRenderBackend,
+  type BubbleSvgOverlayActor,
+  type BubbleSvgOverlayImageCapability,
+  type BubbleSvgOverlayRenderer,
+  type BubbleSvgOverlayTextCapability,
+} from "./svg-overlay-surface.js";
+
+export {
+  createSvgOverlayImageAdapter,
+  createSvgOverlaySurface,
+  createSvgOverlaySurfaceManager,
+  createSvgOverlayTextAdapter,
+  bubbleRenderBackends,
+  defaultBubbleOverlayUnsupportedBehavior,
+  defaultBubbleRenderBackend,
+  type BubbleOverlayUnsupportedBehavior,
+  type BubbleRenderBackend,
+  type BubbleSvgOverlayActor,
+  type BubbleSvgOverlayImageCapability,
+  type BubbleSvgOverlayImageResource,
+  type BubbleSvgOverlayRenderer,
+  type BubbleSvgOverlaySurfaceManager,
+  type BubbleSvgOverlayTextCapability,
+  type BubbleSvgOverlayTextLayout,
+} from "./svg-overlay-surface.js";
 
 const spriteLayer = "sprite";
 const portraitBoxSize = 96;
@@ -78,6 +116,10 @@ export interface TurboWarpBubbleRenderer {
     layerGroup: string,
     relative?: boolean,
   ): void;
+  addOverlay?(element: Element, mode?: string): unknown;
+  removeOverlay?(element: Element): void;
+  on?(event: string, listener: (...args: unknown[]) => void): void;
+  off?(event: string, listener: (...args: unknown[]) => void): void;
 }
 
 export interface TurboWarpAssetManagerExtension {
@@ -98,6 +140,16 @@ export interface TurboWarpBubbleRuntime {
 }
 
 export interface TurboWarpBubbleCompositionOptions {
+  /** Defaults to scratch-render; svg-overlay is explicitly opt-in. */
+  readonly bubbleRenderBackend?: BubbleRenderBackend;
+  /** Defaults to error so an opt-in request never silently changes semantics. */
+  readonly svgOverlayUnsupportedBehavior?: BubbleOverlayUnsupportedBehavior;
+  /** Host-neutral text layout supplied by turbowarp-svg-text or another host. */
+  readonly svgOverlayTextCapability?: BubbleSvgOverlayTextCapability;
+  /** Releasable DOM image resources supplied by Asset Manager or another host. */
+  readonly svgOverlayImageCapability?: BubbleSvgOverlayImageCapability;
+  /** Browser document override for packaged players and deterministic tests. */
+  readonly document?: Document;
   readonly imageResolver?: BubbleImageCapability;
   readonly audio?: BubbleAudioCapability;
   readonly textCapability?: BubbleTextCapability;
@@ -106,7 +158,10 @@ export interface TurboWarpBubbleCompositionOptions {
 }
 
 export type BubbleRuntimeAdapterErrorCode =
-  "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002" | "BUBBLE-RUNTIME-003";
+  | "BUBBLE-RUNTIME-001"
+  | "BUBBLE-RUNTIME-002"
+  | "BUBBLE-RUNTIME-003"
+  | "BUBBLE-RUNTIME-004";
 
 export class BubbleRuntimeAdapterError extends Error {
   public readonly code: BubbleRuntimeAdapterErrorCode;
@@ -163,6 +218,74 @@ function requireRenderer(value: unknown): TurboWarpBubbleRenderer {
   return value as unknown as TurboWarpBubbleRenderer;
 }
 
+function normalizeRenderBackend(value: unknown): BubbleRenderBackend {
+  const backend = value ?? defaultBubbleRenderBackend;
+  if (backend !== "scratch-render" && backend !== "svg-overlay") {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      "Bubble bubbleRenderBackend must be scratch-render or svg-overlay.",
+    );
+  }
+  return backend;
+}
+
+function normalizeOverlayUnsupportedBehavior(
+  value: unknown,
+): BubbleOverlayUnsupportedBehavior {
+  const behavior = value ?? defaultBubbleOverlayUnsupportedBehavior;
+  if (behavior !== "error" && behavior !== "fallback") {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      "Bubble svgOverlayUnsupportedBehavior must be error or fallback.",
+    );
+  }
+  return behavior;
+}
+
+function resolveOverlayDocument(value: unknown): Document | undefined {
+  const documentValue =
+    value ??
+    (typeof globalThis.document === "undefined"
+      ? undefined
+      : globalThis.document);
+  if (documentValue === undefined) return undefined;
+  if (
+    !isRecord(documentValue) ||
+    typeof documentValue.createElementNS !== "function"
+  ) {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      "Bubble SVG overlay document must provide createElementNS().",
+    );
+  }
+  return documentValue as unknown as Document;
+}
+
+function overlayUnavailableReason(
+  renderer: TurboWarpBubbleRenderer,
+  documentValue: Document | undefined,
+  textCapability: BubbleSvgOverlayTextCapability | undefined,
+): string | undefined {
+  if (
+    typeof renderer.addOverlay !== "function" ||
+    typeof renderer.removeOverlay !== "function"
+  ) {
+    return "the renderer does not provide addOverlay() and removeOverlay()";
+  }
+  if (documentValue === undefined)
+    return "the host does not provide a DOM document";
+  if (typeof documentValue.defaultView?.DOMParser !== "function") {
+    return "the host document does not provide DOMParser";
+  }
+  if (
+    !isRecord(textCapability) ||
+    typeof textCapability.layoutText !== "function"
+  ) {
+    return "a host-neutral svgOverlayTextCapability is not available";
+  }
+  return undefined;
+}
+
 function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
   if (
     !isRecord(value) ||
@@ -208,70 +331,6 @@ function readSize(
   const height = Number(raw[1]);
   if (!(width > 0) || !(height > 0)) return fallback;
   return { width, height };
-}
-
-function clamp01(value: number): number {
-  return Math.max(0, Math.min(1, value));
-}
-
-function easeProgress(value: number, ease: BubbleMotionInput["ease"]): number {
-  const progress = clamp01(value);
-  switch (ease) {
-    case "linear":
-      return progress;
-    case "easeIn":
-      return progress * progress;
-    case "easeOut":
-      return 1 - (1 - progress) * (1 - progress);
-    case "easeInOut": {
-      return progress < 0.5
-        ? 2 * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-    }
-    default:
-      return progress;
-  }
-}
-
-/**
- * Drives a motion with the same scheduler used by frame loops and reveal.
- * The adapter intentionally does not depend on requestAnimationFrame so a
- * host can provide deterministic time in tests and non-browser runtimes.
- */
-function runMotionTimeline(
-  scheduler: BubbleScheduler,
-  durationSeconds: number,
-  onFrame: (progress: number) => void,
-): Promise<void> {
-  const durationMilliseconds = Math.max(0, durationSeconds * 1000);
-  if (durationMilliseconds === 0) {
-    onFrame(1);
-    return Promise.resolve();
-  }
-  return new Promise<void>((resolve, reject) => {
-    let elapsed = 0;
-    let timer: unknown;
-    const tick = (): void => {
-      const step = Math.min(16, durationMilliseconds - elapsed);
-      elapsed += step;
-      try {
-        onFrame(clamp01(elapsed / durationMilliseconds));
-      } catch (error) {
-        if (timer !== undefined) scheduler.clearTimeout(timer);
-        reject(error);
-        return;
-      }
-      if (elapsed >= durationMilliseconds) {
-        resolve();
-        return;
-      }
-      timer = scheduler.setTimeout(
-        tick,
-        Math.min(16, durationMilliseconds - elapsed),
-      );
-    };
-    timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds));
-  });
 }
 
 function fitDrawable(
@@ -899,7 +958,7 @@ function createSurface(
           updateVisibility();
         };
         const eased = (progress: number): number =>
-          easeProgress(progress, motion.ease ?? "easeInOut");
+          easeMotionProgress(progress, motion.ease ?? "easeInOut");
         if (
           motion.name === "fadeIn" ||
           motion.name === "floatIn" ||
@@ -1026,11 +1085,14 @@ function createSurface(
             const speedProgress =
               durationSeconds === 0
                 ? 1
-                : clamp01((progress * Math.max(speed, 1)) / 1);
+                : clampMotionProgress((progress * Math.max(speed, 1)) / 1);
             shapeTransition = {
               from: fromStyle,
               to: targetStyle,
-              progress: easeProgress(speedProgress, motion.ease ?? "easeInOut"),
+              progress: easeMotionProgress(
+                speedProgress,
+                motion.ease ?? "easeInOut",
+              ),
             };
             position();
           });
@@ -1095,10 +1157,58 @@ export function createTurboWarpBubbleComposition(
   }
   const runtime = runtimeInput;
   const renderer = requireRenderer(runtime.renderer);
+  const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
+  const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(
+    options.svgOverlayUnsupportedBehavior,
+  );
+  const overlayDocument =
+    requestedBackend === "svg-overlay"
+      ? resolveOverlayDocument(options.document)
+      : undefined;
+  const unavailableReason =
+    requestedBackend === "svg-overlay"
+      ? overlayUnavailableReason(
+          renderer,
+          overlayDocument,
+          options.svgOverlayTextCapability,
+        )
+      : undefined;
+  if (
+    requestedBackend === "svg-overlay" &&
+    unavailableReason !== undefined &&
+    unsupportedBehavior === "error"
+  ) {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      `Bubble SVG overlay backend is unavailable because ${unavailableReason}. Use scratch-render or install the required public upstream capability.`,
+    );
+  }
+  const renderBackend: BubbleRenderBackend =
+    requestedBackend === "svg-overlay" && unavailableReason === undefined
+      ? "svg-overlay"
+      : "scratch-render";
+  const scheduler = options.scheduler ?? {
+    setTimeout: (callback: () => void, milliseconds: number) =>
+      globalThis.setTimeout(callback, milliseconds),
+    clearTimeout: (handle: unknown) =>
+      globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
+  };
   const getAssetExtension = (): TurboWarpAssetManagerExtension =>
     requireAssetManager(runtime.ext_kubohiroyaassetmanager);
   let textCapability: BubbleTextCapability;
-  if (options.textCapability !== undefined) {
+  if (renderBackend === "svg-overlay") {
+    try {
+      textCapability = createSvgOverlayTextAdapter(
+        options.svgOverlayTextCapability as BubbleSvgOverlayTextCapability,
+        renderer,
+      );
+    } catch (error) {
+      throw new BubbleRuntimeAdapterError(
+        "BUBBLE-RUNTIME-004",
+        `Bubble SVG overlay text capability is invalid: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  } else if (options.textCapability !== undefined) {
     textCapability = options.textCapability;
   } else {
     try {
@@ -1112,36 +1222,52 @@ export function createTurboWarpBubbleComposition(
       );
     }
   }
-  const imageResolver: BubbleImageCapability = options.imageResolver ?? {
-    isRegistered(name: unknown): boolean {
-      return getAssetExtension().isLoaded({ NAME: name });
-    },
-    getMimeType(name: unknown): string {
-      return getAssetExtension().getAssetMimeType({ NAME: name });
-    },
-    async applyToTarget(name, target): Promise<void> {
-      const drawableID = (target as unknown as DrawableTarget).drawableID;
-      if (!Number.isInteger(drawableID) || drawableID < 0) {
+  let imageResolver: BubbleImageCapability | undefined;
+  if (renderBackend === "svg-overlay") {
+    if (options.svgOverlayImageCapability !== undefined) {
+      try {
+        imageResolver = createSvgOverlayImageAdapter(
+          options.svgOverlayImageCapability,
+        );
+      } catch (error) {
         throw new BubbleRuntimeAdapterError(
-          "BUBBLE-RUNTIME-001",
-          "Bubble image target drawable is invalid.",
+          "BUBBLE-RUNTIME-004",
+          `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`,
         );
       }
-      const skin = await getAssetExtension().resolveSkin(name);
-      if (
-        !isRecord(skin) ||
-        !Number.isInteger(skin.skinId) ||
-        skin.skinId < 0
-      ) {
-        throw new BubbleRuntimeAdapterError(
-          "BUBBLE-RUNTIME-002",
-          `Asset Manager did not resolve an image skin: ${String(name)}`,
-        );
-      }
-      renderer.updateDrawableSkinId(drawableID, skin.skinId);
-      runtime.requestRedraw?.();
-    },
-  };
+    }
+  } else {
+    imageResolver = options.imageResolver ?? {
+      isRegistered(name: unknown): boolean {
+        return getAssetExtension().isLoaded({ NAME: name });
+      },
+      getMimeType(name: unknown): string {
+        return getAssetExtension().getAssetMimeType({ NAME: name });
+      },
+      async applyToTarget(name, target): Promise<void> {
+        const drawableID = (target as unknown as DrawableTarget).drawableID;
+        if (!Number.isInteger(drawableID) || drawableID < 0) {
+          throw new BubbleRuntimeAdapterError(
+            "BUBBLE-RUNTIME-001",
+            "Bubble image target drawable is invalid.",
+          );
+        }
+        const skin = await getAssetExtension().resolveSkin(name);
+        if (
+          !isRecord(skin) ||
+          !Number.isInteger(skin.skinId) ||
+          skin.skinId < 0
+        ) {
+          throw new BubbleRuntimeAdapterError(
+            "BUBBLE-RUNTIME-002",
+            `Asset Manager did not resolve an image skin: ${String(name)}`,
+          );
+        }
+        renderer.updateDrawableSkinId(drawableID, skin.skinId);
+        runtime.requestRedraw?.();
+      },
+    };
+  }
   const audio: BubbleAudioCapability | undefined = options.audio ?? {
     isRegistered(name: unknown): boolean {
       return getAssetExtension().isLoaded({ NAME: name });
@@ -1166,8 +1292,15 @@ export function createTurboWarpBubbleComposition(
       await method.call(extension, { NAME: name });
     },
   };
+  const overlayManager =
+    renderBackend === "svg-overlay"
+      ? createSvgOverlaySurfaceManager(
+          renderer as unknown as BubbleSvgOverlayRenderer,
+          overlayDocument as Document,
+        )
+      : undefined;
   return createBubbleComposition({
-    imageResolver,
+    ...(imageResolver === undefined ? {} : { imageResolver }),
     audio,
     textCapability,
     createSurface({ actor, actorKey, style }) {
@@ -1177,18 +1310,21 @@ export function createTurboWarpBubbleComposition(
           "Bubble actor target is invalid.",
         );
       }
-      return createSurface(
-        runtime,
-        actor as unknown as TurboWarpBubbleTarget,
-        actorKey,
-        style,
-        options.scheduler ?? {
-          setTimeout: (callback: () => void, milliseconds: number) =>
-            globalThis.setTimeout(callback, milliseconds),
-          clearTimeout: (handle: unknown) =>
-            globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
-        },
-      );
+      return renderBackend === "svg-overlay"
+        ? createSvgOverlaySurface(
+            overlayManager as NonNullable<typeof overlayManager>,
+            actor as unknown as BubbleSvgOverlayActor,
+            actorKey,
+            style,
+            scheduler,
+          )
+        : createSurface(
+            runtime,
+            actor as unknown as TurboWarpBubbleTarget,
+            actorKey,
+            style,
+            scheduler,
+          );
     },
     ...(options.scheduler === undefined
       ? {}

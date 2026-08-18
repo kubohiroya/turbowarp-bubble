@@ -4,10 +4,8 @@ import definitions from "./src/block-definitions.json" with { type: "json" };
 import { extensionConfig } from "./src/config.js";
 import { extensionManifestPlugin } from "./src/extension-manifest.js";
 
-export default defineConfig({
-  define: {
-    Buffer: "undefined",
-  },
+export default defineConfig(({ command }) => ({
+  define: command === "build" ? { Buffer: "undefined" } : {},
   plugins: [
     turboWarpExtension({
       id: extensionConfig.id,
@@ -33,4 +31,4 @@ export default defineConfig({
       },
     },
   ],
-});
+}));
