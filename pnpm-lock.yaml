@@ -16,8 +16,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
       '@kubohiroya/turbowarp-asset-manager':
-        specifier: 0.7.0
-        version: 0.7.0
+        specifier: 0.12.0
+        version: 0.12.0
       '@kubohiroya/turbowarp-async-input':
         specifier: 0.3.0
         version: 0.3.0
@@ -25,8 +25,8 @@ importers:
         specifier: 0.3.0
         version: 0.3.0
       '@kubohiroya/turbowarp-svg-text':
-        specifier: 0.4.0
-        version: 0.4.0
+        specifier: 0.6.0
+        version: 0.6.0
       '@kubohiroya/vite-plugin-turbowarp-extension':
         specifier: 0.1.1
         version: 0.1.1(vite@8.2.1(@types/node@26.1.2))
@@ -133,8 +133,8 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-manager@0.7.0':
-    resolution: {integrity: sha512-2SuxOyPsu3IFVVoR/H//1i2rcsbKpYzFeSCWg5juAMbo950sFgUIlMBln9bfpnG1YKPIC8m70oXF3wscfW8+YQ==}
+  '@kubohiroya/turbowarp-asset-manager@0.12.0':
+    resolution: {integrity: sha512-Ejc1wCzz2b+A8zeZBL7yNb5woqs9KG6uOxABKPmTLR2K6lrIoDFS4c2HAGwyljMgY+d4K2z+MNoAvt/XSxH2fw==}
 
   '@kubohiroya/turbowarp-async-input@0.3.0':
     resolution: {integrity: sha512-GbQ8lmZDS388TvFGa8C3EMKzdfUuq/vrzlfRD8jNtbWpI9/Rv5KZZNzvxr67t6Y++0obABFjuxpxxrTN1kqqHg==}
@@ -142,8 +142,8 @@ packages:
   '@kubohiroya/turbowarp-runtime-expression@0.3.0':
     resolution: {integrity: sha512-6GCzLqwKxQW0h65tuszZxVzRueNrizktQeL6zw2e+QpPeE3Xjy2ux0z/UGjUvqz1l4V3YChiIcMqP1z3FxDg6Q==}
 
-  '@kubohiroya/turbowarp-svg-text@0.4.0':
-    resolution: {integrity: sha512-wtdCZdAfjowJFwELKRQ3XPJjF51iatuo2k3bNdcHVy3884kqfELys6mDxOnmKnvdb1B3kbwUAusYwVPMDRqHRA==}
+  '@kubohiroya/turbowarp-svg-text@0.6.0':
+    resolution: {integrity: sha512-ol0IAxvGlmy5hKzxYEIFRymw+YzEbCgyuw+KHcP6NM059GGUsDBTUJHLX4h5Zo+MhplSWq9C9LMZPuxYqeyqtQ==}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.1.1':
     resolution: {integrity: sha512-6lOlSnfOcKeGwI8SpWQMC6Vz153WIit+1fVxhowy2YdgqC5tP96Zmzkn+Q+4JlJVRsFo89jrp7ifqJcWL56svg==}
@@ -959,13 +959,13 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-manager@0.7.0': {}
+  '@kubohiroya/turbowarp-asset-manager@0.12.0': {}
 
   '@kubohiroya/turbowarp-async-input@0.3.0': {}
 
   '@kubohiroya/turbowarp-runtime-expression@0.3.0': {}
 
-  '@kubohiroya/turbowarp-svg-text@0.4.0': {}
+  '@kubohiroya/turbowarp-svg-text@0.6.0': {}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.1.1(vite@8.2.1(@types/node@26.1.2))':
     dependencies:

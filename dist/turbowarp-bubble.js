@@ -9513,10 +9513,24 @@
     const fontWeight = value.fontWeight;
     if (fontWeight !== void 0 && fontWeight !== "normal" && fontWeight !== "bold" && (!Number.isFinite(fontWeight) || Number(fontWeight) < 1 || Number(fontWeight) > 1e3)) throw new TypeError("SVG overlay fontWeight is invalid.");
     const lines = Object.freeze(value.lines.map((line) => {
-      if (typeof line !== "string") throw new TypeError("SVG overlay text lines must be strings.");
-      return line;
+      if (typeof line === "string") return line;
+      if (!isRecord$1(line) || typeof line.text !== "string") throw new TypeError("SVG overlay text lines must be strings or positioned line records.");
+      const hasX = line.x !== void 0;
+      if (hasX !== (line.baseline !== void 0)) throw new TypeError("SVG overlay positioned text lines require both x and baseline.");
+      if (hasX && (!Number.isFinite(line.x) || !Number.isFinite(line.baseline))) throw new TypeError("SVG overlay text line coordinates must be finite numbers.");
+      return Object.freeze({
+        text: line.text,
+        ...hasX ? {
+          x: Number(line.x),
+          baseline: Number(line.baseline)
+        } : {}
+      });
     }));
     const backgroundColor = value.backgroundColor === void 0 ? void 0 : requireSafeColor(value.backgroundColor, "SVG overlay backgroundColor");
+    const backgroundCornerRadius = value.backgroundCornerRadius === void 0 ? void 0 : Number(value.backgroundCornerRadius);
+    if (backgroundCornerRadius !== void 0 && (!Number.isFinite(backgroundCornerRadius) || backgroundCornerRadius < 0)) throw new TypeError("SVG overlay backgroundCornerRadius must be a non-negative finite number.");
+    const preserveWhitespace = value.preserveWhitespace;
+    if (preserveWhitespace !== void 0 && typeof preserveWhitespace !== "boolean") throw new TypeError("SVG overlay preserveWhitespace must be a boolean.");
     return Object.freeze({
       alignment,
       fill: requireSafeColor(value.fill, "SVG overlay text fill"),
@@ -9527,8 +9541,10 @@
       lines,
       width: requireFiniteDimension(value.width, "SVG overlay text width"),
       ...backgroundColor === void 0 ? {} : { backgroundColor },
+      ...backgroundCornerRadius === void 0 ? {} : { backgroundCornerRadius },
       ...fontStyle === void 0 ? {} : { fontStyle },
-      ...fontWeight === void 0 ? {} : { fontWeight }
+      ...fontWeight === void 0 ? {} : { fontWeight },
+      ...preserveWhitespace === void 0 ? {} : { preserveWhitespace }
     });
   }
   function createTextTarget(document, group) {
@@ -9559,6 +9575,7 @@
           background.setAttribute("width", String(layout.width));
           background.setAttribute("height", String(layout.height));
           background.setAttribute("fill", layout.backgroundColor);
+          if (layout.backgroundCornerRadius !== void 0) background.setAttribute("rx", String(layout.backgroundCornerRadius));
           children.push(background);
         }
         const text = document.createElementNS(svgNamespace, "text");
@@ -9568,15 +9585,16 @@
         text.setAttribute("fill", layout.fill);
         text.setAttribute("font-family", layout.fontFamily);
         text.setAttribute("font-size", String(layout.fontSize));
-        text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
+        if (layout.preserveWhitespace !== false) text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
         if (layout.fontStyle !== void 0) text.setAttribute("font-style", layout.fontStyle);
         if (layout.fontWeight !== void 0) text.setAttribute("font-weight", String(layout.fontWeight));
         const firstBaseline = -Math.max(layout.fontSize, (layout.lines.length - 1) * layout.lineHeight + layout.fontSize) / 2 + layout.fontSize;
         layout.lines.forEach((line, index) => {
           const tspan = document.createElementNS(svgNamespace, "tspan");
-          tspan.setAttribute("x", String(x));
-          tspan.setAttribute("y", String(firstBaseline + index * layout.lineHeight));
-          tspan.textContent = line;
+          const positionedLine = typeof line === "string" ? void 0 : line;
+          tspan.setAttribute("x", String(positionedLine?.x ?? x));
+          tspan.setAttribute("y", String(positionedLine?.baseline ?? firstBaseline + index * layout.lineHeight));
+          tspan.textContent = typeof line === "string" ? line : line.text;
           text.appendChild(tspan);
         });
         children.push(text);

@@ -43,9 +43,18 @@ export const defaultBubbleRenderBackend: BubbleRenderBackend = "scratch-render";
 export const defaultBubbleOverlayUnsupportedBehavior: BubbleOverlayUnsupportedBehavior =
   "error";
 
+export interface BubbleSvgOverlayTextLine {
+  /** Optional baseline relative to the center of the text layout. */
+  readonly baseline?: number;
+  readonly text: string;
+  /** Optional x coordinate relative to the center of the text layout. */
+  readonly x?: number;
+}
+
 export interface BubbleSvgOverlayTextLayout {
   readonly alignment: "center" | "left" | "right";
   readonly backgroundColor?: string;
+  readonly backgroundCornerRadius?: number;
   readonly fill: string;
   readonly fontFamily: string;
   readonly fontSize: number;
@@ -53,7 +62,8 @@ export interface BubbleSvgOverlayTextLayout {
   readonly fontWeight?: "normal" | "bold" | number;
   readonly height: number;
   readonly lineHeight: number;
-  readonly lines: readonly string[];
+  readonly lines: readonly (string | BubbleSvgOverlayTextLine)[];
+  readonly preserveWhitespace?: boolean;
   readonly width: number;
 }
 
@@ -223,16 +233,56 @@ function normalizeTextLayout(value: unknown): BubbleSvgOverlayTextLayout {
   }
   const lines = Object.freeze(
     value.lines.map((line) => {
-      if (typeof line !== "string") {
-        throw new TypeError("SVG overlay text lines must be strings.");
+      if (typeof line === "string") return line;
+      if (!isRecord(line) || typeof line.text !== "string") {
+        throw new TypeError(
+          "SVG overlay text lines must be strings or positioned line records.",
+        );
       }
-      return line;
+      const hasX = line.x !== undefined;
+      const hasBaseline = line.baseline !== undefined;
+      if (hasX !== hasBaseline) {
+        throw new TypeError(
+          "SVG overlay positioned text lines require both x and baseline.",
+        );
+      }
+      if (
+        hasX &&
+        (!Number.isFinite(line.x) || !Number.isFinite(line.baseline))
+      ) {
+        throw new TypeError(
+          "SVG overlay text line coordinates must be finite numbers.",
+        );
+      }
+      return Object.freeze({
+        text: line.text,
+        ...(hasX ? { x: Number(line.x), baseline: Number(line.baseline) } : {}),
+      });
     }),
   );
   const backgroundColor =
     value.backgroundColor === undefined
       ? undefined
       : requireSafeColor(value.backgroundColor, "SVG overlay backgroundColor");
+  const backgroundCornerRadius =
+    value.backgroundCornerRadius === undefined
+      ? undefined
+      : Number(value.backgroundCornerRadius);
+  if (
+    backgroundCornerRadius !== undefined &&
+    (!Number.isFinite(backgroundCornerRadius) || backgroundCornerRadius < 0)
+  ) {
+    throw new TypeError(
+      "SVG overlay backgroundCornerRadius must be a non-negative finite number.",
+    );
+  }
+  const preserveWhitespace = value.preserveWhitespace;
+  if (
+    preserveWhitespace !== undefined &&
+    typeof preserveWhitespace !== "boolean"
+  ) {
+    throw new TypeError("SVG overlay preserveWhitespace must be a boolean.");
+  }
   return Object.freeze({
     alignment,
     fill: requireSafeColor(value.fill, "SVG overlay text fill"),
@@ -246,10 +296,12 @@ function normalizeTextLayout(value: unknown): BubbleSvgOverlayTextLayout {
     lines,
     width: requireFiniteDimension(value.width, "SVG overlay text width"),
     ...(backgroundColor === undefined ? {} : { backgroundColor }),
+    ...(backgroundCornerRadius === undefined ? {} : { backgroundCornerRadius }),
     ...(fontStyle === undefined ? {} : { fontStyle }),
     ...(fontWeight === undefined
       ? {}
       : { fontWeight: fontWeight as "normal" | "bold" | number }),
+    ...(preserveWhitespace === undefined ? {} : { preserveWhitespace }),
   });
 }
 
@@ -281,6 +333,9 @@ function createTextTarget(
         background.setAttribute("width", String(layout.width));
         background.setAttribute("height", String(layout.height));
         background.setAttribute("fill", layout.backgroundColor);
+        if (layout.backgroundCornerRadius !== undefined) {
+          background.setAttribute("rx", String(layout.backgroundCornerRadius));
+        }
         children.push(background);
       }
       const text = document.createElementNS(svgNamespace, "text");
@@ -300,7 +355,9 @@ function createTextTarget(
       text.setAttribute("fill", layout.fill);
       text.setAttribute("font-family", layout.fontFamily);
       text.setAttribute("font-size", String(layout.fontSize));
-      text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
+      if (layout.preserveWhitespace !== false) {
+        text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
+      }
       if (layout.fontStyle !== undefined)
         text.setAttribute("font-style", layout.fontStyle);
       if (layout.fontWeight !== undefined)
@@ -312,12 +369,16 @@ function createTextTarget(
       const firstBaseline = -contentHeight / 2 + layout.fontSize;
       layout.lines.forEach((line, index) => {
         const tspan = document.createElementNS(svgNamespace, "tspan");
-        tspan.setAttribute("x", String(x));
+        const positionedLine = typeof line === "string" ? undefined : line;
+        tspan.setAttribute("x", String(positionedLine?.x ?? x));
         tspan.setAttribute(
           "y",
-          String(firstBaseline + index * layout.lineHeight),
+          String(
+            positionedLine?.baseline ??
+              firstBaseline + index * layout.lineHeight,
+          ),
         );
-        tspan.textContent = line;
+        tspan.textContent = typeof line === "string" ? line : line.text;
         text.appendChild(tspan);
       });
       children.push(text);

@@ -1,7 +1,9 @@
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import { Window } from "happy-dom";
 import { describe, expect, it, vi } from "vitest";
 import {
   createAssetManagerSvgOverlayImageCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpBubbleComposition,
   type BubbleRuntimeAdapterError,
   type BubbleSvgOverlayImageCapability,
@@ -155,6 +157,58 @@ describe("SVG overlay backend", () => {
       expect.any(Function),
     );
     expect(root?.isConnected).toBe(false);
+  });
+
+  it("preserves SVG Text line coordinates and background geometry", async () => {
+    const harness = createHarness();
+    const textLayouts = createSvgTextLayoutComposition();
+    textLayouts.defineStyle({
+      name: "body",
+      alignment: "right",
+      backgroundColor: "#f0f0f0",
+      font: "Helvetica",
+      fontPercent: 100,
+      textColor: "#25283a",
+    });
+    const expected = textLayouts.layoutText({
+      nativeSize: [480, 360],
+      styleName: "body",
+      text: "Hello\nworld",
+    });
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      bubbleRenderBackend: "svg-overlay",
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: createSvgTextOverlayTextCapability(textLayouts),
+    });
+    composition.defineStyle({ name: "dialog", textStyle: "body" });
+
+    const handle = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "dialog",
+      text: "Hello\nworld",
+    });
+
+    const text = harness.window.document.querySelector("text");
+    const tspans = text?.querySelectorAll("tspan");
+    expect(tspans).toHaveLength(2);
+    expected.lines.forEach((line, index) => {
+      expect(tspans?.[index]?.getAttribute("x")).toBe(
+        String(line.x - expected.width / 2),
+      );
+      expect(tspans?.[index]?.getAttribute("y")).toBe(
+        String(line.baseline - expected.height / 2),
+      );
+    });
+    const textBackground = text?.parentElement?.querySelector("rect");
+    expect(textBackground?.getAttribute("rx")).toBe(
+      String(expected.style.cornerRadius),
+    );
+    expect(textBackground?.getAttribute("fill")).toBe("#f0f0f0");
+    expect(harness.renderer.createSVGSkin).not.toHaveBeenCalled();
+
+    await handle.close();
   });
 
   it("shares one root and removes it after the last Bubble closes", async () => {

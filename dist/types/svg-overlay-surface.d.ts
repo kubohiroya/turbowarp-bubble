@@ -4,9 +4,17 @@ export type BubbleOverlayUnsupportedBehavior = "error" | "fallback";
 export declare const bubbleRenderBackends: readonly ["scratch-render", "svg-overlay"];
 export declare const defaultBubbleRenderBackend: BubbleRenderBackend;
 export declare const defaultBubbleOverlayUnsupportedBehavior: BubbleOverlayUnsupportedBehavior;
+export interface BubbleSvgOverlayTextLine {
+    /** Optional baseline relative to the center of the text layout. */
+    readonly baseline?: number;
+    readonly text: string;
+    /** Optional x coordinate relative to the center of the text layout. */
+    readonly x?: number;
+}
 export interface BubbleSvgOverlayTextLayout {
     readonly alignment: "center" | "left" | "right";
     readonly backgroundColor?: string;
+    readonly backgroundCornerRadius?: number;
     readonly fill: string;
     readonly fontFamily: string;
     readonly fontSize: number;
@@ -14,7 +22,8 @@ export interface BubbleSvgOverlayTextLayout {
     readonly fontWeight?: "normal" | "bold" | number;
     readonly height: number;
     readonly lineHeight: number;
-    readonly lines: readonly string[];
+    readonly lines: readonly (string | BubbleSvgOverlayTextLine)[];
+    readonly preserveWhitespace?: boolean;
     readonly width: number;
 }
 export interface BubbleSvgOverlayTextCapability {

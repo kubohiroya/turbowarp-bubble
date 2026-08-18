@@ -26,7 +26,9 @@ export {
 
 export {
   createSvgTextCompositionCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  type SvgTextLayoutCompositionLike,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
@@ -71,6 +73,7 @@ export {
   type BubbleSvgOverlayRenderer,
   type BubbleSvgOverlaySurfaceManager,
   type BubbleSvgOverlayTextCapability,
+  type BubbleSvgOverlayTextLine,
   type BubbleSvgOverlayTextLayout,
 } from "./svg-overlay-surface.js";
 

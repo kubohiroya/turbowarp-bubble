@@ -75,17 +75,29 @@ flowchart TB
 
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createAssetManagerSvgOverlayImageCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpBubbleComposition,
 } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 
 const assets = createAssetManagerComposition();
+const textLayouts = createSvgTextLayoutComposition();
+
+textLayouts.defineStyle({
+  name: "dialogue-text",
+  alignment: "left",
+  backgroundColor: "transparent",
+  font: "Helvetica",
+  fontPercent: 100,
+  textColor: "#575e75",
+});
 
 const bubbles = createTurboWarpBubbleComposition(runtime, {
   bubbleRenderBackend: "svg-overlay",
   svgOverlayUnsupportedBehavior: "error",
-  svgOverlayTextCapability,
+  svgOverlayTextCapability: createSvgTextOverlayTextCapability(textLayouts),
   svgOverlayImageCapability:
     createAssetManagerSvgOverlayImageCapability(assets),
 });
@@ -93,9 +105,9 @@ const bubbles = createTurboWarpBubbleComposition(runtime, {
 
 `svgOverlayTextCapability`はnamed styleをhost-neutralな行layoutへ変換する公開契約です。portrait等を使う場合、Bubble所有の`createAssetManagerSvgOverlayImageCapability()`がAsset Managerの汎用DOM resourceをBubbleの画像契約へ変換します。依存方向はBubbleからAsset Managerへの一方向であり、Asset ManagerはBubbleの型やsecurity markerを参照しません。adapterは両者が許可するMIME typeだけを公開し、検証済みMIME type、intrinsic size、`blob:` URL、`release()`を引き継ぎ、Asset ManagerがsanitizeしたSVGへBubble側のmetadataを付与します。Bubbleは任意SVG文字列を挿入せず、canonical bodyから`path`、`group`等の許可要素・属性だけを`createElementNS()`で再構築します。`script`、event handler、`foreignObject`、外部URLは受け付けません。overlay rootは`pointer-events: none`、`aria-hidden="true"`です。
 
-上記adapterには`resolveDOMImageResource()`を公開するAsset Manager 0.12.0以降が必要です。
+上記adapterには`layoutText()`を公開するSVG Text 0.6.xと、`resolveDOMImageResource()`を公開するAsset Manager 0.12.0以降が必要です。
 
-SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)で追跡します。上流release後にBubbleの開発・配布versionを更新します。private field参照やskinからの抽出では代替しません。必要な公開capabilityがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。明示的に`svgOverlayUnsupportedBehavior: "fallback"`を指定した場合だけ`scratch-render`へ戻ります。
+SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)で公開済みです。Bubbleは上流の公開APIだけを利用し、private field参照やskinからの抽出では代替しません。必要な公開capabilityがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。明示的に`svgOverlayUnsupportedBehavior: "fallback"`を指定した場合だけ`scratch-render`へ戻ります。
 
 | host／取得方法                            | `scratch-render` | `svg-overlay`                                          |
 | ----------------------------------------- | ---------------- | ------------------------------------------------------ |
@@ -108,7 +120,7 @@ SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https:/
 
 stage native size変更ではrootの`viewBox`と全surfaceを更新し、fullscreenとhigh-DPIのCSS scalingはrendererの`scale` overlay modeへ委譲します。stop、project reload、target／clone破棄、composition disposeではlistener、DOM、capability所有resourceを解放し、最後のBubbleが閉じた時点で`removeOverlay(root)`を呼びます。
 
-自動回帰テストでは、表示、text更新、shake、shape animation中のBubble由来renderer skin／drawable作成が0回であること、native size更新、共有root、許可属性、object URL解放を検証します。Web／Desktop／Packagerでのvisual parityとframe time／memory測定は上流capabilityのrelease後に実施し、結果を[SVG overlay release note](docs/release-notes-0.8.0.md)へ記録してから既定値変更を検討します。既定値変更は本導入のスコープ外です。
+自動回帰テストでは、表示、text更新、shake、shape animation中のBubble由来renderer skin／drawable作成が0回であること、native size更新、共有root、上流SVG Textの行座標・角丸、許可属性、object URL解放を検証します。Web／Desktop／Packagerでのvisual parityとframe time／memory測定結果を[SVG overlay release note](docs/release-notes-0.8.0.md)へ記録してから既定値変更を検討します。既定値変更は本導入のスコープ外です。
 
 ### 逐次表示の単位（CHARACTER / WORD / LINE / BLOCK）
 
@@ -270,7 +282,7 @@ const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
 const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
-現在のpeer dependency範囲は、SVG Textが`>=0.4.0 <1`、Asset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。4つすべてoptional peer dependencyで、SVG TextはTurboWarp adapterの既定adapterを使う場合だけ必要です。別の`textCapability`を注入するhostはSVG Textをインストールする必要がありません。
+現在のpeer dependency範囲は、SVG Textが`>=0.6.0 <0.7.0`、Asset Managerが`>=0.12.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。4つすべてoptional peer dependencyで、SVG TextはTurboWarp adapterの既定adapterまたはSVG overlay adapterを使う場合だけ必要です。別のtext capabilityを注入するhostはSVG Textをインストールする必要がありません。
 
 TurboWarp adapterの既定文字経路を使う場合は、SVG Textを追加します。
 

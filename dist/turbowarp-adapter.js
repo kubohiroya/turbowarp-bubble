@@ -337,7 +337,7 @@ var T = /* @__PURE__ */ o(((e, t) => {
 			for (s = a - 1; s >= 0; --s) t[s] = 0;
 			t[a] = o, t.t = this.t + a + 1, t.s = this.s, t.clamp();
 		}
-		function P(e, t) {
+		function ee(e, t) {
 			t.s = this.s;
 			var n = Math.floor(e / this.DB);
 			if (n >= this.t) {
@@ -349,7 +349,7 @@ var T = /* @__PURE__ */ o(((e, t) => {
 			for (var o = n + 1; o < this.t; ++o) t[o - n - 1] |= (this[o] & a) << i, t[o - n] = this[o] >> r;
 			r > 0 && (t[this.t - n - 1] |= (this.s & a) << i), t.t = this.t - n, t.clamp();
 		}
-		function F(e, t) {
+		function P(e, t) {
 			for (var n = 0, r = 0, i = Math.min(e.t, this.t); n < i;) r += this[n] - e[n], t[n++] = r & this.DM, r >>= this.DB;
 			if (e.t < this.t) {
 				for (r -= e.s; n < this.t;) r += this[n], t[n++] = r & this.DM, r >>= this.DB;
@@ -360,13 +360,13 @@ var T = /* @__PURE__ */ o(((e, t) => {
 			}
 			t.s = r < 0 ? -1 : 0, r < -1 ? t[n++] = this.DV + r : r > 0 && (t[n++] = r), t.t = n, t.clamp();
 		}
-		function I(e, t) {
+		function F(e, t) {
 			var n = this.abs(), r = e.abs(), i = n.t;
 			for (t.t = i + r.t; --i >= 0;) t[i] = 0;
 			for (i = 0; i < r.t; ++i) t[i + n.t] = n.am(0, r[i], t, i, 0, n.t);
 			t.s = 0, t.clamp(), this.s != e.s && c.ZERO.subTo(t, t);
 		}
-		function L(e) {
+		function I(e) {
 			for (var t = this.abs(), n = e.t = 2 * t.t; --n >= 0;) e[n] = 0;
 			for (n = 0; n < t.t - 1; ++n) {
 				var r = t.am(n, t[n], e, 2 * n, 0, 1);
@@ -374,7 +374,7 @@ var T = /* @__PURE__ */ o(((e, t) => {
 			}
 			e.t > 0 && (e[e.t - 1] += t.am(n, t[n], e, 2 * n, 0, 1)), e.s = 0, e.clamp();
 		}
-		function ee(e, t, n) {
+		function L(e, t, n) {
 			var r = e.abs();
 			if (!(r.t <= 0)) {
 				var i = this.abs();
@@ -470,7 +470,7 @@ var T = /* @__PURE__ */ o(((e, t) => {
 			var n = e < 256 || t.isEven() ? new z(t) : new V(t);
 			return this.exp(e, n);
 		}
-		c.prototype.copyTo = b, c.prototype.fromInt = x, c.prototype.fromString = C, c.prototype.clamp = w, c.prototype.dlShiftTo = j, c.prototype.drShiftTo = M, c.prototype.lShiftTo = N, c.prototype.rShiftTo = P, c.prototype.subTo = F, c.prototype.multiplyTo = I, c.prototype.squareTo = L, c.prototype.divRemTo = ee, c.prototype.invDigit = ae, c.prototype.isEven = ue, c.prototype.exp = de, c.prototype.toString = T, c.prototype.negate = E, c.prototype.abs = D, c.prototype.compareTo = O, c.prototype.bitLength = A, c.prototype.mod = R, c.prototype.modPowInt = fe, c.ZERO = S(0), c.ONE = S(1);
+		c.prototype.copyTo = b, c.prototype.fromInt = x, c.prototype.fromString = C, c.prototype.clamp = w, c.prototype.dlShiftTo = j, c.prototype.drShiftTo = M, c.prototype.lShiftTo = N, c.prototype.rShiftTo = ee, c.prototype.subTo = P, c.prototype.multiplyTo = F, c.prototype.squareTo = I, c.prototype.divRemTo = L, c.prototype.invDigit = ae, c.prototype.isEven = ue, c.prototype.exp = de, c.prototype.toString = T, c.prototype.negate = E, c.prototype.abs = D, c.prototype.compareTo = O, c.prototype.bitLength = A, c.prototype.mod = R, c.prototype.modPowInt = fe, c.ZERO = S(0), c.ONE = S(1);
 		function pe() {
 			var e = l();
 			return this.copyTo(e), e;
@@ -2740,13 +2740,13 @@ function N(e, t) {
 	if (!Number.isFinite(n) || n <= 0) throw TypeError("Bubble SVG dimensions must be positive and finite.");
 	return n;
 }
-function P(e) {
+function ee(e) {
 	if (e === null) return null;
 	let t = e ?? 180;
 	if (!Number.isFinite(t)) throw TypeError("tailDirection must be finite.");
 	return (t % 360 + 360) % 360;
 }
-function F(e, t, n = 18) {
+function P(e, t, n = 18) {
 	let r = e - 24, i = t - 24;
 	return [
 		{
@@ -2777,16 +2777,16 @@ function F(e, t, n = 18) {
 		};
 	}));
 }
-function I(e, t) {
+function F(e, t) {
 	return e.x * t.y - e.y * t.x;
 }
-function L(e, t) {
+function I(e, t) {
 	return {
 		x: e.x - t.x,
 		y: e.y - t.y
 	};
 }
-function ee(e, t) {
+function L(e, t) {
 	return Math.hypot(e.x - t.x, e.y - t.y);
 }
 function R(e, t, n, r) {
@@ -2794,7 +2794,7 @@ function R(e, t, n, r) {
 	for (; a > 0;) {
 		let t = (i + n + e.length) % e.length, r = e[i], o = e[t];
 		if (!r || !o) throw Error("Bubble border path is invalid.");
-		let s = ee(r, o);
+		let s = L(r, o);
 		if (a <= s) {
 			let e = a / s;
 			return {
@@ -2813,9 +2813,9 @@ function z(e, t, n, r, i) {
 	for (let r = 0; r < e.length; r += 1) {
 		let i = e[r], o = e[(r + 1) % e.length];
 		if (!i || !o) continue;
-		let s = L(o, i), c = I(n, s);
+		let s = I(o, i), c = F(n, s);
 		if (Math.abs(c) < 1e-9) continue;
-		let l = L(i, t), u = I(l, s) / c, d = I(l, n) / c;
+		let l = I(i, t), u = F(l, s) / c, d = F(l, n) / c;
 		u < 0 || d < -1e-9 || d > 1 + 1e-9 || a && u >= a.rayScale || (a = {
 			edgeIndex: r,
 			point: {
@@ -2857,7 +2857,7 @@ function ne(e, t, n, r, i, a) {
 	let o = {
 		x: t / 2,
 		y: n / 2
-	}, s = B(r), c = z(e, o, s, i), l = ee(o, c.borderPoint), u = a.scalePercent / 100, d = {
+	}, s = B(r), c = z(e, o, s, i), l = L(o, c.borderPoint), u = a.scalePercent / 100, d = {
 		x: o.x - s.x * l * (u - 1) + a.x,
 		y: o.y - s.y * l * (u - 1) - a.y
 	};
@@ -2882,7 +2882,7 @@ function ae(e, t, n, r = "") {
 	return `<path d="${re(e)}" fill="${t}" stroke="${n}" stroke-width="3" stroke-linejoin="round" ${r}/>`;
 }
 function V(e, t, n, r, i, a = "") {
-	let o = L(n, t), s = Math.hypot(o.x, o.y);
+	let o = I(n, t), s = Math.hypot(o.x, o.y);
 	if (!(s > 0)) throw TypeError("Bubble body center and tail tip must differ.");
 	let c = z(e, t, {
 		x: o.x / s,
@@ -2914,7 +2914,7 @@ function H(e, t, n, r) {
     fill="${n}" stroke="${r}" stroke-width="3" stroke-linejoin="round"/>`;
 }
 function oe(e, t, n, r, i, a) {
-	let o = L(n, t), s = Math.hypot(o.x, o.y), c = z(e, t, {
+	let o = I(n, t), s = Math.hypot(o.x, o.y), c = z(e, t, {
 		x: o.x / s,
 		y: o.y / s
 	}, 0, n), l = {
@@ -2986,10 +2986,10 @@ function ce(e, t) {
 	];
 }
 function le(e, t, n) {
-	return e === "YELLING" ? se(t, n) : e === "WAVY" ? ce(t, n) : F(t, n);
+	return e === "YELLING" ? se(t, n) : e === "WAVY" ? ce(t, n) : P(t, n);
 }
 function ue(e) {
-	let t = N(e.width, 220), n = N(e.height, 112), r = P(e.tailDirection);
+	let t = N(e.width, 220), n = N(e.height, 112), r = ee(e.tailDirection);
 	if (r === null) throw TypeError("Bubble body center offset requires a tail direction.");
 	let i = k(e.tailLength ?? D), a = A(e.offset), o = {
 		x: t / 2,
@@ -3001,7 +3001,7 @@ function ue(e) {
 	});
 }
 function de(e, t, n, r, i, a, o, s) {
-	let c = F(t, n), l = (e) => r === null ? e : ne(e, t, n, r, o, s).body, u = (e, c = "") => {
+	let c = P(t, n), l = (e) => r === null ? e : ne(e, t, n, r, o, s).body, u = (e, c = "") => {
 		if (r === null) return ae(e, i, a, c);
 		let l = ne(e, t, n, r, o, s);
 		return V(l.body, l.bodyCenter, l.tip, i, a, c);
@@ -3029,12 +3029,12 @@ function de(e, t, n, r, i, a, o, s) {
 function fe(e) {
 	if (!j.includes(e.style)) throw TypeError(`Unsupported Bubble visual style: ${String(e.style)}`);
 	if (!Array.isArray(e.lines) || e.lines.some((e) => typeof e != "string")) throw TypeError("lines must be an array of strings.");
-	let t = N(e.width, 220), n = N(e.height, 112), r = N(e.fontSize, 15), i = P(e.tailDirection), a = k(e.tailLength ?? D), o = e.offset === void 0 ? O : A(e.offset), s = e.shapeTransition;
+	let t = N(e.width, 220), n = N(e.height, 112), r = N(e.fontSize, 15), i = ee(e.tailDirection), a = k(e.tailLength ?? D), o = e.offset === void 0 ? O : A(e.offset), s = e.shapeTransition;
 	if (s !== void 0 && (!j.includes(s.from) || !j.includes(s.to) || !Number.isFinite(s.progress) || s.progress < 0 || s.progress > 1)) throw TypeError("Bubble shape transition is invalid.");
 	let c = e.fillColor ?? "#fff4cc", l = e.borderColor ?? "#6f5b45", u = e.textColor ?? "#25283a", d = e.fontFamily ?? "Noto Sans JP, sans-serif", f = r * 1.35, p = n / 2 - (e.lines.length - 1) * f / 2 + r * .35, m = i === null ? 1 : o.scalePercent / 100, h = i === null ? {
 		x: t / 2,
 		y: n / 2
-	} : ne(F(t, n), t, n, i, a, o).bodyCenter, g = e.lines.map((e, t) => `<text x="${h.x}" y="${h.y + (p + t * f - n / 2) * m}" text-anchor="middle" fill="${M(u)}" font-family="${M(d)}" font-size="${r * m}">${M(e)}</text>`).join(""), _ = s === void 0 ? de(e.style, t, n, i, c, l, a, o) : `<g opacity="${(1 - s.progress).toFixed(4)}">${de(s.from, t, n, i, c, l, a, o)}</g><g opacity="${s.progress.toFixed(4)}">${de(s.to, t, n, i, c, l, a, o)}</g>`, v = M(e.title ?? `${e.style} bubble`), y = s === void 0 ? "" : ` data-bubble-shape-transition-from="${s.from}" data-bubble-shape-transition-to="${s.to}" data-bubble-shape-transition-progress="${s.progress.toFixed(4)}"`;
+	} : ne(P(t, n), t, n, i, a, o).bodyCenter, g = e.lines.map((e, t) => `<text x="${h.x}" y="${h.y + (p + t * f - n / 2) * m}" text-anchor="middle" fill="${M(u)}" font-family="${M(d)}" font-size="${r * m}">${M(e)}</text>`).join(""), _ = s === void 0 ? de(e.style, t, n, i, c, l, a, o) : `<g opacity="${(1 - s.progress).toFixed(4)}">${de(s.from, t, n, i, c, l, a, o)}</g><g opacity="${s.progress.toFixed(4)}">${de(s.to, t, n, i, c, l, a, o)}</g>`, v = M(e.title ?? `${e.style} bubble`), y = s === void 0 ? "" : ` data-bubble-shape-transition-from="${s.from}" data-bubble-shape-transition-to="${s.to}" data-bubble-shape-transition-progress="${s.progress.toFixed(4)}"`;
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${t}" height="${n}" viewBox="0 0 ${t} ${n}" role="img" data-bubble-renderer="canonical" data-bubble-style="${e.style}"${y}><title>${v}</title>${_}${g}</svg>`;
 }
 //#endregion
@@ -3229,8 +3229,8 @@ var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = funct
 						for (y == 16 ? (N = 3 + Pe(e, d, 3), d += 2, M = T[D - 1]) : y == 17 ? (N = 3 + Pe(e, d, 7), d += 3) : y == 18 && (N = 11 + Pe(e, d, 127), d += 7); N--;) T[D++] = M;
 					}
 				}
-				var P = T.subarray(0, S), F = T.subarray(S);
-				h = Ne(P), g = Ne(F), p = Oe(P, h, 1), m = Oe(F, g, 1);
+				var ee = T.subarray(0, S), P = T.subarray(S);
+				h = Ne(ee), g = Ne(P), p = Oe(ee, h, 1), m = Oe(P, g, 1);
 			} else ze(1);
 			if (d > _) {
 				c && ze(0);
@@ -3238,15 +3238,15 @@ var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = funct
 			}
 		}
 		s && l(f + 131072);
-		for (var I = (1 << h) - 1, L = (1 << g) - 1, ee = d;; ee = d) {
-			var M = p[Fe(e, d) & I], R = M >> 4;
+		for (var F = (1 << h) - 1, I = (1 << g) - 1, L = d;; L = d) {
+			var M = p[Fe(e, d) & F], R = M >> 4;
 			if (d += M & 15, d > _) {
 				c && ze(0);
 				break;
 			}
 			if (M || ze(2), R < 256) n[f++] = R;
 			else if (R == 256) {
-				ee = d, p = null;
+				L = d, p = null;
 				break;
 			} else {
 				var z = R - 254;
@@ -3254,12 +3254,12 @@ var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = funct
 					var D = R - 257, B = _e[D];
 					z = Pe(e, d, (1 << B) - 1) + Se[D], d += B;
 				}
-				var te = m[Fe(e, d) & L], ne = te >> 4;
+				var te = m[Fe(e, d) & I], ne = te >> 4;
 				te || ze(3), d += te & 15;
-				var F = Te[ne];
+				var P = Te[ne];
 				if (ne > 3) {
 					var B = ve[ne];
-					F += Fe(e, d) & (1 << B) - 1, d += B;
+					P += Fe(e, d) & (1 << B) - 1, d += B;
 				}
 				if (d > _) {
 					c && ze(0);
@@ -3267,14 +3267,14 @@ var je = /*#__PURE__*/ Oe(ke, 9, 1), Me = /*#__PURE__*/ Oe(Ae, 5, 1), Ne = funct
 				}
 				s && l(f + 131072);
 				var re = f + z;
-				if (f < F) {
-					var ie = a - F, ae = Math.min(F, re);
+				if (f < P) {
+					var ie = a - P, ae = Math.min(P, re);
 					for (ie + f < 0 && ze(3); f < ae; ++f) n[f] = r[ie + f];
 				}
-				for (; f < re; ++f) n[f] = n[f - F];
+				for (; f < re; ++f) n[f] = n[f - P];
 			}
 		}
-		t.l = p, t.p = ee, t.b = f, t.f = u, p && (u = 1, t.m = h, t.d = m, t.n = g);
+		t.l = p, t.p = L, t.b = f, t.f = u, p && (u = 1, t.m = h, t.d = m, t.n = g);
 	} while (!u);
 	return f != n.length && o ? Le(n, 0, f) : n.subarray(0, f);
 }, Ve = /*#__PURE__*/ new U(0), He = function(e) {
@@ -4741,6 +4741,41 @@ function ci(e) {
 	return e;
 }
 function li(e) {
+	if (!oi(e) || typeof e.layoutText != "function") throw TypeError("SVG Text overlay adapter requires the layoutText composition API.");
+	return e;
+}
+function ui(e, t) {
+	let n = Number(e);
+	if (!Number.isFinite(n)) throw TypeError(`${t} must be a finite number.`);
+	return n;
+}
+function di(e) {
+	if (!oi(e) || !oi(e.style) || !Array.isArray(e.lines)) throw TypeError("SVG Text layout result is invalid.");
+	let t = e.style, n = t.alignment;
+	if (n !== "left" && n !== "center" && n !== "right") throw TypeError("SVG Text layout alignment is invalid.");
+	let r = ui(e.width, "SVG Text layout width"), i = ui(e.height, "SVG Text layout height"), a = Object.freeze(e.lines.map((e) => {
+		if (!oi(e) || typeof e.text != "string") throw TypeError("SVG Text layout line is invalid.");
+		return Object.freeze({
+			baseline: ui(e.baseline, "SVG Text line baseline") - i / 2,
+			text: e.text,
+			x: ui(e.x, "SVG Text line x") - r / 2
+		});
+	}));
+	return Object.freeze({
+		alignment: n,
+		backgroundColor: String(t.backgroundColor),
+		backgroundCornerRadius: ui(t.cornerRadius, "SVG Text corner radius"),
+		fill: String(t.textColor),
+		fontFamily: String(t.font),
+		fontSize: ui(t.fontSize, "SVG Text font size"),
+		height: i,
+		lineHeight: ui(t.lineHeight, "SVG Text line height"),
+		lines: a,
+		preserveWhitespace: e.preserveWhitespace !== !1,
+		width: r
+	});
+}
+function fi(e) {
 	let t = si(e);
 	return Object.freeze({
 		setText({ styleName: e, target: n, text: r }) {
@@ -4758,7 +4793,7 @@ function li(e) {
 		}
 	});
 }
-function ui(e) {
+function pi(e) {
 	let t = ci(e), n = {
 		setText({ styleName: e, target: n, text: r }) {
 			t.setText({
@@ -4776,9 +4811,29 @@ function ui(e) {
 		text: n
 	}) ?? 0), Object.freeze(n);
 }
+function mi(e) {
+	let t = li(e);
+	return Object.freeze({
+		layoutText({ nativeSize: e, styleName: n, text: r }) {
+			return di(t.layoutText({
+				nativeSize: [e.width, e.height],
+				styleName: n,
+				text: r
+			}));
+		},
+		measureText({ nativeSize: e, styleName: n, text: r }) {
+			let i = t.layoutText({
+				nativeSize: [e.width, e.height],
+				styleName: n,
+				text: r
+			});
+			return Math.max(1, ...i.lines.map((e) => ui(e.width, "SVG Text line width")));
+		}
+	});
+}
 //#endregion
 //#region src/asset-manager-image-adapter.ts
-var di = /* @__PURE__ */ new Set([
+var hi = /* @__PURE__ */ new Set([
 	"image/avif",
 	"image/gif",
 	"image/jpeg",
@@ -4786,37 +4841,37 @@ var di = /* @__PURE__ */ new Set([
 	"image/svg+xml",
 	"image/webp"
 ]);
-function fi(e) {
+function gi(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
-function pi(e) {
+function _i(e) {
 	let t = e.split(";", 1)[0]?.trim().toLowerCase() ?? "";
 	return t === "image/jpg" || t === "image/pjpeg" ? "image/jpeg" : t === "image/x-png" ? "image/png" : t;
 }
-function mi(e) {
-	return di.has(pi(e));
+function vi(e) {
+	return hi.has(_i(e));
 }
-function hi(e) {
-	if (!fi(e) || typeof e.url != "string" || !e.url.startsWith("blob:") || typeof e.mimeType != "string" || !mi(e.mimeType) || typeof e.width != "number" || !Number.isFinite(e.width) || e.width <= 0 || typeof e.height != "number" || !Number.isFinite(e.height) || e.height <= 0 || typeof e.release != "function") throw TypeError("Asset Manager DOM image resources must provide a supported MIME type, positive intrinsic dimensions, a blob URL, and release().");
+function yi(e) {
+	if (!gi(e) || typeof e.url != "string" || !e.url.startsWith("blob:") || typeof e.mimeType != "string" || !vi(e.mimeType) || typeof e.width != "number" || !Number.isFinite(e.width) || e.width <= 0 || typeof e.height != "number" || !Number.isFinite(e.height) || e.height <= 0 || typeof e.release != "function") throw TypeError("Asset Manager DOM image resources must provide a supported MIME type, positive intrinsic dimensions, a blob URL, and release().");
 	return e;
 }
-function gi(e) {
-	if (!fi(e) || typeof e.isRegistered != "function" || typeof e.getMimeType != "function" || typeof e.resolveDOMImageResource != "function") throw TypeError("Asset Manager DOM image capability is invalid.");
+function bi(e) {
+	if (!gi(e) || typeof e.isRegistered != "function" || typeof e.getMimeType != "function" || typeof e.resolveDOMImageResource != "function") throw TypeError("Asset Manager DOM image capability is invalid.");
 	let t = e;
 	return Object.freeze({
 		isRegistered(e) {
-			return t.isRegistered(e) && mi(t.getMimeType(e));
+			return t.isRegistered(e) && vi(t.getMimeType(e));
 		},
 		getMimeType(e) {
-			return pi(t.getMimeType(e));
+			return _i(t.getMimeType(e));
 		},
 		async resolveImage(e) {
-			let n = pi(t.getMimeType(e));
-			if (!t.isRegistered(e) || !mi(n)) throw TypeError("Asset Manager image is not registered with a Bubble-compatible MIME type.");
+			let n = _i(t.getMimeType(e));
+			if (!t.isRegistered(e) || !vi(n)) throw TypeError("Asset Manager image is not registered with a Bubble-compatible MIME type.");
 			let r = await t.resolveDOMImageResource(e);
 			try {
-				hi(r);
-				let e = pi(r.mimeType);
+				yi(r);
+				let e = _i(r.mimeType);
 				if (e !== n) throw TypeError("Asset Manager DOM image resource MIME type changed during resolution.");
 				return Object.freeze({
 					height: r.height,
@@ -4834,11 +4889,11 @@ function gi(e) {
 }
 //#endregion
 //#region src/surface-motion.ts
-function _i(e) {
+function xi(e) {
 	return Math.max(0, Math.min(1, e));
 }
-function vi(e, t) {
-	let n = _i(e);
+function Si(e, t) {
+	let n = xi(e);
 	switch (t) {
 		case "linear": return n;
 		case "easeIn": return n * n;
@@ -4847,14 +4902,14 @@ function vi(e, t) {
 		default: return n;
 	}
 }
-function yi(e, t, n) {
+function Ci(e, t, n) {
 	let r = Math.max(0, t * 1e3);
 	return r === 0 ? (n(1), Promise.resolve()) : new Promise((t, i) => {
 		let a = 0, o, s = () => {
 			let c = Math.min(16, r - a);
 			a += c;
 			try {
-				n(_i(a / r));
+				n(xi(a / r));
 			} catch (t) {
 				o !== void 0 && e.clearTimeout(o), i(t);
 				return;
@@ -4870,33 +4925,33 @@ function yi(e, t, n) {
 }
 //#endregion
 //#region src/svg-overlay-surface.ts
-var bi = "http://www.w3.org/2000/svg", xi = "http://www.w3.org/XML/1998/namespace", Si = 96, Ci = 18, wi = 8, Ti = 16, Ei = Symbol("BubbleSvgOverlayTextTarget"), Di = Symbol("BubbleSvgOverlayImageTarget"), Oi = 0, ki = Object.freeze(["scratch-render", "svg-overlay"]), Ai = "scratch-render", ji = "error";
-function Mi(e) {
+var wi = "http://www.w3.org/2000/svg", Ti = "http://www.w3.org/XML/1998/namespace", Ei = 96, Di = 18, Oi = 8, ki = 16, Ai = Symbol("BubbleSvgOverlayTextTarget"), ji = Symbol("BubbleSvgOverlayImageTarget"), Mi = 0, Ni = Object.freeze(["scratch-render", "svg-overlay"]), Pi = "scratch-render", Fi = "error";
+function Ii(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
-function Ni(e) {
+function Li(e) {
 	let t = e.getNativeSize(), n = Array.isArray(t) ? Number(t[0]) : NaN, r = Array.isArray(t) ? Number(t[1]) : NaN;
 	return Object.freeze({
 		width: n > 0 ? n : 480,
 		height: r > 0 ? r : 360
 	});
 }
-function Pi(e, t) {
+function Ri(e, t) {
 	let n = Number(e);
 	if (!Number.isFinite(n) || n <= 0) throw TypeError(`${t} must be a positive finite number.`);
 	return n;
 }
-function Fi(e, t) {
+function zi(e, t) {
 	if (typeof e != "string" || e.length === 0 || e.length > 128) throw TypeError(`${t} must be a non-empty color string.`);
 	if (/url\s*\(|[<>;]/iu.test(e)) throw TypeError(`${t} contains a disallowed SVG value.`);
 	return e;
 }
-function Ii(e) {
+function Bi(e) {
 	if (typeof e != "string" || e.length === 0 || e.length > 256 || /url\s*\(|[<>{};]/iu.test(e)) throw TypeError("SVG overlay fontFamily is invalid.");
 	return e;
 }
-function Li(e) {
-	if (!Mi(e) || !Array.isArray(e.lines)) throw TypeError("SVG overlay text layout is invalid.");
+function Vi(e) {
+	if (!Ii(e) || !Array.isArray(e.lines)) throw TypeError("SVG overlay text layout is invalid.");
 	let t = e.alignment;
 	if (t !== "left" && t !== "center" && t !== "right") throw TypeError("SVG overlay text alignment is invalid.");
 	let n = e.fontStyle;
@@ -4904,30 +4959,45 @@ function Li(e) {
 	let r = e.fontWeight;
 	if (r !== void 0 && r !== "normal" && r !== "bold" && (!Number.isFinite(r) || Number(r) < 1 || Number(r) > 1e3)) throw TypeError("SVG overlay fontWeight is invalid.");
 	let i = Object.freeze(e.lines.map((e) => {
-		if (typeof e != "string") throw TypeError("SVG overlay text lines must be strings.");
-		return e;
-	})), a = e.backgroundColor === void 0 ? void 0 : Fi(e.backgroundColor, "SVG overlay backgroundColor");
+		if (typeof e == "string") return e;
+		if (!Ii(e) || typeof e.text != "string") throw TypeError("SVG overlay text lines must be strings or positioned line records.");
+		let t = e.x !== void 0;
+		if (t !== (e.baseline !== void 0)) throw TypeError("SVG overlay positioned text lines require both x and baseline.");
+		if (t && (!Number.isFinite(e.x) || !Number.isFinite(e.baseline))) throw TypeError("SVG overlay text line coordinates must be finite numbers.");
+		return Object.freeze({
+			text: e.text,
+			...t ? {
+				x: Number(e.x),
+				baseline: Number(e.baseline)
+			} : {}
+		});
+	})), a = e.backgroundColor === void 0 ? void 0 : zi(e.backgroundColor, "SVG overlay backgroundColor"), o = e.backgroundCornerRadius === void 0 ? void 0 : Number(e.backgroundCornerRadius);
+	if (o !== void 0 && (!Number.isFinite(o) || o < 0)) throw TypeError("SVG overlay backgroundCornerRadius must be a non-negative finite number.");
+	let s = e.preserveWhitespace;
+	if (s !== void 0 && typeof s != "boolean") throw TypeError("SVG overlay preserveWhitespace must be a boolean.");
 	return Object.freeze({
 		alignment: t,
-		fill: Fi(e.fill, "SVG overlay text fill"),
-		fontFamily: Ii(e.fontFamily),
-		fontSize: Pi(e.fontSize, "SVG overlay fontSize"),
-		height: Pi(e.height, "SVG overlay text height"),
-		lineHeight: Pi(e.lineHeight, "SVG overlay lineHeight"),
+		fill: zi(e.fill, "SVG overlay text fill"),
+		fontFamily: Bi(e.fontFamily),
+		fontSize: Ri(e.fontSize, "SVG overlay fontSize"),
+		height: Ri(e.height, "SVG overlay text height"),
+		lineHeight: Ri(e.lineHeight, "SVG overlay lineHeight"),
 		lines: i,
-		width: Pi(e.width, "SVG overlay text width"),
+		width: Ri(e.width, "SVG overlay text width"),
 		...a === void 0 ? {} : { backgroundColor: a },
+		...o === void 0 ? {} : { backgroundCornerRadius: o },
 		...n === void 0 ? {} : { fontStyle: n },
-		...r === void 0 ? {} : { fontWeight: r }
+		...r === void 0 ? {} : { fontWeight: r },
+		...s === void 0 ? {} : { preserveWhitespace: s }
 	});
 }
-function Ri(e, t) {
+function Hi(e, t) {
 	let n = {
 		width: 180,
 		height: 48
 	};
 	return Object.freeze({
-		[Ei]: !0,
+		[Ai]: !0,
 		group: t,
 		clear() {
 			t.replaceChildren(), n = {
@@ -4939,17 +5009,17 @@ function Ri(e, t) {
 			return n;
 		},
 		render(r) {
-			let i = Li(r), a = [];
+			let i = Vi(r), a = [];
 			if (i.backgroundColor !== void 0 && i.backgroundColor !== "transparent") {
-				let t = e.createElementNS(bi, "rect");
-				t.setAttribute("x", String(-i.width / 2)), t.setAttribute("y", String(-i.height / 2)), t.setAttribute("width", String(i.width)), t.setAttribute("height", String(i.height)), t.setAttribute("fill", i.backgroundColor), a.push(t);
+				let t = e.createElementNS(wi, "rect");
+				t.setAttribute("x", String(-i.width / 2)), t.setAttribute("y", String(-i.height / 2)), t.setAttribute("width", String(i.width)), t.setAttribute("height", String(i.height)), t.setAttribute("fill", i.backgroundColor), i.backgroundCornerRadius !== void 0 && t.setAttribute("rx", String(i.backgroundCornerRadius)), a.push(t);
 			}
-			let o = e.createElementNS(bi, "text"), s = i.alignment === "left" ? "start" : i.alignment === "right" ? "end" : "middle", c = i.alignment === "left" ? -i.width / 2 : i.alignment === "right" ? i.width / 2 : 0;
-			o.setAttribute("text-anchor", s), o.setAttribute("fill", i.fill), o.setAttribute("font-family", i.fontFamily), o.setAttribute("font-size", String(i.fontSize)), o.setAttributeNS(xi, "xml:space", "preserve"), i.fontStyle !== void 0 && o.setAttribute("font-style", i.fontStyle), i.fontWeight !== void 0 && o.setAttribute("font-weight", String(i.fontWeight));
+			let o = e.createElementNS(wi, "text"), s = i.alignment === "left" ? "start" : i.alignment === "right" ? "end" : "middle", c = i.alignment === "left" ? -i.width / 2 : i.alignment === "right" ? i.width / 2 : 0;
+			o.setAttribute("text-anchor", s), o.setAttribute("fill", i.fill), o.setAttribute("font-family", i.fontFamily), o.setAttribute("font-size", String(i.fontSize)), i.preserveWhitespace !== !1 && o.setAttributeNS(Ti, "xml:space", "preserve"), i.fontStyle !== void 0 && o.setAttribute("font-style", i.fontStyle), i.fontWeight !== void 0 && o.setAttribute("font-weight", String(i.fontWeight));
 			let l = -Math.max(i.fontSize, (i.lines.length - 1) * i.lineHeight + i.fontSize) / 2 + i.fontSize;
 			i.lines.forEach((t, n) => {
-				let r = e.createElementNS(bi, "tspan");
-				r.setAttribute("x", String(c)), r.setAttribute("y", String(l + n * i.lineHeight)), r.textContent = t, o.appendChild(r);
+				let r = e.createElementNS(wi, "tspan"), a = typeof t == "string" ? void 0 : t;
+				r.setAttribute("x", String(a?.x ?? c)), r.setAttribute("y", String(a?.baseline ?? l + n * i.lineHeight)), r.textContent = typeof t == "string" ? t : t.text, o.appendChild(r);
 			}), a.push(o), t.replaceChildren(...a), n = {
 				width: i.width,
 				height: i.height
@@ -4957,29 +5027,29 @@ function Ri(e, t) {
 		}
 	});
 }
-function zi(e) {
+function Ui(e) {
 	let t = e;
-	if (t?.[Ei] !== !0) throw TypeError("SVG overlay text target is invalid.");
+	if (t?.[Ai] !== !0) throw TypeError("SVG overlay text target is invalid.");
 	return t;
 }
-function Bi(e, t) {
-	if (!Mi(e) || typeof e.layoutText != "function") throw TypeError("SVG overlay backend requires a text layout capability.");
+function Wi(e, t) {
+	if (!Ii(e) || typeof e.layoutText != "function") throw TypeError("SVG overlay backend requires a text layout capability.");
 	let n = e;
 	return Object.freeze({
 		setText({ styleName: e, target: r, text: i }) {
-			let a = Ni(t);
-			zi(r).render(n.layoutText({
+			let a = Li(t);
+			Ui(r).render(n.layoutText({
 				nativeSize: a,
 				styleName: e,
 				text: i
 			}));
 		},
 		releaseTarget(e) {
-			zi(e).clear();
+			Ui(e).clear();
 		},
 		measureText({ styleName: e, text: r }) {
-			let i = Ni(t);
-			return Pi(n.measureText?.({
+			let i = Li(t);
+			return Ri(n.measureText?.({
 				nativeSize: i,
 				styleName: e,
 				text: r
@@ -4991,7 +5061,7 @@ function Bi(e, t) {
 		}
 	});
 }
-function Vi(e) {
+function Gi(e) {
 	return !(/* @__PURE__ */ new Set([
 		"image/avif",
 		"image/gif",
@@ -5001,11 +5071,11 @@ function Vi(e) {
 		"image/webp"
 	])).has(e.mimeType.toLowerCase()) || e.mimeType.toLowerCase() === "image/svg+xml" && e.svgSecurity !== "sanitized" ? !1 : e.src.startsWith("blob:") ? typeof e.release == "function" : /^data:image\/(?:avif|gif|jpeg|png|webp);base64,/iu.test(e.src);
 }
-async function Hi(e) {
+async function Ki(e) {
 	await e?.release?.();
 }
-function Ui(e, t, n) {
-	let r = e.createElementNS(bi, "image");
+function qi(e, t, n) {
+	let r = e.createElementNS(wi, "image");
 	r.setAttribute("preserveAspectRatio", "xMidYMid meet"), n.appendChild(r);
 	let i, a = {
 		width: 1,
@@ -5016,22 +5086,22 @@ function Ui(e, t, n) {
 	return s(), Object.freeze({
 		id: t,
 		isStage: !1,
-		[Di]: !0,
+		[ji]: !0,
 		group: n,
 		async applyResource(e) {
 			let t = o + 1;
 			o = t;
 			try {
-				if (Pi(e.width, "SVG overlay image width"), Pi(e.height, "SVG overlay image height"), typeof e.mimeType != "string" || !e.mimeType.startsWith("image/") || typeof e.src != "string" || !Vi(e)) throw TypeError("SVG overlay image resources must use a supported MIME type, a releasable blob URL or approved raster data URL, and sanitized SVG metadata when applicable.");
+				if (Ri(e.width, "SVG overlay image width"), Ri(e.height, "SVG overlay image height"), typeof e.mimeType != "string" || !e.mimeType.startsWith("image/") || typeof e.src != "string" || !Gi(e)) throw TypeError("SVG overlay image resources must use a supported MIME type, a releasable blob URL or approved raster data URL, and sanitized SVG metadata when applicable.");
 			} catch (t) {
-				throw await Hi(e), t;
+				throw await Ki(e), t;
 			}
 			if (t !== o) {
-				await Hi(e);
+				await Ki(e);
 				return;
 			}
 			let n = i;
-			i = e, r.setAttribute("href", e.src), await Hi(n);
+			i = e, r.setAttribute("href", e.src), await Ki(n);
 		},
 		getSize() {
 			return i ? {
@@ -5045,7 +5115,7 @@ function Ui(e, t, n) {
 		async release() {
 			o += 1;
 			let e = i;
-			i = void 0, r.removeAttribute("href"), await Hi(e);
+			i = void 0, r.removeAttribute("href"), await Ki(e);
 		},
 		setDisplaySize(e) {
 			a = e, s();
@@ -5055,13 +5125,13 @@ function Ui(e, t, n) {
 		}
 	});
 }
-function Wi(e) {
+function Ji(e) {
 	let t = e;
-	if (t?.[Di] !== !0) throw TypeError("SVG overlay image target is invalid.");
+	if (t?.[ji] !== !0) throw TypeError("SVG overlay image target is invalid.");
 	return t;
 }
-function Gi(e) {
-	if (!Mi(e) || typeof e.isRegistered != "function" || typeof e.getMimeType != "function" || typeof e.resolveImage != "function") throw TypeError("SVG overlay image capability is invalid.");
+function Yi(e) {
+	if (!Ii(e) || typeof e.isRegistered != "function" || typeof e.getMimeType != "function" || typeof e.resolveImage != "function") throw TypeError("SVG overlay image capability is invalid.");
 	let t = e;
 	return Object.freeze({
 		isRegistered(e) {
@@ -5071,15 +5141,15 @@ function Gi(e) {
 			return t.getMimeType(e);
 		},
 		async applyToTarget(e, n) {
-			await Wi(n).applyResource(await t.resolveImage(e));
+			await Ji(n).applyResource(await t.resolveImage(e));
 		}
 	});
 }
-function Ki(e, t) {
-	let n = t.createElementNS(bi, "svg");
-	n.setAttribute("xmlns", bi), n.setAttribute("aria-hidden", "true"), n.setAttribute("focusable", "false"), n.setAttribute("data-bubble-render-backend", "svg-overlay"), n.style.display = "block", n.style.overflow = "hidden", n.style.pointerEvents = "none";
+function Xi(e, t) {
+	let n = t.createElementNS(wi, "svg");
+	n.setAttribute("xmlns", wi), n.setAttribute("aria-hidden", "true"), n.setAttribute("focusable", "false"), n.setAttribute("data-bubble-render-backend", "svg-overlay"), n.style.display = "block", n.style.overflow = "hidden", n.style.pointerEvents = "none";
 	let r = /* @__PURE__ */ new Set(), i = !1, a = () => {
-		let t = Ni(e);
+		let t = Li(e);
 		return n.setAttribute("width", String(t.width)), n.setAttribute("height", String(t.height)), n.setAttribute("viewBox", `0 0 ${t.width} ${t.height}`), t;
 	};
 	return Object.freeze({
@@ -5101,7 +5171,7 @@ function Ki(e, t) {
 		updateNativeSize: a
 	});
 }
-function qi(e) {
+function Zi(e) {
 	try {
 		let t = e.getBoundsForBubble?.();
 		if (t && [
@@ -5119,20 +5189,20 @@ function qi(e) {
 		top: n
 	};
 }
-function Ji(e, t, n) {
+function Qi(e, t, n) {
 	return n < t ? (t + n) / 2 : Math.min(n, Math.max(t, e));
 }
-function Yi(e) {
+function $i(e) {
 	let t = v(e);
 	return (Math.atan2(-t.x, -t.y) * 180 / Math.PI % 360 + 360) % 360;
 }
-var Xi = /* @__PURE__ */ new Set([
+var ea = /* @__PURE__ */ new Set([
 	"circle",
 	"g",
 	"path",
 	"rect",
 	"title"
-]), Zi = /* @__PURE__ */ new Set([
+]), ta = /* @__PURE__ */ new Set([
 	"cx",
 	"cy",
 	"d",
@@ -5153,46 +5223,46 @@ var Xi = /* @__PURE__ */ new Set([
 	"x",
 	"y"
 ]);
-function Qi(e, t) {
+function na(e, t) {
 	let n = e.localName;
-	if (!Xi.has(n)) throw TypeError(`Bubble body SVG element is not allowed: ${n}`);
-	let r = t.createElementNS(bi, n);
+	if (!ea.has(n)) throw TypeError(`Bubble body SVG element is not allowed: ${n}`);
+	let r = t.createElementNS(wi, n);
 	for (let t of e.getAttributeNames()) {
-		if (!Zi.has(t)) throw TypeError(`Bubble body SVG attribute is not allowed: ${t}`);
+		if (!ta.has(t)) throw TypeError(`Bubble body SVG attribute is not allowed: ${t}`);
 		let n = e.getAttribute(t) ?? "";
 		if (/javascript:|url\s*\(/iu.test(n)) throw TypeError("Bubble body SVG contains an unsafe attribute value.");
 		r.setAttribute(t, n);
 	}
 	n === "title" && (r.textContent = e.textContent ?? "");
-	for (let n of Array.from(e.children)) r.appendChild(Qi(n, t));
+	for (let n of Array.from(e.children)) r.appendChild(na(n, t));
 	return r;
 }
-function $i(e, t, n) {
+function ra(e, t, n) {
 	let r = n.defaultView?.DOMParser;
 	if (!r) throw TypeError("SVG overlay backend requires DOMParser.");
 	let i = new r().parseFromString(t, "image/svg+xml");
 	if (i.querySelector("parsererror")) throw TypeError("Canonical Bubble body SVG could not be parsed.");
-	let a = Array.from(i.documentElement.children).map((e) => Qi(e, n));
+	let a = Array.from(i.documentElement.children).map((e) => na(e, n));
 	e.replaceChildren(...a);
 }
-function ea(e, t, n = 1) {
+function ia(e, t, n = 1) {
 	let r = e.getSize(), i = Math.min(t / r.width, t / r.height), a = {
 		width: r.width * i * n,
 		height: r.height * i * n
 	};
 	return e.setDisplaySize(a), a;
 }
-function ta(e, t, n, r, i) {
-	let { document: a, renderer: o } = e, s = Oi;
-	Oi += 1;
-	let c = a.createElementNS(bi, "g");
+function aa(e, t, n, r, i) {
+	let { document: a, renderer: o } = e, s = Mi;
+	Mi += 1;
+	let c = a.createElementNS(wi, "g");
 	c.setAttribute("data-bubble-surface", `${n}:${s}`);
-	let l = a.createElementNS(bi, "g");
+	let l = a.createElementNS(wi, "g");
 	l.setAttribute("data-bubble-layer", "body"), c.appendChild(l);
 	let u = (e) => {
-		let t = a.createElementNS(bi, "g");
+		let t = a.createElementNS(wi, "g");
 		return t.setAttribute("data-bubble-layer", e), t.setAttribute("visibility", "hidden"), c.appendChild(t), t;
-	}, d = Ui(a, `bubble:${n}:${s}:portrait-base`, u("portrait-base")), f = Ui(a, `bubble:${n}:${s}:portrait-blink`, u("portrait-blink")), p = Ui(a, `bubble:${n}:${s}:portrait-lip-sync`, u("portrait-lip-sync")), m = u("text"), h = Ri(a, m), g = Ui(a, `bubble:${n}:${s}:continue-indicator`, u("continue-indicator")), _ = Object.freeze({
+	}, d = qi(a, `bubble:${n}:${s}:portrait-base`, u("portrait-base")), f = qi(a, `bubble:${n}:${s}:portrait-blink`, u("portrait-blink")), p = qi(a, `bubble:${n}:${s}:portrait-lip-sync`, u("portrait-lip-sync")), m = u("text"), h = Hi(a, m), g = qi(a, `bubble:${n}:${s}:continue-indicator`, u("continue-indicator")), _ = Object.freeze({
 		text: h,
 		portraitBase: d,
 		portraitBlink: f,
@@ -5203,31 +5273,31 @@ function ta(e, t, n, r, i) {
 		["portraitBlink", f],
 		["portraitLipSync", p],
 		["continueIndicator", g]
-	]), b = /* @__PURE__ */ new Map(), x = `bubble-portrait-clip-${s}`, S = a.createElementNS(bi, "defs"), C = a.createElementNS(bi, "clipPath"), T = a.createElementNS(bi, "rect");
+	]), b = /* @__PURE__ */ new Map(), x = `bubble-portrait-clip-${s}`, S = a.createElementNS(wi, "defs"), C = a.createElementNS(wi, "clipPath"), T = a.createElementNS(wi, "rect");
 	C.setAttribute("id", x), C.appendChild(T), S.appendChild(C), c.insertBefore(S, l);
-	let E = r, D = !1, O = !1, k, A = "", j = [0, 0], M = 1, N = 1, P = [0, 0], F, I = () => {
-		let t = e.updateNativeSize(), n = t.width / 2 + P[0], r = t.height / 2 - P[1], i = n + j[0], a = r - j[1];
+	let E = r, D = !1, O = !1, k, A = "", j = [0, 0], M = 1, N = 1, ee = [0, 0], P, F = () => {
+		let t = e.updateNativeSize(), n = t.width / 2 + ee[0], r = t.height / 2 - ee[1], i = n + j[0], a = r - j[1];
 		c.setAttribute("transform", `translate(${i} ${a}) scale(${M}) translate(${-n} ${-r})`), c.setAttribute("opacity", String(N));
-	}, L = (e) => e === "continueIndicator" ? E.continueIndicator !== void 0 : e === "portraitBase" ? E.portrait !== void 0 : e === "portraitBlink" ? E.portrait?.blink !== void 0 : E.portrait?.lipSync !== void 0, ee = () => {
+	}, I = (e) => e === "continueIndicator" ? E.continueIndicator !== void 0 : e === "portraitBase" ? E.portrait !== void 0 : e === "portraitBlink" ? E.portrait?.blink !== void 0 : E.portrait?.lipSync !== void 0, L = () => {
 		let e = E.placement.basis === "background" || t.visible !== !1, n = O && e && N > 0;
 		c.setAttribute("visibility", n ? "visible" : "hidden"), l.setAttribute("visibility", n && E.visualStyle !== "NO_BUBBLE" ? "visible" : "hidden"), m.setAttribute("visibility", n ? "visible" : "hidden");
-		for (let [e, t] of y) t.setVisible(n && L(e) && (b.get(e) ?? !1));
-		I();
+		for (let [e, t] of y) t.setVisible(n && I(e) && (b.get(e) ?? !1));
+		F();
 	}, R = () => {
 		if (D) return;
 		let n = e.updateNativeSize(), r = E.placement.basis === "actor" ? E.offset.scalePercent / 100 : 1, i = k ?? h.getSize(), o = {
 			width: i.width * r,
 			height: i.height * r
-		}, s = (E.portrait?.offset.zoomPercent ?? 100) / 100, c = E.portrait !== void 0, u = c ? ea(d, Si * s, r) : {
+		}, s = (E.portrait?.offset.zoomPercent ?? 100) / 100, c = E.portrait !== void 0, u = c ? ia(d, Ei * s, r) : {
 			width: 0,
 			height: 0
 		};
-		for (let e of [f, p]) c && ea(e, Si * s, r);
-		let _ = ea(g, Ci, r), v = u.width + (c ? wi * r : 0) + o.width, y = Math.max(u.height, o.height), b = v / r + 48, S = y / r + 48, C = -n.width / 2, O = n.width / 2, j = n.height / 2, M = -n.height / 2, N, L;
-		if (E.placement.basis === "background") N = 0, L = E.placement.region === "HEADER_LIKE" ? j - Ti - y / 2 : E.placement.region === "FOOTER_LIKE" ? M + Ti + y / 2 : 0;
+		for (let e of [f, p]) c && ia(e, Ei * s, r);
+		let _ = ia(g, Di, r), v = u.width + (c ? Oi * r : 0) + o.width, y = Math.max(u.height, o.height), b = v / r + 48, S = y / r + 48, C = -n.width / 2, O = n.width / 2, j = n.height / 2, M = -n.height / 2, N, I;
+		if (E.placement.basis === "background") N = 0, I = E.placement.region === "HEADER_LIKE" ? j - ki - y / 2 : E.placement.region === "FOOTER_LIKE" ? M + ki + y / 2 : 0;
 		else {
 			let e = w({
-				bounds: qi(t),
+				bounds: Zi(t),
 				bubbleWidth: v,
 				bubbleHeight: y,
 				direction: E.placement.direction,
@@ -5235,10 +5305,10 @@ function ta(e, t, n, r, i) {
 				tailLength: E.tailLength,
 				offset: E.offset
 			});
-			N = e.x, L = e.y;
+			N = e.x, I = e.y;
 		}
-		N = Ji(N, C + v / 2, O - v / 2), L = Ji(L, M + y / 2, j - y / 2), P = [N, L];
-		let R = E.placement.basis === "actor" ? Yi(E.placement.direction) : null, z = E.placement.basis === "actor" ? [
+		N = Qi(N, C + v / 2, O - v / 2), I = Qi(I, M + y / 2, j - y / 2), ee = [N, I];
+		let R = E.placement.basis === "actor" ? $i(E.placement.direction) : null, z = E.placement.basis === "actor" ? [
 			E.offset.x,
 			E.offset.y,
 			E.offset.scalePercent
@@ -5260,12 +5330,12 @@ function ta(e, t, n, r, i) {
 			baseBubbleHeight: S,
 			baseBubbleWidth: b,
 			bodyOffset: z,
-			shapeTransition: F,
+			shapeTransition: P,
 			tailDirection: R,
 			tailLength: E.tailLength,
 			visualStyle: E.visualStyle
 		});
-		te !== A && ($i(l, fe({
+		te !== A && (ra(l, fe({
 			style: E.visualStyle,
 			lines: [],
 			width: b,
@@ -5274,20 +5344,20 @@ function ta(e, t, n, r, i) {
 			tailLength: E.tailLength,
 			offset: z,
 			title: `${E.name} Bubble body`,
-			...F === void 0 ? {} : { shapeTransition: F }
-		}), a), A = te), l.setAttribute("data-bubble-style", E.visualStyle), F === void 0 ? (l.removeAttribute("data-bubble-shape-transition-from"), l.removeAttribute("data-bubble-shape-transition-to"), l.removeAttribute("data-bubble-shape-transition-progress")) : (l.setAttribute("data-bubble-shape-transition-from", F.from), l.setAttribute("data-bubble-shape-transition-to", F.to), l.setAttribute("data-bubble-shape-transition-progress", String(F.progress)));
-		let ne = N - B.x, re = L + B.y;
+			...P === void 0 ? {} : { shapeTransition: P }
+		}), a), A = te), l.setAttribute("data-bubble-style", E.visualStyle), P === void 0 ? (l.removeAttribute("data-bubble-shape-transition-from"), l.removeAttribute("data-bubble-shape-transition-to"), l.removeAttribute("data-bubble-shape-transition-progress")) : (l.setAttribute("data-bubble-shape-transition-from", P.from), l.setAttribute("data-bubble-shape-transition-to", P.to), l.setAttribute("data-bubble-shape-transition-progress", String(P.progress)));
+		let ne = N - B.x, re = I + B.y;
 		l.setAttribute("transform", `translate(${n.width / 2 + ne - b / 2} ${n.height / 2 - re - S / 2})`);
-		let ie = N - v / 2, ae = E.portrait?.placement ?? "left", V = ae.endsWith("right"), H = (E.portrait?.offset.x ?? 0) * r, oe = (E.portrait?.offset.y ?? 0) * r, se = (V ? ie + o.width + wi * r : ie) + u.width / 2 + H, ce = L;
-		ae.startsWith("top-") ? ce = L + y / 2 - u.height / 2 : ae.startsWith("bottom-") && (ce = L - y / 2 + u.height / 2), ce += oe;
-		let le = (V || !c ? ie : ie + u.width + wi * r) + o.width / 2, de = (e, t) => `translate(${n.width / 2 + e} ${n.height / 2 - t})`;
+		let ie = N - v / 2, ae = E.portrait?.placement ?? "left", V = ae.endsWith("right"), H = (E.portrait?.offset.x ?? 0) * r, oe = (E.portrait?.offset.y ?? 0) * r, se = (V ? ie + o.width + Oi * r : ie) + u.width / 2 + H, ce = I;
+		ae.startsWith("top-") ? ce = I + y / 2 - u.height / 2 : ae.startsWith("bottom-") && (ce = I - y / 2 + u.height / 2), ce += oe;
+		let le = (V || !c ? ie : ie + u.width + Oi * r) + o.width / 2, de = (e, t) => `translate(${n.width / 2 + e} ${n.height / 2 - t})`;
 		for (let e of [
 			d,
 			f,
 			p
 		]) e.group.setAttribute("transform", de(se, ce));
-		m.setAttribute("transform", `${de(le, L)} scale(${r})`);
-		let pe = le + o.width / 2 - _.width / 2 - wi * r, me = L - o.height / 2 + _.height / 2 + wi * r;
+		m.setAttribute("transform", `${de(le, I)} scale(${r})`);
+		let pe = le + o.width / 2 - _.width / 2 - Oi * r, me = I - o.height / 2 + _.height / 2 + Oi * r;
 		g.group.setAttribute("transform", de(pe, me));
 		let U = Math.min(E.portrait?.cornerRadius ?? 0, u.width / 2, u.height / 2);
 		T.setAttribute("x", String(-u.width / 2)), T.setAttribute("y", String(-u.height / 2)), T.setAttribute("width", String(u.width)), T.setAttribute("height", String(u.height)), T.setAttribute("rx", String(U));
@@ -5296,19 +5366,19 @@ function ta(e, t, n, r, i) {
 			f,
 			p
 		]) U > 0 ? e.group.setAttribute("clip-path", `url(#${x})`) : e.group.removeAttribute("clip-path");
-		I(), ee();
+		F(), L();
 	}, z = t.onTargetVisualChange, B = (e) => {
 		z?.(e), R();
 	}, te = () => R();
 	return e.acquire(c), E.placement.basis === "actor" && (t.onTargetVisualChange = B), o.on?.("NativeSizeChanged", te), Object.freeze({
 		targets: _,
 		setLayerVisible(e, t) {
-			D || (b.set(e, t), ee());
+			D || (b.set(e, t), L());
 		},
 		updateStyle(e) {
 			if (D) return;
 			let n = E.placement.basis === "actor";
-			E = e, j = [0, 0], M = 1, N = 1, F = void 0, A = "", e.reveal?.layout !== "RESERVED" && (k = void 0);
+			E = e, j = [0, 0], M = 1, N = 1, P = void 0, A = "", e.reveal?.layout !== "RESERVED" && (k = void 0);
 			let r = E.placement.basis === "actor";
 			n && !r ? t.onTargetVisualChange === B && (t.onTargetVisualChange = z ?? null) : !n && r && (t.onTargetVisualChange = B), R();
 		},
@@ -5321,12 +5391,12 @@ function ta(e, t, n, r, i) {
 		async animate(e) {
 			if (D) return;
 			let t = Math.max(0, e.durationSeconds ?? 0), n = () => {
-				D || (I(), ee());
-			}, r = (t) => vi(t, e.ease ?? "easeInOut");
+				D || (F(), L());
+			}, r = (t) => Si(t, e.ease ?? "easeInOut");
 			if (e.name === "fadeIn" || e.name === "floatIn" || e.name === "zoomIn" || e.name === "riseUp") {
 				O = !0;
 				let a = e.name === "floatIn" || e.name === "riseUp" ? [0, 16] : [0, 0], o = e.name === "zoomIn" ? .01 : 1;
-				j = a, M = o, N = e.name === "fadeIn" ? 0 : 1, n(), await yi(i, t, (t) => {
+				j = a, M = o, N = e.name === "fadeIn" ? 0 : 1, n(), await Ci(i, t, (t) => {
 					let i = r(t);
 					j = [a[0] * (1 - i), a[1] * (1 - i)], M = o + (1 - o) * i, N = e.name === "fadeIn" ? i : 1, n();
 				}), j = [0, 0], M = 1, N = 1, R();
@@ -5334,15 +5404,15 @@ function ta(e, t, n, r, i) {
 			}
 			if (e.name === "fadeOut" || e.name === "floatOut" || e.name === "zoomOut" || e.name === "sink") {
 				let a = e.name === "floatOut" || e.name === "sink" ? [0, -16] : [0, 0], o = e.name === "zoomOut" ? .01 : 1;
-				await yi(i, t, (t) => {
+				await Ci(i, t, (t) => {
 					let i = r(t);
 					j = [a[0] * i, a[1] * i], M = 1 + (o - 1) * i, N = e.name === "fadeOut" ? 1 - i : 1, n();
-				}), O = !1, ee(), j = [0, 0], M = 1, N = 1;
+				}), O = !1, L(), j = [0, 0], M = 1, N = 1;
 				return;
 			}
 			if (e.name === "shake") {
 				let a = Math.max(1, Math.floor(e.count ?? 1)), o = t > 0 ? t : a * .08, s = v(typeof e.direction == "number" ? e.direction : e.direction ?? "right");
-				await yi(i, o, (e) => {
+				await Ci(i, o, (e) => {
 					let t = Math.sin(r(e) * a * Math.PI * 2) * 5;
 					j = [s.x * t, s.y * t], n();
 				}), j = [0, 0], R();
@@ -5350,7 +5420,7 @@ function ta(e, t, n, r, i) {
 			}
 			if (e.name === "explode") {
 				let a = Math.max(1, Math.floor(e.count ?? 1)), o = t > 0 ? t : a * .12, s = e.relativeScale ?? 1.15;
-				await yi(i, o, (e) => {
+				await Ci(i, o, (e) => {
 					let t = Math.abs(Math.sin(r(e) * a * Math.PI));
 					M = 1 + (s - 1) * t, n();
 				}), M = 1, R();
@@ -5358,25 +5428,25 @@ function ta(e, t, n, r, i) {
 			}
 			if (e.name === "animateBubbleShape") {
 				let n = e.visualStyle ?? E.visualStyle, r = E.visualStyle, a = e.speed === void 0 ? 1 : Math.max(0, e.speed);
-				F = {
+				P = {
 					from: r,
 					to: n,
 					progress: 0
-				}, R(), await yi(i, t, (i) => {
-					let o = t === 0 ? 1 : _i(i * Math.max(a, 1));
-					F = {
+				}, R(), await Ci(i, t, (i) => {
+					let o = t === 0 ? 1 : xi(i * Math.max(a, 1));
+					P = {
 						from: r,
 						to: n,
-						progress: vi(o, e.ease ?? "easeInOut")
+						progress: Si(o, e.ease ?? "easeInOut")
 					}, A = "", R();
-				}), F = void 0, A = "", R();
+				}), P = void 0, A = "", R();
 			}
 		},
 		show() {
 			D || (O = !0, R());
 		},
 		hide() {
-			D || (O = !1, ee());
+			D || (O = !1, L());
 		},
 		async dispose() {
 			D || (D = !0, t.onTargetVisualChange === B && (t.onTargetVisualChange = z ?? null), o.off?.("NativeSizeChanged", te), e.release(c), h.clear(), await Promise.all([...y.values()].map((e) => e.release())));
@@ -5385,17 +5455,17 @@ function ta(e, t, n, r, i) {
 }
 //#endregion
 //#region src/turbowarp-adapter.ts
-var na = "sprite", ra = 96, ia = 18, aa = 8, oa = 16, sa = 0, $ = class extends Error {
+var oa = "sprite", sa = 96, ca = 18, la = 8, ua = 16, da = 0, $ = class extends Error {
 	code;
 	constructor(e, t) {
 		super(t), this.name = "BubbleRuntimeAdapterError", this.code = e;
 	}
 };
-function ca(e) {
+function fa(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
-function la(e) {
-	if (!ca(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp renderer.");
+function pa(e) {
+	if (!fa(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp renderer.");
 	let t = [
 		"createSVGSkin",
 		"createDrawable",
@@ -5411,34 +5481,34 @@ function la(e) {
 	if (t.some((t) => typeof e[t] != "function")) throw new $("BUBBLE-RUNTIME-001", `Bubble renderer must provide ${t.join(", ")}.`);
 	return e;
 }
-function ua(e) {
+function ma(e) {
 	let t = e ?? "scratch-render";
 	if (t !== "scratch-render" && t !== "svg-overlay") throw new $("BUBBLE-RUNTIME-004", "Bubble bubbleRenderBackend must be scratch-render or svg-overlay.");
 	return t;
 }
-function da(e) {
+function ha(e) {
 	let t = e ?? "error";
 	if (t !== "error" && t !== "fallback") throw new $("BUBBLE-RUNTIME-004", "Bubble svgOverlayUnsupportedBehavior must be error or fallback.");
 	return t;
 }
-function fa(e) {
+function ga(e) {
 	let t = e ?? (globalThis.document === void 0 ? void 0 : globalThis.document);
 	if (t !== void 0) {
-		if (!ca(t) || typeof t.createElementNS != "function") throw new $("BUBBLE-RUNTIME-004", "Bubble SVG overlay document must provide createElementNS().");
+		if (!fa(t) || typeof t.createElementNS != "function") throw new $("BUBBLE-RUNTIME-004", "Bubble SVG overlay document must provide createElementNS().");
 		return t;
 	}
 }
-function pa(e, t, n) {
+function _a(e, t, n) {
 	if (typeof e.addOverlay != "function" || typeof e.removeOverlay != "function") return "the renderer does not provide addOverlay() and removeOverlay()";
 	if (t === void 0) return "the host does not provide a DOM document";
 	if (typeof t.defaultView?.DOMParser != "function") return "the host document does not provide DOMParser";
-	if (!ca(n) || typeof n.layoutText != "function") return "a host-neutral svgOverlayTextCapability is not available";
+	if (!fa(n) || typeof n.layoutText != "function") return "a host-neutral svgOverlayTextCapability is not available";
 }
-function ma(e) {
-	if (!ca(e) || typeof e.isLoaded != "function" || typeof e.getAssetMimeType != "function" || typeof e.resolveSkin != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
+function va(e) {
+	if (!fa(e) || typeof e.isLoaded != "function" || typeof e.getAssetMimeType != "function" || typeof e.resolveSkin != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
 	return e;
 }
-function ha(e) {
+function ya(e) {
 	try {
 		let t = e.getBoundsForBubble?.();
 		if (t && [
@@ -5456,7 +5526,7 @@ function ha(e) {
 		top: n
 	};
 }
-function ga(e, t, n) {
+function ba(e, t, n) {
 	let r = e.getCurrentSkinSize(t.drawableID);
 	if (!Array.isArray(r) || r.length < 2) return n;
 	let i = Number(r[0]), a = Number(r[1]);
@@ -5465,8 +5535,8 @@ function ga(e, t, n) {
 		height: a
 	};
 }
-function _a(e, t, n, r = 1) {
-	let i = ga(e, t, {
+function xa(e, t, n, r = 1) {
+	let i = ba(e, t, {
 		width: n,
 		height: n
 	}), a = Math.min(n / i.width, n / i.height) * r;
@@ -5476,35 +5546,35 @@ function _a(e, t, n, r = 1) {
 		scalePercent: a * 100
 	};
 }
-function va(e, t, n) {
+function Sa(e, t, n) {
 	let r = Math.min(n, e / 2, t / 2), i = e - r, a = t - r;
 	return `<svg xmlns="http://www.w3.org/2000/svg" width="${e}" height="${t}" viewBox="0 0 ${e} ${t}">
   <path d="M0 0H${e}V${t}H0Z M${r} 0H${i}A${r} ${r} 0 0 1 ${e} ${r}V${a}A${r} ${r} 0 0 1 ${i} ${t}H${r}A${r} ${r} 0 0 1 0 ${a}V${r}A${r} ${r} 0 0 1 ${r} 0Z" fill="#fff4cc" fill-rule="evenodd" data-bubble-portrait-corner-radius="${r}"/>
 </svg>`;
 }
-function ya(e, t, n) {
+function Ca(e, t, n) {
 	return n < t ? (t + n) / 2 : Math.min(n, Math.max(t, e));
 }
-function ba(e, t, n, r, i) {
+function wa(e, t, n, r, i) {
 	let a = t + r * 2, o = n + i * 2;
 	return e.replace(/<svg\b[^>]*>/u, (e) => e.replace(/\bwidth="[^"]*"/u, `width="${a}"`).replace(/\bheight="[^"]*"/u, `height="${o}"`).replace(/\bviewBox="[^"]*"/u, `viewBox="${-r} ${-i} ${a} ${o}"`));
 }
-function xa(e) {
+function Ta(e) {
 	let t = v(e);
 	return (Math.atan2(-t.x, -t.y) * 180 / Math.PI % 360 + 360) % 360;
 }
-function Sa(e, t, n, r, i) {
-	let a = e.renderer, o = sa;
-	sa += 1;
+function Ea(e, t, n, r, i) {
+	let a = e.renderer, o = da;
+	da += 1;
 	let s = [], c, l, u = (e) => {
-		let t = a.createDrawable(na);
+		let t = a.createDrawable(oa);
 		if (!Number.isInteger(t) || t < 0) throw new $("BUBBLE-RUNTIME-001", `TurboWarp did not create the Bubble ${e} drawable.`);
 		let r = Object.freeze({
 			id: `bubble:${n}:${o}:${e}`,
 			isStage: !1,
 			drawableID: t
 		});
-		return s.push(r), a.updateDrawableVisible(t, !1), a.setDrawableOrder?.(t, Infinity, na), r;
+		return s.push(r), a.updateDrawableVisible(t, !1), a.setDrawableOrder?.(t, Infinity, oa), r;
 	};
 	try {
 		let n = u("body"), o = r.portrait ? u("portrait-base") : void 0, d = r.portrait?.blink ? u("portrait-blink") : void 0, f = r.portrait?.lipSync ? u("portrait-lip-sync") : void 0, p = r.portrait ? u("portrait-corner-mask") : void 0, m = u("text"), h = r.continueIndicator ? u("continue-indicator") : void 0, g = Object.freeze({
@@ -5522,14 +5592,14 @@ function Sa(e, t, n, r, i) {
 				let n = O.get(e.drawableID);
 				n && a.updateDrawableScale(e.drawableID, [n[0] * A, n[1] * A]), a.updateDrawableEffect?.(e.drawableID, "ghost", (1 - j) * 100);
 			}
-		}, P = () => {
+		}, ee = () => {
 			let r = T.placement.basis === "background" || t.visible !== !1;
 			a.updateDrawableVisible(n.drawableID, b && r && T.visualStyle !== "NO_BUBBLE" && (a.updateDrawableEffect !== void 0 || j > 0)), a.updateDrawableVisible(m.drawableID, b && r && (a.updateDrawableEffect !== void 0 || j > 0));
 			for (let [e, t] of _) a.updateDrawableVisible(t.drawableID, b && r && (y.get(e) ?? !1) && (a.updateDrawableEffect !== void 0 || j > 0));
 			p && a.updateDrawableVisible(p.drawableID, b && r && T.portrait !== void 0 && T.portrait.cornerRadius > 0 && T.visualStyle !== "NO_BUBBLE" && (y.get("portraitBase") ?? !1) && (a.updateDrawableEffect !== void 0 || j > 0)), N(), e.requestRedraw?.();
-		}, F = () => {
+		}, P = () => {
 			if (x) return;
-			let e = T.placement.basis === "actor" ? T.offset.scalePercent / 100 : 1, r = E ?? ga(a, m, {
+			let e = T.placement.basis === "actor" ? T.offset.scalePercent / 100 : 1, r = E ?? ba(a, m, {
 				width: 180,
 				height: 48
 			});
@@ -5537,27 +5607,27 @@ function Sa(e, t, n, r, i) {
 			let i = {
 				width: r.width * e,
 				height: r.height * e
-			}, s = ra * ((T.portrait?.offset.zoomPercent ?? 100) / 100), u = o !== void 0 && T.portrait !== void 0, g = u ? _a(a, o, s, e) : {
+			}, s = sa * ((T.portrait?.offset.zoomPercent ?? 100) / 100), u = o !== void 0 && T.portrait !== void 0, g = u ? xa(a, o, s, e) : {
 				width: 0,
 				height: 0,
 				scalePercent: 0
 			}, _ = /* @__PURE__ */ new Map();
 			u && _.set(o.drawableID, g.scalePercent);
 			for (let t of [d, f]) if (t && u) {
-				let n = _a(a, t, s, e);
+				let n = xa(a, t, s, e);
 				_.set(t.drawableID, n.scalePercent);
 			}
-			let v = h ? _a(a, h, ia, e) : {
+			let v = h ? xa(a, h, ca, e) : {
 				width: 0,
 				height: 0,
 				scalePercent: 0
-			}, y = g.width + (u ? aa * e : 0) + i.width, b = Math.max(g.height, i.height), k = y / e + 48, A = b / e + 48, j = y, F = b, I = a.getNativeSize(), L = Array.isArray(I) && Number(I[0]) > 0 ? Number(I[0]) : 480, ee = Array.isArray(I) && Number(I[1]) > 0 ? Number(I[1]) : 360, R = -L / 2, z = L / 2, B = ee / 2, te = -ee / 2, ne = R + j / 2, re = z - j / 2, ie = te + F / 2, ae = B - F / 2, V, H;
-			if (T.placement.basis === "background") V = 0, H = T.placement.region === "HEADER_LIKE" ? B - oa - F / 2 : T.placement.region === "FOOTER_LIKE" ? te + oa + F / 2 : 0;
+			}, y = g.width + (u ? la * e : 0) + i.width, b = Math.max(g.height, i.height), k = y / e + 48, A = b / e + 48, j = y, P = b, F = a.getNativeSize(), I = Array.isArray(F) && Number(F[0]) > 0 ? Number(F[0]) : 480, L = Array.isArray(F) && Number(F[1]) > 0 ? Number(F[1]) : 360, R = -I / 2, z = I / 2, B = L / 2, te = -L / 2, ne = R + j / 2, re = z - j / 2, ie = te + P / 2, ae = B - P / 2, V, H;
+			if (T.placement.basis === "background") V = 0, H = T.placement.region === "HEADER_LIKE" ? B - ua - P / 2 : T.placement.region === "FOOTER_LIKE" ? te + ua + P / 2 : 0;
 			else {
 				let e = w({
-					bounds: ha(t),
+					bounds: ya(t),
 					bubbleWidth: j,
-					bubbleHeight: F,
+					bubbleHeight: P,
 					direction: T.placement.direction,
 					distance: T.distance,
 					tailLength: T.tailLength,
@@ -5565,8 +5635,8 @@ function Sa(e, t, n, r, i) {
 				});
 				V = e.x, H = e.y;
 			}
-			V = ya(V, ne, re), H = ya(H, ie, ae);
-			let oe = T.placement.basis === "actor" ? xa(T.placement.direction) : null, se = T.placement.basis === "actor" ? [
+			V = Ca(V, ne, re), H = Ca(H, ie, ae);
+			let oe = T.placement.basis === "actor" ? Ta(T.placement.direction) : null, se = T.placement.basis === "actor" ? [
 				T.offset.x,
 				T.offset.y,
 				T.offset.scalePercent
@@ -5596,7 +5666,7 @@ function Sa(e, t, n, r, i) {
 				shapeTransition: M
 			});
 			if (pe !== S) {
-				let e = ba(fe({
+				let e = wa(fe({
 					style: T.visualStyle,
 					lines: [],
 					width: k,
@@ -5617,9 +5687,9 @@ function Sa(e, t, n, r, i) {
 				c = t, S = pe, r !== void 0 && a.destroySkin(r);
 			}
 			a.updateDrawableScale(n.drawableID, [100, 100]), a.updateDrawablePosition(n.drawableID, [V - ce.x, H + ce.y]);
-			let me = V - y / 2, U = T.portrait?.placement ?? "left", he = U.endsWith("right"), ge = (T.portrait?.offset.x ?? 0) * e, _e = (T.portrait?.offset.y ?? 0) * e, ve = (he ? me + i.width + aa * e : me) + g.width / 2 + ge, ye = H;
+			let me = V - y / 2, U = T.portrait?.placement ?? "left", he = U.endsWith("right"), ge = (T.portrait?.offset.x ?? 0) * e, _e = (T.portrait?.offset.y ?? 0) * e, ve = (he ? me + i.width + la * e : me) + g.width / 2 + ge, ye = H;
 			U.startsWith("top-") ? ye = H + b / 2 - g.height / 2 : U.startsWith("bottom-") && (ye = H - b / 2 + g.height / 2), ye += _e;
-			let be = (he || !u ? me : me + g.width + aa * e) + i.width / 2;
+			let be = (he || !u ? me : me + g.width + la * e) + i.width / 2;
 			for (let e of [
 				o,
 				d,
@@ -5634,7 +5704,7 @@ function Sa(e, t, n, r, i) {
 				if (i !== C) {
 					let e = l;
 					if (l = void 0, C = i, r > 0) {
-						let e = a.createSVGSkin(va(t, n, r));
+						let e = a.createSVGSkin(Sa(t, n, r));
 						if (!Number.isInteger(e) || e < 0) throw new $("BUBBLE-RUNTIME-001", "TurboWarp did not create the Bubble portrait corner mask SVG skin.");
 						try {
 							a.updateDrawableSkinId(p.drawableID, e), l = e;
@@ -5646,7 +5716,7 @@ function Sa(e, t, n, r, i) {
 				}
 				a.updateDrawablePosition(p.drawableID, [ve, ye]);
 			}
-			a.updateDrawablePosition(m.drawableID, [be, H]), h && a.updateDrawablePosition(h.drawableID, [be + i.width / 2 - v.width / 2 - aa * e, H - i.height / 2 + v.height / 2 + aa * e]);
+			a.updateDrawablePosition(m.drawableID, [be, H]), h && a.updateDrawablePosition(h.drawableID, [be + i.width / 2 - v.width / 2 - la * e, H - i.height / 2 + v.height / 2 + la * e]);
 			let xe = (e, t) => {
 				e && D.set(e.drawableID, t);
 			};
@@ -5660,67 +5730,67 @@ function Sa(e, t, n, r, i) {
 				let t = _.get(e.drawableID) ?? 0;
 				O.set(e.drawableID, [t, t]);
 			}
-			p && O.set(p.drawableID, [e * 100, e * 100]), h && O.set(h.drawableID, [v.scalePercent, v.scalePercent]), h && xe(h, [be + i.width / 2 - v.width / 2 - aa * e, H - i.height / 2 + v.height / 2 + aa * e]), N(), P();
-		}, I = t.onTargetVisualChange, L = (e) => {
-			I?.(e), F();
+			p && O.set(p.drawableID, [e * 100, e * 100]), h && O.set(h.drawableID, [v.scalePercent, v.scalePercent]), h && xe(h, [be + i.width / 2 - v.width / 2 - la * e, H - i.height / 2 + v.height / 2 + la * e]), N(), ee();
+		}, F = t.onTargetVisualChange, I = (e) => {
+			F?.(e), P();
 		};
-		return T.placement.basis === "actor" && (t.onTargetVisualChange = L), Object.freeze({
+		return T.placement.basis === "actor" && (t.onTargetVisualChange = I), Object.freeze({
 			targets: g,
 			setLayerVisible(e, t) {
-				x || (y.set(e, t), P());
+				x || (y.set(e, t), ee());
 			},
 			updateStyle(e) {
 				if (x) return;
 				let n = T.placement.basis === "actor";
 				T = e, k = [0, 0], A = 1, j = 1, M = void 0, e.reveal?.layout !== "RESERVED" && (E = void 0);
 				let r = T.placement.basis === "actor";
-				n && !r ? t.onTargetVisualChange === L && (t.onTargetVisualChange = I ?? null) : !n && r && (t.onTargetVisualChange = L), F();
+				n && !r ? t.onTargetVisualChange === I && (t.onTargetVisualChange = F ?? null) : !n && r && (t.onTargetVisualChange = I), P();
 			},
 			captureTextLayout() {
-				x || (E = ga(a, m, {
+				x || (E = ba(a, m, {
 					width: 180,
 					height: 48
-				}), F());
+				}), P());
 			},
 			clearTextLayout() {
-				E = void 0, F();
+				E = void 0, P();
 			},
 			async animate(e) {
 				if (x) return;
 				let t = Math.max(0, e.durationSeconds ?? 0), n = () => {
-					x || (N(), P());
-				}, r = (t) => vi(t, e.ease ?? "easeInOut");
+					x || (N(), ee());
+				}, r = (t) => Si(t, e.ease ?? "easeInOut");
 				if (e.name === "fadeIn" || e.name === "floatIn" || e.name === "zoomIn" || e.name === "riseUp") {
 					b = !0;
 					let a = e.name === "floatIn" || e.name === "riseUp" ? [0, 16] : [0, 0], o = e.name === "zoomIn" ? .01 : 1;
-					k = a, A = o, j = e.name === "fadeIn" ? 0 : 1, n(), await yi(i, t, (t) => {
+					k = a, A = o, j = e.name === "fadeIn" ? 0 : 1, n(), await Ci(i, t, (t) => {
 						let i = r(t);
 						k = [a[0] * (1 - i), a[1] * (1 - i)], A = o + (1 - o) * i, j = e.name === "fadeIn" ? i : 1, n();
-					}), k = [0, 0], A = 1, j = 1, F();
+					}), k = [0, 0], A = 1, j = 1, P();
 					return;
 				}
 				if (e.name === "fadeOut" || e.name === "floatOut" || e.name === "zoomOut" || e.name === "sink") {
 					let a = e.name === "floatOut" || e.name === "sink" ? [0, -16] : [0, 0], o = e.name === "zoomOut" ? .01 : 1;
-					k = [0, 0], A = 1, j = 1, n(), await yi(i, t, (t) => {
+					k = [0, 0], A = 1, j = 1, n(), await Ci(i, t, (t) => {
 						let i = r(t);
 						k = [a[0] * i, a[1] * i], A = 1 + (o - 1) * i, j = e.name === "fadeOut" ? 1 - i : 1, n();
-					}), k = a, A = o, j = e.name === "fadeOut" ? 0 : 1, n(), b = !1, P(), k = [0, 0], A = 1, j = 1;
+					}), k = a, A = o, j = e.name === "fadeOut" ? 0 : 1, n(), b = !1, ee(), k = [0, 0], A = 1, j = 1;
 					return;
 				}
 				if (e.name === "shake") {
 					let a = Math.max(1, Math.floor(e.count ?? 1)), o = t > 0 ? t : a * .08, s = v(typeof e.direction == "number" ? e.direction : e.direction ?? "right") ?? v("right");
-					k = [0, 0], await yi(i, o, (e) => {
+					k = [0, 0], await Ci(i, o, (e) => {
 						let t = r(e) * a * Math.PI * 2, i = Math.sin(t) * 5;
 						k = [s.x * i, s.y * i], n();
-					}), k = [0, 0], F();
+					}), k = [0, 0], P();
 					return;
 				}
 				if (e.name === "explode") {
 					let a = Math.max(1, Math.floor(e.count ?? 1)), o = t > 0 ? t : a * .12, s = e.relativeScale ?? 1.15;
-					await yi(i, o, (e) => {
+					await Ci(i, o, (e) => {
 						let t = r(e), i = Math.abs(Math.sin(t * a * Math.PI));
 						A = 1 + (s - 1) * i, n();
-					}), A = 1, F();
+					}), A = 1, P();
 					return;
 				}
 				if (e.name === "animateBubbleShape") {
@@ -5729,59 +5799,59 @@ function Sa(e, t, n, r, i) {
 						from: r,
 						to: n,
 						progress: 0
-					}, F(), await yi(i, t, (i) => {
-						let o = t === 0 ? 1 : _i(i * Math.max(a, 1) / 1);
+					}, P(), await Ci(i, t, (i) => {
+						let o = t === 0 ? 1 : xi(i * Math.max(a, 1) / 1);
 						M = {
 							from: r,
 							to: n,
-							progress: vi(o, e.ease ?? "easeInOut")
-						}, F();
-					}), M = void 0, F();
+							progress: Si(o, e.ease ?? "easeInOut")
+						}, P();
+					}), M = void 0, P();
 					return;
 				}
 			},
 			show() {
-				x || (b = !0, F());
+				x || (b = !0, P());
 			},
 			hide() {
-				x || (b = !1, P());
+				x || (b = !1, ee());
 			},
 			dispose() {
 				if (!x) {
-					x = !0, T.placement.basis === "actor" && t.onTargetVisualChange === L && (t.onTargetVisualChange = I ?? null);
-					for (let e of [...s].reverse()) a.destroyDrawable(e.drawableID, na);
+					x = !0, T.placement.basis === "actor" && t.onTargetVisualChange === I && (t.onTargetVisualChange = F ?? null);
+					for (let e of [...s].reverse()) a.destroyDrawable(e.drawableID, oa);
 					c !== void 0 && (a.destroySkin(c), c = void 0), l !== void 0 && (a.destroySkin(l), l = void 0), e.requestRedraw?.();
 				}
 			}
 		});
 	} catch (e) {
-		for (let e of [...s].reverse()) a.destroyDrawable(e.drawableID, na);
+		for (let e of [...s].reverse()) a.destroyDrawable(e.drawableID, oa);
 		throw c !== void 0 && a.destroySkin(c), l !== void 0 && a.destroySkin(l), e;
 	}
 }
-function Ca(e, t = {}) {
-	if (!ca(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
-	let n = e, r = la(n.renderer), i = ua(t.bubbleRenderBackend), a = da(t.svgOverlayUnsupportedBehavior), o = i === "svg-overlay" ? fa(t.document) : void 0, s = i === "svg-overlay" ? pa(r, o, t.svgOverlayTextCapability) : void 0;
+function Da(e, t = {}) {
+	if (!fa(e)) throw new $("BUBBLE-RUNTIME-001", "Bubble requires the TurboWarp runtime.");
+	let n = e, r = pa(n.renderer), i = ma(t.bubbleRenderBackend), a = ha(t.svgOverlayUnsupportedBehavior), o = i === "svg-overlay" ? ga(t.document) : void 0, s = i === "svg-overlay" ? _a(r, o, t.svgOverlayTextCapability) : void 0;
 	if (i === "svg-overlay" && s !== void 0 && a === "error") throw new $("BUBBLE-RUNTIME-004", `Bubble SVG overlay backend is unavailable because ${s}. Use scratch-render or install the required public upstream capability.`);
 	let c = i === "svg-overlay" && s === void 0 ? "svg-overlay" : "scratch-render", l = t.scheduler ?? {
 		setTimeout: (e, t) => globalThis.setTimeout(e, t),
 		clearTimeout: (e) => globalThis.clearTimeout(e)
-	}, u = () => ma(n.ext_kubohiroyaassetmanager), d;
+	}, u = () => va(n.ext_kubohiroyaassetmanager), d;
 	if (c === "svg-overlay") try {
-		d = Bi(t.svgOverlayTextCapability, r);
+		d = Wi(t.svgOverlayTextCapability, r);
 	} catch (e) {
 		throw new $("BUBBLE-RUNTIME-004", `Bubble SVG overlay text capability is invalid: ${e instanceof Error ? e.message : String(e)}`);
 	}
 	else if (t.textCapability !== void 0) d = t.textCapability;
 	else try {
-		d = li(n.ext_kubohiroyasvgtext);
+		d = fi(n.ext_kubohiroyasvgtext);
 	} catch {
 		throw new $("BUBBLE-RUNTIME-003", "Bubble requires a text capability. Load @kubohiroya/turbowarp-svg-text or provide options.textCapability before using Bubble blocks.");
 	}
 	let f;
 	if (c === "svg-overlay") {
 		if (t.svgOverlayImageCapability !== void 0) try {
-			f = Gi(t.svgOverlayImageCapability);
+			f = Yi(t.svgOverlayImageCapability);
 		} catch (e) {
 			throw new $("BUBBLE-RUNTIME-004", `Bubble SVG overlay image capability is invalid: ${e instanceof Error ? e.message : String(e)}`);
 		}
@@ -5796,7 +5866,7 @@ function Ca(e, t = {}) {
 			let i = t.drawableID;
 			if (!Number.isInteger(i) || i < 0) throw new $("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
 			let a = await u().resolveSkin(e);
-			if (!ca(a) || !Number.isInteger(a.skinId) || a.skinId < 0) throw new $("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(e)}`);
+			if (!fa(a) || !Number.isInteger(a.skinId) || a.skinId < 0) throw new $("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(e)}`);
 			r.updateDrawableSkinId(i, a.skinId), n.requestRedraw?.();
 		}
 	};
@@ -5812,18 +5882,18 @@ function Ca(e, t = {}) {
 			if (typeof r != "function") throw new $("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
 			await r.call(n, { NAME: e });
 		}
-	}, m = c === "svg-overlay" ? Ki(r, o) : void 0;
+	}, m = c === "svg-overlay" ? Xi(r, o) : void 0;
 	return ai({
 		...f === void 0 ? {} : { imageResolver: f },
 		audio: p,
 		textCapability: d,
 		createSurface({ actor: e, actorKey: t, style: r }) {
-			if (!ca(e) || typeof e.id != "string") throw new $("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-			return c === "svg-overlay" ? ta(m, e, t, r, l) : Sa(n, e, t, r, l);
+			if (!fa(e) || typeof e.id != "string") throw new $("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
+			return c === "svg-overlay" ? aa(m, e, t, r, l) : Ea(n, e, t, r, l);
 		},
 		...t.scheduler === void 0 ? {} : { scheduler: t.scheduler },
 		...t.onAnimationError === void 0 ? {} : { onAnimationError: t.onAnimationError }
 	});
 }
 //#endregion
-export { $ as BubbleRuntimeAdapterError, ki as bubbleRenderBackends, gi as createAssetManagerSvgOverlayImageCapability, Gi as createSvgOverlayImageAdapter, ta as createSvgOverlaySurface, Ki as createSvgOverlaySurfaceManager, Bi as createSvgOverlayTextAdapter, ui as createSvgTextCompositionCapability, Ca as createTurboWarpBubbleComposition, li as createTurboWarpSvgTextCapability, ji as defaultBubbleOverlayUnsupportedBehavior, Ai as defaultBubbleRenderBackend };
+export { $ as BubbleRuntimeAdapterError, Ni as bubbleRenderBackends, bi as createAssetManagerSvgOverlayImageCapability, Yi as createSvgOverlayImageAdapter, aa as createSvgOverlaySurface, Xi as createSvgOverlaySurfaceManager, Wi as createSvgOverlayTextAdapter, pi as createSvgTextCompositionCapability, mi as createSvgTextOverlayTextCapability, Da as createTurboWarpBubbleComposition, fi as createTurboWarpSvgTextCapability, Fi as defaultBubbleOverlayUnsupportedBehavior, Pi as defaultBubbleRenderBackend };

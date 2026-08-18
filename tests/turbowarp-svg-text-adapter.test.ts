@@ -1,7 +1,10 @@
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import { describe, expect, it, vi } from "vitest";
 import {
   createSvgTextCompositionCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  type SvgTextLayoutCompositionLike,
   type TurboWarpSvgTextExtension,
 } from "../src/turbowarp-svg-text-adapter.js";
 
@@ -66,5 +69,63 @@ describe("TurboWarp SVG Text adapter", () => {
     ).toBe(24);
     capability.releaseTarget(target);
     expect(composition.releaseTarget).toHaveBeenCalledWith(target);
+  });
+
+  it("maps SVG Text 0.6 layout geometry to centered overlay coordinates", () => {
+    const composition = createSvgTextLayoutComposition();
+    composition.defineStyle({
+      name: "dialogue",
+      alignment: "right",
+      backgroundColor: "#ffffff",
+      font: "Helvetica",
+      fontPercent: 100,
+      textColor: "#575e75",
+    });
+    const capability = createSvgTextOverlayTextCapability(composition);
+    const upstream = composition.layoutText({
+      nativeSize: [480, 360],
+      styleName: "dialogue",
+      text: "Hi\nthere",
+    });
+    const layout = capability.layoutText({
+      nativeSize: { width: 480, height: 360 },
+      styleName: "dialogue",
+      text: "Hi\nthere",
+    });
+
+    expect(layout).toMatchObject({
+      alignment: "right",
+      backgroundColor: upstream.style.backgroundColor,
+      backgroundCornerRadius: upstream.style.cornerRadius,
+      fill: upstream.style.textColor,
+      fontFamily: upstream.style.font,
+      fontSize: upstream.style.fontSize,
+      height: upstream.height,
+      lineHeight: upstream.style.lineHeight,
+      preserveWhitespace: true,
+      width: upstream.width,
+    });
+    expect(layout.lines).toEqual(
+      upstream.lines.map((line) => ({
+        baseline: line.baseline - upstream.height / 2,
+        text: line.text,
+        x: line.x - upstream.width / 2,
+      })),
+    );
+    expect(
+      capability.measureText?.({
+        nativeSize: { width: 480, height: 360 },
+        styleName: "dialogue",
+        text: "Hi\nthere",
+      }),
+    ).toBe(Math.max(...upstream.lines.map((line) => line.width)));
+  });
+
+  it("rejects a layout composition without the public layout API", () => {
+    expect(() =>
+      createSvgTextOverlayTextCapability(
+        {} as unknown as SvgTextLayoutCompositionLike,
+      ),
+    ).toThrow("layoutText composition API");
   });
 });

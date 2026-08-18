@@ -2,6 +2,10 @@ import type {
   BubbleTextCapability,
   BubbleTextTarget,
 } from "./text-capability.js";
+import type {
+  BubbleSvgOverlayTextCapability,
+  BubbleSvgOverlayTextLayout,
+} from "./svg-overlay-surface.js";
 
 export interface TurboWarpSvgTextExtension {
   setText(
@@ -23,6 +27,39 @@ interface SvgTextCompositionLike {
     readonly styleName: string;
     readonly text: string;
   }): number;
+}
+
+interface SvgTextLayoutLineLike {
+  readonly baseline: number;
+  readonly text: string;
+  readonly width: number;
+  readonly x: number;
+}
+
+interface SvgTextLayoutLike {
+  readonly height: number;
+  readonly lines: readonly SvgTextLayoutLineLike[];
+  readonly preserveWhitespace: boolean;
+  readonly style: Readonly<{
+    alignment: "center" | "left" | "right";
+    backgroundColor: string;
+    cornerRadius: number;
+    font: string;
+    fontSize: number;
+    lineHeight: number;
+    textColor: string;
+  }>;
+  readonly width: number;
+}
+
+export interface SvgTextLayoutCompositionLike {
+  layoutText(
+    input: Readonly<{
+      nativeSize: readonly [width: number, height: number];
+      styleName: string;
+      text: string;
+    }>,
+  ): SvgTextLayoutLike;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -53,6 +90,72 @@ function validateComposition(value: unknown): SvgTextCompositionLike {
     );
   }
   return value as unknown as SvgTextCompositionLike;
+}
+
+function validateLayoutComposition(
+  value: unknown,
+): SvgTextLayoutCompositionLike {
+  if (!isRecord(value) || typeof value.layoutText !== "function") {
+    throw new TypeError(
+      "SVG Text overlay adapter requires the layoutText composition API.",
+    );
+  }
+  return value as unknown as SvgTextLayoutCompositionLike;
+}
+
+function requireFiniteNumber(value: unknown, label: string): number {
+  const result = Number(value);
+  if (!Number.isFinite(result)) {
+    throw new TypeError(`${label} must be a finite number.`);
+  }
+  return result;
+}
+
+function adaptSvgTextLayout(value: unknown): BubbleSvgOverlayTextLayout {
+  if (
+    !isRecord(value) ||
+    !isRecord(value.style) ||
+    !Array.isArray(value.lines)
+  ) {
+    throw new TypeError("SVG Text layout result is invalid.");
+  }
+  const style = value.style;
+  const alignment = style.alignment;
+  if (alignment !== "left" && alignment !== "center" && alignment !== "right") {
+    throw new TypeError("SVG Text layout alignment is invalid.");
+  }
+  const width = requireFiniteNumber(value.width, "SVG Text layout width");
+  const height = requireFiniteNumber(value.height, "SVG Text layout height");
+  const lines = Object.freeze(
+    value.lines.map((line) => {
+      if (!isRecord(line) || typeof line.text !== "string") {
+        throw new TypeError("SVG Text layout line is invalid.");
+      }
+      return Object.freeze({
+        baseline:
+          requireFiniteNumber(line.baseline, "SVG Text line baseline") -
+          height / 2,
+        text: line.text,
+        x: requireFiniteNumber(line.x, "SVG Text line x") - width / 2,
+      });
+    }),
+  );
+  return Object.freeze({
+    alignment,
+    backgroundColor: String(style.backgroundColor),
+    backgroundCornerRadius: requireFiniteNumber(
+      style.cornerRadius,
+      "SVG Text corner radius",
+    ),
+    fill: String(style.textColor),
+    fontFamily: String(style.font),
+    fontSize: requireFiniteNumber(style.fontSize, "SVG Text font size"),
+    height,
+    lineHeight: requireFiniteNumber(style.lineHeight, "SVG Text line height"),
+    lines,
+    preserveWhitespace: value.preserveWhitespace !== false,
+    width,
+  });
 }
 
 /**
@@ -111,4 +214,50 @@ export function createSvgTextCompositionCapability(
       composition.measureText?.({ styleName, text }) ?? 0;
   }
   return Object.freeze(capability);
+}
+
+/**
+ * Adapt SVG Text's host-neutral layout composition to Bubble's SVG overlay.
+ * The adapter preserves SVG Text's line coordinates without creating skins.
+ */
+export function createSvgTextOverlayTextCapability(
+  compositionInput: SvgTextLayoutCompositionLike,
+): BubbleSvgOverlayTextCapability {
+  const composition = validateLayoutComposition(compositionInput);
+  return Object.freeze({
+    layoutText({
+      nativeSize,
+      styleName,
+      text,
+    }: Parameters<
+      BubbleSvgOverlayTextCapability["layoutText"]
+    >[0]): BubbleSvgOverlayTextLayout {
+      return adaptSvgTextLayout(
+        composition.layoutText({
+          nativeSize: [nativeSize.width, nativeSize.height],
+          styleName,
+          text,
+        }),
+      );
+    },
+    measureText({
+      nativeSize,
+      styleName,
+      text,
+    }: Parameters<
+      NonNullable<BubbleSvgOverlayTextCapability["measureText"]>
+    >[0]): number {
+      const layout = composition.layoutText({
+        nativeSize: [nativeSize.width, nativeSize.height],
+        styleName,
+        text,
+      });
+      return Math.max(
+        1,
+        ...layout.lines.map((line) =>
+          requireFiniteNumber(line.width, "SVG Text line width"),
+        ),
+      );
+    },
+  });
 }

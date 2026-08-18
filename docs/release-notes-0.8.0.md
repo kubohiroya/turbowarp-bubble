@@ -6,6 +6,7 @@
 - 初期既定値`"scratch-render"`と既存backendを保持する。
 - `renderer.addOverlay(root, "scale")`上の共有SVG rootにBubble surfaceを描画する。
 - host-neutralな`svgOverlayTextCapability`と、解放可能な`svgOverlayImageCapability`を公開する。
+- `createSvgTextOverlayTextCapability()`でSVG Text 0.6.xの行layoutを座標・角丸ごと変換する。
 - Bubble側の`createAssetManagerSvgOverlayImageCapability()`でAsset Managerの汎用DOM resourceを変換する。依存方向はBubbleからAsset Managerへの一方向を維持する。
 - overlay API／text capability未対応hostは`BUBBLE-RUNTIME-004`を返す。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ既存backendへ戻る。
 
@@ -19,10 +20,11 @@
 - `script`、event handler、`foreignObject`、未許可data URLを拒否する。
 - capability所有のblob URLをreplacement／close時に各1回解放する。
 - Asset Managerのsanitize済みSVG resourceをBubble側adapter経由で描画し、close時にleaseを1回解放する。
+- SVG Textのhost-neutral layoutをBubble側adapterで変換し、renderer skinを生成せず行座標を維持する。
 
 ## release前のmanual gate
 
-上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)がreleaseされた後、次を記録する。このgateが未完了の間は`svg-overlay`をproduction既定値にしない。
+上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)は0.6.0、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)は0.12.0として公開済みであり、Bubbleの開発依存・peer dependencyへ反映した。次のmanual gateが未完了の間は`svg-overlay`をproduction既定値にしない。
 
 | 項目                       | host                                 | 許容基準                                                  | 結果   |
 | -------------------------- | ------------------------------------ | --------------------------------------------------------- | ------ |
