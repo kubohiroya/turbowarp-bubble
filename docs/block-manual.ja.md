@@ -8,7 +8,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では6つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。Bubbleは文字Bubbleの既定`BubbleTextCapability` adapterとしてSVG Textを使います。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
+入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -16,10 +16,9 @@
 |    2 | Async Input 0.4.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js`               |
 |    3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
 |    4 | Asset Manager 0.11.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.11.0/dist/asset-manager.js`          |
-|    5 | SVG Text 0.5.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.5.0/dist/svg-text.js`                     |
-|    6 | Bubble 0.7.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.7.0/dist/turbowarp-bubble.js`               |
+|    5 | Bubble 0.8.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js`               |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。表示時に既定のSVG Text adapterが、画像・メディア機能の使用時にAsset Managerが、待機開始時にAsync InputかRuntime Expressionが見つからなければ、Bubbleは明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入でき、その場合SVG Textは不要です。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、待機開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 
 参考：
 
@@ -58,30 +57,22 @@ register resource [costume:Assets:Next2] as asset [Next2]
 
 URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが`image/*`のアセットだけです。
 
-## 3. 文字styleを定義する
+## 3. 文字layout styleを選ぶ
 
-SVG Textで、Bubbleの文字部分に使う名前付きstyleを定義します。
+standalone BubbleはSVG Text 0.8.0のlayout compositionを内包します。`default`または任意の名前を指定すると、初回参照時に背景透明のSVG Text既定styleとして初期化されます。
 
 ```text
-define text style [dialogue-text]
-  background [#fff4cc]
-  text [#332200]
-  font [Noto Sans JP]
-  size [100]
-  align [left]
-  bubble direction [up]
+define bubble style [hero-dialogue] using text style [default]
 ```
 
-Bubbleは`dialogue-text`という名前を参照します。文字styleとBubble styleはruntime状態なので、通常は緑の旗が押されたときに毎回定義します。
-
-SVG Text 0.4.xは文字providerです。名前付き文字styleの定義、SVG文字skinの生成、文字幅の測定を担当します。Bubbleの配置は`set bubble placement`で設定し、tailや吹き出し外形はSVG Text providerの責務ではありません。
+独自のfont、色、alignmentを使うアプリhostは、`createSvgTextLayoutComposition()`へstyleを定義し、`createSvgTextOverlayTextCapability()`でBubbleへ注入します。既定経路も同じ`layoutText()`を使い、SVG文字skinは生成しません。Bubbleの配置、tail、吹き出し外形はBubble側が担当します。
 
 ## 4. Bubble styleを定義する
 
-まず、Bubble style名とSVG Textのstyle名を関連付けます。
+まず、Bubble style名と文字layout style名を関連付けます。
 
 ```text
-define bubble style [hero-dialogue] using text style [dialogue-text]
+define bubble style [hero-dialogue] using text style [default]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
 set bubble visual style [NORMAL] for bubble style [hero-dialogue]
@@ -263,7 +254,7 @@ Bubble styleの定義は拡張機能内で共有されますが、表示中のBu
 2. 各clone自身から`say`または`think`を実行します。
 3. animation mode変更とcloseも、表示したのと同じcloneから実行します。
 
-cloneが停止・削除された場合は、そのtargetに属するtimer、SVG Text skin、drawableが自動解放されます。
+cloneが停止・削除された場合は、そのtargetに属するtimer、overlay DOM、画像leaseが自動解放されます。明示的な`scratch-render`ではskinとdrawableも解放されます。
 
 ## 11. ブロック一覧
 
@@ -303,7 +294,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 | 状況                               | 原因と対処                                                               |
 | ---------------------------------- | ------------------------------------------------------------------------ |
 | Asset Managerを要求するエラー      | 画像・メディアアセットを使う前にAsset Manager 0.7.xを読み込む            |
-| 既定text adapterを要求するエラー   | SVG Text 0.4.xをサンドボックスなしで読み込む                             |
+| SVG overlay backendのエラー        | `renderer.addOverlay()`対応hostを使うか`scratch-render`を明示する        |
 | Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
 | `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
@@ -317,7 +308,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、SVG 
 
 ## 13. 自動解放されるタイミング
 
-次の場合、Bubbleが所有するtimer、text skin、renderer drawableは自動的に解放されます。
+次の場合、Bubbleが所有するtimer、overlay DOM、画像leaseは自動的に解放されます。`scratch-render`を明示した場合はtext skinとrenderer drawableも解放されます。
 
 - `close this bubble`
 - 同じsprite／cloneで次の`say`または`think`を実行したとき

@@ -1,3 +1,4 @@
+import { Window } from "happy-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BLOCK_ICON_URI, BubbleExtension } from "../src/extension.js";
 import type {
@@ -59,6 +60,26 @@ function scratch(): ScratchApi {
     extensions: { register: () => undefined, unsandboxed: true },
     translate: (value) => (typeof value === "string" ? value : value.default),
   };
+}
+
+function createScratchRenderComposition(
+  runtime: Parameters<typeof createTurboWarpBubbleComposition>[0],
+  options: Parameters<typeof createTurboWarpBubbleComposition>[1] = {},
+) {
+  return createTurboWarpBubbleComposition(runtime, {
+    ...options,
+    bubbleRenderBackend: "scratch-render",
+  });
+}
+
+function createScratchRenderExtension(
+  runtime: ConstructorParameters<typeof BubbleExtension>[0],
+  options: ConstructorParameters<typeof BubbleExtension>[1] = {},
+): BubbleExtension {
+  return new BubbleExtension(runtime, {
+    ...options,
+    bubbleRenderBackend: "scratch-render",
+  });
 }
 
 function createRuntime(
@@ -250,9 +271,7 @@ describe("TurboWarp composition adapter", () => {
   it("defers Asset Manager lookup until a media style is shown", () => {
     const harness = createRuntime({ assetManager: false });
 
-    expect(() =>
-      createTurboWarpBubbleComposition(harness.runtime),
-    ).not.toThrow();
+    expect(() => createScratchRenderComposition(harness.runtime)).not.toThrow();
   });
 
   it("accepts host-owned Asset Manager and SVG Text compositions", async () => {
@@ -272,7 +291,7 @@ describe("TurboWarp composition adapter", () => {
       }),
       releaseTarget,
     };
-    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+    const composition = createScratchRenderComposition(harness.runtime, {
       imageResolver,
       textCapability,
     });
@@ -303,7 +322,7 @@ describe("TurboWarp composition adapter", () => {
   it("renders time-based motion frames with easing and shape transitions", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+    const composition = createScratchRenderComposition(harness.runtime, {
       scheduler,
     });
     composition.defineStyle({
@@ -446,9 +465,41 @@ describe("TurboWarp composition adapter", () => {
 });
 
 describe("Bubble extension", () => {
+  it("uses the skin-free SVG Text layout path by default", async () => {
+    const harness = createRuntime();
+    const window = new Window();
+    const addOverlay = vi.fn((element: Element) => {
+      window.document.body.appendChild(
+        element as unknown as Parameters<
+          typeof window.document.body.appendChild
+        >[0],
+      );
+    });
+    const removeOverlay = vi.fn((element: Element) => element.remove());
+    Object.assign(harness.renderer, { addOverlay, removeOverlay });
+    const extension = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "layout only", STYLE: "dialogue" },
+      { target },
+    );
+
+    expect(addOverlay).toHaveBeenCalledOnce();
+    expect(harness.created).toHaveLength(0);
+    expect(harness.createdSvgSkins).toHaveLength(0);
+    expect(harness.setText).not.toHaveBeenCalled();
+    expect(window.document.querySelector("text")?.textContent).toBe(
+      "layout only",
+    );
+  });
+
   it("publishes the intended blocks and animation mode menu", () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const info = extension.getInfo() as {
       blocks: Array<{ opcode: string }>;
       docsURI: string;
@@ -554,7 +605,7 @@ describe("Bubble extension", () => {
 
   it("places actor-relative bubbles by aliases and continuous angles", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     let bounds = { bottom: -60, left: -10, right: 50, top: 20 };
     target.getBoundsForBubble = () => bounds;
@@ -588,7 +639,7 @@ describe("Bubble extension", () => {
 
   it("scales text and applies actor distance, tail length, and offset", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "transform", TEXT_STYLE: "default" });
     extension.setBubblePlacement({ STYLE: "transform", PLACEMENT: "right" });
@@ -617,7 +668,7 @@ describe("Bubble extension", () => {
 
   it("places, offsets, zooms, and rounds the portrait inside the bubble", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "portrait", TEXT_STYLE: "default" });
     extension.setPortraitBase({ STYLE: "portrait", ASSET: "Face" });
@@ -657,7 +708,7 @@ describe("Bubble extension", () => {
 
   it("removes the complete portrait through the none layout", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     extension.setPortraitBase({ STYLE: "plain", ASSET: "Face" });
@@ -682,7 +733,7 @@ describe("Bubble extension", () => {
 
   it("renders the selected SVG body behind actor-relative content", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "body", TEXT_STYLE: "default" });
     extension.setBubbleVisualStyle({
@@ -725,7 +776,7 @@ describe("Bubble extension", () => {
 
   it("places background-relative bubbles independently of actor visibility", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const hiddenActor = { ...actor(), visible: false };
     extension.defineBubbleStyle({
       STYLE: "header",
@@ -751,7 +802,7 @@ describe("Bubble extension", () => {
 
   it("keeps text visible without creating a visible body for NO_BUBBLE", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     extension.setBubbleVisualStyle({
@@ -771,7 +822,7 @@ describe("Bubble extension", () => {
 
   it("allows background placement from Stage and rejects actor placement there", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const stage: TurboWarpBubbleTarget = {
       id: "stage-id",
       isStage: true,
@@ -804,7 +855,9 @@ describe("Bubble extension", () => {
   it("renders layered speech and changes from talk to continue animation", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -856,7 +909,9 @@ describe("Bubble extension", () => {
   it("waits in awaiting-continue mode until the expression becomes true", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -893,7 +948,7 @@ describe("Bubble extension", () => {
 
   it("reveals units and exposes display animations through extension blocks", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "reveal", TEXT_STYLE: "default" });
     extension.setBubbleReveal({
@@ -926,7 +981,9 @@ describe("Bubble extension", () => {
   it("continues after the Bubble wait timeout", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -951,7 +1008,9 @@ describe("Bubble extension", () => {
   it("cancels a pending Bubble wait when the Bubble closes", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -985,7 +1044,9 @@ describe("Bubble extension", () => {
     async (event, passesTarget) => {
       const harness = createRuntime();
       const scheduler = new TestScheduler();
-      const extension = new BubbleExtension(harness.runtime, { scheduler });
+      const extension = createScratchRenderExtension(harness.runtime, {
+        scheduler,
+      });
       const target = actor();
       extension.defineBubbleStyle({
         STYLE: "dialogue",
@@ -1014,7 +1075,7 @@ describe("Bubble extension", () => {
   it("requires Async Input and Runtime Expression for Bubble waits", async () => {
     const target = actor();
     const noInput = createRuntime({ asyncInput: false });
-    const inputExtension = new BubbleExtension(noInput.runtime);
+    const inputExtension = createScratchRenderExtension(noInput.runtime);
     inputExtension.defineBubbleStyle({
       STYLE: "dialogue",
       TEXT_STYLE: "dialogue-text",
@@ -1031,7 +1092,9 @@ describe("Bubble extension", () => {
     ).rejects.toThrow("requires Async Input");
 
     const noExpression = createRuntime({ runtimeExpression: false });
-    const expressionExtension = new BubbleExtension(noExpression.runtime);
+    const expressionExtension = createScratchRenderExtension(
+      noExpression.runtime,
+    );
     expressionExtension.defineBubbleStyle({
       STYLE: "dialogue",
       TEXT_STYLE: "dialogue-text",
@@ -1050,7 +1113,7 @@ describe("Bubble extension", () => {
 
   it("releases a target-owned bubble when TurboWarp stops the target", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime, {
+    const extension = createScratchRenderExtension(harness.runtime, {
       scheduler: new TestScheduler(),
     });
     const target = actor();
@@ -1066,7 +1129,7 @@ describe("Bubble extension", () => {
 
   it("reports missing dependent extensions with corrective messages", async () => {
     const noAssets = createRuntime({ assetManager: false });
-    const first = new BubbleExtension(noAssets.runtime);
+    const first = createScratchRenderExtension(noAssets.runtime);
     first.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     await expect(
       first.sayWithBubbleStyle(
@@ -1083,7 +1146,7 @@ describe("Bubble extension", () => {
     ).rejects.toThrow("imageResolver capability");
 
     const noText = createRuntime({ svgTextExtension: false });
-    const second = new BubbleExtension(noText.runtime);
+    const second = createScratchRenderExtension(noText.runtime);
     second.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     await expect(
       second.sayWithBubbleStyle(

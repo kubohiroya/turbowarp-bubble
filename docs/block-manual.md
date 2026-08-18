@@ -8,7 +8,7 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses six extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble uses SVG Text as its default `BubbleTextCapability` adapter for text bubbles. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
+The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.8.0 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
 
 | Order | Extension                | URL                                                                                                      |
 | ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -16,10 +16,9 @@ The complete input-wait example uses six extensions. Add Temporary Variables fro
 |     2 | Async Input 0.4.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js`               |
 |     3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
 |     4 | Asset Manager 0.11.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.11.0/dist/asset-manager.js`          |
-|     5 | SVG Text 0.5.0           | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-svg-text@0.5.0/dist/svg-text.js`                     |
-|     6 | Bubble 0.7.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.7.0/dist/turbowarp-bubble.js`               |
+|     5 | Bubble 0.8.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js`               |
 
-To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the default SVG Text adapter is missing when it displays a Bubble, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can use another text capability and does not require SVG Text.
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can inject another text capability.
 
 See also:
 
@@ -58,30 +57,22 @@ register resource [costume:Assets:Next2] as asset [Next2]
 
 For a remote image, pass its HTTPS URL as `RESOURCE_ID`. Bubble accepts only assets already registered with Asset Manager whose MIME type is `image/*`.
 
-## 3. Define a text style
+## 3. Select a text layout style
 
-Use SVG Text to define the named style for the Bubble's text layer.
+Standalone Bubble bundles the SVG Text 0.8.0 layout composition. `default`, or any other name, is initialized on first use with SVG Text defaults and a transparent background.
 
 ```text
-define text style [dialogue-text]
-  background [#fff4cc]
-  text [#332200]
-  font [Noto Sans JP]
-  size [100]
-  align [left]
-  bubble direction [up]
+define bubble style [hero-dialogue] using text style [default]
 ```
 
-Bubble refers to this style as `dialogue-text`. Text and Bubble styles are runtime state, so normally define them again whenever the green flag is clicked.
-
-SVG Text 0.4.x is a text provider: it defines named text styles, creates SVG text skins, and measures text. Bubble placement is configured by `set bubble placement`; the SVG Text provider does not own Bubble direction, tail, or outer shape.
+Application hosts that need custom fonts, colors, or alignment can define styles on `createSvgTextLayoutComposition()` and inject them through `createSvgTextOverlayTextCapability()`. The default uses the same `layoutText()` API and does not create an SVG text skin. Bubble owns placement, tail, and outer shape.
 
 ## 4. Define a Bubble style
 
-First associate a Bubble style name with an SVG Text style name.
+First associate a Bubble style name with a text layout style name.
 
 ```text
-define bubble style [hero-dialogue] using text style [dialogue-text]
+define bubble style [hero-dialogue] using text style [default]
 set bubble placement [up-right] for bubble style [hero-dialogue]
 set bubble distance [12] for bubble style [hero-dialogue]
 set bubble visual style [NORMAL] for bubble style [hero-dialogue]
@@ -263,7 +254,7 @@ Bubble style definitions are shared within the extension, but each sprite or clo
 2. Run `say` or `think` from each clone itself.
 3. Change the animation mode and close the Bubble from the same clone that displayed it.
 
-When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables owned by that target are released automatically.
+When a clone stops or is deleted, its timers, overlay DOM, and image leases are released automatically. Explicit `scratch-render` mode also releases skins and drawables.
 
 ## 11. Block reference
 
@@ -300,24 +291,24 @@ When a clone stops or is deleted, timers, SVG Text skins, and renderer drawables
 
 ## 12. Troubleshooting
 
-| Symptom                              | Cause and solution                                                          |
-| ------------------------------------ | --------------------------------------------------------------------------- |
-| Asset Manager required error         | Load Asset Manager 0.7.x without sandbox before using image/media assets    |
-| Default text adapter required error  | Load SVG Text 0.4.x without sandbox                                         |
-| Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait         |
-| Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait  |
-| `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag |
-| Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble     |
-| Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                            |
-| Only one continue frame              | Supply at least two frames, or clear the setting                            |
-| Frame interval error                 | Use a finite `SECONDS` value greater than zero                              |
-| Actor-relative Bubble from the Stage | Use `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`                               |
-| Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value  |
-| Eyes or mouth are misaligned         | Match canvas size, center, and transparent area across all portrait layers  |
+| Symptom                              | Cause and solution                                                            |
+| ------------------------------------ | ----------------------------------------------------------------------------- |
+| Asset Manager required error         | Load Asset Manager 0.7.x without sandbox before using image/media assets      |
+| SVG overlay backend error            | Use a host with `renderer.addOverlay()` or explicitly select `scratch-render` |
+| Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait           |
+| Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait    |
+| `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag   |
+| Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble       |
+| Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                              |
+| Only one continue frame              | Supply at least two frames, or clear the setting                              |
+| Frame interval error                 | Use a finite `SECONDS` value greater than zero                                |
+| Actor-relative Bubble from the Stage | Use `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`                                 |
+| Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value    |
+| Eyes or mouth are misaligned         | Match canvas size, center, and transparent area across all portrait layers    |
 
 ## 13. Automatic cleanup
 
-Bubble automatically releases its owned timers, text skins, and renderer drawables when:
+Bubble automatically releases its owned timers, overlay DOM, and image leases in the following cases. Explicit `scratch-render` mode also releases its text skins and renderer drawables.
 
 - `close this bubble` runs;
 - the same sprite or clone runs another `say` or `think`;

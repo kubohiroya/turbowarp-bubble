@@ -1,20 +1,20 @@
-# 0.8.0（未リリース）: opt-in SVG overlay backend
+# 0.8.0: default SVG overlay backend
 
 ## 追加内容
 
-- `bubbleRenderBackend: "svg-overlay"`をopt-inで追加する。
-- 初期既定値`"scratch-render"`と既存backendを保持する。
+- `bubbleRenderBackend`の既定値を`"svg-overlay"`へ変更する。
+- `"scratch-render"`は明示指定できるrollback backendとして保持する。
 - `renderer.addOverlay(root, "scale")`上の共有SVG rootにBubble surfaceを描画する。
 - host-neutralな`svgOverlayTextCapability`と、解放可能な`svgOverlayImageCapability`を公開する。
-- `createSvgTextOverlayTextCapability()`でSVG Text 0.6.xの行layoutを座標・角丸ごと変換する。
+- SVG Text 0.8.0を通常dependencyとし、既定で`createSvgTextLayoutComposition().layoutText()`の行layoutを座標・角丸ごと変換する。
 - Bubble側の`createAssetManagerSvgOverlayImageCapability()`でAsset Managerの汎用DOM resourceを変換する。依存方向はBubbleからAsset Managerへの一方向を維持する。
-- overlay API／text capability未対応hostは`BUBBLE-RUNTIME-004`を返す。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ既存backendへ戻る。
+- overlay API未対応hostは`BUBBLE-RUNTIME-004`を返す。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ既存backendへ戻る。
 
 ## 自動検証結果
 
 2026-08-18時点のunit testでは、次を合格条件としている。
 
-- `svg-overlay`でshow、text更新、shake、shape animationを行っても、Bubbleから`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼ばない（許容値: 0回）。
+- optionsを省略した既定経路でshow、text更新、shake、shape animationを行っても、Bubbleから`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼ばない（許容値: 0回）。
 - 2つのBubbleが1つのrootを共有し、最後のclose後に`removeOverlay()`を1回呼ぶ（許容値: 残存root 0、重複remove 0）。
 - native size変更後にrootの`viewBox`を同期し、現在表示中のtextと`RESERVED`全文layoutを再計算する。
 - `script`、event handler、`foreignObject`、未許可data URLを拒否する。
@@ -25,7 +25,7 @@
 
 ## release前のmanual gate
 
-上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)は0.6.0、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)は0.12.0として公開済みであり、Bubbleの開発依存・peer dependencyへ反映した。次のmanual gateが未完了の間は`svg-overlay`をproduction既定値にしない。
+上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)で公開されたhost-neutral layoutを0.8.0の通常dependencyとして採用し、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)のDOM image resourceは0.12.0対応adapterから任意注入する。既定値変更後も次のmanual gateをrelease前に実施し、実測値をこの表へ記録する。
 
 | 項目                       | host                                 | 許容基準                                                  | 結果   |
 | -------------------------- | ------------------------------------ | --------------------------------------------------------- | ------ |
@@ -42,4 +42,4 @@ SVG overlayはbrowser／OSの最終compositeには含まれるが、WebGL canvas
 
 ## rollback
 
-設定を`bubbleRenderBackend: "scratch-render"`へ戻す。公開済みの設定値と既存backendは削除せず、重大なhost回帰がある場合は`svg-overlay`選択時の明示errorまたはpatch releaseで対処する。既定値は変更しない。
+設定へ`bubbleRenderBackend: "scratch-render"`を明示する。公開済みの設定値と既存backendは削除せず、重大なhost回帰がある場合は明示errorまたはpatch releaseで対処する。暗黙fallbackは行わないため、rollbackはhost側で確認できる。

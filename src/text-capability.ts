@@ -10,8 +10,8 @@ export type BubbleTextTarget = object;
  * Text rendering contract consumed by Bubble composition.
  *
  * Bubble owns placement, outer shape, portraits, reveal, and animation. A
- * text adapter owns text styles, SVG/text skin creation, measurement, and
- * target skin release.
+ * text adapter owns text styles, layout or rendering, measurement, and target
+ * resource release.
  */
 export interface BubbleTextCapability {
   setText(input: {

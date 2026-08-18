@@ -64,9 +64,9 @@ export interface TurboWarpBubbleRuntime {
     requestRedraw?(): void;
 }
 export interface TurboWarpBubbleCompositionOptions {
-    /** Defaults to scratch-render; svg-overlay is explicitly opt-in. */
+    /** Defaults to the skin-free svg-overlay backend. */
     readonly bubbleRenderBackend?: BubbleRenderBackend;
-    /** Defaults to error so an opt-in request never silently changes semantics. */
+    /** Defaults to error so the skin-free default never silently creates skins. */
     readonly svgOverlayUnsupportedBehavior?: BubbleOverlayUnsupportedBehavior;
     /** Host-neutral text layout supplied by turbowarp-svg-text or another host. */
     readonly svgOverlayTextCapability?: BubbleSvgOverlayTextCapability;

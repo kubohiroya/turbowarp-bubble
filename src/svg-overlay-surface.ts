@@ -39,7 +39,7 @@ export const bubbleRenderBackends = Object.freeze([
   "scratch-render",
   "svg-overlay",
 ] as const);
-export const defaultBubbleRenderBackend: BubbleRenderBackend = "scratch-render";
+export const defaultBubbleRenderBackend: BubbleRenderBackend = "svg-overlay";
 export const defaultBubbleOverlayUnsupportedBehavior: BubbleOverlayUnsupportedBehavior =
   "error";
 

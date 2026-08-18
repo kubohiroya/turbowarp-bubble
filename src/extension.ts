@@ -104,7 +104,7 @@ const motionNames = new Set([
 const easeNames = new Set(["linear", "easeIn", "easeOut", "easeInOut"]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
-export const EXTENSION_VERSION = "0.7.0";
+export const EXTENSION_VERSION = "0.8.0";
 export const BLOCK_ICON_URI = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" d="M12 13h40a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H30L17 55v-9h-5a5 5 0 0 1-5-5V18a5 5 0 0 1 5-5Z"/><g fill="#fff"><circle cx="23" cy="30" r="3"/><circle cx="32" cy="30" r="3"/><circle cx="41" cy="30" r="3"/></g></svg>',
 )}`;

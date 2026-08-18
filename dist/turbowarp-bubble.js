@@ -40,14 +40,14 @@
     license: "MPL-2.0",
     unsandboxed: true
   };
-  var block_definitions_default = {
+  var block_definitions_default$1 = {
     extensionName: "Bubble",
     blocks: [
       {
         "opcode": "defineBubbleStyle",
         "blockType": "COMMAND",
         "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
-        "description": "Defines or replaces a bubble style and references a named SVG Text style.",
+        "description": "Defines or replaces a bubble style and references a named SVG Text layout style.",
         "arguments": {
           "STYLE": {
             "type": "STRING",
@@ -537,7 +537,7 @@
         "opcode": "closeBubble",
         "blockType": "COMMAND",
         "text": "close this bubble",
-        "description": "Closes this sprite's bubble and releases its timers, SVG text skin, and drawables.",
+        "description": "Closes this sprite's bubble and releases its timers and rendering resources.",
         "arguments": {}
       },
       {
@@ -8515,16 +8515,16 @@
     "easeOut",
     "easeInOut"
   ]);
-  function isRecord$3(value) {
+  function isRecord$4(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
-  function requireExactKeys(value, required, optional, label) {
+  function requireExactKeys$1(value, required, optional, label) {
     const allowed = /* @__PURE__ */ new Set([...required, ...optional]);
     const missing = required.filter((key) => !Object.prototype.hasOwnProperty.call(value, key));
     const unknown = Object.keys(value).filter((key) => !allowed.has(key));
     if (missing.length > 0 || unknown.length > 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} has missing or unknown properties.`);
   }
-  function requireName(value, label) {
+  function requireName$1(value, label) {
     if (typeof value !== "string" || value.trim().length === 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be a non-empty string.`);
     return value.trim();
   }
@@ -8533,8 +8533,8 @@
     return value;
   }
   function normalizeAnimation(value, label, minimumFrames) {
-    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
-    requireExactKeys(value, ["frames", "frameIntervalSeconds"], [], label);
+    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    requireExactKeys$1(value, ["frames", "frameIntervalSeconds"], [], label);
     if (!Array.isArray(value.frames) || value.frames.length < minimumFrames) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.frames must contain at least ${minimumFrames} image asset name${minimumFrames === 1 ? "" : "s"}.`);
     const frames = Object.freeze(value.frames.map((frame, index) => requireAssetName(frame, `${label}.frames[${index}]`)));
     const interval = value.frameIntervalSeconds;
@@ -8545,8 +8545,8 @@
     });
   }
   function normalizePortrait(value) {
-    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
-    requireExactKeys(value, ["base"], [
+    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
+    requireExactKeys$1(value, ["base"], [
       "blink",
       "lipSync",
       "placement",
@@ -8575,8 +8575,8 @@
     });
   }
   function normalizeMotion(value, label) {
-    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
-    requireExactKeys(value, ["name"], [
+    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    requireExactKeys$1(value, ["name"], [
       "durationSeconds",
       "ease",
       "direction",
@@ -8615,8 +8615,8 @@
   }
   function normalizeAudio(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
-    requireExactKeys(value, [], [
+    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
+    requireExactKeys$1(value, [], [
       "voice",
       "reveal",
       "finish"
@@ -8633,8 +8633,8 @@
     return Object.freeze(result);
   }
   function normalizeStyle(value) {
-    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
-    requireExactKeys(value, ["name", "textStyle"], [
+    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
+    requireExactKeys$1(value, ["name", "textStyle"], [
       "placement",
       "maxWidth",
       "textLocale",
@@ -8683,10 +8683,10 @@
       if (typeof value.maxWidth !== "number" || !Number.isFinite(value.maxWidth) || value.maxWidth <= 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style maxWidth must be a positive finite number.");
       maxWidth = value.maxWidth;
     }
-    const textLocale = value.textLocale === void 0 ? void 0 : requireName(value.textLocale, "Bubble style text locale");
+    const textLocale = value.textLocale === void 0 ? void 0 : requireName$1(value.textLocale, "Bubble style text locale");
     return Object.freeze({
-      name: requireName(value.name, "Bubble style name"),
-      textStyle: requireName(value.textStyle, "Bubble text style name"),
+      name: requireName$1(value.name, "Bubble style name"),
+      textStyle: requireName$1(value.textStyle, "Bubble text style name"),
       ...maxWidth === void 0 ? {} : { maxWidth },
       ...textLocale === void 0 ? {} : { textLocale },
       placement,
@@ -8704,12 +8704,12 @@
   }
   function validateImageResolver(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$3(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
+    if (!isRecord$4(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
     return value;
   }
   function validateAudioCapability(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$3(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
+    if (!isRecord$4(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
     if (value.isRegistered !== void 0 && typeof value.isRegistered !== "function") throw new TypeError("Bubble audio capability isRegistered must be a function.");
     if (value.getMimeType !== void 0 && typeof value.getMimeType !== "function") throw new TypeError("Bubble audio capability getMimeType must be a function.");
     return value;
@@ -8719,7 +8719,7 @@
     return value;
   }
   function validateTextCapability(value) {
-    if (!isRecord$3(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble text capability must provide setText and releaseTarget.");
+    if (!isRecord$4(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble text capability must provide setText and releaseTarget.");
     return value;
   }
   function defaultScheduler() {
@@ -8729,11 +8729,11 @@
     });
   }
   function validateScheduler(value) {
-    if (!isRecord$3(value) || typeof value.setTimeout !== "function" || typeof value.clearTimeout !== "function") throw new TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
+    if (!isRecord$4(value) || typeof value.setTimeout !== "function" || typeof value.clearTimeout !== "function") throw new TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
     return value;
   }
   function validateAssetTarget(value, label) {
-    if (!isRecord$3(value) || typeof value.id !== "string" || value.id.length === 0 || typeof value.isStage !== "boolean") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", `${label} must provide id and isStage.`);
+    if (!isRecord$4(value) || typeof value.id !== "string" || value.id.length === 0 || typeof value.isStage !== "boolean") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", `${label} must provide id and isStage.`);
     return value;
   }
   function validateTextTarget(value) {
@@ -8741,7 +8741,7 @@
     return value;
   }
   function validateSurface(value, style) {
-    if (!isRecord$3(value) || !isRecord$3(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
+    if (!isRecord$4(value) || !isRecord$4(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
     const targets = value.targets;
     validateTextTarget(targets.text);
     const assetTargetIds = /* @__PURE__ */ new Set();
@@ -8852,8 +8852,8 @@
     });
   }
   function normalizeShowInput(value) {
-    if (!isRecord$3(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
-    requireExactKeys(value, [
+    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
+    requireExactKeys$1(value, [
       "actor",
       "actorKey",
       "kind",
@@ -8872,16 +8872,16 @@
     }
     return {
       actor: value.actor,
-      actorKey: requireName(value.actorKey, "Bubble actor key"),
+      actorKey: requireName$1(value.actorKey, "Bubble actor key"),
       kind: value.kind,
       text: value.text,
-      styleName: requireName(value.styleName, "Bubble style name"),
+      styleName: requireName$1(value.styleName, "Bubble style name"),
       animationMode,
       ...reveal === void 0 ? {} : { reveal }
     };
   }
   function createBubbleComposition(options) {
-    if (!isRecord$3(options)) throw new TypeError("Bubble composition options must be an object.");
+    if (!isRecord$4(options)) throw new TypeError("Bubble composition options must be an object.");
     const imageResolver = validateImageResolver(options.imageResolver);
     const audio = validateAudioCapability(options.audio);
     const textCapability = validateTextCapability(options.textCapability);
@@ -9359,7 +9359,7 @@
         styles.set(style.name, style);
       },
       hasActiveBubble(actorKey) {
-        return active.has(requireName(actorKey, "Bubble actor key"));
+        return active.has(requireName$1(actorKey, "Bubble actor key"));
       },
       async show(input) {
         ensureActive();
@@ -9368,7 +9368,7 @@
       },
       releaseTarget(actorKey) {
         ensureActive();
-        const normalized = requireName(actorKey, "Bubble actor key");
+        const normalized = requireName$1(actorKey, "Bubble actor key");
         return enqueueActor(normalized, async () => {
           await active.get(normalized)?.close();
         });
@@ -9389,6 +9389,534 @@
     });
   }
   //#endregion
+  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.8.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
+  var block_definitions_default = {
+    extensionName: "SVG Text",
+    blocks: [{
+      "opcode": "defineStyle",
+      "blockType": "COMMAND",
+      "text": "define text style [STYLE] background [BACKGROUND] text [TEXT_COLOR] font [FONT] size [SIZE] align [ALIGN]",
+      "description": "Defines or replaces a named text style for SVG text actors. Bubble shape and placement are owned by the host Bubble layer.",
+      "arguments": {
+        "STYLE": {
+          "type": "STRING",
+          "defaultValue": "default"
+        },
+        "BACKGROUND": {
+          "type": "COLOR",
+          "defaultValue": "#ffffff"
+        },
+        "TEXT_COLOR": {
+          "type": "COLOR",
+          "defaultValue": "#575e75"
+        },
+        "FONT": {
+          "type": "STRING",
+          "defaultValue": "Helvetica"
+        },
+        "SIZE": {
+          "type": "NUMBER",
+          "defaultValue": 100
+        },
+        "ALIGN": {
+          "type": "STRING",
+          "defaultValue": "left",
+          "menu": "alignment"
+        }
+      }
+    }, {
+      "opcode": "setText",
+      "blockType": "COMMAND",
+      "text": "set this sprite text [TEXT] with style [STYLE]",
+      "description": "Replaces this sprite's skin with responsive styled SVG text.",
+      "arguments": {
+        "TEXT": {
+          "type": "STRING",
+          "defaultValue": "Title\\nSubtitle"
+        },
+        "STYLE": {
+          "type": "STRING",
+          "defaultValue": "default"
+        }
+      }
+    }],
+    menus: { "alignment": {
+      "acceptReporters": true,
+      "items": [
+        "left",
+        "center",
+        "right"
+      ]
+    } }
+  };
+  var baseStageWidth = 480;
+  var baseStageHeight = 360;
+  var defaultFontPercent$1 = 100;
+  var defaultRubyFontPercent$1 = 50;
+  var defaultRubyGap$1 = 1;
+  var maximumFontNameLength = 128;
+  var textStyle = {
+    fontSize: 14,
+    lineHeight: 16,
+    padding: 12,
+    cornerRadius: 8
+  };
+  var DEFAULT_SVG_TEXT_STYLE = Object.freeze({
+    alignment: "left",
+    backgroundColor: "#ffffff",
+    font: "Helvetica",
+    fontPercent: defaultFontPercent$1,
+    textColor: "#575e75"
+  });
+  var DEFAULT_SVG_TEXT_RICH_STYLE = Object.freeze({
+    ...DEFAULT_SVG_TEXT_STYLE,
+    rubyFontPercent: defaultRubyFontPercent$1,
+    rubyGap: defaultRubyGap$1
+  });
+  function createSvgTextLayout(text, definition, nativeSize) {
+    const metrics = createTextMetrics(definition, nativeSize);
+    const lineMeasurements = text.split("\n").map((line) => ({
+      text: line,
+      width: measureTextWidth(line, metrics.fontSize)
+    }));
+    const contentWidth = Math.max(1, ...lineMeasurements.map((line) => line.width));
+    const width = Math.max(1, Math.ceil(contentWidth + metrics.padding * 2));
+    const height = Math.max(1, Math.ceil(metrics.lineHeight * lineMeasurements.length + metrics.padding * 2));
+    const x = definition.alignment === "center" ? width / 2 : definition.alignment === "right" ? width - metrics.padding : metrics.padding;
+    const lines = Object.freeze(lineMeasurements.map((line, index) => Object.freeze({
+      baseline: metrics.padding + metrics.fontSize + metrics.lineHeight * index,
+      text: line.text,
+      width: line.width,
+      x
+    })));
+    const style = createLayoutStyle(definition, metrics);
+    return Object.freeze({
+      height,
+      lines,
+      preserveWhitespace: true,
+      style,
+      width
+    });
+  }
+  function createSvgTextRichLayout(runs, definition, nativeSize, maxWidth) {
+    const metrics = createTextMetrics(definition, nativeSize);
+    const rubyFontSize = metrics.fontSize * (definition.rubyFontPercent / defaultFontPercent$1);
+    const rubyGap = definition.rubyGap * metrics.fontScale;
+    const style = Object.freeze({
+      ...createLayoutStyle(definition, metrics),
+      rubyFontPercent: definition.rubyFontPercent,
+      rubyFontSize,
+      rubyGap
+    });
+    const plainText = runs.map((run) => run.type === "ruby" ? run.base : run.text).join("");
+    const readingText = runs.map((run) => run.type === "ruby" ? run.reading : run.text).join("");
+    const revealUnits = [];
+    const items = [];
+    for (const [runIndex, run] of runs.entries()) {
+      if (run.type === "ruby") {
+        const reveal = Object.freeze({
+          end: run.base.length,
+          index: revealUnits.length,
+          runIndex,
+          start: 0,
+          type: "ruby"
+        });
+        revealUnits.push(reveal);
+        const baseWidth = measureTextWidth(run.base, metrics.fontSize);
+        const readingWidth = measureTextWidth(run.reading, rubyFontSize);
+        items.push({
+          base: run.base,
+          baseWidth,
+          reading: run.reading,
+          readingWidth,
+          reveal,
+          type: "ruby",
+          width: Math.max(baseWidth, readingWidth)
+        });
+        continue;
+      }
+      for (const grapheme of segmentGraphemes(run.text)) {
+        if (grapheme.segment === "\n") {
+          items.push("break");
+          continue;
+        }
+        const reveal = Object.freeze({
+          end: grapheme.end,
+          index: revealUnits.length,
+          runIndex,
+          start: grapheme.start,
+          type: "text"
+        });
+        revealUnits.push(reveal);
+        items.push({
+          reveal,
+          text: grapheme.segment,
+          type: "text",
+          width: measureTextWidth(grapheme.segment, metrics.fontSize)
+        });
+      }
+    }
+    const contentLimit = maxWidth === void 0 ? void 0 : Math.max(1, maxWidth - metrics.padding * 2);
+    const pendingLines = [];
+    let pendingLine = {
+      units: [],
+      width: 0
+    };
+    const finishLine = () => {
+      pendingLines.push(pendingLine);
+      pendingLine = {
+        units: [],
+        width: 0
+      };
+    };
+    for (const item of items) {
+      if (item === "break") {
+        finishLine();
+        continue;
+      }
+      if (contentLimit !== void 0 && pendingLine.units.length > 0 && pendingLine.width + item.width > contentLimit) finishLine();
+      pendingLine.units.push(item);
+      pendingLine.width += item.width;
+    }
+    finishLine();
+    const naturalWidth = Math.max(1, ...pendingLines.map((line) => line.width)) + metrics.padding * 2;
+    const width = Math.max(1, Math.ceil(maxWidth === void 0 ? naturalWidth : Math.max(maxWidth, naturalWidth)));
+    const baseDescent = Math.max(0, metrics.lineHeight - metrics.fontSize);
+    let lineTop = metrics.padding;
+    const lines = Object.freeze(pendingLines.map((pending) => {
+      const hasRuby = pending.units.some((unit) => unit.type === "ruby");
+      const ascent = metrics.fontSize + (hasRuby ? rubyFontSize + rubyGap : 0);
+      const descent = baseDescent;
+      const height = ascent + descent;
+      const baseline = lineTop + ascent;
+      const x = definition.alignment === "center" ? (width - pending.width) / 2 : definition.alignment === "right" ? width - metrics.padding - pending.width : metrics.padding;
+      let fragmentX = x;
+      const fragments = Object.freeze(pending.units.map((unit) => {
+        if (unit.type === "text") {
+          const fragment = Object.freeze({
+            baseline,
+            revealIndex: unit.reveal.index,
+            text: unit.text,
+            type: "text",
+            width: unit.width,
+            x: fragmentX
+          });
+          fragmentX += unit.width;
+          return fragment;
+        }
+        const groupX = fragmentX;
+        const base = Object.freeze({
+          baseline,
+          fontSize: metrics.fontSize,
+          text: unit.base,
+          width: unit.baseWidth,
+          x: groupX + (unit.width - unit.baseWidth) / 2
+        });
+        const reading = Object.freeze({
+          baseline: baseline - metrics.fontSize - rubyGap,
+          fontSize: rubyFontSize,
+          text: unit.reading,
+          width: unit.readingWidth,
+          x: groupX + (unit.width - unit.readingWidth) / 2
+        });
+        const fragment = Object.freeze({
+          base,
+          reading,
+          revealIndex: unit.reveal.index,
+          type: "ruby",
+          width: unit.width,
+          x: groupX
+        });
+        fragmentX += unit.width;
+        return fragment;
+      }));
+      const line = Object.freeze({
+        ascent,
+        baseline,
+        descent,
+        fragments,
+        height,
+        overflow: contentLimit !== void 0 && pending.width > contentLimit,
+        width: pending.width,
+        x
+      });
+      lineTop += height;
+      return line;
+    }));
+    const height = Math.max(1, Math.ceil(lineTop + metrics.padding));
+    const overflow = lines.some((line) => line.overflow);
+    return Object.freeze({
+      height,
+      lines,
+      overflow,
+      plainText,
+      preserveWhitespace: true,
+      readingText,
+      revealUnits: Object.freeze(revealUnits),
+      style,
+      width
+    });
+  }
+  function normalizeSvgTextColor(value, fallback) {
+    const color = value.trim();
+    if (color === "") return fallback;
+    if (color.toLowerCase() === "transparent") return color;
+    if (/^#(?:[\da-f]{3}|[\da-f]{4}|[\da-f]{6}|[\da-f]{8})$/iu.test(color)) return color;
+    if (globalThis.CSS?.supports?.("color", color)) return color;
+    return fallback;
+  }
+  function normalizeSvgTextFont(value) {
+    const font = value.trim();
+    const hasUnsafeCharacter = [...font].some((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint <= 31 || codePoint === 127 || ",;{}".includes(character);
+    });
+    if (font === "" || font.length > maximumFontNameLength || hasUnsafeCharacter) return DEFAULT_SVG_TEXT_STYLE.font;
+    return font;
+  }
+  function createTextMetrics(definition, nativeSize) {
+    const stageScale = Math.min(nativeSize[0] / baseStageWidth, nativeSize[1] / baseStageHeight);
+    const fontScale = stageScale * (definition.fontPercent / defaultFontPercent$1);
+    return {
+      cornerRadius: textStyle.cornerRadius * stageScale,
+      fontScale,
+      fontSize: textStyle.fontSize * fontScale,
+      lineHeight: textStyle.lineHeight * fontScale,
+      padding: textStyle.padding * stageScale
+    };
+  }
+  function createLayoutStyle(definition, metrics) {
+    return Object.freeze({
+      alignment: definition.alignment,
+      backgroundColor: definition.backgroundColor,
+      cornerRadius: metrics.cornerRadius,
+      font: definition.font,
+      fontPercent: definition.fontPercent,
+      fontSize: metrics.fontSize,
+      lineHeight: metrics.lineHeight,
+      padding: metrics.padding,
+      textColor: definition.textColor
+    });
+  }
+  function segmentGraphemes(value) {
+    const segments = [];
+    let current = "";
+    let currentStart = 0;
+    let joinNext = false;
+    let offset = 0;
+    for (const character of value) {
+      if (!(current !== "" && (joinNext || character === "‍" || isGraphemeExtender(character))) && current !== "") {
+        segments.push({
+          end: offset,
+          segment: current,
+          start: currentStart
+        });
+        current = "";
+      }
+      if (current === "") currentStart = offset;
+      current += character;
+      joinNext = character === "‍";
+      offset += character.length;
+    }
+    if (current !== "") segments.push({
+      end: offset,
+      segment: current,
+      start: currentStart
+    });
+    return segments;
+  }
+  function isGraphemeExtender(character) {
+    if (/\p{Mark}/u.test(character)) return true;
+    const codePoint = character.codePointAt(0) ?? 0;
+    return codePoint >= 65024 && codePoint <= 65039 || codePoint >= 917760 && codePoint <= 917999 || codePoint >= 127995 && codePoint <= 127999;
+  }
+  function measureTextWidth(text, fontSize) {
+    let units = 0;
+    for (const character of text) {
+      if (/\p{Mark}/u.test(character)) continue;
+      if (/\s/u.test(character)) {
+        units += .35;
+        continue;
+      }
+      const codePoint = character.codePointAt(0) ?? 0;
+      units += codePoint <= 127 ? .62 : 1;
+    }
+    return units * fontSize;
+  }
+  block_definitions_default.blocks;
+  block_definitions_default.menus;
+  `${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><g fill=\"none\" stroke=\"#fff\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M13 23V12h11M40 12h11v11M13 41v11h11M40 52h11V41M22 23h20M32 23v23\"/></g></svg>")}`;
+  var defaultStyleName = "default";
+  var maximumContentCharacters = 1e5;
+  var maximumContentLines = 1e3;
+  var maximumContentRuns = 1024;
+  var maximumLayoutFragments = 1e4;
+  var maximumLayoutWidth = 1e5;
+  var maximumRubyBaseCharacters = 256;
+  var maximumRubyReadingCharacters = 512;
+  function isRecord$3(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+  function compositionError(code, message) {
+    const error = new Error(message);
+    Object.defineProperty(error, "code", { value: code });
+    return error;
+  }
+  function requireExactKeys(value, required, optional, label) {
+    const allowed = /* @__PURE__ */ new Set([...required, ...optional]);
+    if (required.some((key) => !Object.prototype.hasOwnProperty.call(value, key)) || Object.keys(value).some((key) => !allowed.has(key))) throw compositionError("SVG-TEXT-COMPOSITION-001", `${label} has missing or unknown properties.`);
+  }
+  function requireName(value, label) {
+    if (typeof value !== "string" || value.trim().length === 0) throw compositionError("SVG-TEXT-COMPOSITION-001", `${label} must be a non-empty string.`);
+    return value.trim();
+  }
+  function validateOptionalString(value, label) {
+    if (value !== void 0 && (typeof value !== "string" || value.length === 0)) throw compositionError("SVG-TEXT-COMPOSITION-001", `${label} must be a non-empty string when provided.`);
+  }
+  function validateStyle(value) {
+    if (!isRecord$3(value)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text style must be an object.");
+    requireExactKeys(value, ["name"], [
+      "alignment",
+      "backgroundColor",
+      "font",
+      "fontPercent",
+      "rubyFontPercent",
+      "rubyGap",
+      "textColor"
+    ], "SVG Text style");
+    const name = requireName(value.name, "SVG Text style name");
+    if (value.alignment !== void 0 && value.alignment !== "left" && value.alignment !== "center" && value.alignment !== "right") throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text alignment is invalid.");
+    validateOptionalString(value.backgroundColor, "SVG Text backgroundColor");
+    validateOptionalString(value.font, "SVG Text font");
+    validateOptionalString(value.textColor, "SVG Text textColor");
+    if (value.fontPercent !== void 0 && (typeof value.fontPercent !== "number" || !Number.isFinite(value.fontPercent) || value.fontPercent < 1 || value.fontPercent > 1e3)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text fontPercent must be a finite number from 1 to 1000.");
+    if (value.rubyFontPercent !== void 0 && (typeof value.rubyFontPercent !== "number" || !Number.isFinite(value.rubyFontPercent) || value.rubyFontPercent < 10 || value.rubyFontPercent > 100)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rubyFontPercent must be a finite number from 10 to 100.");
+    if (value.rubyGap !== void 0 && (typeof value.rubyGap !== "number" || !Number.isFinite(value.rubyGap) || value.rubyGap < 0 || value.rubyGap > 100)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rubyGap must be a finite number from 0 to 100.");
+    return {
+      ...value,
+      name
+    };
+  }
+  function createStyleDefinition(style) {
+    return Object.freeze({
+      alignment: style.alignment ?? DEFAULT_SVG_TEXT_STYLE.alignment,
+      backgroundColor: normalizeSvgTextColor(style.backgroundColor ?? "", DEFAULT_SVG_TEXT_STYLE.backgroundColor),
+      font: normalizeSvgTextFont(style.font ?? ""),
+      fontPercent: style.fontPercent ?? DEFAULT_SVG_TEXT_STYLE.fontPercent,
+      rubyFontPercent: style.rubyFontPercent ?? DEFAULT_SVG_TEXT_RICH_STYLE.rubyFontPercent,
+      rubyGap: style.rubyGap ?? DEFAULT_SVG_TEXT_RICH_STYLE.rubyGap,
+      textColor: normalizeSvgTextColor(style.textColor ?? "", DEFAULT_SVG_TEXT_STYLE.textColor)
+    });
+  }
+  function validateNativeSize(value) {
+    if (!Array.isArray(value) || value.length !== 2 || value.some((dimension) => typeof dimension !== "number" || !Number.isFinite(dimension) || dimension <= 0)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text nativeSize must be [width, height] with two positive finite numbers.");
+    return value;
+  }
+  function normalizeText(value) {
+    return value.replace(/\\r\\n|\\n|\\r/gu, "\n");
+  }
+  function normalizeRichText(value) {
+    return normalizeText(value.replace(/\r\n?|\n/gu, "\n"));
+  }
+  function contentLimitError(message) {
+    return compositionError("SVG-TEXT-COMPOSITION-007", message);
+  }
+  function validateContentRuns(value) {
+    if (!Array.isArray(value)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich content runs must be an array.");
+    if (value.length > maximumContentRuns) throw contentLimitError(`SVG Text rich content exceeds ${maximumContentRuns} runs.`);
+    let characterCount = 0;
+    let fragmentCount = 0;
+    let lineCount = 1;
+    const runs = value.map((candidate, runIndex) => {
+      if (!isRecord$3(candidate)) throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} must be an object.`);
+      if (candidate.type === "text") {
+        requireExactKeys(candidate, ["type", "text"], [], `SVG Text rich content run ${runIndex}`);
+        if (typeof candidate.text !== "string") throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} text must be a string.`);
+        const text = normalizeRichText(candidate.text);
+        characterCount += text.length;
+        lineCount += text.split("\n").length - 1;
+        fragmentCount += [...text.replace(/\n/gu, "")].length;
+        return Object.freeze({
+          text,
+          type: "text"
+        });
+      }
+      if (candidate.type === "ruby") {
+        requireExactKeys(candidate, [
+          "type",
+          "base",
+          "reading"
+        ], [], `SVG Text rich content run ${runIndex}`);
+        if (typeof candidate.base !== "string" || typeof candidate.reading !== "string") throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} ruby base and reading must be strings.`);
+        const base = normalizeRichText(candidate.base);
+        const reading = normalizeRichText(candidate.reading);
+        if (base.length === 0 || reading.length === 0 || base.includes("\n") || reading.includes("\n")) throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} ruby base and reading must be non-empty single-line strings.`);
+        if (base.length > maximumRubyBaseCharacters) throw contentLimitError(`SVG Text ruby base exceeds ${maximumRubyBaseCharacters} characters.`);
+        if (reading.length > maximumRubyReadingCharacters) throw contentLimitError(`SVG Text ruby reading exceeds ${maximumRubyReadingCharacters} characters.`);
+        characterCount += base.length + reading.length;
+        fragmentCount += 1;
+        return Object.freeze({
+          base,
+          reading,
+          type: "ruby"
+        });
+      }
+      throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} type is invalid.`);
+    });
+    if (characterCount > maximumContentCharacters) throw contentLimitError(`SVG Text rich content exceeds ${maximumContentCharacters} characters.`);
+    if (lineCount > maximumContentLines) throw contentLimitError(`SVG Text rich content exceeds ${maximumContentLines} lines.`);
+    if (fragmentCount > maximumLayoutFragments) throw contentLimitError(`SVG Text rich content exceeds ${maximumLayoutFragments} layout fragments.`);
+    return Object.freeze(runs);
+  }
+  function validateMaxWidth(value) {
+    if (value === void 0) return void 0;
+    if (typeof value !== "number" || !Number.isFinite(value) || value <= 0 || value > maximumLayoutWidth) throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text maxWidth must be a finite number greater than 0 and no greater than ${maximumLayoutWidth}.`);
+    return value;
+  }
+  function layoutTextFromStyles(styles, input) {
+    if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text layout input is invalid.");
+    requireExactKeys(input, [
+      "styleName",
+      "text",
+      "nativeSize"
+    ], [], "SVG Text layout input");
+    const styleName = requireName(input.styleName, "SVG Text styleName");
+    const definition = styles.get(styleName);
+    if (!definition) throw compositionError("SVG-TEXT-COMPOSITION-003", `SVG Text style is not defined: ${styleName}`);
+    if (typeof input.text !== "string") throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text text must be a string.");
+    return createSvgTextLayout(normalizeText(input.text), definition, validateNativeSize(input.nativeSize));
+  }
+  function layoutRichTextFromStyles(styles, input) {
+    if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich layout input is invalid.");
+    requireExactKeys(input, [
+      "styleName",
+      "runs",
+      "nativeSize"
+    ], ["maxWidth"], "SVG Text rich layout input");
+    const styleName = requireName(input.styleName, "SVG Text styleName");
+    const definition = styles.get(styleName);
+    if (!definition) throw compositionError("SVG-TEXT-COMPOSITION-003", `SVG Text style is not defined: ${styleName}`);
+    const runs = validateContentRuns(input.runs);
+    const nativeSize = validateNativeSize(input.nativeSize);
+    const maxWidth = validateMaxWidth(input.maxWidth);
+    return maxWidth === void 0 ? createSvgTextRichLayout(runs, definition, nativeSize) : createSvgTextRichLayout(runs, definition, nativeSize, maxWidth);
+  }
+  function createSvgTextLayoutComposition() {
+    const styles = /* @__PURE__ */ new Map([[defaultStyleName, DEFAULT_SVG_TEXT_RICH_STYLE]]);
+    return Object.freeze({
+      defineStyle(input) {
+        const style = validateStyle(input);
+        styles.set(style.name, createStyleDefinition(style));
+      },
+      layoutRichText(input) {
+        return layoutRichTextFromStyles(styles, input);
+      },
+      layoutText(input) {
+        return layoutTextFromStyles(styles, input);
+      }
+    });
+  }
+  //#endregion
   //#region src/turbowarp-svg-text-adapter.ts
   function isRecord$2(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -9396,6 +9924,44 @@
   function validateExtension(value) {
     if (!isRecord$2(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
     return value;
+  }
+  function validateLayoutComposition(value) {
+    if (!isRecord$2(value) || typeof value.layoutText !== "function") throw new TypeError("SVG Text overlay adapter requires the layoutText composition API.");
+    return value;
+  }
+  function requireFiniteNumber(value, label) {
+    const result = Number(value);
+    if (!Number.isFinite(result)) throw new TypeError(`${label} must be a finite number.`);
+    return result;
+  }
+  function adaptSvgTextLayout(value) {
+    if (!isRecord$2(value) || !isRecord$2(value.style) || !Array.isArray(value.lines)) throw new TypeError("SVG Text layout result is invalid.");
+    const style = value.style;
+    const alignment = style.alignment;
+    if (alignment !== "left" && alignment !== "center" && alignment !== "right") throw new TypeError("SVG Text layout alignment is invalid.");
+    const width = requireFiniteNumber(value.width, "SVG Text layout width");
+    const height = requireFiniteNumber(value.height, "SVG Text layout height");
+    const lines = Object.freeze(value.lines.map((line) => {
+      if (!isRecord$2(line) || typeof line.text !== "string") throw new TypeError("SVG Text layout line is invalid.");
+      return Object.freeze({
+        baseline: requireFiniteNumber(line.baseline, "SVG Text line baseline") - height / 2,
+        text: line.text,
+        x: requireFiniteNumber(line.x, "SVG Text line x") - width / 2
+      });
+    }));
+    return Object.freeze({
+      alignment,
+      backgroundColor: String(style.backgroundColor),
+      backgroundCornerRadius: requireFiniteNumber(style.cornerRadius, "SVG Text corner radius"),
+      fill: String(style.textColor),
+      fontFamily: String(style.font),
+      fontSize: requireFiniteNumber(style.fontSize, "SVG Text font size"),
+      height,
+      lineHeight: requireFiniteNumber(style.lineHeight, "SVG Text line height"),
+      lines,
+      preserveWhitespace: value.preserveWhitespace !== false,
+      width
+    });
   }
   /**
   * Adapt the TurboWarp SVG Text extension to Bubble's host-neutral text
@@ -9416,6 +9982,30 @@
       measureText({ styleName, text }) {
         if (typeof extension.measureText !== "function") throw new Error("TurboWarp SVG Text does not provide text measurement.");
         return extension.measureText(styleName, text);
+      }
+    });
+  }
+  /**
+  * Adapt SVG Text's host-neutral layout composition to Bubble's SVG overlay.
+  * The adapter preserves SVG Text's line coordinates without creating skins.
+  */
+  function createSvgTextOverlayTextCapability(compositionInput) {
+    const composition = validateLayoutComposition(compositionInput);
+    return Object.freeze({
+      layoutText({ nativeSize, styleName, text }) {
+        return adaptSvgTextLayout(composition.layoutText({
+          nativeSize: [nativeSize.width, nativeSize.height],
+          styleName,
+          text
+        }));
+      },
+      measureText({ nativeSize, styleName, text }) {
+        const layout = composition.layoutText({
+          nativeSize: [nativeSize.width, nativeSize.height],
+          styleName,
+          text
+        });
+        return Math.max(1, ...layout.lines.map((line) => requireFiniteNumber(line.width, "SVG Text line width")));
       }
     });
   }
@@ -10335,7 +10925,7 @@
     return value;
   }
   function normalizeRenderBackend(value) {
-    const backend = value ?? "scratch-render";
+    const backend = value ?? "svg-overlay";
     if (backend !== "scratch-render" && backend !== "svg-overlay") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", "Bubble bubbleRenderBackend must be scratch-render or svg-overlay.");
     return backend;
   }
@@ -10355,6 +10945,22 @@
     if (documentValue === void 0) return "the host does not provide a DOM document";
     if (typeof documentValue.defaultView?.DOMParser !== "function") return "the host document does not provide DOMParser";
     if (!isRecord(textCapability) || typeof textCapability.layoutText !== "function") return "a host-neutral svgOverlayTextCapability is not available";
+  }
+  function createDefaultSvgOverlayTextCapability() {
+    const composition = createSvgTextLayoutComposition();
+    const definedStyles = /* @__PURE__ */ new Set();
+    const defineStyle = (name) => {
+      composition.defineStyle({
+        name,
+        backgroundColor: "transparent"
+      });
+      definedStyles.add(name);
+    };
+    defineStyle("default");
+    return createSvgTextOverlayTextCapability(Object.freeze({ layoutText(input) {
+      if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
+      return composition.layoutText(input);
+    } }));
   }
   function requireAssetManager(value) {
     if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
@@ -10885,9 +11491,10 @@
     const runtime = runtimeInput;
     const renderer = requireRenderer(runtime.renderer);
     const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
+    const overlayTextCapability = requestedBackend === "svg-overlay" ? options.svgOverlayTextCapability ?? createDefaultSvgOverlayTextCapability() : void 0;
     const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(options.svgOverlayUnsupportedBehavior);
     const overlayDocument = requestedBackend === "svg-overlay" ? resolveOverlayDocument(options.document) : void 0;
-    const unavailableReason = requestedBackend === "svg-overlay" ? overlayUnavailableReason(renderer, overlayDocument, options.svgOverlayTextCapability) : void 0;
+    const unavailableReason = requestedBackend === "svg-overlay" ? overlayUnavailableReason(renderer, overlayDocument, overlayTextCapability) : void 0;
     if (requestedBackend === "svg-overlay" && unavailableReason !== void 0 && unsupportedBehavior === "error") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay backend is unavailable because ${unavailableReason}. Use scratch-render or install the required public upstream capability.`);
     const renderBackend = requestedBackend === "svg-overlay" && unavailableReason === void 0 ? "svg-overlay" : "scratch-render";
     const scheduler = options.scheduler ?? {
@@ -10897,7 +11504,7 @@
     const getAssetExtension = () => requireAssetManager(runtime.ext_kubohiroyaassetmanager);
     let textCapability;
     if (renderBackend === "svg-overlay") try {
-      textCapability = createSvgOverlayTextAdapter(options.svgOverlayTextCapability, renderer);
+      textCapability = createSvgOverlayTextAdapter(overlayTextCapability, renderer);
     } catch (error) {
       throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay text capability is invalid: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -10959,8 +11566,8 @@
   }
   //#endregion
   //#region src/extension.ts
-  var blockDefinitions = block_definitions_default.blocks;
-  var definitionMenus = block_definitions_default.menus;
+  var blockDefinitions = block_definitions_default$1.blocks;
+  var definitionMenus = block_definitions_default$1.menus;
   var validAnimationModes = /* @__PURE__ */ new Set([
     "idle",
     "talking",
@@ -10998,7 +11605,7 @@
     "easeInOut"
   ]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.7.0";
+  var EXTENSION_VERSION = "0.8.0";
   var BLOCK_ICON_URI = `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 13h40a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H30L17 55v-9h-5a5 5 0 0 1-5-5V18a5 5 0 0 1 5-5Z\"/><g fill=\"#fff\"><circle cx=\"23\" cy=\"30\" r=\"3\"/><circle cx=\"32\" cy=\"30\" r=\"3\"/><circle cx=\"41\" cy=\"30\" r=\"3\"/></g></svg>")}`;
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
@@ -11038,7 +11645,7 @@
     getInfo() {
       return {
         id: extensionConfig.id,
-        name: Scratch.translate(block_definitions_default.extensionName),
+        name: Scratch.translate(block_definitions_default$1.extensionName),
         docsURI: EXTENSION_DOCS_URI,
         blockIconURI: BLOCK_ICON_URI,
         color1: "#ff6680",

@@ -1,3 +1,4 @@
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createBubbleComposition,
   defaultBubbleTailLength,
@@ -15,6 +16,7 @@ import {
   type BubbleVisualStyle,
 } from "./composition.js";
 import {
+  createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
@@ -148,9 +150,9 @@ export interface TurboWarpBubbleRuntime {
 }
 
 export interface TurboWarpBubbleCompositionOptions {
-  /** Defaults to scratch-render; svg-overlay is explicitly opt-in. */
+  /** Defaults to the skin-free svg-overlay backend. */
   readonly bubbleRenderBackend?: BubbleRenderBackend;
-  /** Defaults to error so an opt-in request never silently changes semantics. */
+  /** Defaults to error so the skin-free default never silently creates skins. */
   readonly svgOverlayUnsupportedBehavior?: BubbleOverlayUnsupportedBehavior;
   /** Host-neutral text layout supplied by turbowarp-svg-text or another host. */
   readonly svgOverlayTextCapability?: BubbleSvgOverlayTextCapability;
@@ -292,6 +294,25 @@ function overlayUnavailableReason(
     return "a host-neutral svgOverlayTextCapability is not available";
   }
   return undefined;
+}
+
+function createDefaultSvgOverlayTextCapability(): BubbleSvgOverlayTextCapability {
+  const composition = createSvgTextLayoutComposition();
+  const definedStyles = new Set<string>();
+  const defineStyle = (name: string): void => {
+    composition.defineStyle({ name, backgroundColor: "transparent" });
+    definedStyles.add(name);
+  };
+  defineStyle("default");
+  const layoutComposition = Object.freeze({
+    layoutText(
+      input: Parameters<typeof composition.layoutText>[0],
+    ): ReturnType<typeof composition.layoutText> {
+      if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
+      return composition.layoutText(input);
+    },
+  });
+  return createSvgTextOverlayTextCapability(layoutComposition);
 }
 
 function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
@@ -1166,6 +1187,11 @@ export function createTurboWarpBubbleComposition(
   const runtime = runtimeInput;
   const renderer = requireRenderer(runtime.renderer);
   const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
+  const overlayTextCapability =
+    requestedBackend === "svg-overlay"
+      ? (options.svgOverlayTextCapability ??
+        createDefaultSvgOverlayTextCapability())
+      : undefined;
   const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(
     options.svgOverlayUnsupportedBehavior,
   );
@@ -1178,7 +1204,7 @@ export function createTurboWarpBubbleComposition(
       ? overlayUnavailableReason(
           renderer,
           overlayDocument,
-          options.svgOverlayTextCapability,
+          overlayTextCapability,
         )
       : undefined;
   if (
@@ -1207,7 +1233,7 @@ export function createTurboWarpBubbleComposition(
   if (renderBackend === "svg-overlay") {
     try {
       textCapability = createSvgOverlayTextAdapter(
-        options.svgOverlayTextCapability as BubbleSvgOverlayTextCapability,
+        overlayTextCapability as BubbleSvgOverlayTextCapability,
         renderer,
       );
     } catch (error) {

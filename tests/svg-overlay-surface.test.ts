@@ -104,12 +104,12 @@ function actor(id: string, x = 0, y = 0) {
 }
 
 describe("SVG overlay backend", () => {
-  it("renders and animates without creating Bubble drawables or skins", async () => {
+  it("defaults to SVG Text 0.8 layout without creating drawables or skins", async () => {
     const harness = createHarness();
+    const textLayouts = createSvgTextLayoutComposition();
+    textLayouts.defineStyle({ name: "body", backgroundColor: "transparent" });
     const composition = createTurboWarpBubbleComposition(harness.runtime, {
-      bubbleRenderBackend: "svg-overlay",
       document: harness.window.document as unknown as Document,
-      svgOverlayTextCapability: harness.textCapability,
     });
     composition.defineStyle({ name: "dialog", textStyle: "body" });
 
@@ -139,9 +139,20 @@ describe("SVG overlay backend", () => {
     const root = harness.window.document.querySelector(
       '[data-bubble-render-backend="svg-overlay"]',
     );
+    const expected = textLayouts.layoutText({
+      nativeSize: [480, 360],
+      styleName: "body",
+      text: "Updated",
+    });
     expect(root?.getAttribute("viewBox")).toBe("0 0 480 360");
     expect(root?.getAttribute("aria-hidden")).toBe("true");
     expect(root?.querySelector("text")?.textContent).toBe("Updated");
+    expect(root?.querySelector("text")?.getAttribute("font-size")).toBe(
+      String(expected.style.fontSize),
+    );
+    expect(root?.querySelector("tspan")?.getAttribute("x")).toBe(
+      String(expected.lines[0]!.x - expected.width / 2),
+    );
     expect(root?.querySelector("path, circle, rect")).not.toBeNull();
     expect(root?.querySelector("script, foreignObject")).toBeNull();
     expect(root?.querySelector("[onclick], [onload]")).toBeNull();
@@ -559,11 +570,27 @@ describe("SVG overlay backend", () => {
     expect(harness.window.document.querySelector("svg")).toBeNull();
   });
 
-  it("errors explicitly or follows the documented scratch fallback", () => {
+  it("uses the default text provider and only falls back when requested", () => {
     const harness = createHarness();
     expect(() =>
       createTurboWarpBubbleComposition(harness.runtime, {
-        bubbleRenderBackend: "svg-overlay",
+        document: harness.window.document as unknown as Document,
+      }),
+    ).not.toThrow();
+
+    const {
+      addOverlay: unsupportedAddOverlay,
+      removeOverlay: unsupportedRemoveOverlay,
+      ...rendererWithoutOverlay
+    } = harness.renderer;
+    void unsupportedAddOverlay;
+    void unsupportedRemoveOverlay;
+    const unsupportedRuntime: TurboWarpBubbleRuntime = {
+      ...harness.runtime,
+      renderer: rendererWithoutOverlay,
+    };
+    expect(() =>
+      createTurboWarpBubbleComposition(unsupportedRuntime, {
         document: harness.window.document as unknown as Document,
       }),
     ).toThrowError(
@@ -573,8 +600,7 @@ describe("SVG overlay backend", () => {
     );
 
     expect(() =>
-      createTurboWarpBubbleComposition(harness.runtime, {
-        bubbleRenderBackend: "svg-overlay",
+      createTurboWarpBubbleComposition(unsupportedRuntime, {
         document: harness.window.document as unknown as Document,
         svgOverlayUnsupportedBehavior: "fallback",
         textCapability: {
