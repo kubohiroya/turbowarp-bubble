@@ -122,7 +122,7 @@ describe("TurboWarp SVG Text adapter", () => {
     ).toBe(Math.max(...upstream.lines.map((line) => line.width)));
   });
 
-  it("adapts the stock extension named-style layout handoff", () => {
+  it("adapts live stock extension named-style layout handoff", () => {
     const layouts = createSvgTextLayoutComposition();
     layouts.defineStyle({
       name: "dialogue",
@@ -136,19 +136,40 @@ describe("TurboWarp SVG Text adapter", () => {
       getLayoutCapability,
     });
 
-    const layout = capability.layoutText({
+    const initial = capability.layoutText({
       nativeSize: { width: 480, height: 360 },
       styleName: "dialogue",
       text: "existing style",
     });
 
     expect(getLayoutCapability).toHaveBeenCalledOnce();
-    expect(layout).toMatchObject({
+    expect(initial).toMatchObject({
       alignment: "right",
       fill: "#123456",
       fontFamily: "Noto Sans JP",
       fontSize: 21,
     });
+
+    layouts.defineStyle({
+      name: "dialogue",
+      alignment: "left",
+      font: "Helvetica",
+      fontPercent: 200,
+      textColor: "#654321",
+    });
+    const redefined = capability.layoutText({
+      nativeSize: { width: 480, height: 360 },
+      styleName: "dialogue",
+      text: "updated\nstyle",
+    });
+
+    expect(redefined).toMatchObject({
+      alignment: "left",
+      fill: "#654321",
+      fontFamily: "Helvetica",
+      fontSize: 28,
+    });
+    expect(redefined.lines).toHaveLength(2);
   });
 
   it("rejects a layout composition without the public layout API", () => {

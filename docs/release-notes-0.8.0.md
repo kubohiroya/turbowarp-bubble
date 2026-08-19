@@ -23,7 +23,7 @@
 - capability所有のblob URLをreplacement／close時に各1回解放する。
 - renderer cleanupが失敗した場合も、残りのlistener、DOM、image leaseの解放を継続してerrorを集約する。
 - Asset Managerのsanitize済みSVG resourceをBubble側adapter経由で描画し、close時にleaseを1回解放する。
-- SVG Textのhost-neutral layoutをBubble側adapterで変換し、renderer skinを生成せず行座標を維持する。
+- SVG Textのhost-neutral layoutをBubble側adapterで変換し、renderer skinを生成せず行座標を維持する。stock named styleの再定義後は、同じ公開handoffから次回layoutへ新しいfont、color、size、alignment、改行layoutを反映する。
 
 ## Web smoke結果
 
