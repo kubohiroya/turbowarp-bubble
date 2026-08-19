@@ -1,3 +1,5 @@
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
+import { Window } from "happy-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BLOCK_ICON_URI, BubbleExtension } from "../src/extension.js";
 import type {
@@ -61,12 +63,33 @@ function scratch(): ScratchApi {
   };
 }
 
+function createScratchRenderComposition(
+  runtime: Parameters<typeof createTurboWarpBubbleComposition>[0],
+  options: Parameters<typeof createTurboWarpBubbleComposition>[1] = {},
+) {
+  return createTurboWarpBubbleComposition(runtime, {
+    ...options,
+    bubbleRenderBackend: "scratch-render",
+  });
+}
+
+function createScratchRenderExtension(
+  runtime: ConstructorParameters<typeof BubbleExtension>[0],
+  options: ConstructorParameters<typeof BubbleExtension>[1] = {},
+): BubbleExtension {
+  return new BubbleExtension(runtime, {
+    ...options,
+    bubbleRenderBackend: "scratch-render",
+  });
+}
+
 function createRuntime(
   options: {
     assetManager?: boolean;
     asyncInput?: boolean;
     runtimeExpression?: boolean;
     svgTextExtension?: boolean;
+    svgTextLayoutCapability?: boolean;
   } = {},
 ) {
   let nextDrawable = 1;
@@ -148,12 +171,38 @@ function createRuntime(
     ["Next1", { mimeType: "image/svg+xml", skinId: 15 }],
     ["Next2", { mimeType: "image/svg+xml", skinId: 16 }],
   ]);
+  const resolvedDOMImages: string[] = [];
+  const releasedDOMImages: string[] = [];
+  const domImageCapability = Object.freeze({
+    isRegistered(name: unknown): boolean {
+      return assets.has(String(name));
+    },
+    getMimeType(name: unknown): string {
+      return assets.get(String(name))?.mimeType ?? "";
+    },
+    async resolveDOMImageResource(name: unknown) {
+      const assetName = String(name);
+      const asset = assets.get(assetName);
+      if (!asset) throw new Error(`missing ${assetName}`);
+      resolvedDOMImages.push(assetName);
+      return Object.freeze({
+        height: assetName.startsWith("Next") ? 18 : 96,
+        mimeType: asset.mimeType,
+        url: `blob:asset-manager/${assetName}`,
+        width: assetName.startsWith("Next") ? 18 : 96,
+        release(): void {
+          releasedDOMImages.push(assetName);
+        },
+      });
+    },
+  });
   const setText = vi.fn(
     (_args: unknown, util: { target: TurboWarpBubbleTarget }) => {
       renderer.updateDrawableSkinId(Number(util.target.drawableID), 100);
     },
   );
   const releaseTextActor = vi.fn(() => true);
+  const svgTextLayouts = createSvgTextLayoutComposition();
   const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
   const conditionState = { value: false };
   const runtimeExpression = {
@@ -188,6 +237,7 @@ function createRuntime(
             isLoaded: ({ NAME }: { NAME: unknown }) => assets.has(String(NAME)),
             getAssetMimeType: ({ NAME }: { NAME: unknown }) =>
               assets.get(String(NAME))?.mimeType ?? "",
+            getDOMImageCapability: () => domImageCapability,
             async resolveSkin(name: unknown) {
               const asset = assets.get(String(name));
               if (!asset) throw new Error(`missing ${String(name)}`);
@@ -197,7 +247,15 @@ function createRuntime(
         }
       : {}),
     ...((options.svgTextExtension ?? true)
-      ? { ext_kubohiroyasvgtext: { setText, releaseTextActor } }
+      ? {
+          ext_kubohiroyasvgtext: {
+            setText,
+            releaseTextActor,
+            ...((options.svgTextLayoutCapability ?? true)
+              ? { getLayoutCapability: () => svgTextLayouts }
+              : {}),
+          },
+        }
       : {}),
   };
   const emit = (event: string, ...args: unknown[]): void => {
@@ -214,6 +272,8 @@ function createRuntime(
     emit,
     positions,
     positionHistory,
+    releasedDOMImages,
+    resolvedDOMImages,
     scales,
     scaleHistory,
     ghostHistory,
@@ -222,6 +282,7 @@ function createRuntime(
     runtime,
     runtimeExpression,
     setText,
+    svgTextLayouts,
     visibility,
   };
 }
@@ -250,9 +311,7 @@ describe("TurboWarp composition adapter", () => {
   it("defers Asset Manager lookup until a media style is shown", () => {
     const harness = createRuntime({ assetManager: false });
 
-    expect(() =>
-      createTurboWarpBubbleComposition(harness.runtime),
-    ).not.toThrow();
+    expect(() => createScratchRenderComposition(harness.runtime)).not.toThrow();
   });
 
   it("accepts host-owned Asset Manager and SVG Text compositions", async () => {
@@ -272,7 +331,7 @@ describe("TurboWarp composition adapter", () => {
       }),
       releaseTarget,
     };
-    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+    const composition = createScratchRenderComposition(harness.runtime, {
       imageResolver,
       textCapability,
     });
@@ -303,7 +362,7 @@ describe("TurboWarp composition adapter", () => {
   it("renders time-based motion frames with easing and shape transitions", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+    const composition = createScratchRenderComposition(harness.runtime, {
       scheduler,
     });
     composition.defineStyle({
@@ -446,19 +505,180 @@ describe("TurboWarp composition adapter", () => {
 });
 
 describe("Bubble extension", () => {
+  it("uses stock Asset Manager resources on the skin-free default path", async () => {
+    const harness = createRuntime();
+    const window = new Window();
+    const addOverlay = vi.fn((element: Element) => {
+      window.document.body.appendChild(
+        element as unknown as Parameters<
+          typeof window.document.body.appendChild
+        >[0],
+      );
+    });
+    const removeOverlay = vi.fn((element: Element) => element.remove());
+    Object.assign(harness.renderer, { addOverlay, removeOverlay });
+    const extension = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+    extension.setPortraitBase({ STYLE: "dialogue", ASSET: "Face" });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "stock capability", STYLE: "dialogue" },
+      { target },
+    );
+
+    expect(addOverlay).toHaveBeenCalledOnce();
+    expect(harness.created).toHaveLength(0);
+    expect(harness.createdSvgSkins).toHaveLength(0);
+    expect(harness.setText).not.toHaveBeenCalled();
+    expect(window.document.querySelector("text")?.textContent).toBe(
+      "stock capability",
+    );
+    expect(window.document.querySelector("image")?.getAttribute("href")).toBe(
+      "blob:asset-manager/Face",
+    );
+    expect(harness.resolvedDOMImages).toEqual(["Face"]);
+
+    await extension.closeBubble({}, { target });
+    expect(harness.releasedDOMImages).toEqual(["Face"]);
+    expect(removeOverlay).toHaveBeenCalledOnce();
+  });
+
+  it("preserves standalone SVG Text named styles on the default overlay", async () => {
+    const harness = createRuntime();
+    harness.svgTextLayouts.defineStyle({
+      name: "dialogue-text",
+      alignment: "right",
+      backgroundColor: "transparent",
+      font: "Noto Sans JP",
+      fontPercent: 150,
+      textColor: "#123456",
+    });
+    const window = new Window();
+    Object.assign(harness.renderer, {
+      addOverlay: (element: Element) =>
+        window.document.body.appendChild(
+          element as unknown as Parameters<
+            typeof window.document.body.appendChild
+          >[0],
+        ),
+      removeOverlay: (element: Element) => element.remove(),
+    });
+    const extension = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "existing style", STYLE: "dialogue" },
+      { target: actor() },
+    );
+
+    const text = window.document.querySelector("text");
+    expect(text?.getAttribute("fill")).toBe("#123456");
+    expect(text?.getAttribute("font-family")).toBe("Noto Sans JP");
+    expect(text?.getAttribute("font-size")).toBe("21");
+    expect(text?.getAttribute("text-anchor")).toBe("end");
+    expect(harness.created).toHaveLength(0);
+    expect(harness.createdSvgSkins).toHaveLength(0);
+  });
+
+  it("does not silently replace styles from an older standalone SVG Text", async () => {
+    const harness = createRuntime({ svgTextLayoutCapability: false });
+    const window = new Window();
+    Object.assign(harness.renderer, {
+      addOverlay: (element: Element) =>
+        window.document.body.appendChild(
+          element as unknown as Parameters<
+            typeof window.document.body.appendChild
+          >[0],
+        ),
+      removeOverlay: (element: Element) => element.remove(),
+    });
+
+    const broken = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    broken.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+    await expect(
+      broken.sayWithBubbleStyle(
+        { MESSAGE: "legacy style", STYLE: "dialogue" },
+        { target: actor() },
+      ),
+    ).rejects.toThrow("SVG Text 0.8.1 getLayoutCapability");
+
+    const fallback = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+      svgOverlayUnsupportedBehavior: "fallback",
+    });
+    fallback.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+    await fallback.sayWithBubbleStyle(
+      { MESSAGE: "legacy style", STYLE: "dialogue" },
+      { target: actor() },
+    );
+    expect(harness.created).not.toHaveLength(0);
+  });
+
+  it("requires Asset Manager 0.12.1 only when the default overlay uses images", async () => {
+    const harness = createRuntime({ assetManager: false });
+    const window = new Window();
+    Object.assign(harness.renderer, {
+      addOverlay: (element: Element) =>
+        window.document.body.appendChild(
+          element as unknown as Parameters<
+            typeof window.document.body.appendChild
+          >[0],
+        ),
+      removeOverlay: (element: Element) => element.remove(),
+    });
+    const extension = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "text only", STYLE: "dialogue" },
+        { target },
+      ),
+    ).resolves.toBeUndefined();
+
+    extension.setPortraitBase({ STYLE: "dialogue", ASSET: "Face" });
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "portrait", STYLE: "dialogue" },
+        { target },
+      ),
+    ).rejects.toThrow("turbowarp-asset-manager 0.12.1");
+  });
+
   it("publishes the intended blocks and animation mode menu", () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const info = extension.getInfo() as {
       blocks: Array<{ opcode: string }>;
       docsURI: string;
       id: string;
       blockIconURI: string;
+      color1: string;
+      color2: string;
+      color3: string;
       menus: Record<string, unknown>;
     };
     expect(info.id).toBe("kubohiroyabubble");
     expect(info.docsURI).toBe("https://kubohiroya.github.io/turbowarp-bubble/");
     expect(info.blockIconURI).toBe(BLOCK_ICON_URI);
+    expect([info.color1, info.color2, info.color3]).toEqual([
+      "#ff6680",
+      "#e64d6a",
+      "#b83255",
+    ]);
     const iconSvg = decodeURIComponent(
       BLOCK_ICON_URI.slice("data:image/svg+xml,".length),
     );
@@ -554,7 +774,7 @@ describe("Bubble extension", () => {
 
   it("places actor-relative bubbles by aliases and continuous angles", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     let bounds = { bottom: -60, left: -10, right: 50, top: 20 };
     target.getBoundsForBubble = () => bounds;
@@ -588,7 +808,7 @@ describe("Bubble extension", () => {
 
   it("scales text and applies actor distance, tail length, and offset", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "transform", TEXT_STYLE: "default" });
     extension.setBubblePlacement({ STYLE: "transform", PLACEMENT: "right" });
@@ -617,7 +837,7 @@ describe("Bubble extension", () => {
 
   it("places, offsets, zooms, and rounds the portrait inside the bubble", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "portrait", TEXT_STYLE: "default" });
     extension.setPortraitBase({ STYLE: "portrait", ASSET: "Face" });
@@ -657,7 +877,7 @@ describe("Bubble extension", () => {
 
   it("removes the complete portrait through the none layout", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     extension.setPortraitBase({ STYLE: "plain", ASSET: "Face" });
@@ -682,7 +902,7 @@ describe("Bubble extension", () => {
 
   it("renders the selected SVG body behind actor-relative content", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "body", TEXT_STYLE: "default" });
     extension.setBubbleVisualStyle({
@@ -723,9 +943,37 @@ describe("Bubble extension", () => {
     expect(harness.destroyedSkins).toEqual([200]);
   });
 
+  it("keeps short cloud bodies smooth in the scratch-render rollback backend", async () => {
+    const harness = createRuntime();
+    const extension = createScratchRenderExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "thought", TEXT_STYLE: "default" });
+    extension.setBubbleVisualStyle({
+      STYLE: "thought",
+      VISUAL_STYLE: "THINKING",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "Hi", STYLE: "thought" },
+      { target },
+    );
+
+    expect(harness.createdSvgSkins).toHaveLength(1);
+    const svg = harness.createdSvgSkins[0]!;
+    const bodyWidth = Number(
+      svg.match(/data-bubble-body-width="([0-9.]+)"/u)?.[1],
+    );
+    const bodyHeight = Number(
+      svg.match(/data-bubble-body-height="([0-9.]+)"/u)?.[1],
+    );
+    expect(bodyWidth).toBeGreaterThanOrEqual(176);
+    expect(bodyHeight).toBeGreaterThanOrEqual(96);
+    expect(svg).toContain('data-bubble-style="THINKING"');
+  });
+
   it("places background-relative bubbles independently of actor visibility", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const hiddenActor = { ...actor(), visible: false };
     extension.defineBubbleStyle({
       STYLE: "header",
@@ -751,7 +999,7 @@ describe("Bubble extension", () => {
 
   it("keeps text visible without creating a visible body for NO_BUBBLE", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     extension.setBubbleVisualStyle({
@@ -771,7 +1019,7 @@ describe("Bubble extension", () => {
 
   it("allows background placement from Stage and rejects actor placement there", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const stage: TurboWarpBubbleTarget = {
       id: "stage-id",
       isStage: true,
@@ -804,7 +1052,9 @@ describe("Bubble extension", () => {
   it("renders layered speech and changes from talk to continue animation", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -856,7 +1106,9 @@ describe("Bubble extension", () => {
   it("waits in awaiting-continue mode until the expression becomes true", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -893,7 +1145,7 @@ describe("Bubble extension", () => {
 
   it("reveals units and exposes display animations through extension blocks", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime);
+    const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "reveal", TEXT_STYLE: "default" });
     extension.setBubbleReveal({
@@ -926,7 +1178,9 @@ describe("Bubble extension", () => {
   it("continues after the Bubble wait timeout", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -951,7 +1205,9 @@ describe("Bubble extension", () => {
   it("cancels a pending Bubble wait when the Bubble closes", async () => {
     const harness = createRuntime();
     const scheduler = new TestScheduler();
-    const extension = new BubbleExtension(harness.runtime, { scheduler });
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
     const target = actor();
     extension.defineBubbleStyle({
       STYLE: "dialogue",
@@ -985,7 +1241,9 @@ describe("Bubble extension", () => {
     async (event, passesTarget) => {
       const harness = createRuntime();
       const scheduler = new TestScheduler();
-      const extension = new BubbleExtension(harness.runtime, { scheduler });
+      const extension = createScratchRenderExtension(harness.runtime, {
+        scheduler,
+      });
       const target = actor();
       extension.defineBubbleStyle({
         STYLE: "dialogue",
@@ -1014,7 +1272,7 @@ describe("Bubble extension", () => {
   it("requires Async Input and Runtime Expression for Bubble waits", async () => {
     const target = actor();
     const noInput = createRuntime({ asyncInput: false });
-    const inputExtension = new BubbleExtension(noInput.runtime);
+    const inputExtension = createScratchRenderExtension(noInput.runtime);
     inputExtension.defineBubbleStyle({
       STYLE: "dialogue",
       TEXT_STYLE: "dialogue-text",
@@ -1031,7 +1289,9 @@ describe("Bubble extension", () => {
     ).rejects.toThrow("requires Async Input");
 
     const noExpression = createRuntime({ runtimeExpression: false });
-    const expressionExtension = new BubbleExtension(noExpression.runtime);
+    const expressionExtension = createScratchRenderExtension(
+      noExpression.runtime,
+    );
     expressionExtension.defineBubbleStyle({
       STYLE: "dialogue",
       TEXT_STYLE: "dialogue-text",
@@ -1050,7 +1310,7 @@ describe("Bubble extension", () => {
 
   it("releases a target-owned bubble when TurboWarp stops the target", async () => {
     const harness = createRuntime();
-    const extension = new BubbleExtension(harness.runtime, {
+    const extension = createScratchRenderExtension(harness.runtime, {
       scheduler: new TestScheduler(),
     });
     const target = actor();
@@ -1064,9 +1324,9 @@ describe("Bubble extension", () => {
     await vi.waitFor(() => expect(harness.destroyed).toHaveLength(2));
   });
 
-  it("reports missing dependent extensions with corrective messages", async () => {
+  it("reports missing media dependencies and bundles the rollback text provider", async () => {
     const noAssets = createRuntime({ assetManager: false });
-    const first = new BubbleExtension(noAssets.runtime);
+    const first = createScratchRenderExtension(noAssets.runtime);
     first.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     await expect(
       first.sayWithBubbleStyle(
@@ -1083,13 +1343,14 @@ describe("Bubble extension", () => {
     ).rejects.toThrow("imageResolver capability");
 
     const noText = createRuntime({ svgTextExtension: false });
-    const second = new BubbleExtension(noText.runtime);
+    const second = createScratchRenderExtension(noText.runtime);
     second.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
     await expect(
       second.sayWithBubbleStyle(
         { MESSAGE: "hello", STYLE: "plain" },
         { target: actor() },
       ),
-    ).rejects.toThrow("Load @kubohiroya/turbowarp-svg-text");
+    ).resolves.toBeUndefined();
+    expect(noText.createdSvgSkins).not.toHaveLength(0);
   });
 });

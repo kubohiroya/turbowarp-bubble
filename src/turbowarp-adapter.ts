@@ -1,4 +1,8 @@
 import {
+  createSvgTextComposition,
+  createSvgTextLayoutComposition,
+} from "@kubohiroya/turbowarp-svg-text/composition";
+import {
   createBubbleComposition,
   defaultBubbleTailLength,
   type BubbleComposition,
@@ -15,21 +19,79 @@ import {
   type BubbleVisualStyle,
 } from "./composition.js";
 import {
+  createSvgTextCompositionCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  createTurboWarpSvgTextOverlayTextCapability,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
+import {
+  createAssetManagerSvgOverlayImageCapability,
+  type AssetManagerDOMImageCapability,
+} from "./asset-manager-image-adapter.js";
+export {
+  createAssetManagerSvgOverlayImageCapability,
+  type AssetManagerDOMImageCapability,
+  type AssetManagerDOMImageResource,
+} from "./asset-manager-image-adapter.js";
 
 export {
   createSvgTextCompositionCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  createTurboWarpSvgTextOverlayTextCapability,
+  type SvgTextLayoutCompositionLike,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
-import { bubbleBodyCenterOffset, renderBubbleSvg } from "./bubble-svg.js";
+import {
+  bubbleBodyCenterOffset,
+  bubbleBodyMinimumSize,
+  renderBubbleSvg,
+} from "./bubble-svg.js";
 import {
   bubbleDirectionVector,
   type BubbleDirectionName,
 } from "./placement.js";
+import {
+  clampMotionProgress,
+  easeMotionProgress,
+  runMotionTimeline,
+} from "./surface-motion.js";
+import {
+  createSvgOverlayImageAdapter,
+  createSvgOverlaySurface,
+  createSvgOverlaySurfaceManager,
+  createSvgOverlayTextAdapter,
+  defaultBubbleOverlayUnsupportedBehavior,
+  defaultBubbleRenderBackend,
+  type BubbleOverlayUnsupportedBehavior,
+  type BubbleRenderBackend,
+  type BubbleSvgOverlayActor,
+  type BubbleSvgOverlayImageCapability,
+  type BubbleSvgOverlayRenderer,
+  type BubbleSvgOverlayTextCapability,
+} from "./svg-overlay-surface.js";
+
+export {
+  createSvgOverlayImageAdapter,
+  createSvgOverlaySurface,
+  createSvgOverlaySurfaceManager,
+  createSvgOverlayTextAdapter,
+  bubbleRenderBackends,
+  defaultBubbleOverlayUnsupportedBehavior,
+  defaultBubbleRenderBackend,
+  type BubbleOverlayUnsupportedBehavior,
+  type BubbleRenderBackend,
+  type BubbleSvgOverlayActor,
+  type BubbleSvgOverlayImageCapability,
+  type BubbleSvgOverlayImageResource,
+  type BubbleSvgOverlayRenderer,
+  type BubbleSvgOverlaySurfaceManager,
+  type BubbleSvgOverlayTextCapability,
+  type BubbleSvgOverlayTextLine,
+  type BubbleSvgOverlayTextLayout,
+} from "./svg-overlay-surface.js";
 
 const spriteLayer = "sprite";
 const portraitBoxSize = 96;
@@ -78,11 +140,17 @@ export interface TurboWarpBubbleRenderer {
     layerGroup: string,
     relative?: boolean,
   ): void;
+  addOverlay?(element: Element, mode?: string): unknown;
+  removeOverlay?(element: Element): void;
+  on?(event: string, listener: (...args: unknown[]) => void): void;
+  off?(event: string, listener: (...args: unknown[]) => void): void;
 }
 
 export interface TurboWarpAssetManagerExtension {
   isLoaded(args: Readonly<{ NAME: unknown }>): boolean;
   getAssetMimeType(args: Readonly<{ NAME: unknown }>): string;
+  /** Available from Asset Manager 0.12.1 for the skin-free overlay path. */
+  getDOMImageCapability?(): AssetManagerDOMImageCapability;
   playSound?(args: Readonly<{ NAME: unknown }>): Promise<void>;
   playSoundUntilDone?(args: Readonly<{ NAME: unknown }>): Promise<void>;
   resolveSkin(
@@ -98,6 +166,16 @@ export interface TurboWarpBubbleRuntime {
 }
 
 export interface TurboWarpBubbleCompositionOptions {
+  /** Defaults to the skin-free svg-overlay backend. */
+  readonly bubbleRenderBackend?: BubbleRenderBackend;
+  /** Defaults to error so the skin-free default never silently creates skins. */
+  readonly svgOverlayUnsupportedBehavior?: BubbleOverlayUnsupportedBehavior;
+  /** Host-neutral text layout supplied by turbowarp-svg-text or another host. */
+  readonly svgOverlayTextCapability?: BubbleSvgOverlayTextCapability;
+  /** Releasable DOM image resources supplied by Asset Manager or another host. */
+  readonly svgOverlayImageCapability?: BubbleSvgOverlayImageCapability;
+  /** Browser document override for packaged players and deterministic tests. */
+  readonly document?: Document;
   readonly imageResolver?: BubbleImageCapability;
   readonly audio?: BubbleAudioCapability;
   readonly textCapability?: BubbleTextCapability;
@@ -106,7 +184,10 @@ export interface TurboWarpBubbleCompositionOptions {
 }
 
 export type BubbleRuntimeAdapterErrorCode =
-  "BUBBLE-RUNTIME-001" | "BUBBLE-RUNTIME-002" | "BUBBLE-RUNTIME-003";
+  | "BUBBLE-RUNTIME-001"
+  | "BUBBLE-RUNTIME-002"
+  | "BUBBLE-RUNTIME-003"
+  | "BUBBLE-RUNTIME-004";
 
 export class BubbleRuntimeAdapterError extends Error {
   public readonly code: BubbleRuntimeAdapterErrorCode;
@@ -163,6 +244,132 @@ function requireRenderer(value: unknown): TurboWarpBubbleRenderer {
   return value as unknown as TurboWarpBubbleRenderer;
 }
 
+function normalizeRenderBackend(value: unknown): BubbleRenderBackend {
+  const backend = value ?? defaultBubbleRenderBackend;
+  if (backend !== "scratch-render" && backend !== "svg-overlay") {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      "Bubble bubbleRenderBackend must be scratch-render or svg-overlay.",
+    );
+  }
+  return backend;
+}
+
+function normalizeOverlayUnsupportedBehavior(
+  value: unknown,
+): BubbleOverlayUnsupportedBehavior {
+  const behavior = value ?? defaultBubbleOverlayUnsupportedBehavior;
+  if (behavior !== "error" && behavior !== "fallback") {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      "Bubble svgOverlayUnsupportedBehavior must be error or fallback.",
+    );
+  }
+  return behavior;
+}
+
+function resolveOverlayDocument(value: unknown): Document | undefined {
+  const documentValue =
+    value ??
+    (typeof globalThis.document === "undefined"
+      ? undefined
+      : globalThis.document);
+  if (documentValue === undefined) return undefined;
+  if (
+    !isRecord(documentValue) ||
+    typeof documentValue.createElementNS !== "function"
+  ) {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      "Bubble SVG overlay document must provide createElementNS().",
+    );
+  }
+  return documentValue as unknown as Document;
+}
+
+function overlayUnavailableReason(
+  renderer: TurboWarpBubbleRenderer,
+  documentValue: Document | undefined,
+  textCapability: BubbleSvgOverlayTextCapability | undefined,
+): string | undefined {
+  if (
+    typeof renderer.addOverlay !== "function" ||
+    typeof renderer.removeOverlay !== "function"
+  ) {
+    return "the renderer does not provide addOverlay() and removeOverlay()";
+  }
+  if (documentValue === undefined)
+    return "the host does not provide a DOM document";
+  if (typeof documentValue.defaultView?.DOMParser !== "function") {
+    return "the host document does not provide DOMParser";
+  }
+  if (
+    !isRecord(textCapability) ||
+    typeof textCapability.layoutText !== "function"
+  ) {
+    return "a host-neutral svgOverlayTextCapability is not available";
+  }
+  return undefined;
+}
+
+function createDefaultSvgOverlayTextCapability(): BubbleSvgOverlayTextCapability {
+  const composition = createSvgTextLayoutComposition();
+  const definedStyles = new Set<string>();
+  const defineStyle = (name: string): void => {
+    composition.defineStyle({ name, backgroundColor: "transparent" });
+    definedStyles.add(name);
+  };
+  defineStyle("default");
+  const layoutComposition = Object.freeze({
+    layoutText(
+      input: Parameters<typeof composition.layoutText>[0],
+    ): ReturnType<typeof composition.layoutText> {
+      if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
+      return composition.layoutText(input);
+    },
+  });
+  return createSvgTextOverlayTextCapability(layoutComposition);
+}
+
+function createDefaultScratchRenderTextCapability(
+  runtime: TurboWarpBubbleRuntime,
+): BubbleTextCapability {
+  const composition = createSvgTextComposition({ runtime });
+  const definedStyles = new Set<string>();
+  const defineStyle = (name: string): void => {
+    composition.defineStyle({ name, backgroundColor: "transparent" });
+    definedStyles.add(name);
+  };
+  const ensureStyle = (name: string): void => {
+    if (!definedStyles.has(name)) defineStyle(name);
+  };
+  defineStyle("default");
+  return createSvgTextCompositionCapability(
+    Object.freeze({
+      setText(input: {
+        readonly styleName: string;
+        readonly target: unknown;
+        readonly text: string;
+      }): void {
+        ensureStyle(input.styleName);
+        composition.setText(input as Parameters<typeof composition.setText>[0]);
+      },
+      releaseTarget(target: unknown): void {
+        composition.releaseTarget(
+          target as Parameters<typeof composition.releaseTarget>[0],
+        );
+      },
+      measureText(input: {
+        readonly styleName: string;
+        readonly text: string;
+      }): number {
+        ensureStyle(input.styleName);
+        return composition.measureText(input);
+      },
+    }),
+  );
+}
+
 function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
   if (
     !isRecord(value) ||
@@ -176,6 +383,30 @@ function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
     );
   }
   return value as unknown as TurboWarpAssetManagerExtension;
+}
+
+function requireAssetManagerDOMImageCapability(
+  value: unknown,
+): AssetManagerDOMImageCapability {
+  if (!isRecord(value) || typeof value.getDOMImageCapability !== "function") {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-002",
+      "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-manager 0.12.1 or a host-provided options.svgOverlayImageCapability.",
+    );
+  }
+  const capability = value.getDOMImageCapability();
+  if (
+    !isRecord(capability) ||
+    typeof capability.isRegistered !== "function" ||
+    typeof capability.getMimeType !== "function" ||
+    typeof capability.resolveDOMImageResource !== "function"
+  ) {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-002",
+      "Asset Manager did not provide a valid DOM image capability.",
+    );
+  }
+  return capability as unknown as AssetManagerDOMImageCapability;
 }
 
 function targetBounds(target: TurboWarpBubbleTarget) {
@@ -208,70 +439,6 @@ function readSize(
   const height = Number(raw[1]);
   if (!(width > 0) || !(height > 0)) return fallback;
   return { width, height };
-}
-
-function clamp01(value: number): number {
-  return Math.max(0, Math.min(1, value));
-}
-
-function easeProgress(value: number, ease: BubbleMotionInput["ease"]): number {
-  const progress = clamp01(value);
-  switch (ease) {
-    case "linear":
-      return progress;
-    case "easeIn":
-      return progress * progress;
-    case "easeOut":
-      return 1 - (1 - progress) * (1 - progress);
-    case "easeInOut": {
-      return progress < 0.5
-        ? 2 * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-    }
-    default:
-      return progress;
-  }
-}
-
-/**
- * Drives a motion with the same scheduler used by frame loops and reveal.
- * The adapter intentionally does not depend on requestAnimationFrame so a
- * host can provide deterministic time in tests and non-browser runtimes.
- */
-function runMotionTimeline(
-  scheduler: BubbleScheduler,
-  durationSeconds: number,
-  onFrame: (progress: number) => void,
-): Promise<void> {
-  const durationMilliseconds = Math.max(0, durationSeconds * 1000);
-  if (durationMilliseconds === 0) {
-    onFrame(1);
-    return Promise.resolve();
-  }
-  return new Promise<void>((resolve, reject) => {
-    let elapsed = 0;
-    let timer: unknown;
-    const tick = (): void => {
-      const step = Math.min(16, durationMilliseconds - elapsed);
-      elapsed += step;
-      try {
-        onFrame(clamp01(elapsed / durationMilliseconds));
-      } catch (error) {
-        if (timer !== undefined) scheduler.clearTimeout(timer);
-        reject(error);
-        return;
-      }
-      if (elapsed >= durationMilliseconds) {
-        resolve();
-        return;
-      }
-      timer = scheduler.setTimeout(
-        tick,
-        Math.min(16, durationMilliseconds - elapsed),
-      );
-    };
-    timer = scheduler.setTimeout(tick, Math.min(16, durationMilliseconds));
-  });
 }
 
 function fitDrawable(
@@ -558,13 +725,30 @@ function createSurface(
         (hasPortrait ? contentGap * scaleMultiplier : 0) +
         textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const baseBubbleWidth = totalWidth / scaleMultiplier + bubblePadding * 2;
-      const baseBubbleHeight =
-        contentHeight / scaleMultiplier + bubblePadding * 2;
+      const minimumBodySize = bubbleBodyMinimumSize(
+        currentStyle.visualStyle,
+        ...(shapeTransition === undefined
+          ? []
+          : [shapeTransition.from, shapeTransition.to]),
+      );
+      const baseBubbleWidth = Math.max(
+        totalWidth / scaleMultiplier + bubblePadding * 2,
+        minimumBodySize.width,
+      );
+      const baseBubbleHeight = Math.max(
+        contentHeight / scaleMultiplier + bubblePadding * 2,
+        minimumBodySize.height,
+      );
       // The SVG viewport includes padding for the tail. Placement and clamping
-      // use the visible body border, whose dimensions match the content box.
-      const bubbleWidth = totalWidth;
-      const bubbleHeight = contentHeight;
+      // use the visible body border, including style-specific minimum sizes.
+      const bubbleWidth = Math.max(
+        totalWidth,
+        (baseBubbleWidth - bubblePadding * 2) * scaleMultiplier,
+      );
+      const bubbleHeight = Math.max(
+        contentHeight,
+        (baseBubbleHeight - bubblePadding * 2) * scaleMultiplier,
+      );
       const nativeSize = renderer.getNativeSize();
       const stageWidth =
         Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
@@ -899,7 +1083,7 @@ function createSurface(
           updateVisibility();
         };
         const eased = (progress: number): number =>
-          easeProgress(progress, motion.ease ?? "easeInOut");
+          easeMotionProgress(progress, motion.ease ?? "easeInOut");
         if (
           motion.name === "fadeIn" ||
           motion.name === "floatIn" ||
@@ -1026,11 +1210,14 @@ function createSurface(
             const speedProgress =
               durationSeconds === 0
                 ? 1
-                : clamp01((progress * Math.max(speed, 1)) / 1);
+                : clampMotionProgress((progress * Math.max(speed, 1)) / 1);
             shapeTransition = {
               from: fromStyle,
               to: targetStyle,
-              progress: easeProgress(speedProgress, motion.ease ?? "easeInOut"),
+              progress: easeMotionProgress(
+                speedProgress,
+                motion.ease ?? "easeInOut",
+              ),
             };
             position();
           });
@@ -1095,53 +1282,155 @@ export function createTurboWarpBubbleComposition(
   }
   const runtime = runtimeInput;
   const renderer = requireRenderer(runtime.renderer);
+  const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
+  let overlayTextCapability: BubbleSvgOverlayTextCapability | undefined;
+  let overlayTextCapabilityError: string | undefined;
+  if (requestedBackend === "svg-overlay") {
+    if (options.svgOverlayTextCapability !== undefined) {
+      overlayTextCapability = options.svgOverlayTextCapability;
+    } else if (runtime.ext_kubohiroyasvgtext === undefined) {
+      overlayTextCapability = createDefaultSvgOverlayTextCapability();
+    } else {
+      try {
+        overlayTextCapability = createTurboWarpSvgTextOverlayTextCapability(
+          runtime.ext_kubohiroyasvgtext,
+        );
+      } catch (error) {
+        overlayTextCapabilityError =
+          error instanceof Error ? error.message : String(error);
+      }
+    }
+  }
+  const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(
+    options.svgOverlayUnsupportedBehavior,
+  );
+  const overlayDocument =
+    requestedBackend === "svg-overlay"
+      ? resolveOverlayDocument(options.document)
+      : undefined;
+  const unavailableReason =
+    requestedBackend === "svg-overlay"
+      ? (overlayTextCapabilityError ??
+        overlayUnavailableReason(
+          renderer,
+          overlayDocument,
+          overlayTextCapability,
+        ))
+      : undefined;
+  if (
+    requestedBackend === "svg-overlay" &&
+    unavailableReason !== undefined &&
+    unsupportedBehavior === "error"
+  ) {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-004",
+      `Bubble SVG overlay backend is unavailable because ${unavailableReason}. Use scratch-render or install the required public upstream capability.`,
+    );
+  }
+  const renderBackend: BubbleRenderBackend =
+    requestedBackend === "svg-overlay" && unavailableReason === undefined
+      ? "svg-overlay"
+      : "scratch-render";
+  const scheduler = options.scheduler ?? {
+    setTimeout: (callback: () => void, milliseconds: number) =>
+      globalThis.setTimeout(callback, milliseconds),
+    clearTimeout: (handle: unknown) =>
+      globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
+  };
   const getAssetExtension = (): TurboWarpAssetManagerExtension =>
     requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+  let assetManagerDOMImages: AssetManagerDOMImageCapability | undefined;
+  const getAssetManagerDOMImages = (): AssetManagerDOMImageCapability => {
+    assetManagerDOMImages ??= requireAssetManagerDOMImageCapability(
+      runtime.ext_kubohiroyaassetmanager,
+    );
+    return assetManagerDOMImages;
+  };
   let textCapability: BubbleTextCapability;
-  if (options.textCapability !== undefined) {
+  if (renderBackend === "svg-overlay") {
+    try {
+      textCapability = createSvgOverlayTextAdapter(
+        overlayTextCapability as BubbleSvgOverlayTextCapability,
+        renderer,
+      );
+    } catch (error) {
+      throw new BubbleRuntimeAdapterError(
+        "BUBBLE-RUNTIME-004",
+        `Bubble SVG overlay text capability is invalid: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  } else if (options.textCapability !== undefined) {
     textCapability = options.textCapability;
   } else {
     try {
-      textCapability = createTurboWarpSvgTextCapability(
-        runtime.ext_kubohiroyasvgtext,
-      );
-    } catch {
+      textCapability =
+        runtime.ext_kubohiroyasvgtext === undefined
+          ? createDefaultScratchRenderTextCapability(runtime)
+          : createTurboWarpSvgTextCapability(runtime.ext_kubohiroyasvgtext);
+    } catch (error) {
       throw new BubbleRuntimeAdapterError(
         "BUBBLE-RUNTIME-003",
-        "Bubble requires a text capability. Load @kubohiroya/turbowarp-svg-text or provide options.textCapability before using Bubble blocks.",
+        `Bubble could not initialize the scratch-render text provider: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
-  const imageResolver: BubbleImageCapability = options.imageResolver ?? {
-    isRegistered(name: unknown): boolean {
-      return getAssetExtension().isLoaded({ NAME: name });
-    },
-    getMimeType(name: unknown): string {
-      return getAssetExtension().getAssetMimeType({ NAME: name });
-    },
-    async applyToTarget(name, target): Promise<void> {
-      const drawableID = (target as unknown as DrawableTarget).drawableID;
-      if (!Number.isInteger(drawableID) || drawableID < 0) {
-        throw new BubbleRuntimeAdapterError(
-          "BUBBLE-RUNTIME-001",
-          "Bubble image target drawable is invalid.",
+  let imageResolver: BubbleImageCapability | undefined;
+  if (renderBackend === "svg-overlay") {
+    try {
+      const overlayImageCapability =
+        options.svgOverlayImageCapability ??
+        createAssetManagerSvgOverlayImageCapability(
+          Object.freeze({
+            isRegistered(name: unknown): boolean {
+              return getAssetManagerDOMImages().isRegistered(name);
+            },
+            getMimeType(name: unknown): string {
+              return getAssetManagerDOMImages().getMimeType(name);
+            },
+            resolveDOMImageResource(name: unknown) {
+              return getAssetManagerDOMImages().resolveDOMImageResource(name);
+            },
+          }),
         );
-      }
-      const skin = await getAssetExtension().resolveSkin(name);
-      if (
-        !isRecord(skin) ||
-        !Number.isInteger(skin.skinId) ||
-        skin.skinId < 0
-      ) {
-        throw new BubbleRuntimeAdapterError(
-          "BUBBLE-RUNTIME-002",
-          `Asset Manager did not resolve an image skin: ${String(name)}`,
-        );
-      }
-      renderer.updateDrawableSkinId(drawableID, skin.skinId);
-      runtime.requestRedraw?.();
-    },
-  };
+      imageResolver = createSvgOverlayImageAdapter(overlayImageCapability);
+    } catch (error) {
+      throw new BubbleRuntimeAdapterError(
+        "BUBBLE-RUNTIME-004",
+        `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  } else {
+    imageResolver = options.imageResolver ?? {
+      isRegistered(name: unknown): boolean {
+        return getAssetExtension().isLoaded({ NAME: name });
+      },
+      getMimeType(name: unknown): string {
+        return getAssetExtension().getAssetMimeType({ NAME: name });
+      },
+      async applyToTarget(name, target): Promise<void> {
+        const drawableID = (target as unknown as DrawableTarget).drawableID;
+        if (!Number.isInteger(drawableID) || drawableID < 0) {
+          throw new BubbleRuntimeAdapterError(
+            "BUBBLE-RUNTIME-001",
+            "Bubble image target drawable is invalid.",
+          );
+        }
+        const skin = await getAssetExtension().resolveSkin(name);
+        if (
+          !isRecord(skin) ||
+          !Number.isInteger(skin.skinId) ||
+          skin.skinId < 0
+        ) {
+          throw new BubbleRuntimeAdapterError(
+            "BUBBLE-RUNTIME-002",
+            `Asset Manager did not resolve an image skin: ${String(name)}`,
+          );
+        }
+        renderer.updateDrawableSkinId(drawableID, skin.skinId);
+        runtime.requestRedraw?.();
+      },
+    };
+  }
   const audio: BubbleAudioCapability | undefined = options.audio ?? {
     isRegistered(name: unknown): boolean {
       return getAssetExtension().isLoaded({ NAME: name });
@@ -1166,8 +1455,15 @@ export function createTurboWarpBubbleComposition(
       await method.call(extension, { NAME: name });
     },
   };
+  const overlayManager =
+    renderBackend === "svg-overlay"
+      ? createSvgOverlaySurfaceManager(
+          renderer as unknown as BubbleSvgOverlayRenderer,
+          overlayDocument as Document,
+        )
+      : undefined;
   return createBubbleComposition({
-    imageResolver,
+    ...(imageResolver === undefined ? {} : { imageResolver }),
     audio,
     textCapability,
     createSurface({ actor, actorKey, style }) {
@@ -1177,18 +1473,21 @@ export function createTurboWarpBubbleComposition(
           "Bubble actor target is invalid.",
         );
       }
-      return createSurface(
-        runtime,
-        actor as unknown as TurboWarpBubbleTarget,
-        actorKey,
-        style,
-        options.scheduler ?? {
-          setTimeout: (callback: () => void, milliseconds: number) =>
-            globalThis.setTimeout(callback, milliseconds),
-          clearTimeout: (handle: unknown) =>
-            globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
-        },
-      );
+      return renderBackend === "svg-overlay"
+        ? createSvgOverlaySurface(
+            overlayManager as NonNullable<typeof overlayManager>,
+            actor as unknown as BubbleSvgOverlayActor,
+            actorKey,
+            style,
+            scheduler,
+          )
+        : createSurface(
+            runtime,
+            actor as unknown as TurboWarpBubbleTarget,
+            actorKey,
+            style,
+            scheduler,
+          );
     },
     ...(options.scheduler === undefined
       ? {}

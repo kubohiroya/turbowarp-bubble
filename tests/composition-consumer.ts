@@ -1,5 +1,8 @@
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
-import { createSvgTextComposition } from "@kubohiroya/turbowarp-svg-text/composition";
+import {
+  createSvgTextComposition,
+  createSvgTextLayoutComposition,
+} from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createBubbleComposition,
   renderBubbleSvg,
@@ -10,8 +13,11 @@ import {
 } from "@kubohiroya/turbowarp-bubble/composition";
 import {
   BubbleRuntimeAdapterError,
+  createAssetManagerSvgOverlayImageCapability,
   createSvgTextCompositionCapability,
+  createSvgTextOverlayTextCapability,
   createTurboWarpBubbleComposition,
+  type AssetManagerDOMImageCapability,
   type TurboWarpBubbleCompositionOptions,
   type TurboWarpBubbleRuntime,
   type TurboWarpBubbleTarget,
@@ -108,7 +114,15 @@ const bubbleSvg: string = renderBubbleSvg({
 void bubbleSvg;
 
 declare const turboWarpRuntime: TurboWarpBubbleRuntime;
-const turboWarpOptions: TurboWarpBubbleCompositionOptions = {};
+declare const assetManagerDOMImages: AssetManagerDOMImageCapability;
+const svgTextLayouts = createSvgTextLayoutComposition();
+const turboWarpOptions: TurboWarpBubbleCompositionOptions = {
+  bubbleRenderBackend: "svg-overlay",
+  svgOverlayImageCapability: createAssetManagerSvgOverlayImageCapability(
+    assetManagerDOMImages,
+  ),
+  svgOverlayTextCapability: createSvgTextOverlayTextCapability(svgTextLayouts),
+};
 const turboWarpBubbles: BubbleComposition = createTurboWarpBubbleComposition(
   turboWarpRuntime,
   turboWarpOptions,

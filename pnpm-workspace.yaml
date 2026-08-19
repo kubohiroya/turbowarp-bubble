@@ -2,6 +2,7 @@ packages:
   - .
 
 minimumReleaseAgeExclude:
-  - "@kubohiroya/turbowarp-svg-text@0.4.0"
+  - "@kubohiroya/turbowarp-svg-text@0.8.1"
+  - "@kubohiroya/turbowarp-asset-manager@0.12.1"
 
 onlyBuiltDependencies: []

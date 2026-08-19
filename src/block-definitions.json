@@ -5,7 +5,7 @@
       "opcode": "defineBubbleStyle",
       "blockType": "COMMAND",
       "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
-      "description": "Defines or replaces a bubble style and references a named SVG Text style.",
+      "description": "Defines or replaces a bubble style and references a named SVG Text layout style.",
       "arguments": {
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" },
         "TEXT_STYLE": { "type": "STRING", "defaultValue": "default" }
@@ -342,7 +342,7 @@
       "opcode": "closeBubble",
       "blockType": "COMMAND",
       "text": "close this bubble",
-      "description": "Closes this sprite's bubble and releases its timers, SVG text skin, and drawables.",
+      "description": "Closes this sprite's bubble and releases its timers and rendering resources.",
       "arguments": {}
     },
     {

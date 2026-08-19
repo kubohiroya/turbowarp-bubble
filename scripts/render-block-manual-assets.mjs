@@ -210,34 +210,6 @@ function quickStartSvg() {
     x: 48,
     y: 506,
     width: 510,
-    height: 94,
-    color: colors.svgText,
-    fontSize: 12,
-    ariaLabel: "SVG Textでdialogue-text styleを定義",
-    lines: [
-      [
-        { text: "define text style" },
-        { input: "dialogue-text" },
-        { text: "background" },
-        { input: "#fff4cc" },
-      ],
-      [
-        { text: "text" },
-        { input: "#332200" },
-        { text: "font" },
-        { input: "Noto Sans JP" },
-        { text: "size" },
-        { input: "100" },
-        { text: "align" },
-        { input: "left" },
-      ],
-      [{ text: "bubble direction" }, { input: "up" }],
-    ],
-  })}
-  ${block({
-    x: 48,
-    y: 612,
-    width: 510,
     color: colors.bubble,
     fontSize: 12,
     ariaLabel: "Bubble styleを定義",
@@ -246,13 +218,13 @@ function quickStartSvg() {
         { text: "define bubble style" },
         { input: "hero-dialogue" },
         { text: "using text style" },
-        { input: "dialogue-text" },
+        { input: "default" },
       ],
     ],
   })}
   ${block({
     x: 48,
-    y: 672,
+    y: 566,
     width: 510,
     color: colors.bubble,
     fontSize: 12,
@@ -268,7 +240,7 @@ function quickStartSvg() {
   })}
   ${block({
     x: 48,
-    y: 732,
+    y: 626,
     width: 510,
     color: colors.bubble,
     fontSize: 12,
@@ -282,8 +254,8 @@ function quickStartSvg() {
       ],
     ],
   })}
-  <text x="52" y="804" class="body">続けて blink・lip-sync・continue のフレームを設定</text>
-  <text x="52" y="832" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
+  <text x="52" y="698" class="body">続けて blink・lip-sync・continue のフレームを設定</text>
+  <text x="52" y="726" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
   ${block({
     x: 640,
     y: 150,

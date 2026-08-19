@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   bubbleBodyCenterOffset,
+  bubbleBodyMinimumSize,
   bubbleVisualStyles,
   renderBubbleSvg,
 } from "../src/bubble-svg.js";
@@ -61,6 +62,24 @@ describe("renderBubbleSvg", () => {
       expect(svg).not.toContain('data-boolean-operation="union"');
       expect(svg).toContain("<circle");
     }
+  });
+
+  it("keeps short cloud bodies above the non-intersecting minimum", () => {
+    expect(bubbleBodyMinimumSize("NORMAL", "THINKING")).toEqual({
+      height: 96,
+      width: 176,
+    });
+    const svg = renderBubbleSvg({
+      style: "THINKING",
+      lines: ["Hi"],
+      width: 125,
+      height: 88,
+      tailDirection: 225,
+    });
+
+    expect(svg).toContain('width="176" height="96"');
+    expect(svg).toContain('data-bubble-body-width="176"');
+    expect(svg).toContain('data-bubble-body-height="96"');
   });
 
   it("applies tail length, body offset, scale, and scaled text", () => {

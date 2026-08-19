@@ -78,63 +78,38 @@
         <text x="312" y="302" class="small">Next2</text>
         <text x="443" y="302" class="small">次へアイコン 2枚目</text>
       </g></g>
-  <g role="group" aria-label="SVG Textでdialogue-text styleを定義">
-    <rect x="48" y="506" width="510" height="94" rx="12" fill="#9966ff" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="66" y="506" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="65" y="533" class="block-text" style="font-size:12px">define text style</text>
-<rect x="198.47999999999996" y="514" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="206.47999999999996" y="533" class="input-text" style="font-size:12px">dialogue-text</text>
-<text x="318.19999999999993" y="533" class="block-text" style="font-size:12px">background</text>
-<rect x="399.5999999999999" y="514" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="407.5999999999999" y="533" class="input-text" style="font-size:12px">#fff4cc</text>
-<text x="65" y="558" class="block-text" style="font-size:12px">text</text>
-<rect x="101.75999999999999" y="539" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="109.75999999999999" y="558" class="input-text" style="font-size:12px">#332200</text>
-<text x="176.83999999999997" y="558" class="block-text" style="font-size:12px">font</text>
-<rect x="213.59999999999997" y="539" width="105.27999999999999" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="221.59999999999997" y="558" class="input-text" style="font-size:12px">Noto Sans JP</text>
-<text x="325.87999999999994" y="558" class="block-text" style="font-size:12px">size</text>
-<rect x="362.63999999999993" y="539" width="38.32" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="370.63999999999993" y="558" class="input-text" style="font-size:12px">100</text>
-<text x="407.9599999999999" y="558" class="block-text" style="font-size:12px">align</text>
-<rect x="452.1599999999999" y="539" width="45.76" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="460.1599999999999" y="558" class="input-text" style="font-size:12px">left</text>
-<text x="65" y="583" class="block-text" style="font-size:12px">bubble direction</text>
-<rect x="191.03999999999996" y="564" width="34" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="199.03999999999996" y="583" class="input-text" style="font-size:12px">up</text>
-  </g>
   <g role="group" aria-label="Bubble styleを定義">
-    <rect x="48" y="612" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="66" y="612" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="65" y="643" class="block-text" style="font-size:12px">define bubble style</text>
-<rect x="213.35999999999999" y="624" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="221.35999999999999" y="643" class="input-text" style="font-size:12px">hero-dialogue</text>
-<text x="333.08" y="643" class="block-text" style="font-size:12px">using text style</text>
-<rect x="459.11999999999995" y="624" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="467.11999999999995" y="643" class="input-text" style="font-size:12px">dialogue-text</text>
+    <rect x="48" y="506" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="66" y="506" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="65" y="537" class="block-text" style="font-size:12px">define bubble style</text>
+<rect x="213.35999999999999" y="518" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="221.35999999999999" y="537" class="input-text" style="font-size:12px">hero-dialogue</text>
+<text x="333.08" y="537" class="block-text" style="font-size:12px">using text style</text>
+<rect x="459.11999999999995" y="518" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="467.11999999999995" y="537" class="input-text" style="font-size:12px">default</text>
   </g>
   <g role="group" aria-label="Bubbleの配置を設定">
-    <rect x="48" y="672" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="66" y="672" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="65" y="703" class="block-text" style="font-size:12px">set bubble placement</text>
-<rect x="220.79999999999998" y="684" width="75.51999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="228.79999999999998" y="703" class="input-text" style="font-size:12px">up-right</text>
-<text x="303.31999999999994" y="703" class="block-text" style="font-size:12px">for bubble style</text>
-<rect x="429.3599999999999" y="684" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="437.3599999999999" y="703" class="input-text" style="font-size:12px">hero-dialogue</text>
+    <rect x="48" y="566" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="66" y="566" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="65" y="597" class="block-text" style="font-size:12px">set bubble placement</text>
+<rect x="220.79999999999998" y="578" width="75.51999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="228.79999999999998" y="597" class="input-text" style="font-size:12px">up-right</text>
+<text x="303.31999999999994" y="597" class="block-text" style="font-size:12px">for bubble style</text>
+<rect x="429.3599999999999" y="578" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="437.3599999999999" y="597" class="input-text" style="font-size:12px">hero-dialogue</text>
   </g>
   <g role="group" aria-label="表情ベースを設定">
-    <rect x="48" y="732" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
-    <rect x="66" y="732" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="65" y="763" class="block-text" style="font-size:12px">set portrait base</text>
-<rect x="198.47999999999996" y="744" width="75.51999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="206.47999999999996" y="763" class="input-text" style="font-size:12px">HeroFace</text>
-<text x="280.99999999999994" y="763" class="block-text" style="font-size:12px">for bubble style</text>
-<rect x="407.0399999999999" y="744" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="415.0399999999999" y="763" class="input-text" style="font-size:12px">hero-dialogue</text>
+    <rect x="48" y="626" width="510" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
+    <rect x="66" y="626" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
+    <text x="65" y="657" class="block-text" style="font-size:12px">set portrait base</text>
+<rect x="198.47999999999996" y="638" width="75.51999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="206.47999999999996" y="657" class="input-text" style="font-size:12px">HeroFace</text>
+<text x="280.99999999999994" y="657" class="block-text" style="font-size:12px">for bubble style</text>
+<rect x="407.0399999999999" y="638" width="112.71999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="415.0399999999999" y="657" class="input-text" style="font-size:12px">hero-dialogue</text>
   </g>
-  <text x="52" y="804" class="body">続けて blink・lip-sync・continue のフレームを設定</text>
-  <text x="52" y="832" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
+  <text x="52" y="698" class="body">続けて blink・lip-sync・continue のフレームを設定</text>
+  <text x="52" y="726" class="small">目パチ 0.4秒 ／ 口パク 0.1秒 ／ 次へ 0.2秒</text>
   <g role="group" aria-label="目パチフレームを設定">
     <rect x="640" y="150" width="510" height="70" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
     <rect x="658" y="150" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>

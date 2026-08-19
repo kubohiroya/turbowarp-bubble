@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -37,6 +37,7 @@
     "dist/",
     "docs/",
     "README.md",
+    "README_ja.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"
   ],
@@ -64,6 +65,7 @@
     "docs:pages": "node scripts/render-pages.mjs",
     "docs:pages:check": "node scripts/render-pages.mjs --check",
     "docs:check": "node scripts/check-block-manual.mjs && pnpm docs:pages:check",
+    "benchmark:render-backends": "pnpm build && node --expose-gc scripts/benchmark-render-backends.mjs",
     "test": "vitest run",
     "check:dist": "pnpm build && node scripts/check-dist.mjs",
     "pack:check": "npm pack --dry-run --ignore-scripts",
@@ -74,8 +76,7 @@
   "peerDependencies": {
     "@kubohiroya/turbowarp-asset-manager": ">=0.7.0 <1",
     "@kubohiroya/turbowarp-async-input": ">=0.3.0 <1",
-    "@kubohiroya/turbowarp-runtime-expression": ">=0.3.0 <1",
-    "@kubohiroya/turbowarp-svg-text": ">=0.4.0 <1"
+    "@kubohiroya/turbowarp-runtime-expression": ">=0.3.0 <1"
   },
   "peerDependenciesMeta": {
     "@kubohiroya/turbowarp-async-input": {
@@ -86,20 +87,17 @@
     },
     "@kubohiroya/turbowarp-runtime-expression": {
       "optional": true
-    },
-    "@kubohiroya/turbowarp-svg-text": {
-      "optional": true
     }
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@kubohiroya/turbowarp-asset-manager": "0.7.0",
+    "@kubohiroya/turbowarp-asset-manager": "0.12.1",
     "@kubohiroya/turbowarp-async-input": "0.3.0",
     "@kubohiroya/turbowarp-runtime-expression": "0.3.0",
-    "@kubohiroya/turbowarp-svg-text": "0.4.0",
     "@kubohiroya/vite-plugin-turbowarp-extension": "0.1.1",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
+    "happy-dom": "20.0.8",
     "jsclipper": "github:platener/jsclipper#56aed19845113e1939d8971c47233054659436b1",
     "marked": "18.0.9",
     "prettier": "^3.9.6",
@@ -120,6 +118,7 @@
     "bubble-animation"
   ],
   "dependencies": {
-    "@cto.af/linebreak": "4.0.3"
+    "@cto.af/linebreak": "4.0.3",
+    "@kubohiroya/turbowarp-svg-text": "0.8.1"
   }
 }

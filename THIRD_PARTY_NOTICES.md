@@ -2,6 +2,16 @@
 
 The distributed JavaScript bundles include the following third-party software.
 
+## @kubohiroya/turbowarp-svg-text
+
+Repository: https://github.com/kubohiroya/turbowarp-svg-text
+
+Copyright (c) Hiroya Kubo
+
+This component is distributed under the Mozilla Public License 2.0. Its
+source code is available from the repository above. The license text is
+available at https://www.mozilla.org/MPL/2.0/.
+
 ## jsclipper
 
 Repository: https://github.com/platener/jsclipper
