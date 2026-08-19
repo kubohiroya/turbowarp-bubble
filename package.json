@@ -37,6 +37,7 @@
     "dist/",
     "docs/",
     "README.md",
+    "README_ja.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md"
   ],
