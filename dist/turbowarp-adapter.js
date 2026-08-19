@@ -6106,12 +6106,18 @@ function yo(e, t, n, r, i) {
 		setLayerVisible(e, t) {
 			T || (y.set(e, t), F());
 		},
-		updateStyle(e) {
+		async updateStyle(e) {
 			if (T) return;
-			let n = w.placement.basis === "actor";
-			w = e, O = [0, 0], k = 1, A = 1, M = void 0, D = "", e.reveal?.layout !== "RESERVED" && h.clearCapturedLayout();
+			let n = [...e.portrait === void 0 ? [
+				d,
+				f,
+				p
+			] : [...e.portrait.blink === void 0 ? [f] : [], ...e.portrait.lipSync === void 0 ? [p] : []], ...e.continueIndicator === void 0 ? [g] : []];
+			await Promise.all(n.map((e) => e.release()));
 			let r = w.placement.basis === "actor";
-			n && !r ? t.onTargetVisualChange === L && (t.onTargetVisualChange = ee ?? null) : !n && r && (t.onTargetVisualChange = L), I();
+			w = e, O = [0, 0], k = 1, A = 1, M = void 0, D = "", e.reveal?.layout !== "RESERVED" && h.clearCapturedLayout();
+			let i = w.placement.basis === "actor";
+			r && !i ? t.onTargetVisualChange === L && (t.onTargetVisualChange = ee ?? null) : !r && i && (t.onTargetVisualChange = L), I();
 		},
 		captureTextLayout() {
 			T || (h.captureLayout(), I());

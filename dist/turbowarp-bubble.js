@@ -11176,8 +11176,14 @@
         layerVisibility.set(layer, visible);
         updateVisibility();
       },
-      updateStyle(nextStyle) {
+      async updateStyle(nextStyle) {
         if (disposed) return;
+        const removedTargets = [...nextStyle.portrait === void 0 ? [
+          portraitBase,
+          portraitBlink,
+          portraitLipSync
+        ] : [...nextStyle.portrait.blink === void 0 ? [portraitBlink] : [], ...nextStyle.portrait.lipSync === void 0 ? [portraitLipSync] : []], ...nextStyle.continueIndicator === void 0 ? [continueIndicator] : []];
+        await Promise.all(removedTargets.map((target) => target.release()));
         const wasActorRelative = currentStyle.placement.basis === "actor";
         currentStyle = nextStyle;
         motionTranslation = [0, 0];

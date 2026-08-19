@@ -1183,8 +1183,24 @@ export function createSvgOverlaySurface(
       layerVisibility.set(layer, visible);
       updateVisibility();
     },
-    updateStyle(nextStyle: BubbleStyle): void {
+    async updateStyle(nextStyle: BubbleStyle): Promise<void> {
       if (disposed) return;
+      const removedTargets = [
+        ...(nextStyle.portrait === undefined
+          ? [portraitBase, portraitBlink, portraitLipSync]
+          : [
+              ...(nextStyle.portrait.blink === undefined
+                ? [portraitBlink]
+                : []),
+              ...(nextStyle.portrait.lipSync === undefined
+                ? [portraitLipSync]
+                : []),
+            ]),
+        ...(nextStyle.continueIndicator === undefined
+          ? [continueIndicator]
+          : []),
+      ];
+      await Promise.all(removedTargets.map((target) => target.release()));
       const wasActorRelative = currentStyle.placement.basis === "actor";
       currentStyle = nextStyle;
       motionTranslation = [0, 0];

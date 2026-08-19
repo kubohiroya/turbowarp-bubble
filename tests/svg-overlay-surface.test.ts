@@ -436,6 +436,12 @@ describe("SVG overlay backend", () => {
     });
     expect(releases.get("portrait")?.[0]).toHaveBeenCalledOnce();
     expect(releases.get("continue")?.[0]).toHaveBeenCalledOnce();
+    await handle.updateStyle({ name: "dialog", textStyle: "body" });
+    expect(releases.get("portrait-2")?.[0]).toHaveBeenCalledOnce();
+    expect(releases.get("continue")?.[1]).toHaveBeenCalledOnce();
+    expect(
+      harness.window.document.querySelectorAll("image[href]"),
+    ).toHaveLength(0);
     await handle.close();
     expect(releases.get("portrait-2")?.[0]).toHaveBeenCalledOnce();
     expect(releases.get("continue")?.[1]).toHaveBeenCalledOnce();
