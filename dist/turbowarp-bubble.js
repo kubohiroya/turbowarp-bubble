@@ -12181,6 +12181,8 @@
         docsURI: EXTENSION_DOCS_URI,
         blockIconURI: BLOCK_ICON_URI,
         color1: "#ff6680",
+        color2: "#e64d6a",
+        color3: "#b83255",
         blocks: blockDefinitions.map((block) => this.toScratchBlock(block)),
         menus: definitionMenus
       };

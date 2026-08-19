@@ -336,7 +336,7 @@ https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js
 ```
 
-TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発中は、リポジトリをローカルHTTPサーバーで配信して`dist/turbowarp-bubble.js`を指定できます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。
+TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発用URLをunsandboxedとして読み込むには、server originを正確に`http://localhost:8000/`とする必要があります。`127.0.0.1`、`0.0.0.0`、ほかのportにはこの例外が適用されません。リポジトリrootで`python3 -m http.server 8000`を実行し、`http://localhost:8000/dist/turbowarp-bubble.js`を読み込んでください。別の方法として、カスタム拡張機能のfileまたはtext入力を選び、**サンドボックスなしで実行する**を有効にできます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。host制約の詳細は[TurboWarpのunsandboxed拡張機能ドキュメント](https://docs.turbowarp.org/development/extensions/unsandboxed)を参照してください。
 
 #### Scratchとの互換性
 

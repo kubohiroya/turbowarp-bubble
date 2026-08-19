@@ -666,11 +666,19 @@ describe("Bubble extension", () => {
       docsURI: string;
       id: string;
       blockIconURI: string;
+      color1: string;
+      color2: string;
+      color3: string;
       menus: Record<string, unknown>;
     };
     expect(info.id).toBe("kubohiroyabubble");
     expect(info.docsURI).toBe("https://kubohiroya.github.io/turbowarp-bubble/");
     expect(info.blockIconURI).toBe(BLOCK_ICON_URI);
+    expect([info.color1, info.color2, info.color3]).toEqual([
+      "#ff6680",
+      "#e64d6a",
+      "#b83255",
+    ]);
     const iconSvg = decodeURIComponent(
       BLOCK_ICON_URI.slice("data:image/svg+xml,".length),
     );

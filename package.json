@@ -65,6 +65,7 @@
     "docs:pages": "node scripts/render-pages.mjs",
     "docs:pages:check": "node scripts/render-pages.mjs --check",
     "docs:check": "node scripts/check-block-manual.mjs && pnpm docs:pages:check",
+    "benchmark:render-backends": "pnpm build && node --expose-gc scripts/benchmark-render-backends.mjs",
     "test": "vitest run",
     "check:dist": "pnpm build && node scripts/check-dist.mjs",
     "pack:check": "npm pack --dry-run --ignore-scripts",
