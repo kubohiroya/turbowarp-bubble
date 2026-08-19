@@ -27,7 +27,7 @@
 
 ## Web smoke結果
 
-2026-08-20にcommit `8a4bb2b`へ本変更を適用してbuildしたrelease候補の`dist/turbowarp-bubble.js`を、TurboWarp Webのカスタム拡張機能へtext入力し、unsandboxedで読み込んだ。Chrome／macOSで`define bubble style`、say／think、style／reveal／animation／closeの各blockを実行した結果は次のとおり。
+2026-08-20にcommit `9b01605`からbuildしたrelease候補の`dist/turbowarp-bubble.js`を、TurboWarp Webのカスタム拡張機能へtext入力し、unsandboxedで読み込んだ。Chrome／macOSで`define bubble style`、say／think、style／reveal／animation／closeの各blockを実行した結果は次のとおり。
 
 - Bubble paletteが登録され、sprite上方に`NORMAL`のsay bubbleが表示された。
 - `[data-bubble-render-backend="svg-overlay"]`は1個で、DOMへ接続済みだった。
@@ -40,6 +40,27 @@
 - shake中はsurface transformが変化して終了時に基準位置へ戻り、shape animationは`NORMAL`から`WAVY`へ完了した。close後はrootが0個となり、再度sayするとroot 1個へ復帰した。
 
 stageはnative 480×360、small表示240×180、fullscreen表示3152×2364、custom native 640×480で確認した。各表示でrootの属性と`viewBox`はnative sizeに一致し、CSS表示領域はhostの拡大縮小へ追随した。sprite相対配置に加え、Stage targetの`HEADER_LIKE`も640×480上端のsafe area内へ表示された。最後に480×360、sprite相対`NORMAL`へ戻した。
+
+## Desktop smoke結果
+
+2026-08-20にTurboWarp Desktop 1.16.0へ同じrelease候補をtext入力し、unsandboxedで読み込んだ。実アプリのsprite／Stage targetとVM primitiveを使って確認した結果は次のとおり。
+
+- Bubble paletteと全28 primitiveが登録され、say／thinkと全10 visual styleが表示された。short textの`THINKING`は176×96・trail `circle` 2個、`DREAMING`は176×96・`circle` 3個だった。
+- revealは`H`、`Hell`、`Hello!`の順に進んだ。shakeはsurface transformを変化させて基準位置へ戻り、shape animationは`NORMAL`から`WAVY`へ完了した。
+- native 480×360、small表示240×180、fullscreen表示955×716、custom native 640×480でrootがstageへ追随した。sprite相対配置とStage targetの`HEADER_LIKE`を確認した。
+- spriteとStageの2 surfaceを同時表示した後、Stageのcloseで1 surface、spriteのcloseでroot 0となった。
+- 正しいstage sizeを設定して再実行した区間では、consoleのwarning／errorは0件だった。最後にstageを480×360へ戻し、root 0を確認した。
+
+## Packager smoke結果
+
+2026-08-20にTurboWarp Packager Standalone 3.13.0で、Bubble blockを含むDesktopプロジェクトからプレーンHTMLのpreviewを生成した。Packagerの高度な設定ではrelease候補のdata URLがcustom extensionとして検出され、cached copyの埋め込みが有効だった。生成playerではBubbleの全28 primitiveがロードされた。
+
+- sayで全10 visual styleを表示し、明示したthinkでもshort `DREAMING`が176×96・trail `circle` 3個となった。short `THINKING`は176×96・`circle` 2個だった。
+- revealは`H`、`Hel`、`Hello!`の順に進んだ。`zoomIn`はscale 0.01から1へ完了し、shakeは位置を変化させて基準位置へ戻り、shape animationは`WAVY`へ完了した。
+- sprite相対配置に加え、Stage targetの`HEADER_LIKE`をnative 480×360のsafe area内で確認した。
+- Bubble表示中にcanvasの`toDataURL()`はPNG data URLを返し、`captureStream()`はvideo trackを1本返した。Bubble rootはcanvasの子ではなく、隣接する`.scratch-render-overlays`内にあるため、両APIにBubbleが含まれない既知制約を確認した。
+- show／replace／closeを100回実行した後、Bubble root、surface、overlay childは0で、runtime listener数の増分も0だった。
+- 全smoke終了までconsoleのwarning／errorは0件だった。
 
 ## deterministic benchmark結果
 
@@ -59,12 +80,12 @@ stageはnative 480×360、small表示240×180、fullscreen表示3152×2364、cus
 
 | 項目                       | host                                 | 許容基準                                                  | 結果                                                                                                     |
 | -------------------------- | ------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| say／think、全visual style | Web、Desktop、Packager               | reference screenshotの主要geometry差異なし                | Webでsay／thinkと全10styleを確認済み。Desktop、Packagerは未測定                                          |
-| actor／background配置      | native 480×360と変更size、fullscreen | stage外clip、tail方向、centerに回帰なし                   | Webでactor／background、480×360、small、fullscreen、custom 640×480を確認済み                             |
-| typewriter                 | 1,000 update                         | Chromium readback警告0、`Silhouette.unlazy()`増分0        | harnessで1,000 updateとrenderer resource生成0、Webで実revealと関連warning 0を確認                        |
-| shape／shake／zoom         | 各10秒                               | dropped frame率が既存backend比+5 percentage points以内    | harnessで各10秒・0%対0%、差0 points。Webでshape／shakeをsmoke済み、Webのzoomは未測定                     |
-| memory／lifecycle          | show／replace／stopを100回           | close後のBubble DOM、object URL、animation、listener残存0 | harnessで100回後の残存0。Webでclose時root 0、再show時root 1を確認。実hostの100回後保持heapは未測定       |
-| raw canvas capture         | `toDataURL()`、`captureStream()`     | Bubbleが含まれない既知制約を確認                          | canvasとoverlayは別DOM subtreeで同一表示領域、overlayは`pointer-events: none`。各capture API出力は未測定 |
+| say／think、全visual style | Web、Desktop、Packager               | reference screenshotの主要geometry差異なし                | 3 hostでsay／thinkと全10styleを確認。short cloudの最小寸法とtrail数も一致                                |
+| actor／background配置      | native 480×360と変更size、fullscreen | stage外clip、tail方向、centerに回帰なし                   | Web／Desktopで480×360、small、fullscreen、640×480、Packagerで480×360のactor／backgroundを確認            |
+| typewriter                 | 1,000 update                         | Chromium readback警告0、`Silhouette.unlazy()`増分0        | harnessで1,000 updateとresource生成0。3 hostの実revealで関連warning 0                                    |
+| shape／shake／zoom         | 各10秒                               | dropped frame率が既存backend比+5 percentage points以内    | harnessで各10秒・0%対0%、差0 points。Web／Desktopでshape／shake、Packagerでshape／shake／zoomをsmoke済み |
+| memory／lifecycle          | show／replace／stopを100回           | close後のBubble DOM、object URL、animation、listener残存0 | harnessの全resource残存0。Packager実hostの100回後にDOM、surface、overlay child、listener増分0            |
+| raw canvas capture         | `toDataURL()`、`captureStream()`     | Bubbleが含まれない既知制約を確認                          | Packagerで両APIの成功と、Bubble rootがcanvas外のsibling overlayにあることを確認                          |
 
 ## capture制約
 
