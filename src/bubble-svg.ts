@@ -43,6 +43,17 @@ export const bubbleVisualStyles = Object.freeze([
 
 export type BubbleVisualStyle = (typeof bubbleVisualStyles)[number];
 
+const cloudBodyMinimumSize = Object.freeze({ height: 96, width: 176 });
+const emptyBodyMinimumSize = Object.freeze({ height: 0, width: 0 });
+
+export function bubbleBodyMinimumSize(
+  ...styles: readonly BubbleVisualStyle[]
+): Readonly<{ height: number; width: number }> {
+  return styles.some((style) => style === "THINKING" || style === "DREAMING")
+    ? cloudBodyMinimumSize
+    : emptyBodyMinimumSize;
+}
+
 export interface RenderBubbleSvgInput {
   readonly style: BubbleVisualStyle;
   readonly lines: readonly string[];
@@ -357,6 +368,32 @@ function unionBodyAndTail(
   return `<path d="${polygonPath(outer)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" ${extra}/>`;
 }
 
+function smoothClosedPath(points: readonly Point[]): string {
+  const first = points[0];
+  if (!first || points.length < 3) {
+    throw new TypeError("Smooth Bubble path requires at least three points.");
+  }
+  const format = (value: number): string => value.toFixed(4);
+  const segments = points.map((current, index) => {
+    const previous = points[(index - 1 + points.length) % points.length];
+    const next = points[(index + 1) % points.length];
+    const afterNext = points[(index + 2) % points.length];
+    if (!previous || !next || !afterNext) {
+      throw new Error("Smooth Bubble path is invalid.");
+    }
+    const firstControl = {
+      x: current.x + (next.x - previous.x) / 6,
+      y: current.y + (next.y - previous.y) / 6,
+    };
+    const secondControl = {
+      x: next.x - (afterNext.x - current.x) / 6,
+      y: next.y - (afterNext.y - current.y) / 6,
+    };
+    return `C ${format(firstControl.x)} ${format(firstControl.y)} ${format(secondControl.x)} ${format(secondControl.y)} ${format(next.x)} ${format(next.y)}`;
+  });
+  return `M ${format(first.x)} ${format(first.y)} ${segments.join(" ")} Z`;
+}
+
 function cloudBody(
   width: number,
   height: number,
@@ -367,18 +404,31 @@ function cloudBody(
   const y = 24;
   const right = width - 24;
   const bottom = height - 24;
-  const midX = width / 2;
-  const midY = height / 2;
-  return `<path d="M ${x + 18} ${midY}
-    C ${x - 2} ${midY - 20}, ${x + 8} ${y + 18}, ${x + 36} ${y + 20}
-    C ${x + 44} ${y - 2}, ${midX - 18} ${y - 5}, ${midX} ${y + 13}
-    C ${midX + 24} ${y - 8}, ${right - 28} ${y}, ${right - 30} ${y + 24}
-    C ${right + 2} ${y + 18}, ${right + 7} ${midY - 3}, ${right - 3} ${midY + 15}
-    C ${right + 8} ${bottom - 10}, ${right - 20} ${bottom + 7}, ${right - 42} ${bottom - 7}
-    C ${right - 55} ${bottom + 12}, ${midX + 12} ${bottom + 7}, ${midX} ${bottom - 7}
-    C ${midX - 24} ${bottom + 12}, ${x + 42} ${bottom + 7}, ${x + 38} ${bottom - 12}
-    C ${x + 7} ${bottom + 2}, ${x - 7} ${midY + 20}, ${x + 18} ${midY} Z"
-    fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
+  const bodyWidth = right - x;
+  const bodyHeight = bottom - y;
+  const point = (xRatio: number, yRatio: number): Point => ({
+    x: x + bodyWidth * xRatio,
+    y: y + bodyHeight * yRatio,
+  });
+  const outline = [
+    point(0, 0.5),
+    point(0.03, 0.3),
+    point(0.18, 0.2),
+    point(0.28, 0.04),
+    point(0.5, 0.16),
+    point(0.68, 0.03),
+    point(0.84, 0.18),
+    point(0.98, 0.3),
+    point(1, 0.52),
+    point(0.95, 0.7),
+    point(0.82, 0.82),
+    point(0.68, 0.97),
+    point(0.5, 0.84),
+    point(0.32, 0.97),
+    point(0.18, 0.82),
+    point(0.03, 0.7),
+  ];
+  return `<path d="${smoothClosedPath(outline)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
 }
 
 function thoughtTrail(
@@ -489,8 +539,12 @@ function transformReferenceBody(
 export function bubbleBodyCenterOffset(
   input: BubbleBodyCenterOffsetInput,
 ): Readonly<{ x: number; y: number }> {
-  const width = requireDimension(input.width, 220);
-  const height = requireDimension(input.height, 112);
+  const minimumSize = bubbleBodyMinimumSize(input.style);
+  const width = Math.max(requireDimension(input.width, 220), minimumSize.width);
+  const height = Math.max(
+    requireDimension(input.height, 112),
+    minimumSize.height,
+  );
   const direction = normalizeDirection(input.tailDirection);
   if (direction === null) {
     throw new TypeError("Bubble body center offset requires a tail direction.");
@@ -608,8 +662,8 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
   ) {
     throw new TypeError("lines must be an array of strings.");
   }
-  const width = requireDimension(input.width, 220);
-  const height = requireDimension(input.height, 112);
+  const requestedWidth = requireDimension(input.width, 220);
+  const requestedHeight = requireDimension(input.height, 112);
   const fontSize = requireDimension(input.fontSize, 15);
   const direction = normalizeDirection(input.tailDirection);
   const tailLength = normalizeSvgTailLength(
@@ -631,6 +685,14 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
       throw new TypeError("Bubble shape transition is invalid.");
     }
   }
+  const minimumSize = bubbleBodyMinimumSize(
+    input.style,
+    ...(shapeTransition === undefined
+      ? []
+      : [shapeTransition.from, shapeTransition.to]),
+  );
+  const width = Math.max(requestedWidth, minimumSize.width);
+  const height = Math.max(requestedHeight, minimumSize.height);
   const fill = input.fillColor ?? "#fff4cc";
   const border = input.borderColor ?? "#6f5b45";
   const textColor = input.textColor ?? "#25283a";
@@ -692,5 +754,5 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
     shapeTransition === undefined
       ? ""
       : ` data-bubble-shape-transition-from="${shapeTransition.from}" data-bubble-shape-transition-to="${shapeTransition.to}" data-bubble-shape-transition-progress="${shapeTransition.progress.toFixed(4)}"`;
-  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}" data-bubble-body-width="${width}" data-bubble-body-height="${height}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
 }

@@ -943,6 +943,34 @@ describe("Bubble extension", () => {
     expect(harness.destroyedSkins).toEqual([200]);
   });
 
+  it("keeps short cloud bodies smooth in the scratch-render rollback backend", async () => {
+    const harness = createRuntime();
+    const extension = createScratchRenderExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "thought", TEXT_STYLE: "default" });
+    extension.setBubbleVisualStyle({
+      STYLE: "thought",
+      VISUAL_STYLE: "THINKING",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "Hi", STYLE: "thought" },
+      { target },
+    );
+
+    expect(harness.createdSvgSkins).toHaveLength(1);
+    const svg = harness.createdSvgSkins[0]!;
+    const bodyWidth = Number(
+      svg.match(/data-bubble-body-width="([0-9.]+)"/u)?.[1],
+    );
+    const bodyHeight = Number(
+      svg.match(/data-bubble-body-height="([0-9.]+)"/u)?.[1],
+    );
+    expect(bodyWidth).toBeGreaterThanOrEqual(176);
+    expect(bodyHeight).toBeGreaterThanOrEqual(96);
+    expect(svg).toContain('data-bubble-style="THINKING"');
+  });
+
   it("places background-relative bubbles independently of actor visibility", async () => {
     const harness = createRuntime();
     const extension = createScratchRenderExtension(harness.runtime);

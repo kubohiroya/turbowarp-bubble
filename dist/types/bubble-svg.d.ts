@@ -1,6 +1,10 @@
 import type { BubbleOffsetInput } from "./actor-transform.js";
 export declare const bubbleVisualStyles: readonly ["NORMAL", "THINKING", "DREAMING", "YELLING", "OFF_PANEL", "WAVY", "WHISPERING", "ANNOUNCEMENT", "NARRATION", "NO_BUBBLE"];
 export type BubbleVisualStyle = (typeof bubbleVisualStyles)[number];
+export declare function bubbleBodyMinimumSize(...styles: readonly BubbleVisualStyle[]): Readonly<{
+    height: number;
+    width: number;
+}>;
 export interface RenderBubbleSvgInput {
     readonly style: BubbleVisualStyle;
     readonly lines: readonly string[];

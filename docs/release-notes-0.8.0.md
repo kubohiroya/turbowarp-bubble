@@ -27,25 +27,28 @@
 
 ## Web smoke結果
 
-2026-08-19にcommit `4fbe0c0`の`dist/turbowarp-bubble.js`をTurboWarp Webのカスタム拡張機能へtext入力し、unsandboxedで読み込んだ。Chrome／macOS、device pixel ratio 2の環境で、`define bubble style`と`say Hello!`を実行した結果は次のとおり。
+2026-08-20にcommit `8a4bb2b`へ本変更を適用してbuildしたrelease候補の`dist/turbowarp-bubble.js`を、TurboWarp Webのカスタム拡張機能へtext入力し、unsandboxedで読み込んだ。Chrome／macOSで`define bubble style`、say／think、style／reveal／animation／closeの各blockを実行した結果は次のとおり。
 
 - Bubble paletteが登録され、sprite上方に`NORMAL`のsay bubbleが表示された。
 - `[data-bubble-render-backend="svg-overlay"]`は1個で、DOMへ接続済みだった。
 - rootは`viewBox="0 0 480 360"`、属性上の幅・高さとCSS上の表示領域はいずれも480×360だった。
-- 表示文字列は`Hello!`、描画groupは7個、bodyの`path`／`circle`／`rect`は2個だった。
+- `NORMAL`、`THINKING`、`DREAMING`、`YELLING`、`OFF_PANEL`、`WAVY`、`WHISPERING`、`ANNOUNCEMENT`、`NARRATION`、`NO_BUBBLE`の全10styleを表示した。`THINKING`はbody `path` 1個とtrail `circle` 2個、`DREAMING`は`circle` 3個、`NO_BUBBLE`はbodyを非表示にしてtextだけを維持した。
+- short textの`THINKING`／`DREAMING`で固定Bezier制御点が自己交差する問題をこの確認で検出した。cloud bodyへ176×96の最小viewportと比例制御点によるclosed splineを導入し、修正版で滑らかな輪郭を再確認した。
 - root内の`script`、`foreignObject`、inline event handlerは0個だった。
-- 初回登録時にTurboWarp VMの`Unexpected input recieved in replaceUnsafeChars`を1件検出した。Bubbleが`color1`だけを指定した場合にVMが未定義の`color2`をpalette XMLへ渡す経路を特定し、`color2`／`color3`の明示と回帰testを追加した。修正版bundleでのWeb再確認は未実施である。
+- 初回登録時に検出したTurboWarp VMの`Unexpected input recieved in replaceUnsafeChars`は、`color2`／`color3`の明示後のrelease候補bundleでは再現せず、extension登録から全smoke終了まで新規warning／errorは0件だった。
+- revealを`CHARACTER`、0.05秒に設定したsayは`H`、`Hello`、`Hello!`の順に進み、Chromiumのreadback、`Silhouette.unlazy()`、`getImageData()`関連warningは0件だった。
+- shake中はsurface transformが変化して終了時に基準位置へ戻り、shape animationは`NORMAL`から`WAVY`へ完了した。close後はrootが0個となり、再度sayするとroot 1個へ復帰した。
 
-このsmokeで確認したvisual styleは`NORMAL`のsayだけであり、全style、think、stage size変更、fullscreenは未確認である。
+stageはnative 480×360、small表示240×180、fullscreen表示3152×2364、custom native 640×480で確認した。各表示でrootの属性と`viewBox`はnative sizeに一致し、CSS表示領域はhostの拡大縮小へ追随した。sprite相対配置に加え、Stage targetの`HEADER_LIKE`も640×480上端のsafe area内へ表示された。最後に480×360、sprite相対`NORMAL`へ戻した。
 
 ## deterministic benchmark結果
 
-`pnpm benchmark:render-backends`は、happy-dom上の同一fake rendererと決定的schedulerを使い、`svg-overlay`とrollback用`scratch-render`を同じ入力で比較する。2026-08-19にNode.js v26.7.0／arm64 macOSで実行した代表値は次のとおり。
+`pnpm benchmark:render-backends`は、happy-dom上の同一fake rendererと決定的schedulerを使い、`svg-overlay`とrollback用`scratch-render`を同じ入力で比較する。2026-08-20にNode.js v26.7.0／arm64 macOSで実行した代表値は次のとおり。
 
 | workload                                       | svg-overlay                              | scratch-render                           | 判定                                |
 | ---------------------------------------------- | ---------------------------------------- | ---------------------------------------- | ----------------------------------- |
-| typewriter、1,000回                            | 61.052 ms、skin／drawable生成0           | 8.891 ms、skin 1,002、drawable 2         | overlayのrenderer resource生成0     |
-| shape／shake／zoom、各10秒・合計1,875 callback | callback超過0%、p95 0.349 ms             | callback超過0%、p95 0.160 ms             | 差0 percentage points、許容値+5以内 |
+| typewriter、1,000回                            | 62.254 ms、skin／drawable生成0           | 8.720 ms、skin 1,002、drawable 2         | overlayのrenderer resource生成0     |
+| shape／shake／zoom、各10秒・合計1,875 callback | callback超過0%、p95 0.352 ms             | callback超過0%、p95 0.157 ms             | 差0 percentage points、許容値+5以内 |
 | show／text・style更新／close、100回            | DOM／listener／skin／drawable残存すべて0 | DOM／listener／skin／drawable残存すべて0 | lifecycle residual 0                |
 
 このbenchmarkが測るのはJavaScript callbackのCPU時間、renderer API呼び出し数、明示resourceの解放である。実browserのlayout／paint／composite、GC後の保持heap、host固有のframe dropを代替しない。数値は環境と実行ごとに変動するため、release判定ではresource残存とpercentage-point基準を主要判定値とする。
@@ -54,14 +57,14 @@
 
 上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)で公開されたhost-neutral layoutを0.8.0の通常dependencyとして採用する。[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)のDOM image resourceをBubble所有adapterで変換し、stock拡張間のhandoffには[turbowarp-asset-manager#106](https://github.com/kubohiroya/turbowarp-asset-manager/issues/106)で公開された0.12.1 APIを使う。既定値変更後も次のmanual gateをrelease前に実施し、実測値をこの表へ記録する。
 
-| 項目                       | host                                 | 許容基準                                                  | 結果                                                                           |
-| -------------------------- | ------------------------------------ | --------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| say／think、全visual style | Web、Desktop、Packager               | reference screenshotの主要geometry差異なし                | Webの`NORMAL` sayは表示確認済み。残りのstyle、think、Desktop、Packagerは未測定 |
-| actor／background配置      | native 480×360と変更size、fullscreen | stage外clip、tail方向、centerに回帰なし                   | Webのactor・480×360は確認済み。background、変更size、fullscreenは未測定        |
-| typewriter                 | 1,000 update                         | Chromium readback警告0、`Silhouette.unlazy()`増分0        | harnessで1,000 updateとrenderer resource生成0を確認。Chromium警告は未測定      |
-| shape／shake／zoom         | 各10秒                               | dropped frame率が既存backend比+5 percentage points以内    | deterministic harnessで0%対0%、差0 points。実hostは未測定                      |
-| memory／lifecycle          | show／replace／stopを100回           | close後のBubble DOM、object URL、animation、listener残存0 | harnessでDOM／listener／skin／drawable残存0。実hostの保持memoryは未測定        |
-| raw canvas capture         | `toDataURL()`、`captureStream()`     | Bubbleが含まれない既知制約を確認                          | overlay rootのcanvas外配置は確認済み。各APIの出力は未測定                      |
+| 項目                       | host                                 | 許容基準                                                  | 結果                                                                                                     |
+| -------------------------- | ------------------------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| say／think、全visual style | Web、Desktop、Packager               | reference screenshotの主要geometry差異なし                | Webでsay／thinkと全10styleを確認済み。Desktop、Packagerは未測定                                          |
+| actor／background配置      | native 480×360と変更size、fullscreen | stage外clip、tail方向、centerに回帰なし                   | Webでactor／background、480×360、small、fullscreen、custom 640×480を確認済み                             |
+| typewriter                 | 1,000 update                         | Chromium readback警告0、`Silhouette.unlazy()`増分0        | harnessで1,000 updateとrenderer resource生成0、Webで実revealと関連warning 0を確認                        |
+| shape／shake／zoom         | 各10秒                               | dropped frame率が既存backend比+5 percentage points以内    | harnessで各10秒・0%対0%、差0 points。Webでshape／shakeをsmoke済み、Webのzoomは未測定                     |
+| memory／lifecycle          | show／replace／stopを100回           | close後のBubble DOM、object URL、animation、listener残存0 | harnessで100回後の残存0。Webでclose時root 0、再show時root 1を確認。実hostの100回後保持heapは未測定       |
+| raw canvas capture         | `toDataURL()`、`captureStream()`     | Bubbleが含まれない既知制約を確認                          | canvasとoverlayは別DOM subtreeで同一表示領域、overlayは`pointer-events: none`。各capture API出力は未測定 |
 
 ## capture制約
 

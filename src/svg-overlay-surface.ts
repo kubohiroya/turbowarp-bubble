@@ -1,5 +1,9 @@
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
-import { bubbleBodyCenterOffset, renderBubbleSvg } from "./bubble-svg.js";
+import {
+  bubbleBodyCenterOffset,
+  bubbleBodyMinimumSize,
+  renderBubbleSvg,
+} from "./bubble-svg.js";
 import {
   type BubbleAssetTarget,
   type BubbleImageCapability,
@@ -973,9 +977,28 @@ export function createSvgOverlaySurface(
       (hasPortrait ? contentGap * scaleMultiplier : 0) +
       textSize.width;
     const contentHeight = Math.max(portraitSize.height, textSize.height);
-    const baseBubbleWidth = totalWidth / scaleMultiplier + bubblePadding * 2;
-    const baseBubbleHeight =
-      contentHeight / scaleMultiplier + bubblePadding * 2;
+    const minimumBodySize = bubbleBodyMinimumSize(
+      currentStyle.visualStyle,
+      ...(shapeTransition === undefined
+        ? []
+        : [shapeTransition.from, shapeTransition.to]),
+    );
+    const baseBubbleWidth = Math.max(
+      totalWidth / scaleMultiplier + bubblePadding * 2,
+      minimumBodySize.width,
+    );
+    const baseBubbleHeight = Math.max(
+      contentHeight / scaleMultiplier + bubblePadding * 2,
+      minimumBodySize.height,
+    );
+    const bubbleWidth = Math.max(
+      totalWidth,
+      (baseBubbleWidth - bubblePadding * 2) * scaleMultiplier,
+    );
+    const bubbleHeight = Math.max(
+      contentHeight,
+      (baseBubbleHeight - bubblePadding * 2) * scaleMultiplier,
+    );
     const stageLeft = -native.width / 2;
     const stageRight = native.width / 2;
     const stageTop = native.height / 2;
@@ -985,17 +1008,17 @@ export function createSvgOverlaySurface(
     if (currentStyle.placement.basis === "background") {
       centerX = 0;
       if (currentStyle.placement.region === "HEADER_LIKE") {
-        centerY = stageTop - stageSafeMargin - contentHeight / 2;
+        centerY = stageTop - stageSafeMargin - bubbleHeight / 2;
       } else if (currentStyle.placement.region === "FOOTER_LIKE") {
-        centerY = stageBottom + stageSafeMargin + contentHeight / 2;
+        centerY = stageBottom + stageSafeMargin + bubbleHeight / 2;
       } else {
         centerY = 0;
       }
     } else {
       const nextCenter = actorRelativeBubbleCenter({
         bounds: targetBounds(actor),
-        bubbleWidth: totalWidth,
-        bubbleHeight: contentHeight,
+        bubbleWidth,
+        bubbleHeight,
         direction: currentStyle.placement.direction,
         distance: currentStyle.distance,
         tailLength: currentStyle.tailLength,
@@ -1006,13 +1029,13 @@ export function createSvgOverlaySurface(
     }
     centerX = clamp(
       centerX,
-      stageLeft + totalWidth / 2,
-      stageRight - totalWidth / 2,
+      stageLeft + bubbleWidth / 2,
+      stageRight - bubbleWidth / 2,
     );
     centerY = clamp(
       centerY,
-      stageBottom + contentHeight / 2,
-      stageTop - contentHeight / 2,
+      stageBottom + bubbleHeight / 2,
+      stageTop - bubbleHeight / 2,
     );
     center = [centerX, centerY];
 
@@ -1067,6 +1090,8 @@ export function createSvgOverlaySurface(
       bodySignature = nextBodySignature;
     }
     bodyGroup.setAttribute("data-bubble-style", currentStyle.visualStyle);
+    bodyGroup.setAttribute("data-bubble-body-width", String(baseBubbleWidth));
+    bodyGroup.setAttribute("data-bubble-body-height", String(baseBubbleHeight));
     if (shapeTransition === undefined) {
       bodyGroup.removeAttribute("data-bubble-shape-transition-from");
       bodyGroup.removeAttribute("data-bubble-shape-transition-to");

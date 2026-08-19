@@ -154,6 +154,16 @@ describe("SVG overlay backend", () => {
       String(expected.lines[0]!.x - expected.width / 2),
     );
     expect(root?.querySelector("path, circle, rect")).not.toBeNull();
+    expect(
+      root
+        ?.querySelector('[data-bubble-layer="body"]')
+        ?.getAttribute("data-bubble-body-width"),
+    ).toBe("176");
+    expect(
+      root
+        ?.querySelector('[data-bubble-layer="body"]')
+        ?.getAttribute("data-bubble-body-height"),
+    ).toBe("96");
     expect(root?.querySelector("script, foreignObject")).toBeNull();
     expect(root?.querySelector("[onclick], [onload]")).toBeNull();
 

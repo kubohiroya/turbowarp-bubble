@@ -6005,6 +6005,17 @@
     "NARRATION",
     "NO_BUBBLE"
   ]);
+  var cloudBodyMinimumSize = Object.freeze({
+    height: 96,
+    width: 176
+  });
+  var emptyBodyMinimumSize = Object.freeze({
+    height: 0,
+    width: 0
+  });
+  function bubbleBodyMinimumSize(...styles) {
+    return styles.some((style) => style === "THINKING" || style === "DREAMING") ? cloudBodyMinimumSize : emptyBodyMinimumSize;
+  }
   function escapeXml$1(value) {
     return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
   }
@@ -6196,22 +6207,56 @@
     if (!outer) throw new Error("JSClipper returned an empty Bubble outline.");
     return `<path d="${polygonPath(outer)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" ${extra}/>`;
   }
+  function smoothClosedPath(points) {
+    const first = points[0];
+    if (!first || points.length < 3) throw new TypeError("Smooth Bubble path requires at least three points.");
+    const format = (value) => value.toFixed(4);
+    const segments = points.map((current, index) => {
+      const previous = points[(index - 1 + points.length) % points.length];
+      const next = points[(index + 1) % points.length];
+      const afterNext = points[(index + 2) % points.length];
+      if (!previous || !next || !afterNext) throw new Error("Smooth Bubble path is invalid.");
+      const firstControl = {
+        x: current.x + (next.x - previous.x) / 6,
+        y: current.y + (next.y - previous.y) / 6
+      };
+      const secondControl = {
+        x: next.x - (afterNext.x - current.x) / 6,
+        y: next.y - (afterNext.y - current.y) / 6
+      };
+      return `C ${format(firstControl.x)} ${format(firstControl.y)} ${format(secondControl.x)} ${format(secondControl.y)} ${format(next.x)} ${format(next.y)}`;
+    });
+    return `M ${format(first.x)} ${format(first.y)} ${segments.join(" ")} Z`;
+  }
   function cloudBody(width, height, fill, border) {
+    const x = 24;
     const y = 24;
     const right = width - 24;
     const bottom = height - 24;
-    const midX = width / 2;
-    const midY = height / 2;
-    return `<path d="M 42 ${midY}
-      C 22 ${midY - 20}, 32 42, 60 44
-      C 68 22, ${midX - 18} 19, ${midX} 37
-      C ${midX + 24} 16, ${right - 28} ${y}, ${right - 30} 48
-      C ${right + 2} 42, ${right + 7} ${midY - 3}, ${right - 3} ${midY + 15}
-      C ${right + 8} ${bottom - 10}, ${right - 20} ${bottom + 7}, ${right - 42} ${bottom - 7}
-      C ${right - 55} ${bottom + 12}, ${midX + 12} ${bottom + 7}, ${midX} ${bottom - 7}
-      C ${midX - 24} ${bottom + 12}, 66 ${bottom + 7}, 62 ${bottom - 12}
-      C 31 ${bottom + 2}, 17 ${midY + 20}, 42 ${midY} Z"
-      fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
+    const bodyWidth = right - x;
+    const bodyHeight = bottom - y;
+    const point = (xRatio, yRatio) => ({
+      x: x + bodyWidth * xRatio,
+      y: y + bodyHeight * yRatio
+    });
+    return `<path d="${smoothClosedPath([
+      point(0, .5),
+      point(.03, .3),
+      point(.18, .2),
+      point(.28, .04),
+      point(.5, .16),
+      point(.68, .03),
+      point(.84, .18),
+      point(.98, .3),
+      point(1, .52),
+      point(.95, .7),
+      point(.82, .82),
+      point(.68, .97),
+      point(.5, .84),
+      point(.32, .97),
+      point(.18, .82),
+      point(.03, .7)
+    ])}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
   }
   function thoughtTrail(body, bodyCenter, tip, fill, border, dreaming) {
     const tipVector = subtract(tip, bodyCenter);
@@ -6306,8 +6351,9 @@
     return roundedRectanglePoints(width, height);
   }
   function bubbleBodyCenterOffset(input) {
-    const width = requireDimension(input.width, 220);
-    const height = requireDimension(input.height, 112);
+    const minimumSize = bubbleBodyMinimumSize(input.style);
+    const width = Math.max(requireDimension(input.width, 220), minimumSize.width);
+    const height = Math.max(requireDimension(input.height, 112), minimumSize.height);
     const direction = normalizeDirection(input.tailDirection);
     if (direction === null) throw new TypeError("Bubble body center offset requires a tail direction.");
     const tailLength = normalizeSvgTailLength(input.tailLength ?? svgDefaultTailLength);
@@ -6364,8 +6410,8 @@
   function renderBubbleSvg(input) {
     if (!bubbleVisualStyles.includes(input.style)) throw new TypeError(`Unsupported Bubble visual style: ${String(input.style)}`);
     if (!Array.isArray(input.lines) || input.lines.some((line) => typeof line !== "string")) throw new TypeError("lines must be an array of strings.");
-    const width = requireDimension(input.width, 220);
-    const height = requireDimension(input.height, 112);
+    const requestedWidth = requireDimension(input.width, 220);
+    const requestedHeight = requireDimension(input.height, 112);
     const fontSize = requireDimension(input.fontSize, 15);
     const direction = normalizeDirection(input.tailDirection);
     const tailLength = normalizeSvgTailLength(input.tailLength ?? svgDefaultTailLength);
@@ -6374,6 +6420,9 @@
     if (shapeTransition !== void 0) {
       if (!bubbleVisualStyles.includes(shapeTransition.from) || !bubbleVisualStyles.includes(shapeTransition.to) || !Number.isFinite(shapeTransition.progress) || shapeTransition.progress < 0 || shapeTransition.progress > 1) throw new TypeError("Bubble shape transition is invalid.");
     }
+    const minimumSize = bubbleBodyMinimumSize(input.style, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]);
+    const width = Math.max(requestedWidth, minimumSize.width);
+    const height = Math.max(requestedHeight, minimumSize.height);
     const fill = input.fillColor ?? "#fff4cc";
     const border = input.borderColor ?? "#6f5b45";
     const textColor = input.textColor ?? "#25283a";
@@ -6389,7 +6438,7 @@
     const body = shapeTransition === void 0 ? renderBody(input.style, width, height, direction, fill, border, tailLength, offset) : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(shapeTransition.from, width, height, direction, fill, border, tailLength, offset)}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(shapeTransition.to, width, height, direction, fill, border, tailLength, offset)}</g>`;
     const title = escapeXml$1(input.title ?? `${input.style} bubble`);
     const transitionAttributes = shapeTransition === void 0 ? "" : ` data-bubble-shape-transition-from="${shapeTransition.from}" data-bubble-shape-transition-to="${shapeTransition.to}" data-bubble-shape-transition-progress="${shapeTransition.progress.toFixed(4)}"`;
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}" data-bubble-body-width="${width}" data-bubble-body-height="${height}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
   }
   //#endregion
   //#region node_modules/.pnpm/@cto.af+unicode-trie-runtime@3.2.9/node_modules/@cto.af/unicode-trie-runtime/constants.js
@@ -11060,8 +11109,11 @@
       const indicatorSize = fitImage(continueIndicator, indicatorBoxSize$1, scaleMultiplier);
       const totalWidth = portraitSize.width + (hasPortrait ? contentGap$1 * scaleMultiplier : 0) + textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const baseBubbleWidth = totalWidth / scaleMultiplier + 48;
-      const baseBubbleHeight = contentHeight / scaleMultiplier + 48;
+      const minimumBodySize = bubbleBodyMinimumSize(currentStyle.visualStyle, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]);
+      const baseBubbleWidth = Math.max(totalWidth / scaleMultiplier + 48, minimumBodySize.width);
+      const baseBubbleHeight = Math.max(contentHeight / scaleMultiplier + 48, minimumBodySize.height);
+      const bubbleWidth = Math.max(totalWidth, (baseBubbleWidth - 48) * scaleMultiplier);
+      const bubbleHeight = Math.max(contentHeight, (baseBubbleHeight - 48) * scaleMultiplier);
       const stageLeft = -native.width / 2;
       const stageRight = native.width / 2;
       const stageTop = native.height / 2;
@@ -11070,14 +11122,14 @@
       let centerY;
       if (currentStyle.placement.basis === "background") {
         centerX = 0;
-        if (currentStyle.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin$1 - contentHeight / 2;
-        else if (currentStyle.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin$1 + contentHeight / 2;
+        if (currentStyle.placement.region === "HEADER_LIKE") centerY = stageTop - stageSafeMargin$1 - bubbleHeight / 2;
+        else if (currentStyle.placement.region === "FOOTER_LIKE") centerY = stageBottom + stageSafeMargin$1 + bubbleHeight / 2;
         else centerY = 0;
       } else {
         const nextCenter = actorRelativeBubbleCenter({
           bounds: targetBounds$1(actor),
-          bubbleWidth: totalWidth,
-          bubbleHeight: contentHeight,
+          bubbleWidth,
+          bubbleHeight,
           direction: currentStyle.placement.direction,
           distance: currentStyle.distance,
           tailLength: currentStyle.tailLength,
@@ -11086,8 +11138,8 @@
         centerX = nextCenter.x;
         centerY = nextCenter.y;
       }
-      centerX = clamp$1(centerX, stageLeft + totalWidth / 2, stageRight - totalWidth / 2);
-      centerY = clamp$1(centerY, stageBottom + contentHeight / 2, stageTop - contentHeight / 2);
+      centerX = clamp$1(centerX, stageLeft + bubbleWidth / 2, stageRight - bubbleWidth / 2);
+      centerY = clamp$1(centerY, stageBottom + bubbleHeight / 2, stageTop - bubbleHeight / 2);
       center = [centerX, centerY];
       const tailDirection = currentStyle.placement.basis === "actor" ? tailDirectionForPlacement$1(currentStyle.placement.direction) : null;
       const bodyOffset = currentStyle.placement.basis === "actor" ? [
@@ -11134,6 +11186,8 @@
         bodySignature = nextBodySignature;
       }
       bodyGroup.setAttribute("data-bubble-style", currentStyle.visualStyle);
+      bodyGroup.setAttribute("data-bubble-body-width", String(baseBubbleWidth));
+      bodyGroup.setAttribute("data-bubble-body-height", String(baseBubbleHeight));
       if (shapeTransition === void 0) {
         bodyGroup.removeAttribute("data-bubble-shape-transition-from");
         bodyGroup.removeAttribute("data-bubble-shape-transition-to");
@@ -11641,10 +11695,11 @@
         };
         const totalWidth = portraitSize.width + (hasPortrait ? contentGap * scaleMultiplier : 0) + textSize.width;
         const contentHeight = Math.max(portraitSize.height, textSize.height);
-        const baseBubbleWidth = totalWidth / scaleMultiplier + 48;
-        const baseBubbleHeight = contentHeight / scaleMultiplier + 48;
-        const bubbleWidth = totalWidth;
-        const bubbleHeight = contentHeight;
+        const minimumBodySize = bubbleBodyMinimumSize(currentStyle.visualStyle, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]);
+        const baseBubbleWidth = Math.max(totalWidth / scaleMultiplier + 48, minimumBodySize.width);
+        const baseBubbleHeight = Math.max(contentHeight / scaleMultiplier + 48, minimumBodySize.height);
+        const bubbleWidth = Math.max(totalWidth, (baseBubbleWidth - 48) * scaleMultiplier);
+        const bubbleHeight = Math.max(contentHeight, (baseBubbleHeight - 48) * scaleMultiplier);
         const nativeSize = renderer.getNativeSize();
         const stageWidth = Array.isArray(nativeSize) && Number(nativeSize[0]) > 0 ? Number(nativeSize[0]) : 480;
         const stageHeight = Array.isArray(nativeSize) && Number(nativeSize[1]) > 0 ? Number(nativeSize[1]) : 360;

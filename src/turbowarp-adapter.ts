@@ -44,7 +44,11 @@ export {
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
-import { bubbleBodyCenterOffset, renderBubbleSvg } from "./bubble-svg.js";
+import {
+  bubbleBodyCenterOffset,
+  bubbleBodyMinimumSize,
+  renderBubbleSvg,
+} from "./bubble-svg.js";
 import {
   bubbleDirectionVector,
   type BubbleDirectionName,
@@ -721,13 +725,30 @@ function createSurface(
         (hasPortrait ? contentGap * scaleMultiplier : 0) +
         textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const baseBubbleWidth = totalWidth / scaleMultiplier + bubblePadding * 2;
-      const baseBubbleHeight =
-        contentHeight / scaleMultiplier + bubblePadding * 2;
+      const minimumBodySize = bubbleBodyMinimumSize(
+        currentStyle.visualStyle,
+        ...(shapeTransition === undefined
+          ? []
+          : [shapeTransition.from, shapeTransition.to]),
+      );
+      const baseBubbleWidth = Math.max(
+        totalWidth / scaleMultiplier + bubblePadding * 2,
+        minimumBodySize.width,
+      );
+      const baseBubbleHeight = Math.max(
+        contentHeight / scaleMultiplier + bubblePadding * 2,
+        minimumBodySize.height,
+      );
       // The SVG viewport includes padding for the tail. Placement and clamping
-      // use the visible body border, whose dimensions match the content box.
-      const bubbleWidth = totalWidth;
-      const bubbleHeight = contentHeight;
+      // use the visible body border, including style-specific minimum sizes.
+      const bubbleWidth = Math.max(
+        totalWidth,
+        (baseBubbleWidth - bubblePadding * 2) * scaleMultiplier,
+      );
+      const bubbleHeight = Math.max(
+        contentHeight,
+        (baseBubbleHeight - bubblePadding * 2) * scaleMultiplier,
+      );
       const nativeSize = renderer.getNativeSize();
       const stageWidth =
         Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
