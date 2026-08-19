@@ -1,3 +1,4 @@
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import { Window } from "happy-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { BLOCK_ICON_URI, BubbleExtension } from "../src/extension.js";
@@ -88,6 +89,7 @@ function createRuntime(
     asyncInput?: boolean;
     runtimeExpression?: boolean;
     svgTextExtension?: boolean;
+    svgTextLayoutCapability?: boolean;
   } = {},
 ) {
   let nextDrawable = 1;
@@ -200,6 +202,7 @@ function createRuntime(
     },
   );
   const releaseTextActor = vi.fn(() => true);
+  const svgTextLayouts = createSvgTextLayoutComposition();
   const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
   const conditionState = { value: false };
   const runtimeExpression = {
@@ -244,7 +247,15 @@ function createRuntime(
         }
       : {}),
     ...((options.svgTextExtension ?? true)
-      ? { ext_kubohiroyasvgtext: { setText, releaseTextActor } }
+      ? {
+          ext_kubohiroyasvgtext: {
+            setText,
+            releaseTextActor,
+            ...((options.svgTextLayoutCapability ?? true)
+              ? { getLayoutCapability: () => svgTextLayouts }
+              : {}),
+          },
+        }
       : {}),
   };
   const emit = (event: string, ...args: unknown[]): void => {
@@ -271,6 +282,7 @@ function createRuntime(
     runtime,
     runtimeExpression,
     setText,
+    svgTextLayouts,
     visibility,
   };
 }
@@ -532,6 +544,84 @@ describe("Bubble extension", () => {
     await extension.closeBubble({}, { target });
     expect(harness.releasedDOMImages).toEqual(["Face"]);
     expect(removeOverlay).toHaveBeenCalledOnce();
+  });
+
+  it("preserves standalone SVG Text named styles on the default overlay", async () => {
+    const harness = createRuntime();
+    harness.svgTextLayouts.defineStyle({
+      name: "dialogue-text",
+      alignment: "right",
+      backgroundColor: "transparent",
+      font: "Noto Sans JP",
+      fontPercent: 150,
+      textColor: "#123456",
+    });
+    const window = new Window();
+    Object.assign(harness.renderer, {
+      addOverlay: (element: Element) =>
+        window.document.body.appendChild(
+          element as unknown as Parameters<
+            typeof window.document.body.appendChild
+          >[0],
+        ),
+      removeOverlay: (element: Element) => element.remove(),
+    });
+    const extension = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "existing style", STYLE: "dialogue" },
+      { target: actor() },
+    );
+
+    const text = window.document.querySelector("text");
+    expect(text?.getAttribute("fill")).toBe("#123456");
+    expect(text?.getAttribute("font-family")).toBe("Noto Sans JP");
+    expect(text?.getAttribute("font-size")).toBe("21");
+    expect(text?.getAttribute("text-anchor")).toBe("end");
+    expect(harness.created).toHaveLength(0);
+    expect(harness.createdSvgSkins).toHaveLength(0);
+  });
+
+  it("does not silently replace styles from an older standalone SVG Text", async () => {
+    const harness = createRuntime({ svgTextLayoutCapability: false });
+    const window = new Window();
+    Object.assign(harness.renderer, {
+      addOverlay: (element: Element) =>
+        window.document.body.appendChild(
+          element as unknown as Parameters<
+            typeof window.document.body.appendChild
+          >[0],
+        ),
+      removeOverlay: (element: Element) => element.remove(),
+    });
+
+    const broken = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    broken.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+    await expect(
+      broken.sayWithBubbleStyle(
+        { MESSAGE: "legacy style", STYLE: "dialogue" },
+        { target: actor() },
+      ),
+    ).rejects.toThrow("SVG Text 0.8.1 getLayoutCapability");
+
+    const fallback = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+      svgOverlayUnsupportedBehavior: "fallback",
+    });
+    fallback.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+    await fallback.sayWithBubbleStyle(
+      { MESSAGE: "legacy style", STYLE: "dialogue" },
+      { target: actor() },
+    );
+    expect(harness.created).not.toHaveLength(0);
   });
 
   it("requires Asset Manager 0.12.1 only when the default overlay uses images", async () => {

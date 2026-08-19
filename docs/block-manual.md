@@ -8,7 +8,7 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.8.0 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
+The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.8.1 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
 
 | Order | Extension                | URL                                                                                                      |
 | ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -59,7 +59,7 @@ For a remote image, pass its HTTPS URL as `RESOURCE_ID`. Bubble accepts only ass
 
 ## 3. Select a text layout style
 
-Standalone Bubble bundles the SVG Text 0.8.0 layout composition. `default`, or any other name, is initialized on first use with SVG Text defaults and a transparent background.
+Standalone Bubble bundles the SVG Text 0.8.1 layout composition. `default`, or any other name, is initialized on first use with SVG Text defaults and a transparent background. If a project separately loads the stock SVG Text 0.8.1 extension before Bubble, Bubble uses its public `getLayoutCapability()` instead and preserves the named styles defined by SVG Text blocks. An older loaded SVG Text extension without that handoff produces an explicit compatibility error rather than silently replacing the style; select the documented scratch-render fallback only when needed.
 
 ```text
 define bubble style [hero-dialogue] using text style [default]

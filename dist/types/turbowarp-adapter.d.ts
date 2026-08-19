@@ -2,7 +2,7 @@ import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudio
 import { type TurboWarpSvgTextExtension } from "./turbowarp-svg-text-adapter.js";
 import { type AssetManagerDOMImageCapability } from "./asset-manager-image-adapter.js";
 export { createAssetManagerSvgOverlayImageCapability, type AssetManagerDOMImageCapability, type AssetManagerDOMImageResource, } from "./asset-manager-image-adapter.js";
-export { createSvgTextCompositionCapability, createSvgTextOverlayTextCapability, createTurboWarpSvgTextCapability, type SvgTextLayoutCompositionLike, type TurboWarpSvgTextExtension, } from "./turbowarp-svg-text-adapter.js";
+export { createSvgTextCompositionCapability, createSvgTextOverlayTextCapability, createTurboWarpSvgTextCapability, createTurboWarpSvgTextOverlayTextCapability, type SvgTextLayoutCompositionLike, type TurboWarpSvgTextExtension, } from "./turbowarp-svg-text-adapter.js";
 import { type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayTextCapability } from "./svg-overlay-surface.js";
 export { createSvgOverlayImageAdapter, createSvgOverlaySurface, createSvgOverlaySurfaceManager, createSvgOverlayTextAdapter, bubbleRenderBackends, defaultBubbleOverlayUnsupportedBehavior, defaultBubbleRenderBackend, type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayActor, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayImageResource, type BubbleSvgOverlayRenderer, type BubbleSvgOverlaySurfaceManager, type BubbleSvgOverlayTextCapability, type BubbleSvgOverlayTextLine, type BubbleSvgOverlayTextLayout, } from "./svg-overlay-surface.js";
 export interface TurboWarpBubbleTarget {

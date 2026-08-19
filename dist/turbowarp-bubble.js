@@ -9389,7 +9389,7 @@
     });
   }
   //#endregion
-  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.8.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
+  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.8.1/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
   var block_definitions_default = {
     extensionName: "SVG Text",
     blocks: [{
@@ -9841,6 +9841,19 @@
       const layout = createSvgTextLayout(this.normalizeMessage(text), selection.definition, this.getNativeSize());
       return Math.max(0, ...layout.lines.map((line) => line.width));
     }
+    /**
+    * Exposes the stock named-style registry through a skin-free layout contract.
+    * Consumers receive current layout data without access to the mutable registry.
+    */
+    getLayoutCapability() {
+      this.layoutCapabilityValue ?? (this.layoutCapabilityValue = Object.freeze({ layoutText: (input) => {
+        if (typeof input !== "object" || input === null || typeof input.styleName !== "string" || typeof input.text !== "string") throw new TypeError("SVG Text layout capability input is invalid.");
+        const nativeSize = this.requireLayoutNativeSize(input.nativeSize);
+        const selection = this.resolveStyle(input.styleName);
+        return createSvgTextLayout(this.normalizeMessage(input.text), selection.definition, nativeSize);
+      } }));
+      return this.layoutCapabilityValue;
+    }
     setCompositionText(styleName, render, target) {
       const content = Object.freeze({
         kind: "composition",
@@ -9911,6 +9924,10 @@
       const height = Number(nativeSize[1]);
       if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) return [480, 360];
       return [width, height];
+    }
+    requireLayoutNativeSize(value) {
+      if (!Array.isArray(value) || value.length !== 2 || value.some((dimension) => typeof dimension !== "number" || !Number.isFinite(dimension) || dimension <= 0)) throw new TypeError("SVG Text layout capability nativeSize must contain two positive finite numbers.");
+      return value;
     }
     createTextActorSvg(content, definition) {
       if (content.kind === "composition") return content.render(definition, this.getNativeSize());
@@ -10389,6 +10406,13 @@
         return Math.max(1, ...layout.lines.map((line) => requireFiniteNumber(line.width, "SVG Text line width")));
       }
     });
+  }
+  /**
+  * Adapts the stock SVG Text extension's shared named-style layout registry.
+  */
+  function createTurboWarpSvgTextOverlayTextCapability(extensionInput) {
+    if (!isRecord$3(extensionInput) || typeof extensionInput.getLayoutCapability !== "function") throw new TypeError("TurboWarp SVG Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().");
+    return createSvgTextOverlayTextCapability(extensionInput.getLayoutCapability());
   }
   //#endregion
   //#region src/asset-manager-image-adapter.ts
@@ -11975,10 +11999,20 @@
     const runtime = runtimeInput;
     const renderer = requireRenderer(runtime.renderer);
     const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
-    const overlayTextCapability = requestedBackend === "svg-overlay" ? options.svgOverlayTextCapability ?? createDefaultSvgOverlayTextCapability() : void 0;
+    let overlayTextCapability;
+    let overlayTextCapabilityError;
+    if (requestedBackend === "svg-overlay") {
+      if (options.svgOverlayTextCapability !== void 0) overlayTextCapability = options.svgOverlayTextCapability;
+      else if (runtime.ext_kubohiroyasvgtext === void 0) overlayTextCapability = createDefaultSvgOverlayTextCapability();
+      else try {
+        overlayTextCapability = createTurboWarpSvgTextOverlayTextCapability(runtime.ext_kubohiroyasvgtext);
+      } catch (error) {
+        overlayTextCapabilityError = error instanceof Error ? error.message : String(error);
+      }
+    }
     const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(options.svgOverlayUnsupportedBehavior);
     const overlayDocument = requestedBackend === "svg-overlay" ? resolveOverlayDocument(options.document) : void 0;
-    const unavailableReason = requestedBackend === "svg-overlay" ? overlayUnavailableReason(renderer, overlayDocument, overlayTextCapability) : void 0;
+    const unavailableReason = requestedBackend === "svg-overlay" ? overlayTextCapabilityError ?? overlayUnavailableReason(renderer, overlayDocument, overlayTextCapability) : void 0;
     if (requestedBackend === "svg-overlay" && unavailableReason !== void 0 && unsupportedBehavior === "error") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay backend is unavailable because ${unavailableReason}. Use scratch-render or install the required public upstream capability.`);
     const renderBackend = requestedBackend === "svg-overlay" && unavailableReason === void 0 ? "svg-overlay" : "scratch-render";
     const scheduler = options.scheduler ?? {

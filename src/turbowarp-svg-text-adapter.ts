@@ -8,6 +8,7 @@ import type {
 } from "./svg-overlay-surface.js";
 
 export interface TurboWarpSvgTextExtension {
+  getLayoutCapability?(): SvgTextLayoutCompositionLike;
   setText(
     args: Readonly<{ STYLE: unknown; TEXT: unknown }>,
     util: Readonly<{ target: unknown }>,
@@ -260,4 +261,23 @@ export function createSvgTextOverlayTextCapability(
       );
     },
   });
+}
+
+/**
+ * Adapts the stock SVG Text extension's shared named-style layout registry.
+ */
+export function createTurboWarpSvgTextOverlayTextCapability(
+  extensionInput: unknown,
+): BubbleSvgOverlayTextCapability {
+  if (
+    !isRecord(extensionInput) ||
+    typeof extensionInput.getLayoutCapability !== "function"
+  ) {
+    throw new TypeError(
+      "TurboWarp SVG Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().",
+    );
+  }
+  return createSvgTextOverlayTextCapability(
+    extensionInput.getLayoutCapability(),
+  );
 }

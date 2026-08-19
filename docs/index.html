@@ -74,7 +74,7 @@
 </blockquote>
 <p><img src="./assets/block-quick-start.svg" alt="A quick-start block sequence that registers Next1 and Next2 separately, prepares input listeners, then uses Bubble&#39;s integrated wait"></p>
 <h2 id="requirements">1. Load the required extensions</h2>
-<p>The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp&#39;s extension library, then load the custom extensions needed by the selected features with <strong>Run without sandbox</strong> enabled. Bubble bundles the host-neutral SVG Text 0.8.0 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.</p>
+<p>The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp&#39;s extension library, then load the custom extensions needed by the selected features with <strong>Run without sandbox</strong> enabled. Bubble bundles the host-neutral SVG Text 0.8.1 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.</p>
 <table>
 <thead>
 <tr>
@@ -175,7 +175,7 @@ register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
 <p>For a remote image, pass its HTTPS URL as <code>RESOURCE_ID</code>. Bubble accepts only assets already registered with Asset Manager whose MIME type is <code>image/*</code>.</p>
 <h2 id="text-style">3. Select a text layout style</h2>
-<p>Standalone Bubble bundles the SVG Text 0.8.0 layout composition. <code>default</code>, or any other name, is initialized on first use with SVG Text defaults and a transparent background.</p>
+<p>Standalone Bubble bundles the SVG Text 0.8.1 layout composition. <code>default</code>, or any other name, is initialized on first use with SVG Text defaults and a transparent background. If a project separately loads the stock SVG Text 0.8.1 extension before Bubble, Bubble uses its public <code>getLayoutCapability()</code> instead and preserves the named styles defined by SVG Text blocks. An older loaded SVG Text extension without that handoff produces an explicit compatibility error rather than silently replacing the style; select the documented scratch-render fallback only when needed.</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 </code></pre>
 <p>Application hosts that need custom fonts, colors, or alignment can define styles on <code>createSvgTextLayoutComposition()</code> and inject them through <code>createSvgTextOverlayTextCapability()</code>. The default uses the same <code>layoutText()</code> API and does not create an SVG text skin. Bubble owns placement, tail, and outer shape.</p>

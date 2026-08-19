@@ -4,6 +4,7 @@ import {
   createSvgTextCompositionCapability,
   createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  createTurboWarpSvgTextOverlayTextCapability,
   type SvgTextLayoutCompositionLike,
   type TurboWarpSvgTextExtension,
 } from "../src/turbowarp-svg-text-adapter.js";
@@ -121,11 +122,43 @@ describe("TurboWarp SVG Text adapter", () => {
     ).toBe(Math.max(...upstream.lines.map((line) => line.width)));
   });
 
+  it("adapts the stock extension named-style layout handoff", () => {
+    const layouts = createSvgTextLayoutComposition();
+    layouts.defineStyle({
+      name: "dialogue",
+      alignment: "right",
+      font: "Noto Sans JP",
+      fontPercent: 150,
+      textColor: "#123456",
+    });
+    const getLayoutCapability = vi.fn(() => layouts);
+    const capability = createTurboWarpSvgTextOverlayTextCapability({
+      getLayoutCapability,
+    });
+
+    const layout = capability.layoutText({
+      nativeSize: { width: 480, height: 360 },
+      styleName: "dialogue",
+      text: "existing style",
+    });
+
+    expect(getLayoutCapability).toHaveBeenCalledOnce();
+    expect(layout).toMatchObject({
+      alignment: "right",
+      fill: "#123456",
+      fontFamily: "Noto Sans JP",
+      fontSize: 21,
+    });
+  });
+
   it("rejects a layout composition without the public layout API", () => {
     expect(() =>
       createSvgTextOverlayTextCapability(
         {} as unknown as SvgTextLayoutCompositionLike,
       ),
     ).toThrow("layoutText composition API");
+    expect(() => createTurboWarpSvgTextOverlayTextCapability({})).toThrow(
+      "SVG Text 0.8.1 getLayoutCapability",
+    );
   });
 });

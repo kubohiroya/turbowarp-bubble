@@ -8,7 +8,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
+入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -59,7 +59,7 @@ URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubb
 
 ## 3. 文字layout styleを選ぶ
 
-standalone BubbleはSVG Text 0.8.0のlayout compositionを内包します。`default`または任意の名前を指定すると、初回参照時に背景透明のSVG Text既定styleとして初期化されます。
+standalone BubbleはSVG Text 0.8.1のlayout compositionを内包します。`default`または任意の名前を指定すると、初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
 
 ```text
 define bubble style [hero-dialogue] using text style [default]

@@ -22,6 +22,7 @@ import {
   createSvgTextCompositionCapability,
   createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  createTurboWarpSvgTextOverlayTextCapability,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
 import {
@@ -38,6 +39,7 @@ export {
   createSvgTextCompositionCapability,
   createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
+  createTurboWarpSvgTextOverlayTextCapability,
   type SvgTextLayoutCompositionLike,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
@@ -1260,11 +1262,24 @@ export function createTurboWarpBubbleComposition(
   const runtime = runtimeInput;
   const renderer = requireRenderer(runtime.renderer);
   const requestedBackend = normalizeRenderBackend(options.bubbleRenderBackend);
-  const overlayTextCapability =
-    requestedBackend === "svg-overlay"
-      ? (options.svgOverlayTextCapability ??
-        createDefaultSvgOverlayTextCapability())
-      : undefined;
+  let overlayTextCapability: BubbleSvgOverlayTextCapability | undefined;
+  let overlayTextCapabilityError: string | undefined;
+  if (requestedBackend === "svg-overlay") {
+    if (options.svgOverlayTextCapability !== undefined) {
+      overlayTextCapability = options.svgOverlayTextCapability;
+    } else if (runtime.ext_kubohiroyasvgtext === undefined) {
+      overlayTextCapability = createDefaultSvgOverlayTextCapability();
+    } else {
+      try {
+        overlayTextCapability = createTurboWarpSvgTextOverlayTextCapability(
+          runtime.ext_kubohiroyasvgtext,
+        );
+      } catch (error) {
+        overlayTextCapabilityError =
+          error instanceof Error ? error.message : String(error);
+      }
+    }
+  }
   const unsupportedBehavior = normalizeOverlayUnsupportedBehavior(
     options.svgOverlayUnsupportedBehavior,
   );
@@ -1274,11 +1289,12 @@ export function createTurboWarpBubbleComposition(
       : undefined;
   const unavailableReason =
     requestedBackend === "svg-overlay"
-      ? overlayUnavailableReason(
+      ? (overlayTextCapabilityError ??
+        overlayUnavailableReason(
           renderer,
           overlayDocument,
           overlayTextCapability,
-        )
+        ))
       : undefined;
   if (
     requestedBackend === "svg-overlay" &&

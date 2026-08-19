@@ -118,6 +118,6 @@
   ],
   "dependencies": {
     "@cto.af/linebreak": "4.0.3",
-    "@kubohiroya/turbowarp-svg-text": "0.8.0"
+    "@kubohiroya/turbowarp-svg-text": "0.8.1"
   }
 }

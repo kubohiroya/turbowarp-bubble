@@ -12,8 +12,8 @@ importers:
         specifier: 4.0.3
         version: 4.0.3
       '@kubohiroya/turbowarp-svg-text':
-        specifier: 0.8.0
-        version: 0.8.0
+        specifier: 0.8.1
+        version: 0.8.1
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -142,8 +142,8 @@ packages:
   '@kubohiroya/turbowarp-runtime-expression@0.3.0':
     resolution: {integrity: sha512-6GCzLqwKxQW0h65tuszZxVzRueNrizktQeL6zw2e+QpPeE3Xjy2ux0z/UGjUvqz1l4V3YChiIcMqP1z3FxDg6Q==}
 
-  '@kubohiroya/turbowarp-svg-text@0.8.0':
-    resolution: {integrity: sha512-Ef3bE20yA/LBxONha4BUPwif5pSEQ+MWyRrN0Cfdm7k10nLpRzWrDyfcRux6E6tK3ToLVQxWv4mgUI/a7Ptq/w==}
+  '@kubohiroya/turbowarp-svg-text@0.8.1':
+    resolution: {integrity: sha512-xfGfkJuoPl7ZyRtzm2LZjJCvBAX6WaELaTXXoY1PI+c4rDgA/AkOP1siRi73Vfd1hwl1uFg05lzS5cf51CwyEg==}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.1.1':
     resolution: {integrity: sha512-6lOlSnfOcKeGwI8SpWQMC6Vz153WIit+1fVxhowy2YdgqC5tP96Zmzkn+Q+4JlJVRsFo89jrp7ifqJcWL56svg==}
@@ -965,7 +965,7 @@ snapshots:
 
   '@kubohiroya/turbowarp-runtime-expression@0.3.0': {}
 
-  '@kubohiroya/turbowarp-svg-text@0.8.0': {}
+  '@kubohiroya/turbowarp-svg-text@0.8.1': {}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.1.1(vite@8.2.1(@types/node@26.1.2))':
     dependencies:

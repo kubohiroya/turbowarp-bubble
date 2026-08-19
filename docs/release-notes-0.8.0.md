@@ -6,7 +6,8 @@
 - `"scratch-render"`は明示指定できるrollback backendとして保持する。
 - `renderer.addOverlay(root, "scale")`上の共有SVG rootにBubble surfaceを描画する。
 - host-neutralな`svgOverlayTextCapability`と、解放可能な`svgOverlayImageCapability`を公開する。
-- SVG Text 0.8.0を通常dependencyとし、既定で`createSvgTextLayoutComposition().layoutText()`の行layoutを座標・角丸ごと変換する。
+- SVG Text 0.8.1を通常dependencyとし、standalone拡張がない場合は`createSvgTextLayoutComposition().layoutText()`、ロード済みの場合は公開`getLayoutCapability()`から同じnamed-style registryの行layoutを変換する。
+- handoffのない古いstandalone SVG Textが存在する場合、named styleを既定値へ黙って置換せず、明示errorまたは設定済みscratch-render fallbackを使う。
 - Bubble側の`createAssetManagerSvgOverlayImageCapability()`でAsset Managerの汎用DOM resourceを変換する。依存方向はBubbleからAsset Managerへの一方向を維持する。
 - stock Asset Manager 0.12.1を別拡張として読み込んだ場合、Bubbleが公開`getDOMImageCapability()`を遅延取得し、Asset Managerブロックで登録された同じregistryへ自動接続する。
 - overlay API未対応hostは`BUBBLE-RUNTIME-004`を返す。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ既存backendへ戻る。

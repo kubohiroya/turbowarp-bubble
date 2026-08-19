@@ -1,6 +1,7 @@
 import type { BubbleTextCapability } from "./text-capability.js";
 import type { BubbleSvgOverlayTextCapability } from "./svg-overlay-surface.js";
 export interface TurboWarpSvgTextExtension {
+    getLayoutCapability?(): SvgTextLayoutCompositionLike;
     setText(args: Readonly<{
         STYLE: unknown;
         TEXT: unknown;
@@ -53,4 +54,8 @@ export declare function createSvgTextCompositionCapability(compositionInput: unk
  * The adapter preserves SVG Text's line coordinates without creating skins.
  */
 export declare function createSvgTextOverlayTextCapability(compositionInput: SvgTextLayoutCompositionLike): BubbleSvgOverlayTextCapability;
+/**
+ * Adapts the stock SVG Text extension's shared named-style layout registry.
+ */
+export declare function createTurboWarpSvgTextOverlayTextCapability(extensionInput: unknown): BubbleSvgOverlayTextCapability;
 export {};

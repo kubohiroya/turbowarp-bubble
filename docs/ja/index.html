@@ -74,7 +74,7 @@
 </blockquote>
 <p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。</p>
+<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。</p>
 <table>
 <thead>
 <tr>
@@ -175,7 +175,7 @@ register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
 <p>URL画像を使う場合は、<code>RESOURCE_ID</code>へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが<code>image/*</code>のアセットだけです。</p>
 <h2 id="text-style">3. 文字layout styleを選ぶ</h2>
-<p>standalone BubbleはSVG Text 0.8.0のlayout compositionを内包します。<code>default</code>または任意の名前を指定すると、初回参照時に背景透明のSVG Text既定styleとして初期化されます。</p>
+<p>standalone BubbleはSVG Text 0.8.1のlayout compositionを内包します。<code>default</code>または任意の名前を指定すると、初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開<code>getLayoutCapability()</code>を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 </code></pre>
 <p>独自のfont、色、alignmentを使うアプリhostは、<code>createSvgTextLayoutComposition()</code>へstyleを定義し、<code>createSvgTextOverlayTextCapability()</code>でBubbleへ注入します。既定経路も同じ<code>layoutText()</code>を使い、SVG文字skinは生成しません。Bubbleの配置、tail、吹き出し外形はBubble側が担当します。</p>
