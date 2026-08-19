@@ -314,7 +314,7 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 
 ```text
 # portrait／blink／lip-sync／continue／音声を使う場合だけ追加
-https://unpkg.com/@kubohiroya/turbowarp-asset-manager@0.7.0/dist/asset-manager.js
+https://unpkg.com/@kubohiroya/turbowarp-asset-manager@0.12.0/dist/asset-manager.js
 
 # 条件待ちを使う場合だけ追加
 https://unpkg.com/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js
