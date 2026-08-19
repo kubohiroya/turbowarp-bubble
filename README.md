@@ -282,6 +282,8 @@ const chunks = splitBubbleText("A👩‍🚀B", reveal);
 
 SVG Text 0.8.0は既定のskin非依存文字providerとして通常dependencyに含まれます。別途インストールしたり、standalone SVG Text拡張を先に読み込んだりする必要はありません。optional peer dependencyはAsset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`です。hostが独自の`svgOverlayTextCapability`を注入する場合も、Bubble自身が利用する0.8.0 dependencyは固定されます。
 
+`bubbleRenderBackend: "scratch-render"`へrollbackした場合も、standalone SVG Text拡張が未ロードなら同じ0.8.0 dependencyからskin版providerを生成します。standalone SVG Text拡張が既にロードされているhostでは、互換性のためその既存providerを引き続き使用します。
+
 画像portrait、lip-sync、continue indicator、または音声アセットを使う機能を利用する場合はAsset Managerを追加します。`CONDITION`付きの待機ブロックを使う場合はAsync InputとRuntime Expressionを追加します。
 
 ```sh

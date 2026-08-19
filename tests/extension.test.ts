@@ -1127,7 +1127,7 @@ describe("Bubble extension", () => {
     await vi.waitFor(() => expect(harness.destroyed).toHaveLength(2));
   });
 
-  it("reports missing dependent extensions with corrective messages", async () => {
+  it("reports missing media dependencies and bundles the rollback text provider", async () => {
     const noAssets = createRuntime({ assetManager: false });
     const first = createScratchRenderExtension(noAssets.runtime);
     first.defineBubbleStyle({ STYLE: "plain", TEXT_STYLE: "default" });
@@ -1153,6 +1153,7 @@ describe("Bubble extension", () => {
         { MESSAGE: "hello", STYLE: "plain" },
         { target: actor() },
       ),
-    ).rejects.toThrow("Load @kubohiroya/turbowarp-svg-text");
+    ).resolves.toBeUndefined();
+    expect(noText.createdSvgSkins).not.toHaveLength(0);
   });
 });

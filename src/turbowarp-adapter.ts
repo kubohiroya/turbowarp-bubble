@@ -1,4 +1,7 @@
-import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
+import {
+  createSvgTextComposition,
+  createSvgTextLayoutComposition,
+} from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createBubbleComposition,
   defaultBubbleTailLength,
@@ -16,6 +19,7 @@ import {
   type BubbleVisualStyle,
 } from "./composition.js";
 import {
+  createSvgTextCompositionCapability,
   createSvgTextOverlayTextCapability,
   createTurboWarpSvgTextCapability,
   type TurboWarpSvgTextExtension,
@@ -313,6 +317,45 @@ function createDefaultSvgOverlayTextCapability(): BubbleSvgOverlayTextCapability
     },
   });
   return createSvgTextOverlayTextCapability(layoutComposition);
+}
+
+function createDefaultScratchRenderTextCapability(
+  runtime: TurboWarpBubbleRuntime,
+): BubbleTextCapability {
+  const composition = createSvgTextComposition({ runtime });
+  const definedStyles = new Set<string>();
+  const defineStyle = (name: string): void => {
+    composition.defineStyle({ name, backgroundColor: "transparent" });
+    definedStyles.add(name);
+  };
+  const ensureStyle = (name: string): void => {
+    if (!definedStyles.has(name)) defineStyle(name);
+  };
+  defineStyle("default");
+  return createSvgTextCompositionCapability(
+    Object.freeze({
+      setText(input: {
+        readonly styleName: string;
+        readonly target: unknown;
+        readonly text: string;
+      }): void {
+        ensureStyle(input.styleName);
+        composition.setText(input as Parameters<typeof composition.setText>[0]);
+      },
+      releaseTarget(target: unknown): void {
+        composition.releaseTarget(
+          target as Parameters<typeof composition.releaseTarget>[0],
+        );
+      },
+      measureText(input: {
+        readonly styleName: string;
+        readonly text: string;
+      }): number {
+        ensureStyle(input.styleName);
+        return composition.measureText(input);
+      },
+    }),
+  );
 }
 
 function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
@@ -1246,13 +1289,14 @@ export function createTurboWarpBubbleComposition(
     textCapability = options.textCapability;
   } else {
     try {
-      textCapability = createTurboWarpSvgTextCapability(
-        runtime.ext_kubohiroyasvgtext,
-      );
-    } catch {
+      textCapability =
+        runtime.ext_kubohiroyasvgtext === undefined
+          ? createDefaultScratchRenderTextCapability(runtime)
+          : createTurboWarpSvgTextCapability(runtime.ext_kubohiroyasvgtext);
+    } catch (error) {
       throw new BubbleRuntimeAdapterError(
         "BUBBLE-RUNTIME-003",
-        "Bubble requires a text capability. Load @kubohiroya/turbowarp-svg-text or provide options.textCapability before using Bubble blocks.",
+        `Bubble could not initialize the scratch-render text provider: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }
