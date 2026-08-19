@@ -24,6 +24,10 @@ import {
   createTurboWarpSvgTextCapability,
   type TurboWarpSvgTextExtension,
 } from "./turbowarp-svg-text-adapter.js";
+import {
+  createAssetManagerSvgOverlayImageCapability,
+  type AssetManagerDOMImageCapability,
+} from "./asset-manager-image-adapter.js";
 export {
   createAssetManagerSvgOverlayImageCapability,
   type AssetManagerDOMImageCapability,
@@ -139,6 +143,8 @@ export interface TurboWarpBubbleRenderer {
 export interface TurboWarpAssetManagerExtension {
   isLoaded(args: Readonly<{ NAME: unknown }>): boolean;
   getAssetMimeType(args: Readonly<{ NAME: unknown }>): string;
+  /** Available from Asset Manager 0.12.1 for the skin-free overlay path. */
+  getDOMImageCapability?(): AssetManagerDOMImageCapability;
   playSound?(args: Readonly<{ NAME: unknown }>): Promise<void>;
   playSoundUntilDone?(args: Readonly<{ NAME: unknown }>): Promise<void>;
   resolveSkin(
@@ -371,6 +377,30 @@ function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
     );
   }
   return value as unknown as TurboWarpAssetManagerExtension;
+}
+
+function requireAssetManagerDOMImageCapability(
+  value: unknown,
+): AssetManagerDOMImageCapability {
+  if (!isRecord(value) || typeof value.getDOMImageCapability !== "function") {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-002",
+      "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-manager 0.12.1 or a host-provided options.svgOverlayImageCapability.",
+    );
+  }
+  const capability = value.getDOMImageCapability();
+  if (
+    !isRecord(capability) ||
+    typeof capability.isRegistered !== "function" ||
+    typeof capability.getMimeType !== "function" ||
+    typeof capability.resolveDOMImageResource !== "function"
+  ) {
+    throw new BubbleRuntimeAdapterError(
+      "BUBBLE-RUNTIME-002",
+      "Asset Manager did not provide a valid DOM image capability.",
+    );
+  }
+  return capability as unknown as AssetManagerDOMImageCapability;
 }
 
 function targetBounds(target: TurboWarpBubbleTarget) {
@@ -1272,6 +1302,13 @@ export function createTurboWarpBubbleComposition(
   };
   const getAssetExtension = (): TurboWarpAssetManagerExtension =>
     requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+  let assetManagerDOMImages: AssetManagerDOMImageCapability | undefined;
+  const getAssetManagerDOMImages = (): AssetManagerDOMImageCapability => {
+    assetManagerDOMImages ??= requireAssetManagerDOMImageCapability(
+      runtime.ext_kubohiroyaassetmanager,
+    );
+    return assetManagerDOMImages;
+  };
   let textCapability: BubbleTextCapability;
   if (renderBackend === "svg-overlay") {
     try {
@@ -1302,17 +1339,28 @@ export function createTurboWarpBubbleComposition(
   }
   let imageResolver: BubbleImageCapability | undefined;
   if (renderBackend === "svg-overlay") {
-    if (options.svgOverlayImageCapability !== undefined) {
-      try {
-        imageResolver = createSvgOverlayImageAdapter(
-          options.svgOverlayImageCapability,
+    try {
+      const overlayImageCapability =
+        options.svgOverlayImageCapability ??
+        createAssetManagerSvgOverlayImageCapability(
+          Object.freeze({
+            isRegistered(name: unknown): boolean {
+              return getAssetManagerDOMImages().isRegistered(name);
+            },
+            getMimeType(name: unknown): string {
+              return getAssetManagerDOMImages().getMimeType(name);
+            },
+            resolveDOMImageResource(name: unknown) {
+              return getAssetManagerDOMImages().resolveDOMImageResource(name);
+            },
+          }),
         );
-      } catch (error) {
-        throw new BubbleRuntimeAdapterError(
-          "BUBBLE-RUNTIME-004",
-          `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`,
-        );
-      }
+      imageResolver = createSvgOverlayImageAdapter(overlayImageCapability);
+    } catch (error) {
+      throw new BubbleRuntimeAdapterError(
+        "BUBBLE-RUNTIME-004",
+        `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   } else {
     imageResolver = options.imageResolver ?? {

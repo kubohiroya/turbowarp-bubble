@@ -169,6 +169,31 @@ function createRuntime(
     ["Next1", { mimeType: "image/svg+xml", skinId: 15 }],
     ["Next2", { mimeType: "image/svg+xml", skinId: 16 }],
   ]);
+  const resolvedDOMImages: string[] = [];
+  const releasedDOMImages: string[] = [];
+  const domImageCapability = Object.freeze({
+    isRegistered(name: unknown): boolean {
+      return assets.has(String(name));
+    },
+    getMimeType(name: unknown): string {
+      return assets.get(String(name))?.mimeType ?? "";
+    },
+    async resolveDOMImageResource(name: unknown) {
+      const assetName = String(name);
+      const asset = assets.get(assetName);
+      if (!asset) throw new Error(`missing ${assetName}`);
+      resolvedDOMImages.push(assetName);
+      return Object.freeze({
+        height: assetName.startsWith("Next") ? 18 : 96,
+        mimeType: asset.mimeType,
+        url: `blob:asset-manager/${assetName}`,
+        width: assetName.startsWith("Next") ? 18 : 96,
+        release(): void {
+          releasedDOMImages.push(assetName);
+        },
+      });
+    },
+  });
   const setText = vi.fn(
     (_args: unknown, util: { target: TurboWarpBubbleTarget }) => {
       renderer.updateDrawableSkinId(Number(util.target.drawableID), 100);
@@ -209,6 +234,7 @@ function createRuntime(
             isLoaded: ({ NAME }: { NAME: unknown }) => assets.has(String(NAME)),
             getAssetMimeType: ({ NAME }: { NAME: unknown }) =>
               assets.get(String(NAME))?.mimeType ?? "",
+            getDOMImageCapability: () => domImageCapability,
             async resolveSkin(name: unknown) {
               const asset = assets.get(String(name));
               if (!asset) throw new Error(`missing ${String(name)}`);
@@ -235,6 +261,8 @@ function createRuntime(
     emit,
     positions,
     positionHistory,
+    releasedDOMImages,
+    resolvedDOMImages,
     scales,
     scaleHistory,
     ghostHistory,
@@ -465,7 +493,7 @@ describe("TurboWarp composition adapter", () => {
 });
 
 describe("Bubble extension", () => {
-  it("uses the skin-free SVG Text layout path by default", async () => {
+  it("uses stock Asset Manager resources on the skin-free default path", async () => {
     const harness = createRuntime();
     const window = new Window();
     const addOverlay = vi.fn((element: Element) => {
@@ -482,9 +510,10 @@ describe("Bubble extension", () => {
     });
     const target = actor();
     extension.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+    extension.setPortraitBase({ STYLE: "dialogue", ASSET: "Face" });
 
     await extension.sayWithBubbleStyle(
-      { MESSAGE: "layout only", STYLE: "dialogue" },
+      { MESSAGE: "stock capability", STYLE: "dialogue" },
       { target },
     );
 
@@ -493,8 +522,50 @@ describe("Bubble extension", () => {
     expect(harness.createdSvgSkins).toHaveLength(0);
     expect(harness.setText).not.toHaveBeenCalled();
     expect(window.document.querySelector("text")?.textContent).toBe(
-      "layout only",
+      "stock capability",
     );
+    expect(window.document.querySelector("image")?.getAttribute("href")).toBe(
+      "blob:asset-manager/Face",
+    );
+    expect(harness.resolvedDOMImages).toEqual(["Face"]);
+
+    await extension.closeBubble({}, { target });
+    expect(harness.releasedDOMImages).toEqual(["Face"]);
+    expect(removeOverlay).toHaveBeenCalledOnce();
+  });
+
+  it("requires Asset Manager 0.12.1 only when the default overlay uses images", async () => {
+    const harness = createRuntime({ assetManager: false });
+    const window = new Window();
+    Object.assign(harness.renderer, {
+      addOverlay: (element: Element) =>
+        window.document.body.appendChild(
+          element as unknown as Parameters<
+            typeof window.document.body.appendChild
+          >[0],
+        ),
+      removeOverlay: (element: Element) => element.remove(),
+    });
+    const extension = new BubbleExtension(harness.runtime, {
+      document: window.document as unknown as Document,
+    });
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "dialogue", TEXT_STYLE: "default" });
+
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "text only", STYLE: "dialogue" },
+        { target },
+      ),
+    ).resolves.toBeUndefined();
+
+    extension.setPortraitBase({ STYLE: "dialogue", ASSET: "Face" });
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "portrait", STYLE: "dialogue" },
+        { target },
+      ),
+    ).rejects.toThrow("turbowarp-asset-manager 0.12.1");
   });
 
   it("publishes the intended blocks and animation mode menu", () => {

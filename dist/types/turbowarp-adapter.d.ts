@@ -1,5 +1,6 @@
 import { type BubbleComposition, type BubbleCompositionOptions, type BubbleAudioCapability, type BubbleImageCapability, type BubbleScheduler, type BubbleTextCapability } from "./composition.js";
 import { type TurboWarpSvgTextExtension } from "./turbowarp-svg-text-adapter.js";
+import { type AssetManagerDOMImageCapability } from "./asset-manager-image-adapter.js";
 export { createAssetManagerSvgOverlayImageCapability, type AssetManagerDOMImageCapability, type AssetManagerDOMImageResource, } from "./asset-manager-image-adapter.js";
 export { createSvgTextCompositionCapability, createSvgTextOverlayTextCapability, createTurboWarpSvgTextCapability, type SvgTextLayoutCompositionLike, type TurboWarpSvgTextExtension, } from "./turbowarp-svg-text-adapter.js";
 import { type BubbleOverlayUnsupportedBehavior, type BubbleRenderBackend, type BubbleSvgOverlayImageCapability, type BubbleSvgOverlayTextCapability } from "./svg-overlay-surface.js";
@@ -45,6 +46,8 @@ export interface TurboWarpAssetManagerExtension {
     getAssetMimeType(args: Readonly<{
         NAME: unknown;
     }>): string;
+    /** Available from Asset Manager 0.12.1 for the skin-free overlay path. */
+    getDOMImageCapability?(): AssetManagerDOMImageCapability;
     playSound?(args: Readonly<{
         NAME: unknown;
     }>): Promise<void>;

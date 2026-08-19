@@ -8,6 +8,7 @@
 - host-neutralな`svgOverlayTextCapability`と、解放可能な`svgOverlayImageCapability`を公開する。
 - SVG Text 0.8.0を通常dependencyとし、既定で`createSvgTextLayoutComposition().layoutText()`の行layoutを座標・角丸ごと変換する。
 - Bubble側の`createAssetManagerSvgOverlayImageCapability()`でAsset Managerの汎用DOM resourceを変換する。依存方向はBubbleからAsset Managerへの一方向を維持する。
+- stock Asset Manager 0.12.1を別拡張として読み込んだ場合、Bubbleが公開`getDOMImageCapability()`を遅延取得し、Asset Managerブロックで登録された同じregistryへ自動接続する。
 - overlay API未対応hostは`BUBBLE-RUNTIME-004`を返す。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ既存backendへ戻る。
 
 ## 自動検証結果
@@ -25,7 +26,7 @@
 
 ## release前のmanual gate
 
-上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)で公開されたhost-neutral layoutを0.8.0の通常dependencyとして採用し、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)のDOM image resourceは0.12.0対応adapterから任意注入する。既定値変更後も次のmanual gateをrelease前に実施し、実測値をこの表へ記録する。
+上流の[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)で公開されたhost-neutral layoutを0.8.0の通常dependencyとして採用する。[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)のDOM image resourceをBubble所有adapterで変換し、stock拡張間のhandoffには[turbowarp-asset-manager#106](https://github.com/kubohiroya/turbowarp-asset-manager/issues/106)で公開された0.12.1 APIを使う。既定値変更後も次のmanual gateをrelease前に実施し、実測値をこの表へ記録する。
 
 | 項目                       | host                                 | 許容基準                                                  | 結果   |
 | -------------------------- | ------------------------------------ | --------------------------------------------------------- | ------ |

@@ -73,6 +73,8 @@ flowchart TB
 
 `bubbleRenderBackend`を省略した場合の既定値は`"svg-overlay"`です。`renderer.addOverlay(root, "scale")`でstage canvas上に共有SVG rootを置き、body、tail、text、portrait、corner clip、continue indicatorをDOM要素として描画します。文字にはBubbleが内包するSVG Text 0.8.0のhost-neutral layoutを使います。この既定経路ではBubbleの表示、text更新、style更新、animationのために`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼ばず、Bubble由来の処理はscratch-renderの`SVGSkin`／`Silhouette`経路へ入りません。`"scratch-render"`は互換性とロールバックのため明示指定時だけ使用します。
 
+TurboWarpでstock Asset Manager 0.12.1をBubbleより先に読み込むと、Bubbleはportrait等を初めて使う時に`runtime.ext_kubohiroyaassetmanager.getDOMImageCapability()`を呼び、Asset Managerブロックで登録された同じregistryへ遅延接続します。文字だけを使う場合はAsset Managerを読み込みません。Composition APIのhostは、次のようにcapabilityを明示注入できます。
+
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
 import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
@@ -103,9 +105,9 @@ const bubbles = createTurboWarpBubbleComposition(runtime, {
 
 `svgOverlayTextCapability`を省略すると、BubbleはSVG Text 0.8.0のlayout compositionを生成します。`default`および初めて参照されたtext-style名は、Bubble内で背景透明のSVG Text既定styleとして初期化されます。上のようにcapabilityを明示すると、hostが定義したnamed styleへ置換できます。portrait等を使う場合、Bubble所有の`createAssetManagerSvgOverlayImageCapability()`がAsset Managerの汎用DOM resourceをBubbleの画像契約へ変換します。依存方向はBubbleからAsset Managerへの一方向であり、Asset ManagerはBubbleの型やsecurity markerを参照しません。adapterは両者が許可するMIME typeだけを公開し、検証済みMIME type、intrinsic size、`blob:` URL、`release()`を引き継ぎ、Asset ManagerがsanitizeしたSVGへBubble側のmetadataを付与します。Bubbleは任意SVG文字列を挿入せず、canonical bodyから`path`、`group`等の許可要素・属性だけを`createElementNS()`で再構築します。`script`、event handler、`foreignObject`、外部URLは受け付けません。overlay rootは`pointer-events: none`、`aria-hidden="true"`です。
 
-既定文字providerは直接依存するSVG Text 0.8.0です。画像adapterには`resolveDOMImageResource()`を公開するAsset Manager 0.12.0以降が必要です。
+既定文字providerは直接依存するSVG Text 0.8.0です。stock拡張同士の自動接続には`getDOMImageCapability()`を公開するAsset Manager 0.12.1以降が必要です。Composition APIから`resolveDOMImageResource()`を明示注入する低レベル経路はAsset Manager 0.12.0以降で利用できます。
 
-SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)と[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)で公開済みです。Bubbleは上流の公開APIだけを利用し、private field参照やskinからの抽出では代替しません。必要な公開capabilityがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。明示的に`svgOverlayUnsupportedBehavior: "fallback"`を指定した場合だけ`scratch-render`へ戻ります。
+SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)、stock registry handoffの[turbowarp-asset-manager#106](https://github.com/kubohiroya/turbowarp-asset-manager/issues/106)で公開済みです。Bubbleは上流の公開APIだけを利用し、private field参照やskinからの抽出では代替しません。overlay APIがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。画像使用時にAsset Manager 0.12.1の公開capabilityも明示注入もない場合は`BUBBLE-RUNTIME-002`を返します。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ、overlay API非対応hostで`scratch-render`へ戻ります。
 
 | host／取得方法                            | `scratch-render` | `svg-overlay`                                          |
 | ----------------------------------------- | ---------------- | ------------------------------------------------------ |
@@ -316,7 +318,7 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 
 ```text
 # portrait／blink／lip-sync／continue／音声を使う場合だけ追加
-https://unpkg.com/@kubohiroya/turbowarp-asset-manager@0.12.0/dist/asset-manager.js
+https://unpkg.com/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js
 
 # 条件待ちを使う場合だけ追加
 https://unpkg.com/@kubohiroya/turbowarp-async-input@0.3.0/dist/async-input.js

@@ -19,8 +19,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
       '@kubohiroya/turbowarp-asset-manager':
-        specifier: 0.12.0
-        version: 0.12.0
+        specifier: 0.12.1
+        version: 0.12.1
       '@kubohiroya/turbowarp-async-input':
         specifier: 0.3.0
         version: 0.3.0
@@ -133,8 +133,8 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-manager@0.12.0':
-    resolution: {integrity: sha512-Ejc1wCzz2b+A8zeZBL7yNb5woqs9KG6uOxABKPmTLR2K6lrIoDFS4c2HAGwyljMgY+d4K2z+MNoAvt/XSxH2fw==}
+  '@kubohiroya/turbowarp-asset-manager@0.12.1':
+    resolution: {integrity: sha512-30uidlPmMbBY0UqSSjeCo9jYoTbc+7bB1OGmxU1QgecEwEf7sBpnwt2oWJJILA+hpaIiYXbN9j7TrL7DmSlZsQ==}
 
   '@kubohiroya/turbowarp-async-input@0.3.0':
     resolution: {integrity: sha512-GbQ8lmZDS388TvFGa8C3EMKzdfUuq/vrzlfRD8jNtbWpI9/Rv5KZZNzvxr67t6Y++0obABFjuxpxxrTN1kqqHg==}
@@ -959,7 +959,7 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-manager@0.12.0': {}
+  '@kubohiroya/turbowarp-asset-manager@0.12.1': {}
 
   '@kubohiroya/turbowarp-async-input@0.3.0': {}
 

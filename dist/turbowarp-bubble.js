@@ -8515,7 +8515,7 @@
     "easeOut",
     "easeInOut"
   ]);
-  function isRecord$4(value) {
+  function isRecord$5(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
   function requireExactKeys$1(value, required, optional, label) {
@@ -8533,7 +8533,7 @@
     return value;
   }
   function normalizeAnimation(value, label, minimumFrames) {
-    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    if (!isRecord$5(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
     requireExactKeys$1(value, ["frames", "frameIntervalSeconds"], [], label);
     if (!Array.isArray(value.frames) || value.frames.length < minimumFrames) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label}.frames must contain at least ${minimumFrames} image asset name${minimumFrames === 1 ? "" : "s"}.`);
     const frames = Object.freeze(value.frames.map((frame, index) => requireAssetName(frame, `${label}.frames[${index}]`)));
@@ -8545,7 +8545,7 @@
     });
   }
   function normalizePortrait(value) {
-    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
+    if (!isRecord$5(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble portrait must be an object.");
     requireExactKeys$1(value, ["base"], [
       "blink",
       "lipSync",
@@ -8575,7 +8575,7 @@
     });
   }
   function normalizeMotion(value, label) {
-    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
+    if (!isRecord$5(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", `${label} must be an object.`);
     requireExactKeys$1(value, ["name"], [
       "durationSeconds",
       "ease",
@@ -8615,7 +8615,7 @@
   }
   function normalizeAudio(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
+    if (!isRecord$5(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble audio must be an object.");
     requireExactKeys$1(value, [], [
       "voice",
       "reveal",
@@ -8633,7 +8633,7 @@
     return Object.freeze(result);
   }
   function normalizeStyle(value) {
-    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
+    if (!isRecord$5(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble style must be an object.");
     requireExactKeys$1(value, ["name", "textStyle"], [
       "placement",
       "maxWidth",
@@ -8704,12 +8704,12 @@
   }
   function validateImageResolver(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$4(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
+    if (!isRecord$5(value) || typeof value.applyToTarget !== "function" || typeof value.getMimeType !== "function" || typeof value.isRegistered !== "function") throw new TypeError("Bubble image capability must provide applyToTarget, getMimeType, and isRegistered.");
     return value;
   }
   function validateAudioCapability(value) {
     if (value === void 0) return void 0;
-    if (!isRecord$4(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
+    if (!isRecord$5(value) || typeof value.playSound !== "function") throw new TypeError("Bubble audio capability must provide playSound.");
     if (value.isRegistered !== void 0 && typeof value.isRegistered !== "function") throw new TypeError("Bubble audio capability isRegistered must be a function.");
     if (value.getMimeType !== void 0 && typeof value.getMimeType !== "function") throw new TypeError("Bubble audio capability getMimeType must be a function.");
     return value;
@@ -8719,7 +8719,7 @@
     return value;
   }
   function validateTextCapability(value) {
-    if (!isRecord$4(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble text capability must provide setText and releaseTarget.");
+    if (!isRecord$5(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("Bubble text capability must provide setText and releaseTarget.");
     return value;
   }
   function defaultScheduler() {
@@ -8729,11 +8729,11 @@
     });
   }
   function validateScheduler(value) {
-    if (!isRecord$4(value) || typeof value.setTimeout !== "function" || typeof value.clearTimeout !== "function") throw new TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
+    if (!isRecord$5(value) || typeof value.setTimeout !== "function" || typeof value.clearTimeout !== "function") throw new TypeError("Bubble scheduler must provide setTimeout and clearTimeout.");
     return value;
   }
   function validateAssetTarget(value, label) {
-    if (!isRecord$4(value) || typeof value.id !== "string" || value.id.length === 0 || typeof value.isStage !== "boolean") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", `${label} must provide id and isStage.`);
+    if (!isRecord$5(value) || typeof value.id !== "string" || value.id.length === 0 || typeof value.isStage !== "boolean") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", `${label} must provide id and isStage.`);
     return value;
   }
   function validateTextTarget(value) {
@@ -8741,7 +8741,7 @@
     return value;
   }
   function validateSurface(value, style) {
-    if (!isRecord$4(value) || !isRecord$4(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
+    if (!isRecord$5(value) || !isRecord$5(value.targets) || typeof value.setLayerVisible !== "function" || typeof value.updateStyle !== "function" || typeof value.show !== "function" || typeof value.hide !== "function" || typeof value.dispose !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-004", "Bubble surface is invalid.");
     const targets = value.targets;
     validateTextTarget(targets.text);
     const assetTargetIds = /* @__PURE__ */ new Set();
@@ -8852,7 +8852,7 @@
     });
   }
   function normalizeShowInput(value) {
-    if (!isRecord$4(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
+    if (!isRecord$5(value)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Show bubble input must be an object.");
     requireExactKeys$1(value, [
       "actor",
       "actorKey",
@@ -8881,7 +8881,7 @@
     };
   }
   function createBubbleComposition(options) {
-    if (!isRecord$4(options)) throw new TypeError("Bubble composition options must be an object.");
+    if (!isRecord$5(options)) throw new TypeError("Bubble composition options must be an object.");
     const imageResolver = validateImageResolver(options.imageResolver);
     const audio = validateAudioCapability(options.audio);
     const textCapability = validateTextCapability(options.textCapability);
@@ -9963,7 +9963,7 @@
   var maximumLayoutWidth = 1e5;
   var maximumRubyBaseCharacters = 256;
   var maximumRubyReadingCharacters = 512;
-  function isRecord$3(value) {
+  function isRecord$4(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
   function compositionError(code, message) {
@@ -9980,7 +9980,7 @@
     return value.trim();
   }
   function validateRuntime(value) {
-    if (!isRecord$3(value) || !isRecord$3(value.renderer)) throw new TypeError("SVG Text composition runtime must provide a renderer.");
+    if (!isRecord$4(value) || !isRecord$4(value.renderer)) throw new TypeError("SVG Text composition runtime must provide a renderer.");
     const renderer = value.renderer;
     const methods = [
       "createSVGSkin",
@@ -9992,14 +9992,14 @@
     return value;
   }
   function validateTarget(value) {
-    if (!isRecord$3(value) || typeof value.drawableID !== "number" || !Number.isInteger(value.drawableID) || value.drawableID < 0) throw compositionError("SVG-TEXT-COMPOSITION-002", "SVG Text target must provide a non-negative integer drawableID.");
+    if (!isRecord$4(value) || typeof value.drawableID !== "number" || !Number.isInteger(value.drawableID) || value.drawableID < 0) throw compositionError("SVG-TEXT-COMPOSITION-002", "SVG Text target must provide a non-negative integer drawableID.");
     return value;
   }
   function validateOptionalString(value, label) {
     if (value !== void 0 && (typeof value !== "string" || value.length === 0)) throw compositionError("SVG-TEXT-COMPOSITION-001", `${label} must be a non-empty string when provided.`);
   }
   function validateStyle(value) {
-    if (!isRecord$3(value)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text style must be an object.");
+    if (!isRecord$4(value)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text style must be an object.");
     requireExactKeys(value, ["name"], [
       "alignment",
       "backgroundColor",
@@ -10061,7 +10061,7 @@
     let fragmentCount = 0;
     let lineCount = 1;
     const runs = value.map((candidate, runIndex) => {
-      if (!isRecord$3(candidate)) throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} must be an object.`);
+      if (!isRecord$4(candidate)) throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} must be an object.`);
       if (candidate.type === "text") {
         requireExactKeys(candidate, ["type", "text"], [], `SVG Text rich content run ${runIndex}`);
         if (typeof candidate.text !== "string") throw compositionError("SVG-TEXT-COMPOSITION-001", `SVG Text rich content run ${runIndex} text must be a string.`);
@@ -10107,7 +10107,7 @@
     return value;
   }
   function layoutTextFromStyles(styles, input) {
-    if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text layout input is invalid.");
+    if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text layout input is invalid.");
     requireExactKeys(input, [
       "styleName",
       "text",
@@ -10120,7 +10120,7 @@
     return createSvgTextLayout(normalizeText(input.text), definition, validateNativeSize(input.nativeSize));
   }
   function layoutRichTextFromStyles(styles, input) {
-    if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich layout input is invalid.");
+    if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich layout input is invalid.");
     requireExactKeys(input, [
       "styleName",
       "runs",
@@ -10150,7 +10150,7 @@
     });
   }
   function createSvgTextComposition(options) {
-    if (!isRecord$3(options)) throw new TypeError("SVG Text composition options must be an object.");
+    if (!isRecord$4(options)) throw new TypeError("SVG Text composition options must be an object.");
     const runtime = validateRuntime(options.runtime);
     const extension = new SvgTextExtension(runtime, {
       castToString: (value) => String(value),
@@ -10188,7 +10188,7 @@
       },
       measureText(input) {
         ensureActive();
-        if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text measure input is invalid.");
+        if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text measure input is invalid.");
         requireExactKeys(input, ["styleName", "text"], [], "SVG Text measure input");
         const styleName = requireName(input.styleName, "SVG Text styleName");
         if (!styles.has(styleName)) throw compositionError("SVG-TEXT-COMPOSITION-003", `SVG Text style is not defined: ${styleName}`);
@@ -10197,7 +10197,7 @@
       },
       measureRichText(input) {
         ensureActive();
-        if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich measure input is invalid.");
+        if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich measure input is invalid.");
         requireExactKeys(input, ["styleName", "runs"], ["maxWidth"], "SVG Text rich measure input");
         const styleName = requireName(input.styleName, "SVG Text styleName");
         const definition = styles.get(styleName);
@@ -10210,7 +10210,7 @@
       },
       setRichText(input) {
         ensureActive();
-        if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich actor input is invalid.");
+        if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich actor input is invalid.");
         requireExactKeys(input, [
           "styleName",
           "target",
@@ -10228,7 +10228,7 @@
       },
       setText(input) {
         ensureActive();
-        if (!isRecord$3(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text actor input is invalid.");
+        if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text actor input is invalid.");
         requireExactKeys(input, [
           "styleName",
           "target",
@@ -10271,19 +10271,19 @@
   }
   //#endregion
   //#region src/turbowarp-svg-text-adapter.ts
-  function isRecord$2(value) {
+  function isRecord$3(value) {
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
   function validateExtension(value) {
-    if (!isRecord$2(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
+    if (!isRecord$3(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
     return value;
   }
   function validateComposition(value) {
-    if (!isRecord$2(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("SVG Text composition adapter requires setText and releaseTarget.");
+    if (!isRecord$3(value) || typeof value.setText !== "function" || typeof value.releaseTarget !== "function") throw new TypeError("SVG Text composition adapter requires setText and releaseTarget.");
     return value;
   }
   function validateLayoutComposition(value) {
-    if (!isRecord$2(value) || typeof value.layoutText !== "function") throw new TypeError("SVG Text overlay adapter requires the layoutText composition API.");
+    if (!isRecord$3(value) || typeof value.layoutText !== "function") throw new TypeError("SVG Text overlay adapter requires the layoutText composition API.");
     return value;
   }
   function requireFiniteNumber(value, label) {
@@ -10292,14 +10292,14 @@
     return result;
   }
   function adaptSvgTextLayout(value) {
-    if (!isRecord$2(value) || !isRecord$2(value.style) || !Array.isArray(value.lines)) throw new TypeError("SVG Text layout result is invalid.");
+    if (!isRecord$3(value) || !isRecord$3(value.style) || !Array.isArray(value.lines)) throw new TypeError("SVG Text layout result is invalid.");
     const style = value.style;
     const alignment = style.alignment;
     if (alignment !== "left" && alignment !== "center" && alignment !== "right") throw new TypeError("SVG Text layout alignment is invalid.");
     const width = requireFiniteNumber(value.width, "SVG Text layout width");
     const height = requireFiniteNumber(value.height, "SVG Text layout height");
     const lines = Object.freeze(value.lines.map((line) => {
-      if (!isRecord$2(line) || typeof line.text !== "string") throw new TypeError("SVG Text layout line is invalid.");
+      if (!isRecord$3(line) || typeof line.text !== "string") throw new TypeError("SVG Text layout line is invalid.");
       return Object.freeze({
         baseline: requireFiniteNumber(line.baseline, "SVG Text line baseline") - height / 2,
         text: line.text,
@@ -10387,6 +10387,69 @@
           text
         });
         return Math.max(1, ...layout.lines.map((line) => requireFiniteNumber(line.width, "SVG Text line width")));
+      }
+    });
+  }
+  //#endregion
+  //#region src/asset-manager-image-adapter.ts
+  var supportedMimeTypes = /* @__PURE__ */ new Set([
+    "image/avif",
+    "image/gif",
+    "image/jpeg",
+    "image/png",
+    "image/svg+xml",
+    "image/webp"
+  ]);
+  function isRecord$2(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+  function normalizeMimeType(value) {
+    const mimeType = value.split(";", 1)[0]?.trim().toLowerCase() ?? "";
+    if (mimeType === "image/jpg" || mimeType === "image/pjpeg") return "image/jpeg";
+    if (mimeType === "image/x-png") return "image/png";
+    return mimeType;
+  }
+  function isSupportedMimeType(value) {
+    return supportedMimeTypes.has(normalizeMimeType(value));
+  }
+  function requireAssetManagerResource(value) {
+    if (!isRecord$2(value) || typeof value.url !== "string" || !value.url.startsWith("blob:") || typeof value.mimeType !== "string" || !isSupportedMimeType(value.mimeType) || typeof value.width !== "number" || !Number.isFinite(value.width) || value.width <= 0 || typeof value.height !== "number" || !Number.isFinite(value.height) || value.height <= 0 || typeof value.release !== "function") throw new TypeError("Asset Manager DOM image resources must provide a supported MIME type, positive intrinsic dimensions, a blob URL, and release().");
+    return value;
+  }
+  /**
+  * Adapts Asset Manager's host-neutral DOM resource API to Bubble's SVG overlay contract.
+  * Asset Manager owns byte validation and SVG sanitization; Bubble owns its capability shape.
+  */
+  function createAssetManagerSvgOverlayImageCapability(capabilityInput) {
+    if (!isRecord$2(capabilityInput) || typeof capabilityInput.isRegistered !== "function" || typeof capabilityInput.getMimeType !== "function" || typeof capabilityInput.resolveDOMImageResource !== "function") throw new TypeError("Asset Manager DOM image capability is invalid.");
+    const capability = capabilityInput;
+    return Object.freeze({
+      isRegistered(name) {
+        return capability.isRegistered(name) && isSupportedMimeType(capability.getMimeType(name));
+      },
+      getMimeType(name) {
+        return normalizeMimeType(capability.getMimeType(name));
+      },
+      async resolveImage(name) {
+        const declaredMimeType = normalizeMimeType(capability.getMimeType(name));
+        if (!capability.isRegistered(name) || !isSupportedMimeType(declaredMimeType)) throw new TypeError("Asset Manager image is not registered with a Bubble-compatible MIME type.");
+        const resource = await capability.resolveDOMImageResource(name);
+        try {
+          requireAssetManagerResource(resource);
+          const mimeType = normalizeMimeType(resource.mimeType);
+          if (mimeType !== declaredMimeType) throw new TypeError("Asset Manager DOM image resource MIME type changed during resolution.");
+          return Object.freeze({
+            height: resource.height,
+            mimeType,
+            src: resource.url,
+            width: resource.width,
+            release: () => resource.release(),
+            ...mimeType === "image/svg+xml" ? { svgSecurity: "sanitized" } : {}
+          });
+        } catch (error) {
+          resource?.release?.();
+          throw error;
+        }
       }
     });
   }
@@ -11375,6 +11438,12 @@
     if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
     return value;
   }
+  function requireAssetManagerDOMImageCapability(value) {
+    if (!isRecord(value) || typeof value.getDOMImageCapability !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-manager 0.12.1 or a host-provided options.svgOverlayImageCapability.");
+    const capability = value.getDOMImageCapability();
+    if (!isRecord(capability) || typeof capability.isRegistered !== "function" || typeof capability.getMimeType !== "function" || typeof capability.resolveDOMImageResource !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Asset Manager did not provide a valid DOM image capability.");
+    return capability;
+  }
   function targetBounds(target) {
     try {
       const bounds = target.getBoundsForBubble?.();
@@ -11911,6 +11980,11 @@
       clearTimeout: (handle) => globalThis.clearTimeout(handle)
     };
     const getAssetExtension = () => requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+    let assetManagerDOMImages;
+    const getAssetManagerDOMImages = () => {
+      assetManagerDOMImages ?? (assetManagerDOMImages = requireAssetManagerDOMImageCapability(runtime.ext_kubohiroyaassetmanager));
+      return assetManagerDOMImages;
+    };
     let textCapability;
     if (renderBackend === "svg-overlay") try {
       textCapability = createSvgOverlayTextAdapter(overlayTextCapability, renderer);
@@ -11924,13 +11998,22 @@
       throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-003", `Bubble could not initialize the scratch-render text provider: ${error instanceof Error ? error.message : String(error)}`);
     }
     let imageResolver;
-    if (renderBackend === "svg-overlay") {
-      if (options.svgOverlayImageCapability !== void 0) try {
-        imageResolver = createSvgOverlayImageAdapter(options.svgOverlayImageCapability);
-      } catch (error) {
-        throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    } else imageResolver = options.imageResolver ?? {
+    if (renderBackend === "svg-overlay") try {
+      imageResolver = createSvgOverlayImageAdapter(options.svgOverlayImageCapability ?? createAssetManagerSvgOverlayImageCapability(Object.freeze({
+        isRegistered(name) {
+          return getAssetManagerDOMImages().isRegistered(name);
+        },
+        getMimeType(name) {
+          return getAssetManagerDOMImages().getMimeType(name);
+        },
+        resolveDOMImageResource(name) {
+          return getAssetManagerDOMImages().resolveDOMImageResource(name);
+        }
+      })));
+    } catch (error) {
+      throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-004", `Bubble SVG overlay image capability is invalid: ${error instanceof Error ? error.message : String(error)}`);
+    }
+    else imageResolver = options.imageResolver ?? {
       isRegistered(name) {
         return getAssetExtension().isLoaded({ NAME: name });
       },
