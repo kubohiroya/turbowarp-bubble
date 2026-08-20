@@ -39,6 +39,53 @@ const manifest = JSON.parse(
 const packageManifest = JSON.parse(
   await readFile(new URL("../package.json", import.meta.url), "utf8"),
 );
+const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
+const japaneseReadme = await readFile(
+  new URL("../README_ja.md", import.meta.url),
+  "utf8",
+);
+const manual = await readFile(
+  new URL("../docs/block-manual.md", import.meta.url),
+  "utf8",
+);
+const japaneseManual = await readFile(
+  new URL("../docs/block-manual.ja.md", import.meta.url),
+  "utf8",
+);
+
+const packageVersion = packageManifest.version;
+if (
+  typeof packageVersion !== "string" ||
+  !/^\d+\.\d+\.\d+$/u.test(packageVersion)
+) {
+  throw new Error("package.json must contain a stable semantic version.");
+}
+if (!extension.includes(`EXTENSION_VERSION = "${packageVersion}"`)) {
+  throw new Error(
+    `dist/turbowarp-bubble.js does not report package version ${packageVersion}.`,
+  );
+}
+for (const [source, expected, label] of [
+  [readme, `current release is Bubble ${packageVersion}`, "README.md"],
+  [japaneseReadme, `現在のリリースはBubble ${packageVersion}`, "README_ja.md"],
+  [manual, `Bubble ${packageVersion}`, "docs/block-manual.md"],
+  [japaneseManual, `Bubble ${packageVersion}`, "docs/block-manual.ja.md"],
+]) {
+  if (!source.includes(expected)) {
+    throw new Error(`${label} does not identify release ${packageVersion}.`);
+  }
+}
+const releaseUrl = `@kubohiroya/turbowarp-bubble@${packageVersion}/dist/turbowarp-bubble.js`;
+for (const [source, label] of [
+  [readme, "README.md"],
+  [japaneseReadme, "README_ja.md"],
+  [manual, "docs/block-manual.md"],
+  [japaneseManual, "docs/block-manual.ja.md"],
+]) {
+  if (!source.includes(releaseUrl)) {
+    throw new Error(`${label} does not use the ${packageVersion} CDN URL.`);
+  }
+}
 
 for (const section of ["dependencies", "optionalDependencies"]) {
   for (const [name, specifier] of Object.entries(

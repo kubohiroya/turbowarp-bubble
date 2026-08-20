@@ -173,7 +173,7 @@ function quickStartSvg() {
   const body = `
   <rect width="1200" height="880" fill="${colors.page}"/>
   <text x="32" y="48" class="heading">Bubbleブロック：最小構成</text>
-  <text x="32" y="74" class="body">緑の旗でstyleと入力を準備し、セリフごとに say → Bubble内蔵待機 → close を実行します。</text>
+  <text x="32" y="74" class="body">緑の旗でstyleと入力を準備し、セリフごとに show → Bubble内蔵待機 → close を実行します。</text>
   ${panel(24, 96, 560, 752, "1. 緑の旗で準備")}
   ${panel(616, 96, 560, 752, "2. セリフを表示して入力待ち")}
   ${block({
@@ -353,10 +353,10 @@ function quickStartSvg() {
     width: 454,
     color: colors.bubble,
     fontSize: 14,
-    ariaLabel: "sayブロックでセリフを表示",
+    ariaLabel: "showブロックでセリフを表示",
     lines: [
       [
-        { text: "say" },
+        { text: "show" },
         { input: "海へ出発！" },
         { text: "with bubble style" },
         { input: "hero-dialogue" },
@@ -1027,7 +1027,7 @@ function lifecycleFrameSvg(index) {
           : "close：timer・skin・drawableを解放";
   const blockText =
     phase === "talking"
-      ? "say  [海へ出発！]  with bubble style  [hero-dialogue]"
+      ? "show  [海へ出発！]  with bubble style  [hero-dialogue]"
       : phase === "awaiting-continue"
         ? 'wait with this bubble until  [input == "pressed"]  or timeout  [10] seconds'
         : phase === "input"
@@ -1039,7 +1039,7 @@ function lifecycleFrameSvg(index) {
   <rect width="960" height="540" fill="${colors.page}"/>
   <text x="30" y="42" class="heading">Bubble表示の1サイクル</text>
   <text x="30" y="64" class="small">Async Inputがruntime変数を更新し、BubbleはRuntime Expressionの条件成立またはtimeoutまで待ちます。</text>
-  ${timelineSegment(30, 205, "1  say / talking", activeIndex === 0)}
+  ${timelineSegment(30, 205, "1  show / talking", activeIndex === 0)}
   ${timelineSegment(250, 205, "2  Bubble内蔵待機", activeIndex === 1)}
   ${timelineSegment(470, 205, "3  条件成立", activeIndex === 2)}
   ${timelineSegment(690, 205, "4  close", activeIndex === 3)}

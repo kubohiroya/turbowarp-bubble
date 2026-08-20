@@ -16,7 +16,7 @@
 |    2 | Async Input 0.4.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js`               |
 |    3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
 |    4 | Asset Manager 0.12.1     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js`          |
-|    5 | Bubble 0.8.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js`               |
+|    5 | Bubble 0.9.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js`               |
 
 開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、待機開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 
@@ -253,6 +253,8 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 ```
 
 TurboWarp adapterはこれらをschedulerのフレームごとに進め、各フレームの進行率へ`ease`を適用します。`shake`は吹き出し全体を方向・回数付きで揺らし、`explode`はportraitと文字を含むsurface全体を拡大して元へ戻し、`animate bubble shape`は指定時間中に現在の外形から`THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などへcross-fadeします。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。
+
+表示中のBubbleを消すときは`close this bubble`を使います。設定済みの表示終了animationを実行してから、Bubbleのtimerと描画resourceを解放します。`set bubble hide animation ...`は終了時の演出を設定するだけで、このブロック自体はBubbleを消しません。組み込み基本profileでは、`say`／`think`へ空文字を渡してもTurboWarp標準と同様にcloseします。closeは非表示instanceを保持せず表示を破棄するため、別の`hide`ブロックは公開しません。
 
 ## 9. named Bubble styleを表示する
 
