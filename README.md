@@ -392,6 +392,18 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 
 The unmodified `default` text style uses the Scratch-compatible basic profile. `say` uses a speech tail and `think` uses a thought trail; both use 14px Helvetica, 16px line height, a 170px maximum line width, 50px minimum text width, 10px padding, 16px corners, a white fill, and Scratch text/stroke colors. The profile starts on the Actor's right, flips to the left only when that side fits, follows Actor bounds, fences the Stage top and sides, formats numeric block inputs like Scratch, limits text to 330 characters, and closes on an empty block input.
 
+##### TurboWarp standard comparison
+
+The following screenshots were captured from the same TurboWarp Editor project with the English UI, a `Cat` sprite at `x=-80`, `y=0`, size `80%`, a white Stage, and matching `Hello!` / `Hmm...` inputs. The left column runs TurboWarp's standard Looks blocks. The right column runs Bubble's basic profile with only `define bubble style [dialogue] using text style [default]`; no visual, placement, or size setter is used.
+
+![TurboWarp standard say and think bubbles compared on the Stage with Bubble's basic profile](docs/assets/turbowarp-say-think-stage-comparison.png)
+
+The Stage comparison shows the right-side placement, content-sized body, and the speech tail or thought trail pointing back toward the Actor in each implementation. Bubble draws an independent SVG surface, so the screenshot is the visual reference for its renderer output rather than a reused image of TurboWarp's native bubble.
+
+![TurboWarp standard say and think blocks compared with the Bubble basic-profile definition, say, and think blocks](docs/assets/turbowarp-say-think-block-comparison.png)
+
+The block comparison shows the minimum setup. Run the Bubble style definition once after the project starts, then use its `say` and `think` blocks as the standard-block counterparts.
+
 Any explicit style-setting block—or a text style name other than `default`—selects the existing custom profile. Within that profile the omitted visual style is `NORMAL` and the omitted placement is `up-right`; explicit visual styles, placement, distance, tail length, offsets, portrait, continue indicator, reveal, audio, and motion retain their existing behavior. With the default `svg-overlay` backend, the selected body is an SVG DOM layer in the shared overlay root. Explicit `scratch-render` mode instead uses an SVG skin and renderer drawable. Closing or replacing a Bubble, stopping its target, or disposing the runtime releases whichever resources the selected backend owns.
 
 #### Placement

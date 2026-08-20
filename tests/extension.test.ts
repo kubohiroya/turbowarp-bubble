@@ -920,6 +920,7 @@ describe("Bubble extension", () => {
     expect(say).toContain('width="74" height="52"');
     expect(say).toContain(">1.23</text>");
     expect(say).not.toContain("<circle");
+    expect(say).toContain("scale(-1 1)");
     expect(harness.positions.get(harness.created[0]!)).toEqual([87, -34]);
     expect(harness.visibility.get(harness.created[1]!)).toBe(false);
 
@@ -930,6 +931,7 @@ describe("Bubble extension", () => {
     const think = harness.createdSvgSkins.at(-1)!;
     expect(think).toContain('data-bubble-kind="think"');
     expect(think).toContain("<circle");
+    expect(think).toContain("scale(-1 1)");
 
     await extension.sayWithBubbleStyle(
       { MESSAGE: "", STYLE: "basic" },
@@ -937,6 +939,33 @@ describe("Bubble extension", () => {
     );
     expect(harness.destroyed).toHaveLength(4);
     expect(harness.visibility.get(harness.created.at(-2)!)).toBe(false);
+  });
+
+  it("points the Scratch-compatible tail right when the bubble moves left", async () => {
+    const harness = createRuntime();
+    const extension = createScratchRenderExtension(harness.runtime);
+    const target: TurboWarpBubbleTarget = {
+      ...actor(),
+      x: 200,
+      y: 0,
+      getBoundsForBubble: () => ({
+        bottom: -20,
+        left: 180,
+        right: 220,
+        top: 20,
+      }),
+    };
+    extension.defineBubbleStyle({ STYLE: "basic", TEXT_STYLE: "default" });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "Hi", STYLE: "basic" },
+      { target },
+    );
+
+    const say = harness.createdSvgSkins.at(-1)!;
+    expect(say).toContain('data-bubble-kind="say"');
+    expect(say).not.toContain("scale(-1 1)");
+    expect(harness.positions.get(harness.created[0]!)).toEqual([143, 6]);
   });
 
   it("renders the selected SVG body behind actor-relative content", async () => {

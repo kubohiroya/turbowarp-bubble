@@ -77,6 +77,18 @@ say [こんにちは！] with bubble style [basic]
 think [うーん…] with bubble style [basic]
 ```
 
+### TurboWarp標準との比較
+
+次の画像は、1つのTurboWarp Editor projectで英語UIを使い、`Cat` spriteを`x=-80`、`y=0`、サイズ`80%`、Stageを白背景、入力を`Hello!`／`Hmm...`に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロックです。右列のBubble基本profileは`define bubble style [dialogue] using text style [default]`だけを使い、外形、配置、サイズをsetterで変更していません。
+
+![TurboWarp標準のsay・think吹き出しとBubble基本profileを同じStageで比較した実画面](./assets/turbowarp-say-think-stage-comparison.png)
+
+Stage図では、右側配置、内容に追従する本体、Actor側へ向くspeech tail／thought trailを同じ条件で確認できます。Bubbleは独立したSVG surfaceを描画しており、全4panelとも実際のTurboWarp Stageを切り出したものです。
+
+![TurboWarp標準のsay・thinkブロックとBubble基本profileの定義・say・thinkブロックを比較したスクリーンショット](./assets/turbowarp-say-think-block-comparison.png)
+
+ブロック図は最小構成を示します。project開始後にstyle定義を1回実行し、以後は標準ブロックに対応するBubbleの`say`／`think`を使います。
+
 次のsetterを使うと、意図的にcustom profileへ切り替わります。
 
 ```text
@@ -330,6 +342,8 @@ Asset Managerへ登録したアセット自体はBubbleの所有物ではあり�
 ## 14. マニュアル画像の再生成
 
 図とGIFはリポジトリ内のスクリプトから再生成できます。GIF生成にはImageMagickの`magick`コマンドが必要です。
+
+2つの`turbowarp-say-think-*-comparison.png`はrenderer previewから生成した図ではなく、TurboWarp Editorの実画面です。第4章に記載した撮影条件を使い、`docs:render`では上書きしません。
 
 ```sh
 pnpm docs:render

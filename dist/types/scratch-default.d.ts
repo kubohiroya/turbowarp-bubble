@@ -34,6 +34,7 @@ export interface ScratchBubblePositionInput {
         top: number;
     }>;
     readonly height: number;
+    /** Whether the bubble body is positioned to the actor's left. */
     readonly pointsLeft: boolean;
     readonly stageHeight: number;
     readonly stageWidth: number;
@@ -43,6 +44,7 @@ export interface ScratchBubblePosition {
     readonly centerX: number;
     readonly centerY: number;
     readonly left: number;
+    /** Whether the bubble body is positioned to the actor's left. */
     readonly pointsLeft: boolean;
     readonly top: number;
 }

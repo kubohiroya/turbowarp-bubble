@@ -89,7 +89,7 @@ describe("Scratch-compatible default Bubble profile", () => {
     expect(left.top).toBe(180);
   });
 
-  it("renders distinct say and think tails while keeping text unmirrored", () => {
+  it("points say and think tails toward the actor while keeping text unmirrored", () => {
     const layout = layoutScratchBubbleText("Hello", (text) => text.length * 7);
     const say = renderScratchBubbleSvg({
       kind: "say",
@@ -103,9 +103,10 @@ describe("Scratch-compatible default Bubble profile", () => {
     });
     expect(say).toContain('data-bubble-kind="say"');
     expect(say).not.toContain("<circle");
+    expect(say.match(/scale\(-1 1\)/gu)).toHaveLength(1);
     expect(think).toContain('data-bubble-kind="think"');
     expect(think).toContain("<circle");
-    expect(think.match(/scale\(-1 1\)/gu)).toHaveLength(1);
+    expect(think).not.toContain("scale(-1 1)");
     expect(think).toContain(">Hello</text>");
   });
 

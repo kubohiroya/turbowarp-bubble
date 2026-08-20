@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import { URL } from "node:url";
 
@@ -23,6 +24,14 @@ const widthLinebreakGuideUrl = new URL(
 );
 const bubbleStyleGalleryUrl = new URL(
   "../docs/assets/bubble-style-gallery.svg",
+  import.meta.url,
+);
+const stageComparisonUrl = new URL(
+  "../docs/assets/turbowarp-say-think-stage-comparison.png",
+  import.meta.url,
+);
+const blockComparisonUrl = new URL(
+  "../docs/assets/turbowarp-say-think-block-comparison.png",
   import.meta.url,
 );
 const lifecycleUrl = new URL(
@@ -101,6 +110,19 @@ function inspectGif(buffer) {
   return { frames, height, loops, width };
 }
 
+function inspectPng(buffer, label) {
+  const signature = Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+  ]);
+  if (!buffer.subarray(0, signature.length).equals(signature)) {
+    throw new Error(`${label} must use the PNG format.`);
+  }
+  return {
+    width: buffer.readUInt32BE(16),
+    height: buffer.readUInt32BE(20),
+  };
+}
+
 const [
   quickStart,
   animationModeGuide,
@@ -108,6 +130,8 @@ const [
   actorTransformGuide,
   widthLinebreakGuide,
   bubbleStyleGallery,
+  stageComparison,
+  blockComparison,
   lifecycle,
   manual,
   japaneseManual,
@@ -118,6 +142,8 @@ const [
   readFile(actorTransformGuideUrl, "utf8"),
   readFile(widthLinebreakGuideUrl, "utf8"),
   readFile(bubbleStyleGalleryUrl, "utf8"),
+  readFile(stageComparisonUrl),
+  readFile(blockComparisonUrl),
   readFile(lifecycleUrl),
   readFile(manualUrl, "utf8"),
   readFile(japaneseManualUrl, "utf8"),
@@ -299,6 +325,31 @@ if (
   throw new Error(`Unexpected lifecycle GIF metadata: ${JSON.stringify(gif)}`);
 }
 
+const stageComparisonMetadata = inspectPng(
+  stageComparison,
+  "TurboWarp Stage comparison",
+);
+if (
+  stageComparisonMetadata.width !== 1008 ||
+  stageComparisonMetadata.height !== 852
+) {
+  throw new Error(
+    `Unexpected TurboWarp Stage comparison dimensions: ${JSON.stringify(stageComparisonMetadata)}`,
+  );
+}
+const blockComparisonMetadata = inspectPng(
+  blockComparison,
+  "TurboWarp block comparison",
+);
+if (
+  blockComparisonMetadata.width !== 888 ||
+  blockComparisonMetadata.height !== 344
+) {
+  throw new Error(
+    `Unexpected TurboWarp block comparison dimensions: ${JSON.stringify(blockComparisonMetadata)}`,
+  );
+}
+
 const requiredManualReferences = [
   "define bubble style",
   "set bubble placement",
@@ -323,6 +374,8 @@ const requiredManualReferences = [
   "./assets/actor-transform-guide.svg",
   "./assets/width-linebreak-guide.svg",
   "./assets/bubble-style-gallery.svg",
+  "./assets/turbowarp-say-think-stage-comparison.png",
+  "./assets/turbowarp-say-think-block-comparison.png",
 ];
 for (const text of requiredManualReferences) {
   requireText(manual, text, "English block manual");

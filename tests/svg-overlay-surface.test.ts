@@ -130,6 +130,9 @@ describe("SVG overlay backend", () => {
     expect(sayBody?.getAttribute("data-bubble-body-width")).toBe("74");
     expect(sayBody?.getAttribute("data-bubble-body-height")).toBe("52");
     expect(sayBody?.getAttribute("transform")).toBe("translate(260 148)");
+    expect(sayBody?.querySelector("g")?.getAttribute("transform")).toContain(
+      "scale(-1 1)",
+    );
     expect(sayBody?.querySelector("circle")).toBeNull();
     expect(sayBody?.querySelector("text")?.getAttribute("font-family")).toBe(
       "Helvetica, sans-serif",
@@ -152,10 +155,13 @@ describe("SVG overlay backend", () => {
     );
     expect(thinkBody?.getAttribute("data-bubble-kind")).toBe("think");
     expect(thinkBody?.querySelectorAll("circle")).toHaveLength(2);
+    expect(thinkBody?.querySelector("g")?.getAttribute("transform")).toContain(
+      "scale(-1 1)",
+    );
     await think.close();
   });
 
-  it("flips the basic style to the left when only that side fits", async () => {
+  it("flips the basic style and its tail when only the left side fits", async () => {
     const harness = createHarness();
     const composition = createTurboWarpBubbleComposition(harness.runtime, {
       document: harness.window.document as unknown as Document,
@@ -175,7 +181,7 @@ describe("SVG overlay backend", () => {
       '[data-bubble-layer="body"]',
     );
     expect(body?.getAttribute("transform")).toBe("translate(346 148)");
-    expect(body?.querySelector("g")?.getAttribute("transform")).toContain(
+    expect(body?.querySelector("g")?.getAttribute("transform")).not.toContain(
       "scale(-1 1)",
     );
     await handle.close();
