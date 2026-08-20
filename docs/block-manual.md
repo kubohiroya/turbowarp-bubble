@@ -8,7 +8,7 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.8.1 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only before using a Bubble wait.
+The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.8.1 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only for condition-based Bubble waits and close policies; a timeout-only close policy needs neither.
 
 | Order | Extension                | URL                                                                                                      |
 | ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -18,7 +18,7 @@ The complete input-wait example uses five extensions. Add Temporary Variables fr
 |     4 | Asset Manager 0.12.1     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js`          |
 |     5 | Bubble 0.9.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js`               |
 
-To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can inject another text capability.
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a condition-based Bubble wait. The lower-level Composition API can inject another text capability.
 
 See also:
 
@@ -221,6 +221,16 @@ Initialize `input` with Temporary Variables before registering the Async Input l
 
 Reset `input` to an empty string before each later wait; otherwise the previous `pressed` value makes the next condition succeed immediately. Starting another Bubble, closing it, stopping its target, restarting or stopping the project, and disposing the runtime all cancel the target-owned wait and release its listener and timer.
 
+Use a named Bubble close policy when the same closing rule is reused. The trigger is explicit: `condition`, `timeout`, or `condition-or-timeout`. Applying a policy snapshots its definition, waits, runs the Bubble's hide animation, and releases the Bubble in one blocking command.
+
+```text
+define bubble close policy [advance-or-timeout] trigger [condition-or-timeout] condition [input == "pressed"] timeout [10] seconds
+show [Let's head for the sea!] with bubble style [hero-dialogue]
+wait and close this bubble using close policy [advance-or-timeout]
+```
+
+A timeout-only policy leaves the current animation mode unchanged and needs no input extension. A policy containing a condition enters `awaiting-continue` and uses the same Async Input and Runtime Expression setup as the integrated wait. Redefining the same name during a pending wait affects only later applications. Bubble replacement or lifecycle cleanup cancels the pending policy and does not close the replacement Bubble.
+
 When combining Bubble with audio or a separate text-reveal system, switch to `awaiting-continue` when that process completes.
 
 ![A say Bubble lip-syncs, shows continue frames while awaiting continue, then closes after input](./assets/bubble-lifecycle.gif)
@@ -281,6 +291,7 @@ When a clone stops or is deleted, its timers, overlay DOM, and image leases are 
 | Block                                                                                                          | Description                                                             |
 | -------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Define or redefine a Bubble style                                       |
+| `define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds`        | Define or replace a named closing condition                             |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Set an actor direction/angle or a stage-relative region                 |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Set the distance from actor bounds to the tail tip                      |
 | `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Select one of ten inseparable SVG body + tail/trail pairs               |
@@ -307,6 +318,7 @@ When a clone stops or is deleted, its timers, overlay DOM, and image leases are 
 | `show [MESSAGE] with bubble style [STYLE]`                                                                     | Show the complete body and tail/trail pair owned by a style             |
 | `set this bubble animation mode [MODE]`                                                                        | Select `talking`, `awaiting-continue`, or `idle` for this Bubble        |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Await a Runtime Expression condition or optional timeout                |
+| `wait and close this bubble using close policy [POLICY]`                                                       | Snapshot a policy, wait for it, and close the Bubble                    |
 | `close this bubble`                                                                                            | Release this target's Bubble and owned resources                        |
 | `Bubble version`                                                                                               | Report the Bubble implementation version                                |
 
@@ -321,6 +333,7 @@ Saved projects using the former `say/think [MESSAGE] with bubble style [STYLE]` 
 | Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait             |
 | Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait      |
 | `bubble style is not defined`        | Use the built-in short say/think blocks, or define the named custom style first |
+| `bubble close policy is not defined` | Define the named close policy before applying it                                |
 | Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble         |
 | Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                                |
 | Only one continue frame              | Supply at least two frames, or clear the setting                                |

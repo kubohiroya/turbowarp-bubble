@@ -38,6 +38,29 @@
       "arguments": []
     },
     {
+      "opcode": "defineBubbleClosePolicy",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "CONDITION",
+          "type": "STRING"
+        },
+        {
+          "id": "POLICY",
+          "type": "STRING"
+        },
+        {
+          "id": "TIMEOUT",
+          "type": "NUMBER"
+        },
+        {
+          "id": "TRIGGER",
+          "type": "STRING",
+          "menu": "closePolicyTrigger"
+        }
+      ]
+    },
+    {
       "opcode": "defineBubbleStyle",
       "blockType": "COMMAND",
       "arguments": [
@@ -475,6 +498,16 @@
       ]
     },
     {
+      "opcode": "waitAndCloseBubbleWithPolicy",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "POLICY",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
       "opcode": "waitForBubbleContinue",
       "blockType": "COMMAND",
       "arguments": [
@@ -496,6 +529,10 @@
     },
     {
       "id": "boolean",
+      "acceptReporters": true
+    },
+    {
+      "id": "closePolicyTrigger",
       "acceptReporters": true
     },
     {

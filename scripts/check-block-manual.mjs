@@ -354,6 +354,7 @@ if (
 
 const requiredManualReferences = [
   "define bubble style",
+  "define bubble close policy",
   "set bubble placement",
   "set bubble distance",
   "set bubble visual style",
@@ -368,6 +369,7 @@ const requiredManualReferences = [
   "show [MESSAGE] with bubble style",
   "set this bubble animation mode",
   "wait with this bubble until condition",
+  "wait and close this bubble using close policy",
   "close this bubble",
   "Bubble version",
   "./assets/block-quick-start.svg",

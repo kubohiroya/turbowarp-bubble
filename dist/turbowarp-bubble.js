@@ -60,6 +60,31 @@
         }
       },
       {
+        "opcode": "defineBubbleClosePolicy",
+        "blockType": "COMMAND",
+        "text": "define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds",
+        "description": "Defines or replaces a named close policy. The trigger explicitly selects a condition, a timeout, or whichever happens first.",
+        "arguments": {
+          "POLICY": {
+            "type": "STRING",
+            "defaultValue": "advance-or-timeout"
+          },
+          "TRIGGER": {
+            "type": "STRING",
+            "defaultValue": "condition-or-timeout",
+            "menu": "closePolicyTrigger"
+          },
+          "CONDITION": {
+            "type": "STRING",
+            "defaultValue": "input == \"pressed\""
+          },
+          "TIMEOUT": {
+            "type": "NUMBER",
+            "defaultValue": 10
+          }
+        }
+      },
+      {
         "opcode": "setBubblePlacement",
         "blockType": "COMMAND",
         "text": "set bubble placement [PLACEMENT] for bubble style [STYLE]",
@@ -572,6 +597,16 @@
         }
       },
       {
+        "opcode": "waitAndCloseBubbleWithPolicy",
+        "blockType": "COMMAND",
+        "text": "wait and close this bubble using close policy [POLICY]",
+        "description": "Snapshots the named close policy, waits for its trigger, then closes this sprite's bubble and releases its resources.",
+        "arguments": { "POLICY": {
+          "type": "STRING",
+          "defaultValue": "advance-or-timeout"
+        } }
+      },
+      {
         "opcode": "closeBubble",
         "blockType": "COMMAND",
         "text": "close this bubble",
@@ -587,6 +622,14 @@
       }
     ],
     menus: {
+      "closePolicyTrigger": {
+        "acceptReporters": true,
+        "items": [
+          "condition",
+          "timeout",
+          "condition-or-timeout"
+        ]
+      },
       "portraitPlacement": {
         "acceptReporters": true,
         "items": [
@@ -12468,6 +12511,11 @@
     "talking",
     "awaiting-continue"
   ]);
+  var validClosePolicyTriggers = /* @__PURE__ */ new Set([
+    "condition",
+    "timeout",
+    "condition-or-timeout"
+  ]);
   var validRevealUnits = /* @__PURE__ */ new Set([
     "CHARACTER",
     "WORD",
@@ -12519,6 +12567,7 @@
       _defineProperty(this, "runtime", void 0);
       _defineProperty(this, "options", void 0);
       _defineProperty(this, "styles", new Map(builtInBubbleStyles.map((style) => [style.name, style])));
+      _defineProperty(this, "closePolicies", /* @__PURE__ */ new Map());
       _defineProperty(this, "handles", /* @__PURE__ */ new Map());
       _defineProperty(this, "waits", /* @__PURE__ */ new Map());
       _defineProperty(this, "waitScheduler", void 0);
@@ -12564,6 +12613,23 @@
         textStyle: this.requireName(args.TEXT_STYLE, "text style")
       });
       this.installStyle(style);
+    }
+    defineBubbleClosePolicy(args) {
+      const name = this.requireName(args.POLICY, "close policy");
+      const trigger = this.toString(args.TRIGGER).trim().toLowerCase();
+      if (!validClosePolicyTriggers.has(trigger)) throw extensionError("close policy trigger must be condition, timeout, or condition-or-timeout.");
+      const usesCondition = trigger !== "timeout";
+      const usesTimeout = trigger !== "condition";
+      const condition = usesCondition ? this.toString(args.CONDITION).trim() : void 0;
+      if (usesCondition && !condition) throw extensionError("close policy condition is empty.");
+      const timeoutSeconds = usesTimeout ? Scratch.Cast.toNumber(args.TIMEOUT) : void 0;
+      if (usesTimeout && (!Number.isFinite(timeoutSeconds) || Number(timeoutSeconds) <= 0)) throw extensionError("close policy timeout must be greater than zero when enabled.");
+      this.closePolicies.set(name, Object.freeze({
+        name,
+        trigger,
+        ...condition === void 0 ? {} : { condition },
+        ...timeoutSeconds === void 0 ? {} : { timeoutSeconds: Number(timeoutSeconds) }
+      }));
     }
     setPortraitBase(args) {
       const style = this.requireStyle(args.STYLE);
@@ -12869,43 +12935,33 @@
       if (!condition) throw extensionError("wait condition is empty.");
       const timeoutSeconds = Scratch.Cast.toNumber(args.TIMEOUT);
       if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) throw extensionError("wait timeout must be zero or greater.");
-      if (!this.isRecord(this.runtime.ext_kubohiroyaasyncinput)) throw extensionError("Bubble wait requires Async Input. Load @kubohiroya/turbowarp-async-input before using this block.");
-      const runtimeExpression = this.runtime.ext_kubohiroyaruntimeexpression;
-      if (!this.isRecord(runtimeExpression) || typeof runtimeExpression.runtimeCondition !== "function") throw extensionError("Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.");
-      if (typeof this.runtime.on !== "function" || typeof this.runtime.off !== "function") throw extensionError("TurboWarp runtime events are unavailable.");
-      this.cancelWait(target.id, "Bubble wait was replaced.");
-      await handle.setAnimationMode("awaiting-continue");
-      await new Promise((resolve, reject) => {
-        let settled = false;
-        let timeoutHandle;
-        const cleanup = () => {
-          this.runtime.off?.("BEFORE_EXECUTE", checkCondition);
-          if (timeoutHandle !== void 0) this.waitScheduler.clearTimeout(timeoutHandle);
-          if (this.waits.get(target.id) === pending) this.waits.delete(target.id);
-        };
-        const finish = (error) => {
-          if (settled) return;
-          settled = true;
-          cleanup();
-          if (error) {
-            reject(error);
-            return;
-          }
-          handle.setAnimationMode("idle").then(resolve, reject);
-        };
-        const checkCondition = () => {
-          try {
-            if (runtimeExpression.runtimeCondition({ EXPRESSION: condition })) finish();
-          } catch (error) {
-            finish(error instanceof Error ? error : extensionError("wait condition evaluation failed."));
-          }
-        };
-        const pending = Object.freeze({ cancel: finish });
-        this.waits.set(target.id, pending);
-        this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
-        if (timeoutSeconds > 0) timeoutHandle = this.waitScheduler.setTimeout(() => finish(), timeoutSeconds * 1e3);
-        checkCondition();
+      await this.waitForBubbleTrigger({
+        targetId: target.id,
+        handle,
+        condition,
+        ...timeoutSeconds === 0 ? {} : { timeoutSeconds },
+        setAwaitingContinue: true,
+        restoreIdle: true,
+        requireAsyncInput: true
       });
+    }
+    async waitAndCloseBubbleWithPolicy(args, util) {
+      const target = this.requireTarget(util);
+      const handle = this.handles.get(target.id);
+      if (!handle) throw extensionError("this target does not have an active bubble.");
+      const policy = this.requireClosePolicy(args.POLICY);
+      const usesCondition = policy.condition !== void 0;
+      await this.waitForBubbleTrigger({
+        targetId: target.id,
+        handle,
+        ...policy.condition === void 0 ? {} : { condition: policy.condition },
+        ...policy.timeoutSeconds === void 0 ? {} : { timeoutSeconds: policy.timeoutSeconds },
+        setAwaitingContinue: usesCondition,
+        restoreIdle: false,
+        requireAsyncInput: usesCondition
+      });
+      if (this.handles.get(target.id) !== handle) throw this.abortError("Bubble was replaced before it could close.");
+      await this.releaseOwnedTarget(target.id);
     }
     async finishBubbleReveal(args, util) {
       const handle = this.requireHandle(util);
@@ -12943,6 +12999,56 @@
       if (this.composition) await this.composition.dispose();
       this.handles.clear();
       this.styles.clear();
+      this.closePolicies.clear();
+    }
+    async waitForBubbleTrigger(input) {
+      let runtimeExpression;
+      if (input.condition !== void 0) {
+        if (input.requireAsyncInput && !this.isRecord(this.runtime.ext_kubohiroyaasyncinput)) throw extensionError("Bubble wait requires Async Input. Load @kubohiroya/turbowarp-async-input before using this block.");
+        const candidate = this.runtime.ext_kubohiroyaruntimeexpression;
+        if (!this.isRecord(candidate) || typeof candidate.runtimeCondition !== "function") throw extensionError("Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.");
+        if (typeof this.runtime.on !== "function" || typeof this.runtime.off !== "function") throw extensionError("TurboWarp runtime events are unavailable.");
+        runtimeExpression = candidate;
+      }
+      if (input.condition === void 0 && input.timeoutSeconds === void 0) throw extensionError("Bubble wait does not have an enabled trigger.");
+      this.cancelWait(input.targetId, "Bubble wait was replaced.");
+      if (input.setAwaitingContinue) await input.handle.setAnimationMode("awaiting-continue");
+      await new Promise((resolve, reject) => {
+        let settled = false;
+        let timeoutHandle;
+        const checkCondition = () => {
+          if (input.condition === void 0 || runtimeExpression === void 0) return;
+          try {
+            if (runtimeExpression.runtimeCondition({ EXPRESSION: input.condition })) finish();
+          } catch (error) {
+            finish(error instanceof Error ? error : extensionError("wait condition evaluation failed."));
+          }
+        };
+        const cleanup = () => {
+          if (input.condition !== void 0) this.runtime.off?.("BEFORE_EXECUTE", checkCondition);
+          if (timeoutHandle !== void 0) this.waitScheduler.clearTimeout(timeoutHandle);
+          if (this.waits.get(input.targetId) === pending) this.waits.delete(input.targetId);
+        };
+        const finish = (error) => {
+          if (settled) return;
+          settled = true;
+          cleanup();
+          if (error) {
+            reject(error);
+            return;
+          }
+          if (!input.restoreIdle) {
+            resolve();
+            return;
+          }
+          input.handle.setAnimationMode("idle").then(resolve, reject);
+        };
+        const pending = Object.freeze({ cancel: finish });
+        this.waits.set(input.targetId, pending);
+        if (input.condition !== void 0) this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
+        if (input.timeoutSeconds !== void 0) timeoutHandle = this.waitScheduler.setTimeout(() => finish(), input.timeoutSeconds * 1e3);
+        checkCondition();
+      });
     }
     toScratchBlock(block) {
       return {
@@ -12984,6 +13090,12 @@
       const style = this.styles.get(name);
       if (!style) throw extensionError(`bubble style is not defined: ${name}`);
       return style;
+    }
+    requireClosePolicy(value) {
+      const name = this.requireName(value, "close policy");
+      const policy = this.closePolicies.get(name);
+      if (!policy) throw extensionError(`bubble close policy is not defined: ${name}`);
+      return policy;
     }
     normalizeTransformNumber(value, normalize) {
       try {

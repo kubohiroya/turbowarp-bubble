@@ -16,12 +16,14 @@ describe("extension API manifest", () => {
     );
     expect(manifest.blocks).toEqual(
       expect.arrayContaining([
+        expect.objectContaining({ opcode: "defineBubbleClosePolicy" }),
         expect.objectContaining({ opcode: "finishBubbleReveal" }),
         expect.objectContaining({ opcode: "setBubbleReveal" }),
         expect.objectContaining({ opcode: "setPortraitLayout" }),
         expect.objectContaining({ opcode: "shakeBubble" }),
         expect.objectContaining({ opcode: "explodeBubble" }),
         expect.objectContaining({ opcode: "animateBubbleShape" }),
+        expect.objectContaining({ opcode: "waitAndCloseBubbleWithPolicy" }),
       ]),
     );
     expect(manifest.menus.map(({ id }) => id)).toEqual(

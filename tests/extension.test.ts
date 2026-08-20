@@ -691,6 +691,7 @@ describe("Bubble extension", () => {
     expect(iconSvg).not.toContain("<rect");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
       "defineBubbleStyle",
+      "defineBubbleClosePolicy",
       "setBubblePlacement",
       "setPortraitBase",
       "setPortraitLayout",
@@ -719,6 +720,7 @@ describe("Bubble extension", () => {
       "thinkWithBubbleStyle",
       "setBubbleAnimationMode",
       "waitForBubbleContinue",
+      "waitAndCloseBubbleWithPolicy",
       "closeBubble",
       "getVersion",
     ]);
@@ -733,6 +735,10 @@ describe("Bubble extension", () => {
     expect(info.menus.animationMode).toEqual({
       acceptReporters: true,
       items: ["talking", "awaiting-continue", "idle"],
+    });
+    expect(info.menus.closePolicyTrigger).toEqual({
+      acceptReporters: true,
+      items: ["condition", "timeout", "condition-or-timeout"],
     });
     expect(info.menus.portraitPlacement).toEqual({
       acceptReporters: true,
@@ -1295,6 +1301,162 @@ describe("Bubble extension", () => {
     await vi.waitFor(() => expect(scheduler.size).toBeGreaterThan(0));
     scheduler.runNewest();
     await waiting;
+    await extension.closeBubble({}, { target });
+    expect(scheduler.size).toBe(0);
+  });
+
+  it("validates explicit close policy triggers", () => {
+    const extension = createScratchRenderExtension(createRuntime().runtime);
+
+    expect(() =>
+      extension.defineBubbleClosePolicy({
+        POLICY: "condition-policy",
+        TRIGGER: "condition",
+        CONDITION: "ready",
+        TIMEOUT: 0,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      extension.defineBubbleClosePolicy({
+        POLICY: "timeout-policy",
+        TRIGGER: "timeout",
+        CONDITION: "",
+        TIMEOUT: 3,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      extension.defineBubbleClosePolicy({
+        POLICY: "first-policy",
+        TRIGGER: "condition-or-timeout",
+        CONDITION: "ready",
+        TIMEOUT: 3,
+      }),
+    ).not.toThrow();
+    expect(() =>
+      extension.defineBubbleClosePolicy({
+        POLICY: "missing-condition",
+        TRIGGER: "condition",
+        CONDITION: "",
+        TIMEOUT: 0,
+      }),
+    ).toThrow("condition is empty");
+    expect(() =>
+      extension.defineBubbleClosePolicy({
+        POLICY: "disabled-timeout",
+        TRIGGER: "timeout",
+        CONDITION: "",
+        TIMEOUT: 0,
+      }),
+    ).toThrow("timeout must be greater than zero");
+    expect(() =>
+      extension.defineBubbleClosePolicy({
+        POLICY: "unknown-trigger",
+        TRIGGER: "manual",
+        CONDITION: "",
+        TIMEOUT: 0,
+      }),
+    ).toThrow("trigger must be condition, timeout, or condition-or-timeout");
+  });
+
+  it("uses a timeout-only close policy without input extensions", async () => {
+    const harness = createRuntime({
+      asyncInput: false,
+      runtimeExpression: false,
+    });
+    const scheduler = new TestScheduler();
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
+    const target = actor();
+    await extension.say({ MESSAGE: "three seconds" }, { target });
+    await expect(
+      extension.waitAndCloseBubbleWithPolicy({ POLICY: "missing" }, { target }),
+    ).rejects.toThrow("bubble close policy is not defined: missing");
+    extension.defineBubbleClosePolicy({
+      POLICY: "three-seconds",
+      TRIGGER: "timeout",
+      CONDITION: "",
+      TIMEOUT: 3,
+    });
+
+    const closing = extension.waitAndCloseBubbleWithPolicy(
+      { POLICY: "three-seconds" },
+      { target },
+    );
+    await vi.waitFor(() => expect(scheduler.size).toBe(1));
+    scheduler.runNewest();
+    await closing;
+
+    expect(scheduler.size).toBe(0);
+    expect(harness.destroyed.length).toBeGreaterThan(0);
+  });
+
+  it("snapshots a condition close policy before waiting", async () => {
+    const harness = createRuntime();
+    const scheduler = new TestScheduler();
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
+    const target = actor();
+    await extension.say({ MESSAGE: "continue?" }, { target });
+    extension.defineBubbleClosePolicy({
+      POLICY: "advance",
+      TRIGGER: "condition-or-timeout",
+      CONDITION: 'input == "pressed"',
+      TIMEOUT: 30,
+    });
+
+    const closing = extension.waitAndCloseBubbleWithPolicy(
+      { POLICY: "advance" },
+      { target },
+    );
+    await vi.waitFor(() =>
+      expect(harness.runtimeExpression.runtimeCondition).toHaveBeenCalledWith({
+        EXPRESSION: 'input == "pressed"',
+      }),
+    );
+    expect(scheduler.size).toBe(1);
+    extension.defineBubbleClosePolicy({
+      POLICY: "advance",
+      TRIGGER: "timeout",
+      CONDITION: "",
+      TIMEOUT: 30,
+    });
+    harness.conditionState.value = true;
+    harness.emit("BEFORE_EXECUTE");
+    await closing;
+
+    expect(scheduler.size).toBe(0);
+    expect(harness.destroyed.length).toBeGreaterThan(0);
+  });
+
+  it("cancels a close policy wait when the Bubble is replaced", async () => {
+    const harness = createRuntime();
+    const scheduler = new TestScheduler();
+    const extension = createScratchRenderExtension(harness.runtime, {
+      scheduler,
+    });
+    const target = actor();
+    await extension.say({ MESSAGE: "first" }, { target });
+    extension.defineBubbleClosePolicy({
+      POLICY: "advance",
+      TRIGGER: "condition",
+      CONDITION: "false",
+      TIMEOUT: 0,
+    });
+    const closing = extension.waitAndCloseBubbleWithPolicy(
+      { POLICY: "advance" },
+      { target },
+    );
+    await vi.waitFor(() =>
+      expect(harness.runtimeExpression.runtimeCondition).toHaveBeenCalled(),
+    );
+    const rejection = expect(closing).rejects.toMatchObject({
+      name: "AbortError",
+    });
+
+    await extension.say({ MESSAGE: "replacement" }, { target });
+    await rejection;
     await extension.closeBubble({}, { target });
     expect(scheduler.size).toBe(0);
   });

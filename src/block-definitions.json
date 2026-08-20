@@ -12,6 +12,25 @@
       }
     },
     {
+      "opcode": "defineBubbleClosePolicy",
+      "blockType": "COMMAND",
+      "text": "define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds",
+      "description": "Defines or replaces a named close policy. The trigger explicitly selects a condition, a timeout, or whichever happens first.",
+      "arguments": {
+        "POLICY": { "type": "STRING", "defaultValue": "advance-or-timeout" },
+        "TRIGGER": {
+          "type": "STRING",
+          "defaultValue": "condition-or-timeout",
+          "menu": "closePolicyTrigger"
+        },
+        "CONDITION": {
+          "type": "STRING",
+          "defaultValue": "input == \"pressed\""
+        },
+        "TIMEOUT": { "type": "NUMBER", "defaultValue": 10 }
+      }
+    },
+    {
       "opcode": "setBubblePlacement",
       "blockType": "COMMAND",
       "text": "set bubble placement [PLACEMENT] for bubble style [STYLE]",
@@ -369,6 +388,15 @@
       }
     },
     {
+      "opcode": "waitAndCloseBubbleWithPolicy",
+      "blockType": "COMMAND",
+      "text": "wait and close this bubble using close policy [POLICY]",
+      "description": "Snapshots the named close policy, waits for its trigger, then closes this sprite's bubble and releases its resources.",
+      "arguments": {
+        "POLICY": { "type": "STRING", "defaultValue": "advance-or-timeout" }
+      }
+    },
+    {
       "opcode": "closeBubble",
       "blockType": "COMMAND",
       "text": "close this bubble",
@@ -384,6 +412,10 @@
     }
   ],
   "menus": {
+    "closePolicyTrigger": {
+      "acceptReporters": true,
+      "items": ["condition", "timeout", "condition-or-timeout"]
+    },
     "portraitPlacement": {
       "acceptReporters": true,
       "items": [
