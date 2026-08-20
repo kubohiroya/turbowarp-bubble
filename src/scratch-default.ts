@@ -58,6 +58,7 @@ export interface ScratchBubblePositionInput {
     top: number;
   }>;
   readonly height: number;
+  /** Whether the bubble body is positioned to the actor's left. */
   readonly pointsLeft: boolean;
   readonly stageHeight: number;
   readonly stageWidth: number;
@@ -68,6 +69,7 @@ export interface ScratchBubblePosition {
   readonly centerX: number;
   readonly centerY: number;
   readonly left: number;
+  /** Whether the bubble body is positioned to the actor's left. */
   readonly pointsLeft: boolean;
   readonly top: number;
 }
@@ -261,8 +263,8 @@ export function renderScratchBubbleSvg(
   const body =
     input.kind === "say" ? scratchSayBody(metrics) : scratchThinkBody(metrics);
   const bodyTransform = input.pointsLeft
-    ? `translate(${metrics.width} 0) scale(-1 1) translate(${scratchBubbleStrokeWidth / 2} ${scratchBubbleStrokeWidth / 2})`
-    : `translate(${scratchBubbleStrokeWidth / 2} ${scratchBubbleStrokeWidth / 2})`;
+    ? `translate(${scratchBubbleStrokeWidth / 2} ${scratchBubbleStrokeWidth / 2})`
+    : `translate(${metrics.width} 0) scale(-1 1) translate(${scratchBubbleStrokeWidth / 2} ${scratchBubbleStrokeWidth / 2})`;
   const firstBaseline =
     scratchBubbleStrokeWidth / 2 +
     scratchBubblePadding +

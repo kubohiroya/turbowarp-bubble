@@ -392,6 +392,18 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 
 変更していない`default` text styleはScratch互換の基本profileになります。`say`はspeech tail、`think`はthought trailを使い、14px Helvetica、line height 16px、最大行幅170px、最小文字領域幅50px、padding 10px、corner radius 16px、白い本体、Scratch標準の文字色・border色で描画します。Actor右側を優先し、右に収まらず左に収まる場合だけ反転します。Actor boundsへの追従、Stage上端・左右端のfence、数値block入力の整形、330文字上限、空文字でのcloseも標準`say`／`think`に揃えます。
 
+##### TurboWarp標準との比較
+
+次の画像は、同じTurboWarp Editor projectで英語UIを使い、`Cat` spriteを`x=-80`、`y=0`、サイズ`80%`、Stageを白背景、入力を`Hello!`／`Hmm...`に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロック、右列は`define bubble style [dialogue] using text style [default]`だけを定義したBubble基本profileです。visual、placement、sizeのsetterは使っていません。
+
+![TurboWarp標準のsay・think吹き出しとBubble基本profileを同じStageで比較した実画面](docs/assets/turbowarp-say-think-stage-comparison.png)
+
+Stage比較では、右側配置、内容に追従する本体、Actor側へ向くspeech tail／thought trailを同じ条件で確認できます。Bubbleは独立したSVG surfaceを描画するため、この画像はTurboWarp標準吹き出しの画像を転用したものではなく、Bubble rendererの実際の出力です。
+
+![TurboWarp標準のsay・thinkブロックとBubble基本profileの定義・say・thinkブロックを比較したスクリーンショット](docs/assets/turbowarp-say-think-block-comparison.png)
+
+ブロック比較は最小構成を示します。project開始後にBubble style定義を1回実行し、以後は標準ブロックに対応するBubbleの`say`／`think`を使います。
+
 style設定ブロックを1つでも実行するか、`default`以外のtext style名を指定すると、従来のcustom profileになります。custom profileでvisual styleを省略した場合は`NORMAL`、placementを省略した場合は`up-right`です。visual style、placement、distance、tail length、offset、portrait、continue indicator、reveal、audio、motionの明示設定は従来どおり動作します。既定の`svg-overlay` backendでは、選択した本体を共有overlay root内のSVG DOM layerとして描画します。明示的な`scratch-render`ではSVG skinとrenderer drawableを使います。Bubbleのclose／置換、対象停止、runtime破棄では、選択したbackendが所有するresourceを解放します。
 
 #### Placement

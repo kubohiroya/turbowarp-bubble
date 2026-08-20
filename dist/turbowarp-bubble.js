@@ -8661,7 +8661,7 @@
   function renderScratchBubbleSvg(input) {
     const metrics = scratchBubbleMetrics(input.layout);
     const body = input.kind === "say" ? scratchSayBody(metrics) : scratchThinkBody(metrics);
-    const bodyTransform = input.pointsLeft ? `translate(${metrics.width} 0) scale(-1 1) translate(2 2)` : `translate(2 2)`;
+    const bodyTransform = input.pointsLeft ? `translate(2 2)` : `translate(${metrics.width} 0) scale(-1 1) translate(2 2)`;
     const firstBaseline = 24.6;
     const text = input.layout.lines.map((line, index) => `<text x="12" y="${firstBaseline + 16 * index}" fill="#575E75" font-family="Helvetica, sans-serif" font-size="14" xml:space="preserve">${escapeXml$1(line.text)}</text>`).join("");
     const title = escapeXml$1(input.title ?? `${input.kind} bubble`);

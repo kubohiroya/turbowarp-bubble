@@ -77,6 +77,18 @@ say [Hello!] with bubble style [basic]
 think [Hmm…] with bubble style [basic]
 ```
 
+### TurboWarp standard comparison
+
+These screenshots come from one TurboWarp Editor project using the English UI, a `Cat` sprite at `x=-80`, `y=0`, size `80%`, a white Stage, and matching `Hello!` / `Hmm...` inputs. The standard Looks blocks are on the left. Bubble's basic profile is on the right and uses only `define bubble style [dialogue] using text style [default]`; no setter changes its shape, placement, or size.
+
+![TurboWarp standard say and think bubbles compared on the Stage with Bubble's basic profile](./assets/turbowarp-say-think-stage-comparison.png)
+
+The Stage panels show the right-side placement, content-sized body, and the speech tail or thought trail pointing back toward the Actor in each implementation. Bubble renders an independent SVG surface, and every panel is a crop of the actual TurboWarp Stage.
+
+![TurboWarp standard say and think blocks compared with the Bubble basic-profile definition, say, and think blocks](./assets/turbowarp-say-think-block-comparison.png)
+
+The block image shows the minimum setup. Run the style definition once after the project starts; then use Bubble's `say` and `think` blocks as the standard-block counterparts.
+
 The following setters intentionally switch the style to the custom profile:
 
 ```text
@@ -330,6 +342,8 @@ Assets registered with Asset Manager are not owned by Bubble. To remove an unuse
 ## 14. Regenerating the manual assets
 
 The diagrams and GIF are generated from scripts in this repository. GIF generation requires the ImageMagick `magick` command.
+
+The two `turbowarp-say-think-*-comparison.png` files are real TurboWarp Editor screenshots rather than generated renderer previews. They use the capture conditions documented in section 4 and are not overwritten by `docs:render`.
 
 ```sh
 pnpm docs:render

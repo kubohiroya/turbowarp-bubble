@@ -185,6 +185,12 @@ register resource [costume:Assets:Next2] as asset [Next2]
 say [Hello!] with bubble style [basic]
 think [Hmm…] with bubble style [basic]
 </code></pre>
+<h3>TurboWarp standard comparison</h3>
+<p>These screenshots come from one TurboWarp Editor project using the English UI, a <code>Cat</code> sprite at <code>x=-80</code>, <code>y=0</code>, size <code>80%</code>, a white Stage, and matching <code>Hello!</code> / <code>Hmm...</code> inputs. The standard Looks blocks are on the left. Bubble&#39;s basic profile is on the right and uses only <code>define bubble style [dialogue] using text style [default]</code>; no setter changes its shape, placement, or size.</p>
+<p><img src="./assets/turbowarp-say-think-stage-comparison.png" alt="TurboWarp standard say and think bubbles compared on the Stage with Bubble&#39;s basic profile"></p>
+<p>The Stage panels show the right-side placement, content-sized body, and the speech tail or thought trail pointing back toward the Actor in each implementation. Bubble renders an independent SVG surface, and every panel is a crop of the actual TurboWarp Stage.</p>
+<p><img src="./assets/turbowarp-say-think-block-comparison.png" alt="TurboWarp standard say and think blocks compared with the Bubble basic-profile definition, say, and think blocks"></p>
+<p>The block image shows the minimum setup. Run the style definition once after the project starts; then use Bubble&#39;s <code>say</code> and <code>think</code> blocks as the standard-block counterparts.</p>
 <p>The following setters intentionally switch the style to the custom profile:</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 set bubble placement [up-right] for bubble style [hero-dialogue]
@@ -544,6 +550,7 @@ think [MESSAGE] with bubble style [STYLE]
 <p>Assets registered with Asset Manager are not owned by Bubble. To remove an unused registered image from memory, close the Bubble first and then use Asset Manager&#39;s <code>delete asset [NAME] from memory</code> block.</p>
 <h2>14. Regenerating the manual assets</h2>
 <p>The diagrams and GIF are generated from scripts in this repository. GIF generation requires the ImageMagick <code>magick</code> command.</p>
+<p>The two <code>turbowarp-say-think-*-comparison.png</code> files are real TurboWarp Editor screenshots rather than generated renderer previews. They use the capture conditions documented in section 4 and are not overwritten by <code>docs:render</code>.</p>
 <pre><code class="language-sh">pnpm docs:render
 pnpm docs:check
 </code></pre>

@@ -185,6 +185,12 @@ register resource [costume:Assets:Next2] as asset [Next2]
 say [こんにちは！] with bubble style [basic]
 think [うーん…] with bubble style [basic]
 </code></pre>
+<h3>TurboWarp標準との比較</h3>
+<p>次の画像は、1つのTurboWarp Editor projectで英語UIを使い、<code>Cat</code> spriteを<code>x=-80</code>、<code>y=0</code>、サイズ<code>80%</code>、Stageを白背景、入力を<code>Hello!</code>／<code>Hmm...</code>に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロックです。右列のBubble基本profileは<code>define bubble style [dialogue] using text style [default]</code>だけを使い、外形、配置、サイズをsetterで変更していません。</p>
+<p><img src="../assets/turbowarp-say-think-stage-comparison.png" alt="TurboWarp標準のsay・think吹き出しとBubble基本profileを同じStageで比較した実画面"></p>
+<p>Stage図では、右側配置、内容に追従する本体、Actor側へ向くspeech tail／thought trailを同じ条件で確認できます。Bubbleは独立したSVG surfaceを描画しており、全4panelとも実際のTurboWarp Stageを切り出したものです。</p>
+<p><img src="../assets/turbowarp-say-think-block-comparison.png" alt="TurboWarp標準のsay・thinkブロックとBubble基本profileの定義・say・thinkブロックを比較したスクリーンショット"></p>
+<p>ブロック図は最小構成を示します。project開始後にstyle定義を1回実行し、以後は標準ブロックに対応するBubbleの<code>say</code>／<code>think</code>を使います。</p>
 <p>次のsetterを使うと、意図的にcustom profileへ切り替わります。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 set bubble placement [up-right] for bubble style [hero-dialogue]
@@ -544,6 +550,7 @@ think [MESSAGE] with bubble style [STYLE]
 <p>Asset Managerへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Managerの<code>delete asset [NAME] from memory</code>を使います。</p>
 <h2>14. マニュアル画像の再生成</h2>
 <p>図とGIFはリポジトリ内のスクリプトから再生成できます。GIF生成にはImageMagickの<code>magick</code>コマンドが必要です。</p>
+<p>2つの<code>turbowarp-say-think-*-comparison.png</code>はrenderer previewから生成した図ではなく、TurboWarp Editorの実画面です。第4章に記載した撮影条件を使い、<code>docs:render</code>では上書きしません。</p>
 <pre><code class="language-sh">pnpm docs:render
 pnpm docs:check
 </code></pre>
