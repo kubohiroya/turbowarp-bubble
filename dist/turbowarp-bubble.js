@@ -145,7 +145,7 @@
         "opcode": "setBubbleVisualStyle",
         "blockType": "COMMAND",
         "text": "set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]",
-        "description": "Sets the SVG body shape used by this bubble style.",
+        "description": "Sets the inseparable SVG body and tail or trail shape pair used by this bubble style.",
         "arguments": {
           "VISUAL_STYLE": {
             "type": "STRING",
@@ -475,10 +475,47 @@
         }
       },
       {
+        "opcode": "say",
+        "blockType": "COMMAND",
+        "text": "say [MESSAGE]",
+        "description": "Shows or replaces this sprite's Scratch-compatible default say bubble. An empty message closes it.",
+        "arguments": { "MESSAGE": {
+          "type": "STRING",
+          "defaultValue": "Hello!"
+        } }
+      },
+      {
+        "opcode": "think",
+        "blockType": "COMMAND",
+        "text": "think [MESSAGE]",
+        "description": "Shows or replaces this sprite's Scratch-compatible default think bubble. An empty message closes it.",
+        "arguments": { "MESSAGE": {
+          "type": "STRING",
+          "defaultValue": "Hmm..."
+        } }
+      },
+      {
+        "opcode": "showWithBubbleStyle",
+        "blockType": "COMMAND",
+        "text": "show [MESSAGE] with bubble style [STYLE]",
+        "description": "Shows or replaces this sprite's Bubble. The selected style determines the complete body and tail or trail shape.",
+        "arguments": {
+          "MESSAGE": {
+            "type": "STRING",
+            "defaultValue": "Hello!"
+          },
+          "STYLE": {
+            "type": "STRING",
+            "defaultValue": "say"
+          }
+        }
+      },
+      {
         "opcode": "sayWithBubbleStyle",
         "blockType": "COMMAND",
         "text": "say [MESSAGE] with bubble style [STYLE]",
         "description": "Shows or replaces this sprite's say bubble in talking animation mode. An empty message closes the basic profile.",
+        "hideFromPalette": true,
         "arguments": {
           "MESSAGE": {
             "type": "STRING",
@@ -495,6 +532,7 @@
         "blockType": "COMMAND",
         "text": "think [MESSAGE] with bubble style [STYLE]",
         "description": "Shows or replaces this sprite's think bubble in talking animation mode. An empty message closes the basic profile.",
+        "hideFromPalette": true,
         "arguments": {
           "MESSAGE": {
             "type": "STRING",
@@ -8652,11 +8690,11 @@
   }
   function scratchSayBody(metrics) {
     const { paddedHeight: height, paddedWidth: width } = metrics;
-    return `<path d="${`${scratchBodyPath(metrics)} C ${width - 16} ${height + 4} ${width - 12} ${height + 8} ${width - 12} ${height + 10} Q ${width - 12} ${height + 12} ${width - 14} ${height + 12} C ${width - 17} ${height + 12} ${width - 27} ${height + 8} ${width - 32} ${height} Z`}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" stroke-linejoin="round"/>`;
+    return `<path d="${`${scratchBodyPath(metrics)} C ${width - 16} ${height + 4} ${width - 12} ${height + 8} ${width - 12} ${height + 10} Q ${width - 12} ${height + 12} ${width - 14} ${height + 12} C ${width - 17} ${height + 12} ${width - 27} ${height + 8} ${width - 32} ${height} Z`}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" stroke-linejoin="round" paint-order="stroke fill"/>`;
   }
   function scratchThinkBody(metrics) {
     const { paddedHeight: height, paddedWidth: width } = metrics;
-    return `<path d="${`${scratchBodyPath(metrics)} L ${width - 28} ${height} A 4 4 0 0 1 ${width - 36} ${height} Z`}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" stroke-linejoin="round"/><circle cx="${width - 25.25}" cy="${height + 7.25}" r="2.25" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4"/><circle cx="${width - 17.5}" cy="${height + 9.5}" r="1.5" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4"/>`;
+    return `<path d="${`${scratchBodyPath(metrics)} L ${width - 28} ${height} A 4 4 0 0 1 ${width - 36} ${height} Z`}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" stroke-linejoin="round" paint-order="stroke fill"/><circle cx="${width - 25.25}" cy="${height + 7.25}" r="2.25" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" paint-order="stroke fill"/><circle cx="${width - 17.5}" cy="${height + 9.5}" r="1.5" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" paint-order="stroke fill"/>`;
   }
   function renderScratchBubbleSvg(input) {
     const metrics = scratchBubbleMetrics(input.layout);
@@ -11136,6 +11174,7 @@
     "font-size",
     "height",
     "opacity",
+    "paint-order",
     "r",
     "rx",
     "stroke",
@@ -12460,6 +12499,13 @@
     "easeOut",
     "easeInOut"
   ]);
+  var builtInBubbleStyles = Object.freeze([Object.freeze({
+    name: "say",
+    textStyle: "default"
+  }), Object.freeze({
+    name: "think",
+    textStyle: "default"
+  })]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
   var EXTENSION_VERSION = "0.8.0";
   var BLOCK_ICON_URI = `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 13h40a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H30L17 55v-9h-5a5 5 0 0 1-5-5V18a5 5 0 0 1 5-5Z\"/><g fill=\"#fff\"><circle cx=\"23\" cy=\"30\" r=\"3\"/><circle cx=\"32\" cy=\"30\" r=\"3\"/><circle cx=\"41\" cy=\"30\" r=\"3\"/></g></svg>")}`;
@@ -12472,7 +12518,7 @@
     constructor(runtime = Scratch.vm?.runtime, options = {}) {
       _defineProperty(this, "runtime", void 0);
       _defineProperty(this, "options", void 0);
-      _defineProperty(this, "styles", /* @__PURE__ */ new Map());
+      _defineProperty(this, "styles", new Map(builtInBubbleStyles.map((style) => [style.name, style])));
       _defineProperty(this, "handles", /* @__PURE__ */ new Map());
       _defineProperty(this, "waits", /* @__PURE__ */ new Map());
       _defineProperty(this, "waitScheduler", void 0);
@@ -12785,6 +12831,22 @@
         durationSeconds: seconds
       });
     }
+    say(args, util) {
+      return this.show("say", Object.freeze({
+        MESSAGE: args.MESSAGE,
+        STYLE: "say"
+      }), util);
+    }
+    think(args, util) {
+      return this.show("think", Object.freeze({
+        MESSAGE: args.MESSAGE,
+        STYLE: "think"
+      }), util);
+    }
+    showWithBubbleStyle(args, util) {
+      const style = this.requireStyle(args.STYLE);
+      return this.show(style.name === "think" ? "think" : "say", args, util);
+    }
     sayWithBubbleStyle(args, util) {
       return this.show("say", args, util);
     }
@@ -12887,6 +12949,7 @@
         opcode: block.opcode,
         blockType: Scratch.BlockType[block.blockType],
         text: Scratch.translate(block.text),
+        ...block.hideFromPalette === true ? { hideFromPalette: true } : {},
         arguments: Object.fromEntries(Object.entries(block.arguments).map(([name, argument]) => [name, {
           type: Scratch.ArgumentType[argument.type],
           defaultValue: argument.defaultValue,

@@ -175,22 +175,21 @@ register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
 <p>For a remote image, pass its HTTPS URL as <code>RESOURCE_ID</code>. Bubble accepts only assets already registered with Asset Manager whose MIME type is <code>image/*</code>.</p>
 <h2 id="text-style">3. Select a text layout style</h2>
-<p>Standalone Bubble bundles the SVG Text 0.8.1 layout composition. A style that uses <code>default</code> and has no additional style settings selects Bubble&#39;s Scratch-compatible basic profile. It gives <code>say</code> and <code>think</code> their standard tails, content-sized body, 14px Helvetica text, right-first placement with a fit-dependent left flip, 330-character block-input limit, and empty-message close behavior. Any other text style name or explicit style-setting block selects the custom profile. Custom text styles are initialized on first use with transparent-background SVG Text defaults. If a project separately loads the stock SVG Text 0.8.1 extension before Bubble, Bubble uses its public <code>getLayoutCapability()</code> instead and preserves the named styles defined by SVG Text blocks. An older loaded SVG Text extension without that handoff produces an explicit compatibility error rather than silently replacing the style; select the documented scratch-render fallback only when needed.</p>
+<p>Standalone Bubble bundles the SVG Text 0.8.1 layout composition and installs two Bubble styles: <code>say</code> owns the speech body and speech tail, while <code>think</code> owns the thought body and round trail. A style&#39;s body and tail/trail shapes are one visual choice, not separately selected properties. The short <code>say [MESSAGE]</code> and <code>think [MESSAGE]</code> blocks select the matching style automatically, so the basic path needs neither a style definition nor a style input. Both styles use the reserved text profile <code>default</code>, a content-sized body, 14px Helvetica text, right-first placement with a fit-dependent left flip, 330-character block-input limit, and empty-message close behavior. Their 4px SVG stroke is painted before the white fill, hiding the inner half so the visible outline matches TurboWarp&#39;s standard bubble. Any other text style name or explicit style-setting block selects the custom profile. Custom text styles are initialized on first use with transparent-background SVG Text defaults. If a project separately loads the stock SVG Text 0.8.1 extension before Bubble, Bubble uses its public <code>getLayoutCapability()</code> instead and preserves the named styles defined by SVG Text blocks. An older loaded SVG Text extension without that handoff produces an explicit compatibility error rather than silently replacing the style; select the documented scratch-render fallback only when needed.</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 </code></pre>
 <p>Application hosts that need custom fonts, colors, or alignment can define styles on <code>createSvgTextLayoutComposition()</code> and inject them through <code>createSvgTextOverlayTextCapability()</code>. The custom profile uses the same <code>layoutText()</code> API and does not create an SVG text skin on the default overlay backend. Bubble owns placement, tail, and outer shape.</p>
 <h2 id="bubble-style">4. Define a Bubble style</h2>
-<p>For a basic Bubble, associate a Bubble style name with <code>default</code> and run no other style-setting block:</p>
-<pre><code class="language-text">define bubble style [basic] using text style [default]
-say [Hello!] with bubble style [basic]
-think [Hmm…] with bubble style [basic]
+<p>For a basic Bubble, use the short blocks directly. They select the built-in Bubble styles <code>say</code> and <code>think</code>, respectively:</p>
+<pre><code class="language-text">say [Hello!]
+think [Hmm…]
 </code></pre>
 <h3>TurboWarp standard comparison</h3>
-<p>These screenshots come from one TurboWarp Editor project using the English UI, a <code>Cat</code> sprite at <code>x=-80</code>, <code>y=0</code>, size <code>80%</code>, a white Stage, and matching <code>Hello!</code> / <code>Hmm...</code> inputs. The standard Looks blocks are on the left. Bubble&#39;s basic profile is on the right and uses only <code>define bubble style [dialogue] using text style [default]</code>; no setter changes its shape, placement, or size.</p>
+<p>These screenshots come from one TurboWarp Editor project using the English UI, a <code>Cat</code> sprite at <code>x=-80</code>, <code>y=0</code>, size <code>80%</code>, a white Stage, and matching <code>Hello!</code> / <code>Hmm...</code> inputs. The standard Looks blocks are on the left. Bubble&#39;s short basic blocks are on the right and use their matching built-in <code>say</code> / <code>think</code> styles; no definition or setter block is used.</p>
 <p><img src="./assets/turbowarp-say-think-stage-comparison.png" alt="TurboWarp standard say and think bubbles compared on the Stage with Bubble&#39;s basic profile"></p>
 <p>The Stage panels show the right-side placement, content-sized body, and the speech tail or thought trail pointing back toward the Actor in each implementation. Bubble renders an independent SVG surface, and every panel is a crop of the actual TurboWarp Stage.</p>
-<p><img src="./assets/turbowarp-say-think-block-comparison.png" alt="TurboWarp standard say and think blocks compared with the Bubble basic-profile definition, say, and think blocks"></p>
-<p>The block image shows the minimum setup. Run the style definition once after the project starts; then use Bubble&#39;s <code>say</code> and <code>think</code> blocks as the standard-block counterparts.</p>
+<p><img src="./assets/turbowarp-say-think-block-comparison.png" alt="TurboWarp standard say and think blocks compared with Bubble&#39;s no-setup basic say and think blocks and built-in default profile values"></p>
+<p>The block image shows the no-setup path and the unified custom-style block. The short blocks select the matching built-in styles automatically. The callout shows each inseparable body-plus-tail/trail pair, maps both styles to the reserved text profile <code>default</code>, and lists the shared typography, geometry, colors, border paint order, and placement. Use <code>show [MESSAGE] with bubble style [STYLE]</code> for named custom styles. The former styled say/think opcodes remain hidden compatibility definitions for saved projects.</p>
 <p>The following setters intentionally switch the style to the custom profile:</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 set bubble placement [up-right] for bubble style [hero-dialogue]
@@ -282,7 +281,7 @@ set continue frames [Next1,Next2]
 set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
 set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
 set bubble voice [HeroVoice] for bubble style [hero-dialogue]
-say [Let&#39;s head for the sea!] with bubble style [hero-dialogue]
+show [Let&#39;s head for the sea!] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 </code></pre>
 <p><code>DYNAMIC</code> recalculates the Bubble size and placement after each unit. <code>RESERVED</code> measures the final text first and reserves that layout while units appear. <code>set bubble reveal sound</code> plays a named Asset Manager audio asset per unit, while <code>set bubble voice</code> plays full voice audio when the Bubble starts. Text display remains available without audio.</p>
@@ -291,7 +290,7 @@ finish [CHARACTER] with condition [input == &quot;pressed&quot;] or timeout afte
 <pre><code class="language-text">set runtime variable [input] to []
 listen for key [Space] set runtime var [input] to [pressed]
 listen for touch on this sprite set runtime var [input] to [pressed]
-say [Let&#39;s head for the sea!] with bubble style [hero-dialogue]
+show [Let&#39;s head for the sea!] with bubble style [hero-dialogue]
 wait with this bubble until condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 close this bubble
 </code></pre>
@@ -345,11 +344,10 @@ explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </code></pre>
 <p>The TurboWarp adapter advances these motions on scheduler frames and applies <code>ease</code> to each frame. <code>shake</code> applies direction and count to the complete Bubble surface, <code>explode</code> expands and returns the relative scale of text and portrait together, and <code>animate bubble shape</code> cross-fades the current outline into styles such as <code>THINKING</code>, <code>DREAMING</code>, <code>YELLING</code>, <code>WAVY</code>, or <code>WHISPERING</code> during the requested speed and duration.</p>
-<h2 id="reference">9. <code>say</code> and <code>think</code></h2>
-<pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
-think [MESSAGE] with bubble style [STYLE]
+<h2 id="reference">9. Showing a named Bubble style</h2>
+<pre><code class="language-text">show [MESSAGE] with bubble style [STYLE]
 </code></pre>
-<p>Both blocks support the same visual styles, portrait layers, placement, and animation-mode control. The block name does not force a shape; explicitly choose <code>NORMAL</code>, <code>THINKING</code>, or another shape with <code>set bubble visual style</code>. The Composition API surface still receives a <code>say</code>/<code>think</code> kind, so a custom host can add its own kind-dependent behavior.</p>
+<p>The selected Bubble style determines the body and tail/trail together, along with its text profile, portrait layers, placement, and animation settings. <code>set bubble visual style</code> selects an inseparable pair such as <code>NORMAL</code> (speech body + speech tail) or <code>THINKING</code> (thought body + round trail); there is no independent tail-shape setting. The standalone extension derives its internal rendering kind from that style instead of asking the display block for a second, potentially conflicting choice.</p>
 <p>Running a new <code>say</code> or <code>think</code> on the same sprite, clone, or Stage disposes the previous Bubble and its timers/drawables before replacing it. The Stage supports stage-relative placement only.</p>
 <h2 id="troubleshooting">10. Using Bubble with clones</h2>
 <p>Bubble style definitions are shared within the extension, but each sprite or clone owns its currently displayed Bubble.</p>
@@ -381,7 +379,7 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 <tr>
 <td><code>set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]</code></td>
-<td>Select one of ten SVG body shapes</td>
+<td>Select one of ten inseparable SVG body + tail/trail pairs</td>
 </tr>
 <tr>
 <td><code>set bubble tail length [LENGTH] for bubble style [STYLE]</code></td>
@@ -456,12 +454,16 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Transition the Bubble outline</td>
 </tr>
 <tr>
-<td><code>say [MESSAGE] with bubble style [STYLE]</code></td>
-<td>Start or replace a <code>say</code> Bubble in <code>talking</code> mode</td>
+<td><code>say [MESSAGE]</code></td>
+<td>Show built-in style <code>say</code>: speech body and speech tail</td>
 </tr>
 <tr>
-<td><code>think [MESSAGE] with bubble style [STYLE]</code></td>
-<td>Start or replace a <code>think</code> Bubble in <code>talking</code> mode</td>
+<td><code>think [MESSAGE]</code></td>
+<td>Show built-in style <code>think</code>: thought body and round trail</td>
+</tr>
+<tr>
+<td><code>show [MESSAGE] with bubble style [STYLE]</code></td>
+<td>Show the complete body and tail/trail pair owned by a style</td>
 </tr>
 <tr>
 <td><code>set this bubble animation mode [MODE]</code></td>
@@ -480,6 +482,7 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Report the Bubble implementation version</td>
 </tr>
 </tbody></table>
+<p>Saved projects using the former <code>say/think [MESSAGE] with bubble style [STYLE]</code> opcodes continue to run, but those two compatibility blocks are hidden from the palette. New scripts use the unified <code>show</code> block so the selected style alone determines the complete body and tail/trail shape.</p>
 <h2 id="regeneration">12. Troubleshooting</h2>
 <table>
 <thead>
@@ -506,7 +509,7 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 <tr>
 <td><code>bubble style is not defined</code></td>
-<td>Run <code>define bubble style</code> first, including after restarting with green flag</td>
+<td>Use the built-in short say/think blocks, or define the named custom style first</td>
 </tr>
 <tr>
 <td>Image asset is not registered</td>

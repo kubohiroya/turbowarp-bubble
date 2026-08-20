@@ -49,6 +49,7 @@ interface BlockDefinition {
   readonly blockType: BlockTypeName;
   readonly text: string;
   readonly description: string;
+  readonly hideFromPalette?: boolean;
   readonly arguments: Readonly<Record<string, DefinitionArgument>>;
 }
 
@@ -104,6 +105,10 @@ const motionNames = new Set([
   "animateBubbleShape",
 ]);
 const easeNames = new Set(["linear", "easeIn", "easeOut", "easeInOut"]);
+const builtInBubbleStyles: readonly BubbleStyleInput[] = Object.freeze([
+  Object.freeze({ name: "say", textStyle: "default" }),
+  Object.freeze({ name: "think", textStyle: "default" }),
+]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
 export const EXTENSION_VERSION = "0.8.0";
@@ -120,7 +125,9 @@ function extensionError(message: string): Error {
 export class BubbleExtension implements TurboWarpExtension {
   private readonly runtime: BubbleExtensionRuntime;
   private readonly options: BubbleExtensionOptions;
-  private readonly styles = new Map<string, BubbleStyleInput>();
+  private readonly styles = new Map<string, BubbleStyleInput>(
+    builtInBubbleStyles.map((style) => [style.name, style]),
+  );
   private readonly handles = new Map<string, BubbleHandle>();
   private readonly waits = new Map<string, PendingBubbleWait>();
   private readonly waitScheduler: BubbleScheduler;
@@ -550,6 +557,30 @@ export class BubbleExtension implements TurboWarpExtension {
     });
   }
 
+  public say(args: BlockArguments, util: BlockUtility): Promise<void> {
+    return this.show(
+      "say",
+      Object.freeze({ MESSAGE: args.MESSAGE, STYLE: "say" }),
+      util,
+    );
+  }
+
+  public think(args: BlockArguments, util: BlockUtility): Promise<void> {
+    return this.show(
+      "think",
+      Object.freeze({ MESSAGE: args.MESSAGE, STYLE: "think" }),
+      util,
+    );
+  }
+
+  public showWithBubbleStyle(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const style = this.requireStyle(args.STYLE);
+    return this.show(style.name === "think" ? "think" : "say", args, util);
+  }
+
   public sayWithBubbleStyle(
     args: BlockArguments,
     util: BlockUtility,
@@ -730,6 +761,7 @@ export class BubbleExtension implements TurboWarpExtension {
       opcode: block.opcode,
       blockType: Scratch.BlockType[block.blockType],
       text: Scratch.translate(block.text),
+      ...(block.hideFromPalette === true ? { hideFromPalette: true } : {}),
       arguments: Object.fromEntries(
         Object.entries(block.arguments).map(([name, argument]) => [
           name,

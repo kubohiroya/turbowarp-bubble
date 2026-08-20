@@ -104,9 +104,11 @@ describe("Scratch-compatible default Bubble profile", () => {
     expect(say).toContain('data-bubble-kind="say"');
     expect(say).not.toContain("<circle");
     expect(say.match(/scale\(-1 1\)/gu)).toHaveLength(1);
+    expect(say.match(/paint-order="stroke fill"/gu)).toHaveLength(1);
     expect(think).toContain('data-bubble-kind="think"');
     expect(think).toContain("<circle");
     expect(think).not.toContain("scale(-1 1)");
+    expect(think.match(/paint-order="stroke fill"/gu)).toHaveLength(3);
     expect(think).toContain(">Hello</text>");
   });
 

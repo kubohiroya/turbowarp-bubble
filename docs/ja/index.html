@@ -175,22 +175,21 @@ register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
 <p>URL画像を使う場合は、<code>RESOURCE_ID</code>へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが<code>image/*</code>のアセットだけです。</p>
 <h2 id="text-style">3. 文字layout styleを選ぶ</h2>
-<p>standalone BubbleはSVG Text 0.8.1のlayout compositionを内包します。<code>default</code>を使い、ほかのstyle設定を行わないstyleはScratch互換の基本profileになります。<code>say</code>／<code>think</code>ごとの標準tail、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseが適用されます。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開<code>getLayoutCapability()</code>を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。</p>
+<p>standalone BubbleはSVG Text 0.8.1のlayout compositionを内包し、2つのBubble styleを組み込みます。<code>say</code>はspeech本体とspeech tail、<code>think</code>はthought本体とround trailを持ち、本体とtail/trailの形は別項目ではなく1つのvisual styleとして選びます。短い<code>say [MESSAGE]</code>／<code>think [MESSAGE]</code>ブロックが対応styleを自動選択するため、基本経路にはstyle定義もstyle入力も不要です。どちらも予約text profile <code>default</code>、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseを使います。4pxのSVG strokeを白いfillより先に描き、内側半分を隠すことで、見かけの輪郭をTurboWarp標準と同じ細さにします。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開<code>getLayoutCapability()</code>を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 </code></pre>
 <p>独自のfont、色、alignmentを使うアプリhostは、<code>createSvgTextLayoutComposition()</code>へstyleを定義し、<code>createSvgTextOverlayTextCapability()</code>でBubbleへ注入します。custom profileは同じ<code>layoutText()</code>を使い、既定overlay backendではSVG文字skinを生成しません。Bubbleの配置、tail、吹き出し外形はBubble側が担当します。</p>
 <h2 id="bubble-style">4. Bubble styleを定義する</h2>
-<p>基本Bubbleでは、Bubble style名を<code>default</code>へ関連付け、ほかのstyle設定ブロックを実行しません。</p>
-<pre><code class="language-text">define bubble style [basic] using text style [default]
-say [こんにちは！] with bubble style [basic]
-think [うーん…] with bubble style [basic]
+<p>基本Bubbleでは短いブロックをそのまま使います。組み込みBubble style <code>say</code>／<code>think</code>がそれぞれ自動選択されます。</p>
+<pre><code class="language-text">say [こんにちは！]
+think [うーん…]
 </code></pre>
 <h3>TurboWarp標準との比較</h3>
-<p>次の画像は、1つのTurboWarp Editor projectで英語UIを使い、<code>Cat</code> spriteを<code>x=-80</code>、<code>y=0</code>、サイズ<code>80%</code>、Stageを白背景、入力を<code>Hello!</code>／<code>Hmm...</code>に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロックです。右列のBubble基本profileは<code>define bubble style [dialogue] using text style [default]</code>だけを使い、外形、配置、サイズをsetterで変更していません。</p>
+<p>次の画像は、1つのTurboWarp Editor projectで英語UIを使い、<code>Cat</code> spriteを<code>x=-80</code>、<code>y=0</code>、サイズ<code>80%</code>、Stageを白背景、入力を<code>Hello!</code>／<code>Hmm...</code>に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロックです。右列は対応する組み込み<code>say</code>／<code>think</code> styleを使うBubbleの短い基本ブロックで、定義ブロックもsetterも使っていません。</p>
 <p><img src="../assets/turbowarp-say-think-stage-comparison.png" alt="TurboWarp標準のsay・think吹き出しとBubble基本profileを同じStageで比較した実画面"></p>
 <p>Stage図では、右側配置、内容に追従する本体、Actor側へ向くspeech tail／thought trailを同じ条件で確認できます。Bubbleは独立したSVG surfaceを描画しており、全4panelとも実際のTurboWarp Stageを切り出したものです。</p>
-<p><img src="../assets/turbowarp-say-think-block-comparison.png" alt="TurboWarp標準のsay・thinkブロックとBubble基本profileの定義・say・thinkブロックを比較したスクリーンショット"></p>
-<p>ブロック図は最小構成を示します。project開始後にstyle定義を1回実行し、以後は標準ブロックに対応するBubbleの<code>say</code>／<code>think</code>を使います。</p>
+<p><img src="../assets/turbowarp-say-think-block-comparison.png" alt="TurboWarp標準のsay・thinkブロックと、設定不要のBubble基本say・thinkブロックおよび組み込みdefault profile値を比較したスクリーンショット"></p>
+<p>ブロック図は設定不要の基本経路と、custom style用の統合表示ブロックを示します。短いブロックは対応する組み込みstyleを自動選択します。calloutでは不可分な本体＋tail/trailの組、両styleが使う予約text profile <code>default</code>、共通のfont、行高、幅、padding、角丸、色、border描画順、配置を示します。named custom styleには<code>show [MESSAGE] with bubble style [STYLE]</code>を使います。旧styled say/think opcodeは保存済みproject互換用の非表示定義として残します。</p>
 <p>次のsetterを使うと、意図的にcustom profileへ切り替わります。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
 set bubble placement [up-right] for bubble style [hero-dialogue]
@@ -282,7 +281,7 @@ set continue frames [Next1,Next2]
 set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
 set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
 set bubble voice [HeroVoice] for bubble style [hero-dialogue]
-say [海へ出発！] with bubble style [hero-dialogue]
+show [海へ出発！] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 </code></pre>
 <p><code>DYNAMIC</code>は表示単位ごとに吹き出しの大きさと配置を再計算し、<code>RESERVED</code>は最終的な文字量を先に計測して表示中の外形を予約します。<code>set bubble reveal sound</code>は単位ごと、<code>set bubble voice</code>は表示開始時にAsset Managerの名前付き音声を再生します。音声がなくても文字表示は利用できます。</p>
@@ -291,7 +290,7 @@ finish [CHARACTER] with condition [input == &quot;pressed&quot;] or timeout afte
 <pre><code class="language-text">set runtime variable [input] to []
 listen for key [Space] set runtime var [input] to [pressed]
 listen for touch on this sprite set runtime var [input] to [pressed]
-say [海へ出発！] with bubble style [hero-dialogue]
+show [海へ出発！] with bubble style [hero-dialogue]
 wait with this bubble until condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 close this bubble
 </code></pre>
@@ -345,11 +344,10 @@ explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </code></pre>
 <p>TurboWarp adapterはこれらをschedulerのフレームごとに進め、各フレームの進行率へ<code>ease</code>を適用します。<code>shake</code>は吹き出し全体を方向・回数付きで揺らし、<code>explode</code>はportraitと文字を含むsurface全体を拡大して元へ戻し、<code>animate bubble shape</code>は指定時間中に現在の外形から<code>THINKING</code>、<code>DREAMING</code>、<code>YELLING</code>、<code>WAVY</code>、<code>WHISPERING</code>などへcross-fadeします。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。</p>
-<h2 id="reference">9. sayとthink</h2>
-<pre><code class="language-text">say [MESSAGE] with bubble style [STYLE]
-think [MESSAGE] with bubble style [STYLE]
+<h2 id="reference">9. named Bubble styleを表示する</h2>
+<pre><code class="language-text">show [MESSAGE] with bubble style [STYLE]
 </code></pre>
-<p>どちらも同じvisual style、表情レイヤー、placement、animation mode制御を使えます。<code>say</code>／<code>think</code>だけで形状を固定せず、<code>set bubble visual style</code>で<code>NORMAL</code>、<code>THINKING</code>などを明示的に選びます。Composition APIのsurfaceには<code>say</code>／<code>think</code>のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。</p>
+<p>選択したBubble styleが、本体とtail/trailの形を一体で決め、text profile、表情レイヤー、placement、animation設定も保持します。<code>set bubble visual style</code>は<code>NORMAL</code>（speech本体＋speech tail）や<code>THINKING</code>（thought本体＋round trail）のような不可分の組を選ぶブロックで、tail形状だけを独立して指定する設定はありません。standalone extensionは、表示ブロックに競合し得る別の種類を選ばせず、そのstyleから内部描画kindを導きます。</p>
 <p>同じsprite、clone、またはStageで新しい<code>say</code>／<code>think</code>を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。</p>
 <h2 id="troubleshooting">10. cloneで使う</h2>
 <p>Bubble styleの定義は拡張機能内で共有されますが、表示中のBubbleはsprite／cloneごとに所有されます。</p>
@@ -381,7 +379,7 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 <tr>
 <td><code>set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]</code></td>
-<td>Bubble本体のSVG形状を10種類から設定する</td>
+<td>不可分なSVG本体＋tail/trailの組を10種類から設定する</td>
 </tr>
 <tr>
 <td><code>set bubble tail length [LENGTH] for bubble style [STYLE]</code></td>
@@ -456,12 +454,16 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Bubble外形を時間経過で切り替える</td>
 </tr>
 <tr>
-<td><code>say [MESSAGE] with bubble style [STYLE]</code></td>
-<td><code>talking</code> modeでsay表示を開始・置換する</td>
+<td><code>say [MESSAGE]</code></td>
+<td>組み込み<code>say</code> styleのspeech本体＋tailを表示する</td>
 </tr>
 <tr>
-<td><code>think [MESSAGE] with bubble style [STYLE]</code></td>
-<td><code>talking</code> modeでthink表示を開始・置換する</td>
+<td><code>think [MESSAGE]</code></td>
+<td>組み込み<code>think</code> styleのthought本体＋round trailを表示する</td>
+</tr>
+<tr>
+<td><code>show [MESSAGE] with bubble style [STYLE]</code></td>
+<td>styleが持つ本体＋tail/trailの一組を表示する</td>
 </tr>
 <tr>
 <td><code>set this bubble animation mode [MODE]</code></td>
@@ -480,6 +482,7 @@ think [MESSAGE] with bubble style [STYLE]
 <td>Bubble実装versionを返す</td>
 </tr>
 </tbody></table>
+<p>旧<code>say/think [MESSAGE] with bubble style [STYLE]</code> opcodeを使う保存済みprojectは引き続き動作しますが、この互換ブロック2個はpaletteに表示しません。新しいscriptでは統合<code>show</code>ブロックを使い、選択styleだけで本体とtail/trailの形を決めます。</p>
 <h2 id="regeneration">12. よくあるエラー</h2>
 <table>
 <thead>
@@ -506,7 +509,7 @@ think [MESSAGE] with bubble style [STYLE]
 </tr>
 <tr>
 <td><code>bubble style is not defined</code></td>
-<td><code>define bubble style</code>を先に実行する。緑の旗の再実行時も再定義する</td>
+<td>組み込みの短いsay／thinkを使うか、named custom styleを先に定義する</td>
 </tr>
 <tr>
 <td>image assetが未登録</td>

@@ -242,13 +242,13 @@ function scratchBodyPath(metrics: ScratchBubbleMetrics): string {
 function scratchSayBody(metrics: ScratchBubbleMetrics): string {
   const { paddedHeight: height, paddedWidth: width } = metrics;
   const path = `${scratchBodyPath(metrics)} C ${width - 16} ${height + 4} ${width - 12} ${height + 8} ${width - 12} ${height + 10} Q ${width - 12} ${height + 12} ${width - 14} ${height + 12} C ${width - 17} ${height + 12} ${width - 27} ${height + 8} ${width - 32} ${height} Z`;
-  return `<path d="${path}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}" stroke-linejoin="round"/>`;
+  return `<path d="${path}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}" stroke-linejoin="round" paint-order="stroke fill"/>`;
 }
 
 function scratchThinkBody(metrics: ScratchBubbleMetrics): string {
   const { paddedHeight: height, paddedWidth: width } = metrics;
   const body = `${scratchBodyPath(metrics)} L ${width - 28} ${height} A 4 4 0 0 1 ${width - 36} ${height} Z`;
-  return `<path d="${body}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}" stroke-linejoin="round"/><circle cx="${width - 25.25}" cy="${height + 7.25}" r="2.25" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}"/><circle cx="${width - 17.5}" cy="${height + 9.5}" r="1.5" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}"/>`;
+  return `<path d="${body}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}" stroke-linejoin="round" paint-order="stroke fill"/><circle cx="${width - 25.25}" cy="${height + 7.25}" r="2.25" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}" paint-order="stroke fill"/><circle cx="${width - 17.5}" cy="${height + 9.5}" r="1.5" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="${scratchBubbleStrokeWidth}" paint-order="stroke fill"/>`;
 }
 
 export function renderScratchBubbleSvg(
