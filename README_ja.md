@@ -34,7 +34,7 @@ flowchart LR
   wait --> close[終了・resource解放]
 ```
 
-次の表は0.9.0の機能と公開entry pointの対応です。standalone機能拡張は31定義から29個のpaletteブロックを公開し、保存済みprojectの互換性のため旧styled say/think 2定義を非表示で維持します。表示される全ブロックは[提供ブロック](#提供ブロック)に掲載しています。
+次の表は0.9.0の機能と公開entry pointの対応です。standalone機能拡張は33定義から31個のpaletteブロックを公開し、保存済みprojectの互換性のため旧styled say/think 2定義を非表示で維持します。表示される全ブロックは[提供ブロック](#提供ブロック)に掲載しています。
 
 | 領域                                | このREADMEで説明する内容                                                       | 公開entry point                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------ |
@@ -317,7 +317,7 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 1. 入力待ちの例を使う場合は、TurboWarp Editorでプロジェクトを開き、拡張機能の追加からTemporary Variablesを追加します。
 2. 「カスタム拡張機能」を選び、サンドボックスなし（Run without sandbox）で実行できる状態にします。
 3. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Manager 0.12.1を読み込みます。
-4. `finish [UNIT] ...`にはRuntime Expression 0.4.0、`wait with this bubble until condition ...`にはAsync Input 0.4.0とRuntime Expression 0.4.0を読み込みます。
+4. `finish [UNIT] ...`にはRuntime Expression 0.4.0、conditionを使う待機またはclose policyにはAsync Input 0.4.0とRuntime Expression 0.4.0を読み込みます。timeoutだけのclose policyにはどちらも不要です。
 5. 最後にBubble 0.9.0を読み込みます。SVG Text 0.8.1のlayout providerはBubble bundleに含まれます。
 
 文字だけの最小構成はBubbleです。Temporary Variables、Asset Manager、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。Bubbleを読み込むと、基本の`say [MESSAGE]`／`think [MESSAGE]`ブロックはstyle定義なしですぐ使えます。それぞれ組み込みBubble style `say`／`think`を選び、各styleが本体形状とtail/trail形状を不可分な1つの外観として持ちます。どちらも予約text profile `default`を使います。named custom styleが必要な場合だけ`define bubble style`と`show [MESSAGE] with bubble style [STYLE]`を使います。それ以外のnamed text styleや、外形・配置・media・reveal・motionの明示設定はcustom profileになります。
@@ -326,10 +326,10 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 # portrait／blink／lip-sync／continue／音声を使う場合だけ追加
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js
 
-# 統合待機ブロックを使う場合はAsync Inputを追加
+# conditionを使う統合待機またはclose policyでAsync Inputを追加
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js
 
-# finishまたは統合待機ブロックを使う場合はRuntime Expressionを追加
+# finishまたはconditionを使う待機／close policyでRuntime Expressionを追加
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js
 
 # Bubble（必ず最後）
@@ -360,6 +360,7 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | ブロック                                                                                                       | 動作                                                      |
 | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Bubble styleを定義または置換する                          |
+| `define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds`        | 名前付きの終了条件を定義または置換する                    |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Actor相対方向・角度、または背景相対領域を設定する         |
 | `set portrait base [ASSET] for bubble style [STYLE]`                                                           | portraitベースを設定する。空値でportrait全体を解除する    |
 | `set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]` | portraitの配置、局所変形、角丸を設定する                  |
@@ -386,10 +387,25 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 | `show [MESSAGE] with bubble style [STYLE]`                                                                     | 選択styleが持つ本体＋tail/trailの組を表示する             |
 | `set this bubble animation mode [MODE]`                                                                        | `talking`／`awaiting-continue`／`idle`を選択する          |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Runtime Expressionの条件成立または任意timeoutまで待つ     |
+| `wait and close this bubble using close policy [POLICY]`                                                       | policyをsnapshotし、成立を待ってBubbleを閉じる            |
 | `close this bubble`                                                                                            | 呼び出し元のBubbleと所有resourceを解放する                |
 | `Bubble version`                                                                                               | 実装versionを返す                                         |
 
-`ASSETS`はAsset Managerへ登録済みの名前をカンマ区切りで指定します。前後の空白は除去され、名前自体にカンマは使用できません。目パチと口パクは1フレーム以上、continue indicatorは2フレーム以上が必要で、空リストにすると設定を解除します。frame間隔は0より大きい有限値です。逐次表示間隔、animation時間、timeoutには0も指定でき、逐次表示間隔の0は自動送りを、timeoutの0は時間制限を無効にします。
+Bubble close policyは制御フローの設定であり、見た目を表すBubble styleではありません。`condition`は時間制限なしで条件を待ち、`timeout`は正の秒数後に閉じ、`condition-or-timeout`は先に成立した方で閉じます。conditionは空にできず、有効なtimeoutは0より大きい値にします。
+
+```text
+define bubble close policy [three-seconds] trigger [timeout] condition [] timeout [3] seconds
+say [3秒後に閉じます。]
+wait and close this bubble using close policy [three-seconds]
+
+define bubble close policy [advance] trigger [condition] condition [input == "pressed"] timeout [0] seconds
+say [キーを押すかspriteをタッチしてください。]
+wait and close this bubble using close policy [advance]
+```
+
+適用ブロックは開始時に名前付き定義をsnapshotします。待機中に同名policyを置換しても、その変更は次回の適用から有効です。timeoutだけのpolicyは現在のanimation modeを維持し、入力用拡張を必要としません。conditionを含むpolicyは`awaiting-continue`へ移り、既存の内蔵待機と同じくAsync InputとRuntime Expressionを使います。成立後は設定済みhide animationを実行してBubbleを解放します。Bubbleの置換、targetやprojectの停止、runtime破棄では待機中policyをcancelし、置換後のBubbleを閉じません。
+
+`ASSETS`はAsset Managerへ登録済みの名前をカンマ区切りで指定します。前後の空白は除去され、名前自体にカンマは使用できません。目パチと口パクは1フレーム以上、continue indicatorは2フレーム以上が必要で、空リストにすると設定を解除します。frame間隔は0より大きい有限値です。逐次表示間隔、animation時間、従来のwait timeoutには0も指定でき、逐次表示間隔の0は自動送りを、従来のtimeoutの0は時間制限を無効にします。close policyで明示的に選ぶtimeoutは0より大きい値にします。
 
 Bubbleには2つの組み込みBubble styleがあります。`say`はspeech本体とspeech tail、`think`はthought本体とround trailを持ち、本体とtail/trailは個別指定ではなく1つのvisual styleとして選びます。対応する短いブロックが各styleを自動選択するため、style定義ブロックもstyle入力も不要です。どちらも予約text profile `default`を使い、14px Helvetica、line height 16px、最大行幅170px、最小文字領域幅50px、padding 10px、corner radius 16px、白い本体、Scratch標準の文字色・border色で描画します。SVGの4px strokeを先に描き、その内側半分を白いfillで覆うことで、TurboWarp標準と同じ細い見かけの輪郭にします。Actor右側を優先し、右に収まらず左に収まる場合だけ反転します。Actor boundsへの追従、Stage上端・左右端のfence、数値block入力の整形、330文字上限、空文字でのcloseも標準`say`／`think`に揃えます。
 

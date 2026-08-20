@@ -81,6 +81,15 @@ type BubbleExtensionOptions = TurboWarpBubbleCompositionOptions;
 
 type BlockArguments = Readonly<Record<string, unknown>>;
 type AnimationField = "blink" | "lipSync";
+type BubbleClosePolicyTrigger =
+  "condition" | "timeout" | "condition-or-timeout";
+
+interface BubbleClosePolicy {
+  readonly name: string;
+  readonly trigger: BubbleClosePolicyTrigger;
+  readonly condition?: string;
+  readonly timeoutSeconds?: number;
+}
 
 const blockDefinitions = definitions.blocks as readonly BlockDefinition[];
 const definitionMenus = definitions.menus as Record<string, DefinitionMenu>;
@@ -88,6 +97,11 @@ const validAnimationModes = new Set<BubbleAnimationMode>([
   "idle",
   "talking",
   "awaiting-continue",
+]);
+const validClosePolicyTriggers = new Set<BubbleClosePolicyTrigger>([
+  "condition",
+  "timeout",
+  "condition-or-timeout",
 ]);
 const validRevealUnits = new Set<BubbleRevealUnit>([
   "CHARACTER",
@@ -128,6 +142,7 @@ export class BubbleExtension implements TurboWarpExtension {
   private readonly styles = new Map<string, BubbleStyleInput>(
     builtInBubbleStyles.map((style) => [style.name, style]),
   );
+  private readonly closePolicies = new Map<string, BubbleClosePolicy>();
   private readonly handles = new Map<string, BubbleHandle>();
   private readonly waits = new Map<string, PendingBubbleWait>();
   private readonly waitScheduler: BubbleScheduler;
@@ -188,6 +203,47 @@ export class BubbleExtension implements TurboWarpExtension {
       textStyle: this.requireName(args.TEXT_STYLE, "text style"),
     });
     this.installStyle(style);
+  }
+
+  public defineBubbleClosePolicy(args: BlockArguments): void {
+    const name = this.requireName(args.POLICY, "close policy");
+    const trigger = this.toString(args.TRIGGER)
+      .trim()
+      .toLowerCase() as BubbleClosePolicyTrigger;
+    if (!validClosePolicyTriggers.has(trigger)) {
+      throw extensionError(
+        "close policy trigger must be condition, timeout, or condition-or-timeout.",
+      );
+    }
+    const usesCondition = trigger !== "timeout";
+    const usesTimeout = trigger !== "condition";
+    const condition = usesCondition
+      ? this.toString(args.CONDITION).trim()
+      : undefined;
+    if (usesCondition && !condition)
+      throw extensionError("close policy condition is empty.");
+    const timeoutSeconds = usesTimeout
+      ? Scratch.Cast.toNumber(args.TIMEOUT)
+      : undefined;
+    if (
+      usesTimeout &&
+      (!Number.isFinite(timeoutSeconds) || Number(timeoutSeconds) <= 0)
+    ) {
+      throw extensionError(
+        "close policy timeout must be greater than zero when enabled.",
+      );
+    }
+    this.closePolicies.set(
+      name,
+      Object.freeze({
+        name,
+        trigger,
+        ...(condition === undefined ? {} : { condition }),
+        ...(timeoutSeconds === undefined
+          ? {}
+          : { timeoutSeconds: Number(timeoutSeconds) }),
+      }),
+    );
   }
 
   public setPortraitBase(args: BlockArguments): void {
@@ -628,72 +684,44 @@ export class BubbleExtension implements TurboWarpExtension {
     if (!Number.isFinite(timeoutSeconds) || timeoutSeconds < 0) {
       throw extensionError("wait timeout must be zero or greater.");
     }
-    if (!this.isRecord(this.runtime.ext_kubohiroyaasyncinput)) {
-      throw extensionError(
-        "Bubble wait requires Async Input. Load @kubohiroya/turbowarp-async-input before using this block.",
-      );
-    }
-    const runtimeExpression = this.runtime.ext_kubohiroyaruntimeexpression;
-    if (
-      !this.isRecord(runtimeExpression) ||
-      typeof runtimeExpression.runtimeCondition !== "function"
-    ) {
-      throw extensionError(
-        "Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.",
-      );
-    }
-    if (
-      typeof this.runtime.on !== "function" ||
-      typeof this.runtime.off !== "function"
-    ) {
-      throw extensionError("TurboWarp runtime events are unavailable.");
-    }
-
-    this.cancelWait(target.id, "Bubble wait was replaced.");
-    await handle.setAnimationMode("awaiting-continue");
-
-    await new Promise<void>((resolve, reject) => {
-      let settled = false;
-      let timeoutHandle: unknown;
-      const cleanup = (): void => {
-        this.runtime.off?.("BEFORE_EXECUTE", checkCondition);
-        if (timeoutHandle !== undefined)
-          this.waitScheduler.clearTimeout(timeoutHandle);
-        if (this.waits.get(target.id) === pending) this.waits.delete(target.id);
-      };
-      const finish = (error?: Error): void => {
-        if (settled) return;
-        settled = true;
-        cleanup();
-        if (error) {
-          reject(error);
-          return;
-        }
-        void handle.setAnimationMode("idle").then(resolve, reject);
-      };
-      const checkCondition = (): void => {
-        try {
-          if (runtimeExpression.runtimeCondition({ EXPRESSION: condition }))
-            finish();
-        } catch (error) {
-          finish(
-            error instanceof Error
-              ? error
-              : extensionError("wait condition evaluation failed."),
-          );
-        }
-      };
-      const pending: PendingBubbleWait = Object.freeze({ cancel: finish });
-      this.waits.set(target.id, pending);
-      this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
-      if (timeoutSeconds > 0) {
-        timeoutHandle = this.waitScheduler.setTimeout(
-          () => finish(),
-          timeoutSeconds * 1000,
-        );
-      }
-      checkCondition();
+    await this.waitForBubbleTrigger({
+      targetId: target.id,
+      handle,
+      condition,
+      ...(timeoutSeconds === 0 ? {} : { timeoutSeconds }),
+      setAwaitingContinue: true,
+      restoreIdle: true,
+      requireAsyncInput: true,
     });
+  }
+
+  public async waitAndCloseBubbleWithPolicy(
+    args: BlockArguments,
+    util: BlockUtility,
+  ): Promise<void> {
+    const target = this.requireTarget(util);
+    const handle = this.handles.get(target.id);
+    if (!handle)
+      throw extensionError("this target does not have an active bubble.");
+    const policy = this.requireClosePolicy(args.POLICY);
+    const usesCondition = policy.condition !== undefined;
+    await this.waitForBubbleTrigger({
+      targetId: target.id,
+      handle,
+      ...(policy.condition === undefined
+        ? {}
+        : { condition: policy.condition }),
+      ...(policy.timeoutSeconds === undefined
+        ? {}
+        : { timeoutSeconds: policy.timeoutSeconds }),
+      setAwaitingContinue: usesCondition,
+      restoreIdle: false,
+      requireAsyncInput: usesCondition,
+    });
+    if (this.handles.get(target.id) !== handle) {
+      throw this.abortError("Bubble was replaced before it could close.");
+    }
+    await this.releaseOwnedTarget(target.id);
   }
 
   public async finishBubbleReveal(
@@ -754,6 +782,110 @@ export class BubbleExtension implements TurboWarpExtension {
     if (this.composition) await this.composition.dispose();
     this.handles.clear();
     this.styles.clear();
+    this.closePolicies.clear();
+  }
+
+  private async waitForBubbleTrigger(
+    input: Readonly<{
+      targetId: string;
+      handle: BubbleHandle;
+      condition?: string;
+      timeoutSeconds?: number;
+      setAwaitingContinue: boolean;
+      restoreIdle: boolean;
+      requireAsyncInput: boolean;
+    }>,
+  ): Promise<void> {
+    let runtimeExpression: TurboWarpRuntimeExpressionExtension | undefined;
+    if (input.condition !== undefined) {
+      if (
+        input.requireAsyncInput &&
+        !this.isRecord(this.runtime.ext_kubohiroyaasyncinput)
+      ) {
+        throw extensionError(
+          "Bubble wait requires Async Input. Load @kubohiroya/turbowarp-async-input before using this block.",
+        );
+      }
+      const candidate = this.runtime.ext_kubohiroyaruntimeexpression;
+      if (
+        !this.isRecord(candidate) ||
+        typeof candidate.runtimeCondition !== "function"
+      ) {
+        throw extensionError(
+          "Bubble wait requires Runtime Expression. Load @kubohiroya/turbowarp-runtime-expression before using this block.",
+        );
+      }
+      if (
+        typeof this.runtime.on !== "function" ||
+        typeof this.runtime.off !== "function"
+      ) {
+        throw extensionError("TurboWarp runtime events are unavailable.");
+      }
+      runtimeExpression = candidate;
+    }
+    if (input.condition === undefined && input.timeoutSeconds === undefined) {
+      throw extensionError("Bubble wait does not have an enabled trigger.");
+    }
+
+    this.cancelWait(input.targetId, "Bubble wait was replaced.");
+    if (input.setAwaitingContinue)
+      await input.handle.setAnimationMode("awaiting-continue");
+
+    await new Promise<void>((resolve, reject) => {
+      let settled = false;
+      let timeoutHandle: unknown;
+      const checkCondition = (): void => {
+        if (input.condition === undefined || runtimeExpression === undefined)
+          return;
+        try {
+          if (
+            runtimeExpression.runtimeCondition({
+              EXPRESSION: input.condition,
+            })
+          )
+            finish();
+        } catch (error) {
+          finish(
+            error instanceof Error
+              ? error
+              : extensionError("wait condition evaluation failed."),
+          );
+        }
+      };
+      const cleanup = (): void => {
+        if (input.condition !== undefined)
+          this.runtime.off?.("BEFORE_EXECUTE", checkCondition);
+        if (timeoutHandle !== undefined)
+          this.waitScheduler.clearTimeout(timeoutHandle);
+        if (this.waits.get(input.targetId) === pending)
+          this.waits.delete(input.targetId);
+      };
+      const finish = (error?: Error): void => {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        if (error) {
+          reject(error);
+          return;
+        }
+        if (!input.restoreIdle) {
+          resolve();
+          return;
+        }
+        void input.handle.setAnimationMode("idle").then(resolve, reject);
+      };
+      const pending: PendingBubbleWait = Object.freeze({ cancel: finish });
+      this.waits.set(input.targetId, pending);
+      if (input.condition !== undefined)
+        this.runtime.on?.("BEFORE_EXECUTE", checkCondition);
+      if (input.timeoutSeconds !== undefined) {
+        timeoutHandle = this.waitScheduler.setTimeout(
+          () => finish(),
+          input.timeoutSeconds * 1000,
+        );
+      }
+      checkCondition();
+    });
   }
 
   private toScratchBlock(block: BlockDefinition): Record<string, unknown> {
@@ -809,6 +941,14 @@ export class BubbleExtension implements TurboWarpExtension {
     const style = this.styles.get(name);
     if (!style) throw extensionError(`bubble style is not defined: ${name}`);
     return style;
+  }
+
+  private requireClosePolicy(value: unknown): BubbleClosePolicy {
+    const name = this.requireName(value, "close policy");
+    const policy = this.closePolicies.get(name);
+    if (!policy)
+      throw extensionError(`bubble close policy is not defined: ${name}`);
+    return policy;
   }
 
   private normalizeTransformNumber(

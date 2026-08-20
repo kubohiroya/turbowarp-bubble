@@ -215,6 +215,7 @@ for (const nodeApi of ["node:", "process.", "Buffer."]) {
 for (const value of [
   "kubohiroyabubble",
   "defineBubbleStyle",
+  "defineBubbleClosePolicy",
   "setBubblePlacement",
   "setBubbleDistance",
   "setBubbleVisualStyle",
@@ -228,6 +229,7 @@ for (const value of [
   "sayWithBubbleStyle",
   "setBubbleAnimationMode",
   "waitForBubbleContinue",
+  "waitAndCloseBubbleWithPolicy",
   "kubohiroyaassetmanager",
   "kubohiroyasvgtext",
 ]) {
@@ -236,7 +238,7 @@ for (const value of [
   }
 }
 
-if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 31) {
+if (manifest.id !== "kubohiroyabubble" || manifest.blocks.length !== 33) {
   throw new Error(
     "dist/extension-manifest.json has an unexpected block contract.",
   );

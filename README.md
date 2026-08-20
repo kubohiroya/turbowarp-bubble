@@ -34,7 +34,7 @@ flowchart LR
   wait --> close[Close and release resources]
 ```
 
-The table below maps the 0.9.0 feature set to its public entry points. The standalone extension exposes 29 palette blocks generated from 31 definitions; two hidden legacy definitions keep previously saved styled say/think blocks working. The full visible list appears under [Available blocks](#available-blocks).
+The table below maps the 0.9.0 feature set to its public entry points. The standalone extension exposes 31 palette blocks generated from 33 definitions; two hidden legacy definitions keep previously saved styled say/think blocks working. The full visible list appears under [Available blocks](#available-blocks).
 
 | Area                              | What this README covers                                                                            | Public entry points                                      |
 | --------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -317,7 +317,7 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 1. For the input-wait example, open your project in the TurboWarp Editor and add Temporary Variables from the extension library.
 2. Select “Custom Extension” and enable Run without sandbox.
 3. Load Asset Manager 0.12.1 if you use portraits, blinking, lip-sync, continue frames, or audio.
-4. Load Runtime Expression 0.4.0 for `finish [UNIT] ...`; load both Async Input 0.4.0 and Runtime Expression 0.4.0 for `wait with this bubble until condition ...`.
+4. Load Runtime Expression 0.4.0 for `finish [UNIT] ...`; load both Async Input 0.4.0 and Runtime Expression 0.4.0 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
 5. Load Bubble 0.9.0 last. The SVG Text 0.8.1 layout provider is included in the Bubble bundle.
 
 Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Manager, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
@@ -326,10 +326,10 @@ Bubble alone is the minimum configuration for text-only use. Temporary Variables
 # Add only when using portraits, blink, lip-sync, continue, or audio
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js
 
-# Add Async Input for the integrated wait block
+# Add Async Input for integrated condition waits and close policies
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js
 
-# Add Runtime Expression for finish or the integrated wait block
+# Add Runtime Expression for finish or condition-based waits and close policies
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js
 
 # Bubble (always load last)
@@ -360,6 +360,7 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 | Block                                                                                                          | Behavior                                                             |
 | -------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Defines or replaces a Bubble style                                   |
+| `define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds`        | Defines or replaces a named closing condition                        |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Sets an Actor-relative direction/angle or background-relative region |
 | `set portrait base [ASSET] for bubble style [STYLE]`                                                           | Sets the portrait base; an empty value removes the entire portrait   |
 | `set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]` | Sets portrait placement, local transform, and rounded corners        |
@@ -386,10 +387,25 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 | `show [MESSAGE] with bubble style [STYLE]`                                                                     | Shows the body and tail/trail pair owned by the selected style       |
 | `set this bubble animation mode [MODE]`                                                                        | Selects `talking`, `awaiting-continue`, or `idle`                    |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Waits for a Runtime Expression condition or optional timeout         |
+| `wait and close this bubble using close policy [POLICY]`                                                       | Snapshots a policy, waits for it, and closes the Bubble              |
 | `close this bubble`                                                                                            | Releases this target's Bubble and owned resources                    |
 | `Bubble version`                                                                                               | Returns the implementation version                                   |
 
-`ASSETS` is a comma-separated list of names registered with Asset Manager; surrounding whitespace is removed, and names cannot contain commas. Blink and lip-sync accept one or more frames, continue indicators require at least two, and an empty list removes the setting. Frame intervals must be finite and greater than zero. Reveal intervals, animation durations, and timeouts accept zero; a zero reveal interval disables automatic advance, while a zero timeout disables the time limit.
+A Bubble close policy is control-flow configuration, not a visual Bubble style. `condition` waits without a time limit, `timeout` closes after a positive number of seconds, and `condition-or-timeout` closes when either trigger happens first. A condition must be non-empty, and an enabled timeout must be greater than zero.
+
+```text
+define bubble close policy [three-seconds] trigger [timeout] condition [] timeout [3] seconds
+say [This closes after three seconds.]
+wait and close this bubble using close policy [three-seconds]
+
+define bubble close policy [advance] trigger [condition] condition [input == "pressed"] timeout [0] seconds
+say [Press a key or touch the sprite.]
+wait and close this bubble using close policy [advance]
+```
+
+The apply block snapshots the named definition when it starts. Replacing the same policy while it is waiting therefore affects only later applications. Timeout-only policies leave the Bubble in its current animation mode and require no input extension. Policies with a condition enter `awaiting-continue` and use Async Input plus Runtime Expression in the same way as the integrated wait block. Completion runs the configured hide animation and releases the Bubble. Replacing the Bubble, stopping its target or the project, or disposing the runtime cancels the pending policy without closing a replacement Bubble.
+
+`ASSETS` is a comma-separated list of names registered with Asset Manager; surrounding whitespace is removed, and names cannot contain commas. Blink and lip-sync accept one or more frames, continue indicators require at least two, and an empty list removes the setting. Frame intervals must be finite and greater than zero. Reveal intervals, animation durations, and the legacy wait timeout accept zero; a zero reveal interval disables automatic advance, while a zero legacy timeout disables the time limit. A timeout selected explicitly by a close policy must be greater than zero.
 
 Bubble provides two built-in Bubble styles. `say` owns the speech body and speech tail; `think` owns the thought body and round trail. The body and tail/trail are one visual-style choice rather than independently selected properties. The matching short block selects each style automatically, so neither a style-definition block nor a style input is required. Both styles use the reserved text profile `default`: 14px Helvetica, 16px line height, a 170px maximum line width, 50px minimum text width, 10px padding, 16px corners, a white fill, and Scratch text/stroke colors. The 4px SVG stroke is painted before the white fill, which covers its inner half and leaves the same thin visible outline as TurboWarp's standard bubble. The profile starts on the Actor's right, flips to the left only when that side fits, follows Actor bounds, fences the Stage top and sides, formats numeric block inputs like Scratch, limits text to 330 characters, and closes on an empty block input.
 

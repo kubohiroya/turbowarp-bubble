@@ -8,7 +8,7 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。
+入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -18,7 +18,7 @@
 |    4 | Asset Manager 0.12.1     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js`          |
 |    5 | Bubble 0.9.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js`               |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、待機開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 
 参考：
 
@@ -221,6 +221,16 @@ close this bubble
 
 次の待機に入る前に`input`を空文字へ戻してください。前回の`pressed`が残っていると、次の条件が直ちに成立します。別のBubble表示、close、対象targetの停止、projectの開始・停止、runtime破棄では、targetが所有する待機とlistener、timerをキャンセルして解放します。
 
+同じ終了規則を再利用する場合は、名前付きBubble close policyを使います。triggerは`condition`、`timeout`、`condition-or-timeout`から明示的に選びます。policyの適用は定義をsnapshotし、成立まで待ち、Bubbleのhide animationと解放までを1つの待機commandとして実行します。
+
+```text
+define bubble close policy [advance-or-timeout] trigger [condition-or-timeout] condition [input == "pressed"] timeout [10] seconds
+show [海へ出発！] with bubble style [hero-dialogue]
+wait and close this bubble using close policy [advance-or-timeout]
+```
+
+timeoutだけのpolicyは現在のanimation modeを変えず、入力用拡張を必要としません。conditionを含むpolicyは`awaiting-continue`へ移り、既存の統合待機と同じAsync Input／Runtime Expression設定を使います。待機中に同じ名前を再定義しても、変更は次回の適用から有効です。Bubbleの置換やlifecycle cleanupは待機中policyをcancelし、置換後のBubbleを閉じません。
+
 音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で`awaiting-continue`へ切り替えます。
 
 ![sayで口パクし、awaiting-continueでcontinue framesを動かし、入力成立後にBubbleを閉じるアニメーション](./assets/bubble-lifecycle.gif)
@@ -281,6 +291,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 | ブロック                                                                                                       | 説明                                                      |
 | -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Bubble styleを定義または再定義する                        |
+| `define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds`        | 名前付きの終了条件を定義または置換する                    |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Actor相対方向・角度、または背景相対領域を設定する         |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Actor boundsからtail先端までの距離を設定する              |
 | `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | 不可分なSVG本体＋tail/trailの組を10種類から設定する       |
@@ -307,6 +318,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 | `show [MESSAGE] with bubble style [STYLE]`                                                                     | styleが持つ本体＋tail/trailの一組を表示する               |
 | `set this bubble animation mode [MODE]`                                                                        | `talking`、`awaiting-continue`、`idle`からmodeを選ぶ      |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Runtime Expressionの条件成立またはtimeoutまで待つ         |
+| `wait and close this bubble using close policy [POLICY]`                                                       | policyをsnapshotし、成立を待ってBubbleを閉じる            |
 | `close this bubble`                                                                                            | 自分のBubbleと所有resourceを解放する                      |
 | `Bubble version`                                                                                               | Bubble実装versionを返す                                   |
 
@@ -314,20 +326,21 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 
 ## 12. よくあるエラー
 
-| 状況                               | 原因と対処                                                               |
-| ---------------------------------- | ------------------------------------------------------------------------ |
-| Asset Managerを要求するエラー      | 画像・メディアアセットを使う前にAsset Manager 0.12.xを読み込む           |
-| SVG overlay backendのエラー        | `renderer.addOverlay()`対応hostを使うか`scratch-render`を明示する        |
-| Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
-| Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
-| `bubble style is not defined`      | 組み込みの短いsay／thinkを使うか、named custom styleを先に定義する       |
-| image assetが未登録                | `register resource ... as asset ...`の完了後にBubbleを表示する           |
-| assetが画像ではない                | `MIME type of asset [NAME]`で`image/*`か確認する                         |
-| continue framesが1枚               | 2枚以上にするか、空にしてcontinue表示を解除する                          |
-| frame intervalエラー               | `SECONDS`を0より大きい有限値にする                                       |
-| StageからActor相対表示した         | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする                  |
-| placementが不正                    | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する                 |
-| 目や口がずれる                     | ベースと全差分のcanvasサイズ、中心、透明領域を揃える                     |
+| 状況                                 | 原因と対処                                                               |
+| ------------------------------------ | ------------------------------------------------------------------------ |
+| Asset Managerを要求するエラー        | 画像・メディアアセットを使う前にAsset Manager 0.12.xを読み込む           |
+| SVG overlay backendのエラー          | `renderer.addOverlay()`対応hostを使うか`scratch-render`を明示する        |
+| Async Inputを要求するエラー          | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
+| Runtime Expressionを要求するエラー   | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
+| `bubble style is not defined`        | 組み込みの短いsay／thinkを使うか、named custom styleを先に定義する       |
+| `bubble close policy is not defined` | 名前付きclose policyを適用前に定義する                                   |
+| image assetが未登録                  | `register resource ... as asset ...`の完了後にBubbleを表示する           |
+| assetが画像ではない                  | `MIME type of asset [NAME]`で`image/*`か確認する                         |
+| continue framesが1枚                 | 2枚以上にするか、空にしてcontinue表示を解除する                          |
+| frame intervalエラー                 | `SECONDS`を0より大きい有限値にする                                       |
+| StageからActor相対表示した           | placementを`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`にする                  |
+| placementが不正                      | 16方向、alias、0〜360度、背景相対3値のいずれかを指定する                 |
+| 目や口がずれる                       | ベースと全差分のcanvasサイズ、中心、透明領域を揃える                     |
 
 ## 13. 自動解放されるタイミング
 

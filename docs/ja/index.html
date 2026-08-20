@@ -74,7 +74,7 @@
 </blockquote>
 <p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime ExpressionはBubble待機を使う場合だけ必要です。</p>
+<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。</p>
 <table>
 <thead>
 <tr>
@@ -109,7 +109,7 @@
 <td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、待機開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。</p>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。</p>
 <p>参考：</p>
 <ul>
 <li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
@@ -296,6 +296,12 @@ close this bubble
 </code></pre>
 <p>まずTemporary Variablesで<code>input</code>を初期化してから、Async Inputのキー入力とタップのlistenerを登録します。Bubbleの待機ブロックは、<code>input == &quot;pressed&quot;</code>をRuntime Expressionへ委譲し、開始直後とVMの各フレームで評価します。待機中は自動的に<code>awaiting-continue</code>となり、口パクを停止して<code>set continue frames</code>の画像をループします。条件成立またはtimeout後は<code>idle</code>へ移り、次の<code>close this bubble</code>へ進みます。timeoutを<code>0</code>にすると時間制限なしです。</p>
 <p>次の待機に入る前に<code>input</code>を空文字へ戻してください。前回の<code>pressed</code>が残っていると、次の条件が直ちに成立します。別のBubble表示、close、対象targetの停止、projectの開始・停止、runtime破棄では、targetが所有する待機とlistener、timerをキャンセルして解放します。</p>
+<p>同じ終了規則を再利用する場合は、名前付きBubble close policyを使います。triggerは<code>condition</code>、<code>timeout</code>、<code>condition-or-timeout</code>から明示的に選びます。policyの適用は定義をsnapshotし、成立まで待ち、Bubbleのhide animationと解放までを1つの待機commandとして実行します。</p>
+<pre><code class="language-text">define bubble close policy [advance-or-timeout] trigger [condition-or-timeout] condition [input == &quot;pressed&quot;] timeout [10] seconds
+show [海へ出発！] with bubble style [hero-dialogue]
+wait and close this bubble using close policy [advance-or-timeout]
+</code></pre>
+<p>timeoutだけのpolicyは現在のanimation modeを変えず、入力用拡張を必要としません。conditionを含むpolicyは<code>awaiting-continue</code>へ移り、既存の統合待機と同じAsync Input／Runtime Expression設定を使います。待機中に同じ名前を再定義しても、変更は次回の適用から有効です。Bubbleの置換やlifecycle cleanupは待機中policyをcancelし、置換後のBubbleを閉じません。</p>
 <p>音声再生や別の文字送り処理と組み合わせる場合は、それらが完了した時点で<code>awaiting-continue</code>へ切り替えます。</p>
 <p><img src="../assets/bubble-lifecycle.gif" alt="sayで口パクし、awaiting-continueでcontinue framesを動かし、入力成立後にBubbleを閉じるアニメーション"></p>
 <p>アニメーションGIFを再生できない環境では、次の比較図で各animation modeを確認できます。</p>
@@ -369,6 +375,10 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 <tbody><tr>
 <td><code>define bubble style [STYLE] using text style [TEXT_STYLE]</code></td>
 <td>Bubble styleを定義または再定義する</td>
+</tr>
+<tr>
+<td><code>define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds</code></td>
+<td>名前付きの終了条件を定義または置換する</td>
 </tr>
 <tr>
 <td><code>set bubble placement [PLACEMENT] for bubble style [STYLE]</code></td>
@@ -475,6 +485,10 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 <td>Runtime Expressionの条件成立またはtimeoutまで待つ</td>
 </tr>
 <tr>
+<td><code>wait and close this bubble using close policy [POLICY]</code></td>
+<td>policyをsnapshotし、成立を待ってBubbleを閉じる</td>
+</tr>
+<tr>
 <td><code>close this bubble</code></td>
 <td>自分のBubbleと所有resourceを解放する</td>
 </tr>
@@ -511,6 +525,10 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 <tr>
 <td><code>bubble style is not defined</code></td>
 <td>組み込みの短いsay／thinkを使うか、named custom styleを先に定義する</td>
+</tr>
+<tr>
+<td><code>bubble close policy is not defined</code></td>
+<td>名前付きclose policyを適用前に定義する</td>
 </tr>
 <tr>
 <td>image assetが未登録</td>
