@@ -105,8 +105,8 @@
 </tr>
 <tr>
 <td align="right">5</td>
-<td>Bubble 0.8.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.9.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
 <p>To try a development build, load this repository&#39;s <code>dist/turbowarp-bubble.js</code> as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can inject another text capability.</p>
@@ -344,6 +344,7 @@ explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </code></pre>
 <p>The TurboWarp adapter advances these motions on scheduler frames and applies <code>ease</code> to each frame. <code>shake</code> applies direction and count to the complete Bubble surface, <code>explode</code> expands and returns the relative scale of text and portrait together, and <code>animate bubble shape</code> cross-fades the current outline into styles such as <code>THINKING</code>, <code>DREAMING</code>, <code>YELLING</code>, <code>WAVY</code>, or <code>WHISPERING</code> during the requested speed and duration.</p>
+<p>Use <code>close this bubble</code> to remove the current Bubble. It runs the configured hide animation and then releases the Bubble&#39;s timers and rendering resources. <code>set bubble hide animation ...</code> only configures that exit effect; it does not remove a Bubble by itself. For the built-in basic profile, passing an empty value to <code>say</code> or <code>think</code> also closes the Bubble, matching TurboWarp&#39;s standard behavior. Bubble does not expose a separate <code>hide</code> block because closing destroys the display rather than preserving a hidden instance for later reuse.</p>
 <h2 id="reference">9. Showing a named Bubble style</h2>
 <pre><code class="language-text">show [MESSAGE] with bubble style [STYLE]
 </code></pre>

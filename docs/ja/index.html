@@ -105,8 +105,8 @@
 </tr>
 <tr>
 <td align="right">5</td>
-<td>Bubble 0.8.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.9.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
 <p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、待機開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。</p>
@@ -344,6 +344,7 @@ explode this bubble relative scale [1.15] count [2] ease [easeOut]
 animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </code></pre>
 <p>TurboWarp adapterはこれらをschedulerのフレームごとに進め、各フレームの進行率へ<code>ease</code>を適用します。<code>shake</code>は吹き出し全体を方向・回数付きで揺らし、<code>explode</code>はportraitと文字を含むsurface全体を拡大して元へ戻し、<code>animate bubble shape</code>は指定時間中に現在の外形から<code>THINKING</code>、<code>DREAMING</code>、<code>YELLING</code>、<code>WAVY</code>、<code>WHISPERING</code>などへcross-fadeします。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。</p>
+<p>表示中のBubbleを消すときは<code>close this bubble</code>を使います。設定済みの表示終了animationを実行してから、Bubbleのtimerと描画resourceを解放します。<code>set bubble hide animation ...</code>は終了時の演出を設定するだけで、このブロック自体はBubbleを消しません。組み込み基本profileでは、<code>say</code>／<code>think</code>へ空文字を渡してもTurboWarp標準と同様にcloseします。closeは非表示instanceを保持せず表示を破棄するため、別の<code>hide</code>ブロックは公開しません。</p>
 <h2 id="reference">9. named Bubble styleを表示する</h2>
 <pre><code class="language-text">show [MESSAGE] with bubble style [STYLE]
 </code></pre>

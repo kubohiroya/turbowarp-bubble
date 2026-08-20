@@ -14,7 +14,7 @@
 
   <rect width="1200" height="880" fill="#f2f4f8"/>
   <text x="32" y="48" class="heading">Bubbleブロック：最小構成</text>
-  <text x="32" y="74" class="body">緑の旗でstyleと入力を準備し、セリフごとに say → Bubble内蔵待機 → close を実行します。</text>
+  <text x="32" y="74" class="body">緑の旗でstyleと入力を準備し、セリフごとに show → Bubble内蔵待機 → close を実行します。</text>
   <g>
     <rect x="24" y="96" width="560" height="752" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
     <text x="48" y="134" class="subheading">1. 緑の旗で準備</text>
@@ -172,15 +172,15 @@
 <rect x="1029.0400000000002" y="460" width="68.07999999999998" height="25" rx="12.5" fill="#ffffff" fill-opacity="0.96"/>
 <text x="1037.0400000000002" y="479" class="input-text" style="font-size:12px">pressed</text>
   </g>
-  <g role="group" aria-label="sayブロックでセリフを表示">
+  <g role="group" aria-label="showブロックでセリフを表示">
     <rect x="668" y="506" width="454" height="50" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
     <rect x="686" y="506" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    <text x="685" y="537" class="block-text" style="font-size:14px">say</text>
-<rect x="718.04" y="516" width="86" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="726.04" y="537" class="input-text" style="font-size:14px">海へ出発！</text>
-<text x="811.04" y="537" class="block-text" style="font-size:14px">with bubble style</text>
-<rect x="965.6" y="516" width="128.84000000000003" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
-<text x="973.6" y="537" class="input-text" style="font-size:14px">hero-dialogue</text>
+    <text x="685" y="537" class="block-text" style="font-size:14px">show</text>
+<rect x="726.72" y="516" width="86" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="734.72" y="537" class="input-text" style="font-size:14px">海へ出発！</text>
+<text x="819.72" y="537" class="block-text" style="font-size:14px">with bubble style</text>
+<rect x="974.2800000000001" y="516" width="128.84000000000003" height="27" rx="13.5" fill="#ffffff" fill-opacity="0.96"/>
+<text x="982.2800000000001" y="537" class="input-text" style="font-size:14px">hero-dialogue</text>
   </g>
   <g role="group" aria-label="Bubbleで条件成立またはタイムアウトまで待機">
     <rect x="668" y="568" width="454" height="72" rx="12" fill="#ff6680" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>

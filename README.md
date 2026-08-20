@@ -4,7 +4,7 @@
 
 `@kubohiroya/turbowarp-bubble` is an unsandboxed extension that manages TurboWarp `say` and `think` displays as separate text, character-expression, and input-waiting indicator layers. It also provides a composition API for using the same features directly from applications.
 
-The current release is Bubble 0.8.0. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.8.1. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Manager 0.12.1, Async Input 0.4.0, and Runtime Expression 0.4.0.
+The current release is Bubble 0.9.0. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.8.1. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Manager 0.12.1, Async Input 0.4.0, and Runtime Expression 0.4.0. See the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles and TurboWarp-compatible basic bubbles.
 
 ## How to read this README
 
@@ -34,7 +34,7 @@ flowchart LR
   wait --> close[Close and release resources]
 ```
 
-The table below maps the 0.8.0 feature set to its public entry points. The standalone extension exposes 29 palette blocks generated from 31 definitions; two hidden legacy definitions keep previously saved styled say/think blocks working. The full visible list appears under [Available blocks](#available-blocks).
+The table below maps the 0.9.0 feature set to its public entry points. The standalone extension exposes 29 palette blocks generated from 31 definitions; two hidden legacy definitions keep previously saved styled say/think blocks working. The full visible list appears under [Available blocks](#available-blocks).
 
 | Area                              | What this README covers                                                                            | Public entry points                                      |
 | --------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -318,7 +318,7 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 2. Select “Custom Extension” and enable Run without sandbox.
 3. Load Asset Manager 0.12.1 if you use portraits, blinking, lip-sync, continue frames, or audio.
 4. Load Runtime Expression 0.4.0 for `finish [UNIT] ...`; load both Async Input 0.4.0 and Runtime Expression 0.4.0 for `wait with this bubble until condition ...`.
-5. Load Bubble 0.8.0 last. The SVG Text 0.8.1 layout provider is included in the Bubble bundle.
+5. Load Bubble 0.9.0 last. The SVG Text 0.8.1 layout provider is included in the Bubble bundle.
 
 Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Manager, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 
@@ -333,7 +333,7 @@ https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js
 
 # Bubble (always load last)
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js
 ```
 
 TurboWarp custom extensions load JavaScript from URLs, so a network connection is required the first time they are loaded. For an unsandboxed development URL, TurboWarp requires the server origin to be exactly `http://localhost:8000/`; `127.0.0.1`, `0.0.0.0`, and other ports do not receive this exception. From the repository root, run `python3 -m http.server 8000`, then load `http://localhost:8000/dist/turbowarp-bubble.js`. Alternatively, choose the custom-extension file or text input and enable **Run extension without sandbox**. The extension does not work when opened directly with `file://` or when run as a sandboxed extension. See [TurboWarp's unsandboxed extension documentation](https://docs.turbowarp.org/development/extensions/unsandboxed) for the host restrictions.
@@ -486,6 +486,8 @@ flowchart LR
 ##### Show and hide
 
 Following PowerPoint terminology as a reference, Bubble calls these “show animations” and “hide animations.” Show animations include `fadeIn`, `floatIn`, `zoomIn`, and `riseUp`; hide animations include `fadeOut`, `floatOut`, `zoomOut`, and `sink`. They are not restricted to `RESERVED`. They can also be applied to a Bubble whose displayed size changes under `DYNAMIC`; a hide animation calculates its endpoint from the current outline.
+
+To remove a Bubble, run `close this bubble`. It applies the configured hide animation and then releases the display and its owned resources. The hide-animation setter configures the exit effect but does not hide anything by itself. The built-in `say` and `think` blocks also close on an empty message for TurboWarp compatibility. There is no separate `hide` block because the operation destroys the current display instead of retaining hidden state.
 
 ##### Transformations while visible
 

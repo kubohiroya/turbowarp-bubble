@@ -158,6 +158,8 @@ requireText(
 );
 requireText(quickStart, "set runtime variable", "Quick-start SVG");
 requireText(quickStart, "listen for key", "Quick-start SVG");
+requireText(quickStart, "show</text>", "Quick-start SVG");
+forbidText(quickStart, "say</text>", "Quick-start SVG");
 for (const asset of ["Next1", "Next2"]) {
   requireText(quickStart, `costume:Assets:${asset}`, "Quick-start SVG");
   requireText(quickStart, `>${asset}<`, "Quick-start SVG");

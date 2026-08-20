@@ -16,7 +16,7 @@ The complete input-wait example uses five extensions. Add Temporary Variables fr
 |     2 | Async Input 0.4.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js`               |
 |     3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
 |     4 | Asset Manager 0.12.1     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js`          |
-|     5 | Bubble 0.8.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.8.0/dist/turbowarp-bubble.js`               |
+|     5 | Bubble 0.9.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.9.0/dist/turbowarp-bubble.js`               |
 
 To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a Bubble wait. The lower-level Composition API can inject another text capability.
 
@@ -253,6 +253,8 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 ```
 
 The TurboWarp adapter advances these motions on scheduler frames and applies `ease` to each frame. `shake` applies direction and count to the complete Bubble surface, `explode` expands and returns the relative scale of text and portrait together, and `animate bubble shape` cross-fades the current outline into styles such as `THINKING`, `DREAMING`, `YELLING`, `WAVY`, or `WHISPERING` during the requested speed and duration.
+
+Use `close this bubble` to remove the current Bubble. It runs the configured hide animation and then releases the Bubble's timers and rendering resources. `set bubble hide animation ...` only configures that exit effect; it does not remove a Bubble by itself. For the built-in basic profile, passing an empty value to `say` or `think` also closes the Bubble, matching TurboWarp's standard behavior. Bubble does not expose a separate `hide` block because closing destroys the display rather than preserving a hidden instance for later reuse.
 
 ## 9. Showing a named Bubble style
 
