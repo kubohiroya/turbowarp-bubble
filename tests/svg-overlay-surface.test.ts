@@ -104,6 +104,83 @@ function actor(id: string, x = 0, y = 0) {
 }
 
 describe("SVG overlay backend", () => {
+  it("renders the basic style with Scratch dimensions, tails, and placement", async () => {
+    const harness = createHarness();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: harness.textCapability,
+    });
+    composition.defineStyle({ name: "basic", textStyle: "default" });
+    const target = actor("sprite-1");
+
+    const say = await composition.show({
+      actor: target,
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "basic",
+      text: "Hi",
+    });
+    const sayBody = harness.window.document.querySelector(
+      '[data-bubble-layer="body"]',
+    );
+    expect(sayBody?.getAttribute("data-bubble-profile")).toBe(
+      "scratch-default",
+    );
+    expect(sayBody?.getAttribute("data-bubble-kind")).toBe("say");
+    expect(sayBody?.getAttribute("data-bubble-body-width")).toBe("74");
+    expect(sayBody?.getAttribute("data-bubble-body-height")).toBe("52");
+    expect(sayBody?.getAttribute("transform")).toBe("translate(260 148)");
+    expect(sayBody?.querySelector("circle")).toBeNull();
+    expect(sayBody?.querySelector("text")?.getAttribute("font-family")).toBe(
+      "Helvetica, sans-serif",
+    );
+    expect(
+      harness.window.document.querySelector('[data-bubble-layer="text"]')
+        ?.children,
+    ).toHaveLength(0);
+    await say.close();
+
+    const think = await composition.show({
+      actor: target,
+      actorKey: "sprite-1",
+      kind: "think",
+      styleName: "basic",
+      text: "Hi",
+    });
+    const thinkBody = harness.window.document.querySelector(
+      '[data-bubble-layer="body"]',
+    );
+    expect(thinkBody?.getAttribute("data-bubble-kind")).toBe("think");
+    expect(thinkBody?.querySelectorAll("circle")).toHaveLength(2);
+    await think.close();
+  });
+
+  it("flips the basic style to the left when only that side fits", async () => {
+    const harness = createHarness();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: harness.textCapability,
+    });
+    composition.defineStyle({ name: "basic", textStyle: "default" });
+    const target = actor("sprite-1", 200, 0);
+    const handle = await composition.show({
+      actor: target,
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "basic",
+      text: "Hi",
+    });
+
+    const body = harness.window.document.querySelector(
+      '[data-bubble-layer="body"]',
+    );
+    expect(body?.getAttribute("transform")).toBe("translate(346 148)");
+    expect(body?.querySelector("g")?.getAttribute("transform")).toContain(
+      "scale(-1 1)",
+    );
+    await handle.close();
+  });
+
   it("defaults to SVG Text 0.8 layout without creating drawables or skins", async () => {
     const harness = createHarness();
     const textLayouts = createSvgTextLayoutComposition();

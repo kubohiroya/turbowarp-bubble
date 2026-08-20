@@ -4,6 +4,7 @@ import { type BubbleVisualStyle } from "./bubble-svg.js";
 import { type BubbleRevealInput, type BubbleRevealUnit, type NormalizedBubbleReveal } from "./reveal.js";
 import type { BubbleTextCapability, BubbleTextTarget } from "./text-capability.js";
 import { type BubblePortraitOffset, type BubblePortraitOffsetInput, type BubblePortraitPlacement } from "./portrait-layout.js";
+import { type BubbleLayoutProfile, type ScratchBubbleTextLayout } from "./scratch-default.js";
 export type { BubbleTextCapability, BubbleTextTarget, } from "./text-capability.js";
 export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type LineBreakProvider, type TextWidthMeasurer, type WrappedTextLayout, type WrappedTextLine, type WrapTextInput, } from "./text-layout.js";
 export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, defaultBubblePlacementInput, normalizeBubblePlacement, type BubbleActorPlacement, type BubbleBackgroundPlacement, type BubbleBackgroundRegion, type BubbleDirectionAlias, type BubbleDirectionName, type BubblePlacement, type BubblePlacementInput, } from "./placement.js";
@@ -11,6 +12,7 @@ export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, 
 export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleShapeTransition, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
 export { bubbleRevealUnits, normalizeBubbleReveal, revealedBubbleText, splitBubbleText, type BubbleRevealInput, type BubbleRevealLayout, type BubbleRevealUnit, type NormalizedBubbleReveal, } from "./reveal.js";
 export { bubblePortraitPlacements, defaultBubblePortraitCornerRadius, defaultBubblePortraitOffset, defaultBubblePortraitPlacement, normalizeBubblePortraitCornerRadius, normalizeBubblePortraitOffset, normalizeBubblePortraitPlacement, type BubblePortraitOffset, type BubblePortraitOffsetInput, type BubblePortraitPlacement, } from "./portrait-layout.js";
+export { bubbleLayoutProfileForStyleInput, formatScratchBubbleArgument, isScratchDefaultBubbleStyleInput, layoutScratchBubbleText, positionScratchBubble, renderScratchBubbleSvg, scratchBubbleMetrics, scratchBubbleCornerRadius, scratchBubbleFontSize, scratchBubbleLineHeight, scratchBubbleMaximumLineWidth, scratchBubbleMinimumTextWidth, scratchBubblePadding, scratchBubbleStrokeWidth, scratchBubbleTailHeight, scratchBubbleTextLimit, type BubbleLayoutProfile, type ScratchBubbleKind, type ScratchBubbleMetrics, type ScratchBubblePosition, type ScratchBubblePositionInput, type ScratchBubbleTextLayout, type ScratchBubbleTextLine, } from "./scratch-default.js";
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
 export type BubbleEase = "linear" | "easeIn" | "easeOut" | "easeInOut";
@@ -84,6 +86,7 @@ export interface BubblePortrait {
 export interface BubbleStyle {
     readonly name: string;
     readonly textStyle: string;
+    readonly layoutProfile: BubbleLayoutProfile;
     readonly maxWidth?: number;
     readonly textLocale?: string;
     readonly placement: BubblePlacement;
@@ -133,6 +136,8 @@ export interface BubbleSurface {
     /** Captures the currently rendered text size for RESERVED reveal layout. */
     captureTextLayout?(): void;
     clearTextLayout?(): void;
+    /** Renders the built-in Scratch-compatible text and body as one surface. */
+    renderScratchText?(layout: ScratchBubbleTextLayout): void | Promise<void>;
 }
 export interface BubbleSurfaceFactoryInput {
     readonly actor: unknown;

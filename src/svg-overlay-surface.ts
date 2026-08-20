@@ -8,6 +8,7 @@ import {
   type BubbleAssetTarget,
   type BubbleImageCapability,
   type BubbleLayer,
+  type BubbleKind,
   type BubbleMotionInput,
   type BubbleScheduler,
   type BubbleStyle,
@@ -25,6 +26,12 @@ import {
   easeMotionProgress,
   runMotionTimeline,
 } from "./surface-motion.js";
+import {
+  positionScratchBubble,
+  renderScratchBubbleSvg,
+  scratchBubbleMetrics,
+  type ScratchBubbleTextLayout,
+} from "./scratch-default.js";
 
 const svgNamespace = "http://www.w3.org/2000/svg";
 const xmlNamespace = "http://www.w3.org/XML/1998/namespace";
@@ -723,7 +730,14 @@ function tailDirectionForPlacement(
   return ((degrees % 360) + 360) % 360;
 }
 
-const allowedBodyElements = new Set(["circle", "g", "path", "rect", "title"]);
+const allowedBodyElements = new Set([
+  "circle",
+  "g",
+  "path",
+  "rect",
+  "text",
+  "title",
+]);
 const allowedBodyAttributes = new Set([
   "cx",
   "cy",
@@ -732,6 +746,8 @@ const allowedBodyAttributes = new Set([
   "data-tail-base-on-border",
   "fill",
   "fill-rule",
+  "font-family",
+  "font-size",
   "height",
   "opacity",
   "r",
@@ -742,6 +758,7 @@ const allowedBodyAttributes = new Set([
   "stroke-width",
   "transform",
   "width",
+  "xml:space",
   "x",
   "y",
 ]);
@@ -766,7 +783,8 @@ function copyAllowedBodyNode(source: Element, document: Document): SVGElement {
     }
     result.setAttribute(attribute, value);
   }
-  if (name === "title") result.textContent = source.textContent ?? "";
+  if (name === "title" || name === "text")
+    result.textContent = source.textContent ?? "";
   for (const child of Array.from(source.children)) {
     result.appendChild(copyAllowedBodyNode(child, document));
   }
@@ -811,6 +829,7 @@ export function createSvgOverlaySurface(
   manager: BubbleSvgOverlaySurfaceManager,
   actor: BubbleSvgOverlayActor,
   actorKey: string,
+  kind: BubbleKind,
   style: BubbleStyle,
   scheduler: BubbleScheduler,
 ): BubbleSurface {
@@ -891,6 +910,8 @@ export function createSvgOverlaySurface(
         readonly to: BubbleVisualStyle;
       }
     | undefined;
+  let scratchTextLayout: ScratchBubbleTextLayout | undefined;
+  let scratchPointsLeft = false;
 
   const applyMotionTransform = (native = manager.updateNativeSize()): void => {
     const centerX = native.width / 2 + center[0];
@@ -919,14 +940,21 @@ export function createSvgOverlaySurface(
     const actorVisible =
       currentStyle.placement.basis === "background" || actor.visible !== false;
     const visible = surfaceVisible && actorVisible && motionOpacity > 0;
+    const scratchDefaultRendered =
+      currentStyle.layoutProfile === "scratch-default" &&
+      scratchTextLayout !== undefined;
     surfaceGroup.setAttribute("visibility", visible ? "visible" : "hidden");
     bodyGroup.setAttribute(
       "visibility",
-      visible && currentStyle.visualStyle !== "NO_BUBBLE"
+      visible &&
+        (scratchDefaultRendered || currentStyle.visualStyle !== "NO_BUBBLE")
         ? "visible"
         : "hidden",
     );
-    textGroup.setAttribute("visibility", visible ? "visible" : "hidden");
+    textGroup.setAttribute(
+      "visibility",
+      visible && !scratchDefaultRendered ? "visible" : "hidden",
+    );
     for (const [layer, target] of layerTargets) {
       target.setVisible(
         visible &&
@@ -940,6 +968,53 @@ export function createSvgOverlaySurface(
   const position = (): void => {
     if (disposed) return;
     const native = manager.updateNativeSize();
+    if (
+      currentStyle.layoutProfile === "scratch-default" &&
+      scratchTextLayout !== undefined
+    ) {
+      const metrics = scratchBubbleMetrics(scratchTextLayout);
+      const nextPosition = positionScratchBubble({
+        bounds: targetBounds(actor),
+        height: metrics.height,
+        pointsLeft: scratchPointsLeft,
+        stageHeight: native.height,
+        stageWidth: native.width,
+        width: metrics.width,
+      });
+      scratchPointsLeft = nextPosition.pointsLeft;
+      center = [nextPosition.centerX, nextPosition.centerY];
+      const nextBodySignature = JSON.stringify({
+        kind,
+        layout: scratchTextLayout,
+        pointsLeft: scratchPointsLeft,
+      });
+      if (nextBodySignature !== bodySignature) {
+        replaceBodyFromCanonicalSvg(
+          bodyGroup,
+          renderScratchBubbleSvg({
+            kind,
+            layout: scratchTextLayout,
+            pointsLeft: scratchPointsLeft,
+            title: `${currentStyle.name} ${kind} Bubble`,
+          }),
+          document,
+        );
+        bodySignature = nextBodySignature;
+      }
+      bodyGroup.setAttribute("data-bubble-style", "SCRATCH_DEFAULT");
+      bodyGroup.setAttribute("data-bubble-profile", "scratch-default");
+      bodyGroup.setAttribute("data-bubble-kind", kind);
+      bodyGroup.setAttribute("data-bubble-body-width", String(metrics.width));
+      bodyGroup.setAttribute("data-bubble-body-height", String(metrics.height));
+      bodyGroup.setAttribute(
+        "transform",
+        `translate(${native.width / 2 + nextPosition.left} ${native.height / 2 - nextPosition.top})`,
+      );
+      updateVisibility(native);
+      return;
+    }
+    bodyGroup.removeAttribute("data-bubble-profile");
+    bodyGroup.removeAttribute("data-bubble-kind");
     const scaleMultiplier =
       currentStyle.placement.basis === "actor"
         ? currentStyle.offset.scalePercent / 100
@@ -1250,6 +1325,12 @@ export function createSvgOverlaySurface(
     },
     clearTextLayout(): void {
       text.clearCapturedLayout();
+      position();
+    },
+    renderScratchText(layout: ScratchBubbleTextLayout): void {
+      if (disposed) return;
+      scratchTextLayout = layout;
+      bodySignature = "";
       position();
     },
     async animate(motion: BubbleMotionInput): Promise<void> {

@@ -320,7 +320,7 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 4. `finish [UNIT] ...`にはRuntime Expression 0.4.0、`wait with this bubble until condition ...`にはAsync Input 0.4.0とRuntime Expression 0.4.0を読み込みます。
 5. 最後にBubble 0.8.0を読み込みます。SVG Text 0.8.1のlayout providerはBubble bundleに含まれます。
 
-文字だけの最小構成はBubbleです。Temporary Variables、Asset Manager、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。拡張機能を読み込んだ後、`define bubble style`、`say`または`think`の順でブロックを配置します。text styleには`default`または任意の名前を指定でき、standalone既定providerでは背景透明のSVG Text既定値として初期化されます。
+文字だけの最小構成はBubbleです。Temporary Variables、Asset Manager、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。拡張機能を読み込んだ後、`define bubble style`、`say`または`think`の順でブロックを配置します。text styleを`default`とし、追加のstyle設定ブロックを使わない場合はScratch互換の基本profileになります。それ以外のnamed text styleや、外形・配置・media・reveal・motionの明示設定はcustom profileになります。
 
 ```text
 # portrait／blink／lip-sync／continue／音声を使う場合だけ追加
@@ -390,11 +390,13 @@ Bubbleは呼び出し元のsprite、clone、またはStageごとに表示を所�
 
 `ASSETS`はAsset Managerへ登録済みの名前をカンマ区切りで指定します。前後の空白は除去され、名前自体にカンマは使用できません。目パチと口パクは1フレーム以上、continue indicatorは2フレーム以上が必要で、空リストにすると設定を解除します。frame間隔は0より大きい有限値です。逐次表示間隔、animation時間、timeoutには0も指定でき、逐次表示間隔の0は自動送りを、timeoutの0は時間制限を無効にします。
 
-visual styleを設定しない場合は`NORMAL`です。既定の`svg-overlay` backendでは、本体は共有overlay root内で文字・portraitより背面に置かれるSVG DOM layerです。明示的な`scratch-render`ではSVG skinとrenderer drawableを使います。Bubbleのclose／置換、対象停止、runtime破棄では、選択したbackendが所有するresourceを解放します。
+変更していない`default` text styleはScratch互換の基本profileになります。`say`はspeech tail、`think`はthought trailを使い、14px Helvetica、line height 16px、最大行幅170px、最小文字領域幅50px、padding 10px、corner radius 16px、白い本体、Scratch標準の文字色・border色で描画します。Actor右側を優先し、右に収まらず左に収まる場合だけ反転します。Actor boundsへの追従、Stage上端・左右端のfence、数値block入力の整形、330文字上限、空文字でのcloseも標準`say`／`think`に揃えます。
+
+style設定ブロックを1つでも実行するか、`default`以外のtext style名を指定すると、従来のcustom profileになります。custom profileでvisual styleを省略した場合は`NORMAL`、placementを省略した場合は`up-right`です。visual style、placement、distance、tail length、offset、portrait、continue indicator、reveal、audio、motionの明示設定は従来どおり動作します。既定の`svg-overlay` backendでは、選択した本体を共有overlay root内のSVG DOM layerとして描画します。明示的な`scratch-render`ではSVG skinとrenderer drawableを使います。Bubbleのclose／置換、対象停止、runtime破棄では、選択したbackendが所有するresourceを解放します。
 
 #### Placement
 
-`PLACEMENT`はActor相対と背景相対の二系統です。省略時は`up-right`です。
+`PLACEMENT`はcustom profileの配置を設定し、Actor相対と背景相対の二系統があります。placementなどのstyle optionを明示したcustom profileでは、省略時は`up-right`です。未変更の基本profileは、Scratch標準と同じ右側優先・収まりに応じた左反転を使います。
 
 - Actor相対：16の正規方向名、そのcompass alias、またはScratch方向と同じ0〜360度。`0`は上、`90`は右、`180`は下、`270`は左で、`360`は`0`へ正規化します。任意角度は16方向へ丸めません。
 - 背景相対：`HEADER_LIKE`、`CENTER`、`FOOTER_LIKE`。Stage安全領域の上部、中央、下部へ水平中央揃えで置き、Actor位置・bounds・可視性には依存しません。

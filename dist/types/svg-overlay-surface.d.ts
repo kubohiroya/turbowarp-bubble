@@ -1,4 +1,4 @@
-import { type BubbleImageCapability, type BubbleScheduler, type BubbleStyle, type BubbleSurface, type BubbleTextCapability } from "./composition.js";
+import { type BubbleImageCapability, type BubbleKind, type BubbleScheduler, type BubbleStyle, type BubbleSurface, type BubbleTextCapability } from "./composition.js";
 export type BubbleRenderBackend = "scratch-render" | "svg-overlay";
 export type BubbleOverlayUnsupportedBehavior = "error" | "fallback";
 export declare const bubbleRenderBackends: readonly ["scratch-render", "svg-overlay"];
@@ -94,4 +94,4 @@ export interface BubbleSvgOverlaySurfaceManager {
 export declare function createSvgOverlayTextAdapter(capabilityInput: BubbleSvgOverlayTextCapability, renderer: Pick<BubbleSvgOverlayRenderer, "getNativeSize">): BubbleTextCapability;
 export declare function createSvgOverlayImageAdapter(capabilityInput: BubbleSvgOverlayImageCapability): BubbleImageCapability;
 export declare function createSvgOverlaySurfaceManager(renderer: BubbleSvgOverlayRenderer, documentInput: Document): BubbleSvgOverlaySurfaceManager;
-export declare function createSvgOverlaySurface(manager: BubbleSvgOverlaySurfaceManager, actor: BubbleSvgOverlayActor, actorKey: string, style: BubbleStyle, scheduler: BubbleScheduler): BubbleSurface;
+export declare function createSvgOverlaySurface(manager: BubbleSvgOverlaySurfaceManager, actor: BubbleSvgOverlayActor, actorKey: string, kind: BubbleKind, style: BubbleStyle, scheduler: BubbleScheduler): BubbleSurface;

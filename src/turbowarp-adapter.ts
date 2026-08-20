@@ -9,6 +9,7 @@ import {
   type BubbleCompositionOptions,
   type BubbleAudioCapability,
   type BubbleImageCapability,
+  type BubbleKind,
   type BubbleLayer,
   type BubbleMotionInput,
   type BubbleScheduler,
@@ -58,6 +59,12 @@ import {
   easeMotionProgress,
   runMotionTimeline,
 } from "./surface-motion.js";
+import {
+  positionScratchBubble,
+  renderScratchBubbleSvg,
+  scratchBubbleMetrics,
+  type ScratchBubbleTextLayout,
+} from "./scratch-default.js";
 import {
   createSvgOverlayImageAdapter,
   createSvgOverlaySurface,
@@ -514,6 +521,7 @@ function createSurface(
   runtime: TurboWarpBubbleRuntime,
   actor: TurboWarpBubbleTarget,
   actorKey: string,
+  kind: BubbleKind,
   style: BubbleStyle,
   scheduler: BubbleScheduler,
 ): BubbleSurface {
@@ -594,6 +602,8 @@ function createSurface(
           readonly progress: number;
         }
       | undefined;
+    let scratchTextLayout: ScratchBubbleTextLayout | undefined;
+    let scratchPointsLeft = false;
 
     const applyMotionTransforms = (): void => {
       for (const target of drawables) {
@@ -623,17 +633,22 @@ function createSurface(
       const actorVisible =
         currentStyle.placement.basis === "background" ||
         actor.visible !== false;
+      const scratchDefaultRendered =
+        currentStyle.layoutProfile === "scratch-default" &&
+        scratchTextLayout !== undefined;
       renderer.updateDrawableVisible(
         body.drawableID,
         surfaceVisible &&
           actorVisible &&
-          currentStyle.visualStyle !== "NO_BUBBLE" &&
+          (scratchDefaultRendered ||
+            currentStyle.visualStyle !== "NO_BUBBLE") &&
           (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
       );
       renderer.updateDrawableVisible(
         text.drawableID,
         surfaceVisible &&
           actorVisible &&
+          !scratchDefaultRendered &&
           (renderer.updateDrawableEffect !== undefined || motionOpacity > 0),
       );
       for (const [layer, target] of layerTargets) {
@@ -663,6 +678,74 @@ function createSurface(
 
     const position = (): void => {
       if (disposed) return;
+      if (
+        currentStyle.layoutProfile === "scratch-default" &&
+        scratchTextLayout !== undefined
+      ) {
+        const nativeSize = renderer.getNativeSize();
+        const stageWidth =
+          Array.isArray(nativeSize) && Number(nativeSize[0]) > 0
+            ? Number(nativeSize[0])
+            : 480;
+        const stageHeight =
+          Array.isArray(nativeSize) && Number(nativeSize[1]) > 0
+            ? Number(nativeSize[1])
+            : 360;
+        const metrics = scratchBubbleMetrics(scratchTextLayout);
+        const nextPosition = positionScratchBubble({
+          bounds: targetBounds(actor),
+          height: metrics.height,
+          pointsLeft: scratchPointsLeft,
+          stageHeight,
+          stageWidth,
+          width: metrics.width,
+        });
+        scratchPointsLeft = nextPosition.pointsLeft;
+        const nextBodySkinSignature = JSON.stringify({
+          kind,
+          layout: scratchTextLayout,
+          pointsLeft: scratchPointsLeft,
+        });
+        if (nextBodySkinSignature !== cachedBodySkinSignature) {
+          const nextSkinId = renderer.createSVGSkin(
+            renderScratchBubbleSvg({
+              kind,
+              layout: scratchTextLayout,
+              pointsLeft: scratchPointsLeft,
+              title: `${currentStyle.name} ${kind} Bubble`,
+            }),
+          );
+          if (!Number.isInteger(nextSkinId) || nextSkinId < 0) {
+            throw new BubbleRuntimeAdapterError(
+              "BUBBLE-RUNTIME-001",
+              "TurboWarp did not create the Scratch-compatible Bubble SVG skin.",
+            );
+          }
+          try {
+            renderer.updateDrawableSkinId(body.drawableID, nextSkinId);
+          } catch (error) {
+            renderer.destroySkin(nextSkinId);
+            throw error;
+          }
+          const previousBodySkinId = bodySkinId;
+          bodySkinId = nextSkinId;
+          cachedBodySkinSignature = nextBodySkinSignature;
+          if (previousBodySkinId !== undefined)
+            renderer.destroySkin(previousBodySkinId);
+        }
+        renderer.updateDrawableScale(body.drawableID, [100, 100]);
+        renderer.updateDrawablePosition(body.drawableID, [
+          nextPosition.centerX,
+          nextPosition.centerY,
+        ]);
+        layoutPositions.set(body.drawableID, [
+          nextPosition.centerX,
+          nextPosition.centerY,
+        ]);
+        layoutScales.set(body.drawableID, [100, 100]);
+        updateVisibility();
+        return;
+      }
       const scaleMultiplier =
         currentStyle.placement.basis === "actor"
           ? currentStyle.offset.scalePercent / 100
@@ -1031,9 +1114,11 @@ function createSurface(
       originalVisualChange?.(changedTarget);
       position();
     };
+    const nativeSizeHook = (): void => position();
     if (currentStyle.placement.basis === "actor") {
       actor.onTargetVisualChange = visualChangeHook;
     }
+    renderer.on?.("NativeSizeChanged", nativeSizeHook);
 
     return Object.freeze({
       targets,
@@ -1072,6 +1157,12 @@ function createSurface(
       },
       clearTextLayout(): void {
         reservedTextSize = undefined;
+        position();
+      },
+      renderScratchText(layout: ScratchBubbleTextLayout): void {
+        if (disposed) return;
+        scratchTextLayout = layout;
+        cachedBodySkinSignature = "";
         position();
       },
       async animate(motion: BubbleMotionInput): Promise<void> {
@@ -1239,6 +1330,7 @@ function createSurface(
       dispose(): void {
         if (disposed) return;
         disposed = true;
+        renderer.off?.("NativeSizeChanged", nativeSizeHook);
         if (
           currentStyle.placement.basis === "actor" &&
           actor.onTargetVisualChange === visualChangeHook
@@ -1466,7 +1558,7 @@ export function createTurboWarpBubbleComposition(
     ...(imageResolver === undefined ? {} : { imageResolver }),
     audio,
     textCapability,
-    createSurface({ actor, actorKey, style }) {
+    createSurface({ actor, actorKey, kind, style }) {
       if (!isRecord(actor) || typeof actor.id !== "string") {
         throw new BubbleRuntimeAdapterError(
           "BUBBLE-RUNTIME-001",
@@ -1478,6 +1570,7 @@ export function createTurboWarpBubbleComposition(
             overlayManager as NonNullable<typeof overlayManager>,
             actor as unknown as BubbleSvgOverlayActor,
             actorKey,
+            kind,
             style,
             scheduler,
           )
@@ -1485,6 +1578,7 @@ export function createTurboWarpBubbleComposition(
             runtime,
             actor as unknown as TurboWarpBubbleTarget,
             actorKey,
+            kind,
             style,
             scheduler,
           );

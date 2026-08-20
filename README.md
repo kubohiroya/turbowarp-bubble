@@ -320,7 +320,7 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 4. Load Runtime Expression 0.4.0 for `finish [UNIT] ...`; load both Async Input 0.4.0 and Runtime Expression 0.4.0 for `wait with this bubble until condition ...`.
 5. Load Bubble 0.8.0 last. The SVG Text 0.8.1 layout provider is included in the Bubble bundle.
 
-Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Manager, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading the extensions, place a `define bubble style` block followed by a `say` or `think` block. A text style can be `default` or any name; the standalone default provider initializes it with transparent-background SVG Text defaults.
+Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Manager, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading the extensions, place a `define bubble style` block followed by a `say` or `think` block. Defining a style with text style `default` and no additional style-setting blocks selects the Scratch-compatible basic profile. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 
 ```text
 # Add only when using portraits, blink, lip-sync, continue, or audio
@@ -390,11 +390,13 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 
 `ASSETS` is a comma-separated list of names registered with Asset Manager; surrounding whitespace is removed, and names cannot contain commas. Blink and lip-sync accept one or more frames, continue indicators require at least two, and an empty list removes the setting. Frame intervals must be finite and greater than zero. Reveal intervals, animation durations, and timeouts accept zero; a zero reveal interval disables automatic advance, while a zero timeout disables the time limit.
 
-The default visual style is `NORMAL`. With the default `svg-overlay` backend, the body is an SVG DOM layer behind the text and portrait in the shared overlay root. Explicit `scratch-render` mode instead uses an SVG skin and renderer drawable. Closing or replacing a Bubble, stopping its target, or disposing the runtime releases whichever resources the selected backend owns.
+The unmodified `default` text style uses the Scratch-compatible basic profile. `say` uses a speech tail and `think` uses a thought trail; both use 14px Helvetica, 16px line height, a 170px maximum line width, 50px minimum text width, 10px padding, 16px corners, a white fill, and Scratch text/stroke colors. The profile starts on the Actor's right, flips to the left only when that side fits, follows Actor bounds, fences the Stage top and sides, formats numeric block inputs like Scratch, limits text to 330 characters, and closes on an empty block input.
+
+Any explicit style-setting block—or a text style name other than `default`—selects the existing custom profile. Within that profile the omitted visual style is `NORMAL` and the omitted placement is `up-right`; explicit visual styles, placement, distance, tail length, offsets, portrait, continue indicator, reveal, audio, and motion retain their existing behavior. With the default `svg-overlay` backend, the selected body is an SVG DOM layer in the shared overlay root. Explicit `scratch-render` mode instead uses an SVG skin and renderer drawable. Closing or replacing a Bubble, stopping its target, or disposing the runtime releases whichever resources the selected backend owns.
 
 #### Placement
 
-`PLACEMENT` has two families: Actor-relative and background-relative. The default is `up-right`.
+`PLACEMENT` configures the custom profile and has two families: Actor-relative and background-relative. Once placement or another style option is explicitly configured, the custom-profile default is `up-right`. The untouched basic profile instead uses Scratch's right-first, fit-dependent left flip.
 
 - Actor-relative: one of 16 canonical direction names, a compass alias, or an angle from 0 to 360 degrees following Scratch directions. `0` is up, `90` is right, `180` is down, `270` is left, and `360` is normalized to `0`. Arbitrary angles are not rounded to one of the 16 named directions.
 - Background-relative: `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`. These center the Bubble horizontally at the top, center, or bottom of the Stage safe area and do not depend on the Actor's position, bounds, or visibility.

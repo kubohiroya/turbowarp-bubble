@@ -896,8 +896,47 @@ describe("Bubble extension", () => {
     );
 
     expect(harness.created).toHaveLength(2);
-    expect(harness.drawableSkins.has(2)).toBe(true);
+    expect(harness.drawableSkins.has(1)).toBe(true);
+    expect(harness.drawableSkins.has(2)).toBe(false);
+    expect(harness.createdSvgSkins[0]).toContain(
+      'data-bubble-profile="scratch-default"',
+    );
     await extension.closeBubble({}, { target });
+  });
+
+  it("matches Scratch say/think defaults and clears on an empty message", async () => {
+    const harness = createRuntime();
+    const extension = createScratchRenderExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({ STYLE: "basic", TEXT_STYLE: "default" });
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: 1.234, STYLE: "basic" },
+      { target },
+    );
+
+    const say = harness.createdSvgSkins.at(-1)!;
+    expect(say).toContain('data-bubble-kind="say"');
+    expect(say).toContain('width="74" height="52"');
+    expect(say).toContain(">1.23</text>");
+    expect(say).not.toContain("<circle");
+    expect(harness.positions.get(harness.created[0]!)).toEqual([87, -34]);
+    expect(harness.visibility.get(harness.created[1]!)).toBe(false);
+
+    await extension.thinkWithBubbleStyle(
+      { MESSAGE: "Hi", STYLE: "basic" },
+      { target },
+    );
+    const think = harness.createdSvgSkins.at(-1)!;
+    expect(think).toContain('data-bubble-kind="think"');
+    expect(think).toContain("<circle");
+
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "", STYLE: "basic" },
+      { target },
+    );
+    expect(harness.destroyed).toHaveLength(4);
+    expect(harness.visibility.get(harness.created.at(-2)!)).toBe(false);
   });
 
   it("renders the selected SVG body behind actor-relative content", async () => {

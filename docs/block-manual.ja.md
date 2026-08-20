@@ -59,17 +59,25 @@ URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubb
 
 ## 3. 文字layout styleを選ぶ
 
-standalone BubbleはSVG Text 0.8.1のlayout compositionを内包します。`default`または任意の名前を指定すると、初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
+standalone BubbleはSVG Text 0.8.1のlayout compositionを内包します。`default`を使い、ほかのstyle設定を行わないstyleはScratch互換の基本profileになります。`say`／`think`ごとの標準tail、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseが適用されます。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
 
 ```text
 define bubble style [hero-dialogue] using text style [default]
 ```
 
-独自のfont、色、alignmentを使うアプリhostは、`createSvgTextLayoutComposition()`へstyleを定義し、`createSvgTextOverlayTextCapability()`でBubbleへ注入します。既定経路も同じ`layoutText()`を使い、SVG文字skinは生成しません。Bubbleの配置、tail、吹き出し外形はBubble側が担当します。
+独自のfont、色、alignmentを使うアプリhostは、`createSvgTextLayoutComposition()`へstyleを定義し、`createSvgTextOverlayTextCapability()`でBubbleへ注入します。custom profileは同じ`layoutText()`を使い、既定overlay backendではSVG文字skinを生成しません。Bubbleの配置、tail、吹き出し外形はBubble側が担当します。
 
 ## 4. Bubble styleを定義する
 
-まず、Bubble style名と文字layout style名を関連付けます。
+基本Bubbleでは、Bubble style名を`default`へ関連付け、ほかのstyle設定ブロックを実行しません。
+
+```text
+define bubble style [basic] using text style [default]
+say [こんにちは！] with bubble style [basic]
+think [うーん…] with bubble style [basic]
+```
+
+次のsetterを使うと、意図的にcustom profileへ切り替わります。
 
 ```text
 define bubble style [hero-dialogue] using text style [default]
@@ -88,7 +96,7 @@ Actor相対の16方向は、各方向をActor、Bubble外形、tail、文字を�
 
 背景相対3図はStage外枠、安全領域、Bubble外形寸法、水平中央線、基準辺／中心を示します。外形はBubble側の共有`renderBubbleSvg`で生成しており、TurboWarp Editorで本体drawableを生成するrendererと同じです。
 
-Actor相対では、Actor中心からBubble全体の中心へ向かう方向を指定します。menuには次の16正規方向があります。
+Actor相対placementはcustom profileへ適用され、Actor中心からBubble全体の中心へ向かう方向を指定します。未変更の基本profileはScratch標準の右側優先・自動左反転を使います。menuには次の16正規方向があります。
 
 ```text
 up / up-up-right / up-right / right-up-right

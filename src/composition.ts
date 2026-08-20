@@ -39,6 +39,12 @@ import {
   type BubblePortraitOffsetInput,
   type BubblePortraitPlacement,
 } from "./portrait-layout.js";
+import {
+  bubbleLayoutProfileForStyleInput,
+  layoutScratchBubbleText,
+  type BubbleLayoutProfile,
+  type ScratchBubbleTextLayout,
+} from "./scratch-default.js";
 
 export type {
   BubbleTextCapability,
@@ -113,6 +119,31 @@ export {
   type BubblePortraitOffsetInput,
   type BubblePortraitPlacement,
 } from "./portrait-layout.js";
+export {
+  bubbleLayoutProfileForStyleInput,
+  formatScratchBubbleArgument,
+  isScratchDefaultBubbleStyleInput,
+  layoutScratchBubbleText,
+  positionScratchBubble,
+  renderScratchBubbleSvg,
+  scratchBubbleMetrics,
+  scratchBubbleCornerRadius,
+  scratchBubbleFontSize,
+  scratchBubbleLineHeight,
+  scratchBubbleMaximumLineWidth,
+  scratchBubbleMinimumTextWidth,
+  scratchBubblePadding,
+  scratchBubbleStrokeWidth,
+  scratchBubbleTailHeight,
+  scratchBubbleTextLimit,
+  type BubbleLayoutProfile,
+  type ScratchBubbleKind,
+  type ScratchBubbleMetrics,
+  type ScratchBubblePosition,
+  type ScratchBubblePositionInput,
+  type ScratchBubbleTextLayout,
+  type ScratchBubbleTextLine,
+} from "./scratch-default.js";
 
 export type BubbleKind = "say" | "think";
 export type BubbleAnimationMode = "idle" | "talking" | "awaiting-continue";
@@ -208,6 +239,7 @@ export interface BubblePortrait {
 export interface BubbleStyle {
   readonly name: string;
   readonly textStyle: string;
+  readonly layoutProfile: BubbleLayoutProfile;
   readonly maxWidth?: number;
   readonly textLocale?: string;
   readonly placement: BubblePlacement;
@@ -266,6 +298,8 @@ export interface BubbleSurface {
   /** Captures the currently rendered text size for RESERVED reveal layout. */
   captureTextLayout?(): void;
   clearTextLayout?(): void;
+  /** Renders the built-in Scratch-compatible text and body as one surface. */
+  renderScratchText?(layout: ScratchBubbleTextLayout): void | Promise<void>;
 }
 
 export interface BubbleSurfaceFactoryInput {
@@ -764,9 +798,11 @@ function normalizeStyle(value: unknown): NormalizedStyle {
     value.textLocale === undefined
       ? undefined
       : requireName(value.textLocale, "Bubble style text locale");
+  const layoutProfile = bubbleLayoutProfileForStyleInput(value);
   return Object.freeze({
     name: requireName(value.name, "Bubble style name"),
     textStyle: requireName(value.textStyle, "Bubble text style name"),
+    layoutProfile,
     ...(maxWidth === undefined ? {} : { maxWidth }),
     ...(textLocale === undefined ? {} : { textLocale }),
     placement,
@@ -1012,6 +1048,16 @@ function formatBubbleText(
   style: BubbleStyle,
   textCapability: BubbleTextCapability,
 ): string {
+  if (style.layoutProfile === "scratch-default") {
+    return layoutScratchBubbleText(text, (candidate) =>
+      typeof textCapability.measureText === "function"
+        ? textCapability.measureText({
+            styleName: style.textStyle,
+            text: candidate,
+          })
+        : Number.NaN,
+    ).text;
+  }
   if (style.maxWidth === undefined) return text;
   if (typeof textCapability.measureText !== "function") {
     throw new BubbleCompositionError(
@@ -1244,7 +1290,11 @@ export function createBubbleComposition(
     }
     let activeStyle: NormalizedStyle = style;
     if (input.reveal !== undefined) {
-      activeStyle = Object.freeze({ ...style, reveal: input.reveal });
+      activeStyle = Object.freeze({
+        ...style,
+        layoutProfile: "custom",
+        reveal: input.reveal,
+      });
     }
     let currentText = input.text;
     const resolveStyleImageCapability = (
@@ -1411,29 +1461,50 @@ export function createBubbleComposition(
         ),
         activeStyle,
       );
-      const fullText = formatBubbleText(
-        input.text,
-        activeStyle,
-        textCapability,
-      );
+      const applySurfaceText = async (
+        rawText: string,
+        nextStyle: BubbleStyle = activeStyle,
+      ): Promise<void> => {
+        if (
+          nextStyle.layoutProfile === "scratch-default" &&
+          surface?.renderScratchText
+        ) {
+          const layout = layoutScratchBubbleText(rawText, (candidate) =>
+            typeof textCapability.measureText === "function"
+              ? textCapability.measureText({
+                  styleName: nextStyle.textStyle,
+                  text: candidate,
+                })
+              : Number.NaN,
+          );
+          await surface.renderScratchText(layout);
+          return;
+        }
+        if (!surface) return;
+        textCapability.setText({
+          styleName: nextStyle.textStyle,
+          target: surface.targets.text,
+          text: formatBubbleText(rawText, nextStyle, textCapability),
+        });
+        textOwned = true;
+      };
       if (reveal?.layout === "RESERVED") {
+        const fullText = formatBubbleText(
+          input.text,
+          activeStyle,
+          textCapability,
+        );
         textCapability.setText({
           styleName: activeStyle.textStyle,
           target: surface.targets.text,
           text: fullText,
         });
+        textOwned = true;
         surface.captureTextLayout?.();
       }
-      textCapability.setText({
-        styleName: activeStyle.textStyle,
-        target: surface.targets.text,
-        text: formatBubbleText(
-          reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text,
-          activeStyle,
-          textCapability,
-        ),
-      });
-      textOwned = true;
+      await applySurfaceText(
+        reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text,
+      );
 
       await primeStyleImages(activeStyle, styleImageResolver, surface);
       createStyleLoops(activeStyle, styleImageResolver, surface);
@@ -1447,11 +1518,7 @@ export function createBubbleComposition(
         const visible = reveal
           ? revealedBubbleText(revealChunks, revealedCount)
           : currentText;
-        textCapability.setText({
-          styleName: activeStyle.textStyle,
-          target: surface.targets.text,
-          text: formatBubbleText(visible, activeStyle, textCapability),
-        });
+        await applySurfaceText(visible);
         await surface.show();
       };
       const stopRevealTimer = (): void => {
@@ -1573,6 +1640,7 @@ export function createBubbleComposition(
                   target: surface.targets.text,
                   text: formatBubbleText(text, activeStyle, textCapability),
                 });
+                textOwned = true;
                 surface.captureTextLayout?.();
               }
               await renderVisibleText();
@@ -1631,13 +1699,10 @@ export function createBubbleComposition(
                 target: surface.targets.text,
                 text: formatBubbleText(currentText, nextStyle, textCapability),
               });
+              textOwned = true;
               surface.captureTextLayout?.();
             }
-            textCapability.setText({
-              styleName: nextStyle.textStyle,
-              target: surface.targets.text,
-              text: formatBubbleText(currentText, nextStyle, textCapability),
-            });
+            await applySurfaceText(currentText, nextStyle);
             createStyleLoops(nextStyle, nextImageResolver, surface);
             await Promise.all([
               surface.setLayerVisible(
@@ -1763,6 +1828,7 @@ export function createBubbleComposition(
                     textCapability,
                   ),
                 });
+                textOwned = true;
                 surface.captureTextLayout?.();
               }
             }
@@ -1854,13 +1920,22 @@ export function createBubbleComposition(
               normalized.name === "animateBubbleShape" &&
               normalized.visualStyle
             ) {
-              const nextStyle = Object.freeze({
+              const transitionStyle = Object.freeze({
                 ...activeStyle,
+                layoutProfile: "custom" as const,
+              });
+              const nextStyle = Object.freeze({
+                ...transitionStyle,
                 visualStyle: normalized.visualStyle,
               });
               // Keep the current style on the surface while it produces the
               // transition frames. Commit the target style only after the
               // motion has reached its final frame.
+              if (activeStyle.layoutProfile === "scratch-default") {
+                await surface?.updateStyle(transitionStyle);
+                await applySurfaceText(currentText, transitionStyle);
+                await surface?.show();
+              }
               await surface?.animate?.(normalized);
               activeStyle = nextStyle;
               await surface?.updateStyle(activeStyle);
