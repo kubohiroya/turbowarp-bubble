@@ -134,6 +134,9 @@ describe("SVG overlay backend", () => {
       "scale(-1 1)",
     );
     expect(sayBody?.querySelector("circle")).toBeNull();
+    expect(sayBody?.querySelector("path")?.getAttribute("paint-order")).toBe(
+      "stroke fill",
+    );
     expect(sayBody?.querySelector("text")?.getAttribute("font-family")).toBe(
       "Helvetica, sans-serif",
     );
@@ -155,6 +158,11 @@ describe("SVG overlay backend", () => {
     );
     expect(thinkBody?.getAttribute("data-bubble-kind")).toBe("think");
     expect(thinkBody?.querySelectorAll("circle")).toHaveLength(2);
+    expect(
+      [...(thinkBody?.querySelectorAll("path, circle") ?? [])].every(
+        (shape) => shape.getAttribute("paint-order") === "stroke fill",
+      ),
+    ).toBe(true);
     expect(thinkBody?.querySelector("g")?.getAttribute("transform")).toContain(
       "scale(-1 1)",
     );

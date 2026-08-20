@@ -59,7 +59,7 @@ URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubb
 
 ## 3. 文字layout styleを選ぶ
 
-standalone BubbleはSVG Text 0.8.1のlayout compositionを内包します。`default`を使い、ほかのstyle設定を行わないstyleはScratch互換の基本profileになります。`say`／`think`ごとの標準tail、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseが適用されます。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
+standalone BubbleはSVG Text 0.8.1のlayout compositionを内包し、2つのBubble styleを組み込みます。`say`はspeech本体とspeech tail、`think`はthought本体とround trailを持ち、本体とtail/trailの形は別項目ではなく1つのvisual styleとして選びます。短い`say [MESSAGE]`／`think [MESSAGE]`ブロックが対応styleを自動選択するため、基本経路にはstyle定義もstyle入力も不要です。どちらも予約text profile `default`、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseを使います。4pxのSVG strokeを白いfillより先に描き、内側半分を隠すことで、見かけの輪郭をTurboWarp標準と同じ細さにします。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
 
 ```text
 define bubble style [hero-dialogue] using text style [default]
@@ -69,25 +69,24 @@ define bubble style [hero-dialogue] using text style [default]
 
 ## 4. Bubble styleを定義する
 
-基本Bubbleでは、Bubble style名を`default`へ関連付け、ほかのstyle設定ブロックを実行しません。
+基本Bubbleでは短いブロックをそのまま使います。組み込みBubble style `say`／`think`がそれぞれ自動選択されます。
 
 ```text
-define bubble style [basic] using text style [default]
-say [こんにちは！] with bubble style [basic]
-think [うーん…] with bubble style [basic]
+say [こんにちは！]
+think [うーん…]
 ```
 
 ### TurboWarp標準との比較
 
-次の画像は、1つのTurboWarp Editor projectで英語UIを使い、`Cat` spriteを`x=-80`、`y=0`、サイズ`80%`、Stageを白背景、入力を`Hello!`／`Hmm...`に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロックです。右列のBubble基本profileは`define bubble style [dialogue] using text style [default]`だけを使い、外形、配置、サイズをsetterで変更していません。
+次の画像は、1つのTurboWarp Editor projectで英語UIを使い、`Cat` spriteを`x=-80`、`y=0`、サイズ`80%`、Stageを白背景、入力を`Hello!`／`Hmm...`に揃えて撮影した実画面です。左列はTurboWarp標準の見た目ブロックです。右列は対応する組み込み`say`／`think` styleを使うBubbleの短い基本ブロックで、定義ブロックもsetterも使っていません。
 
 ![TurboWarp標準のsay・think吹き出しとBubble基本profileを同じStageで比較した実画面](./assets/turbowarp-say-think-stage-comparison.png)
 
 Stage図では、右側配置、内容に追従する本体、Actor側へ向くspeech tail／thought trailを同じ条件で確認できます。Bubbleは独立したSVG surfaceを描画しており、全4panelとも実際のTurboWarp Stageを切り出したものです。
 
-![TurboWarp標準のsay・thinkブロックとBubble基本profileの定義・say・thinkブロックを比較したスクリーンショット](./assets/turbowarp-say-think-block-comparison.png)
+![TurboWarp標準のsay・thinkブロックと、設定不要のBubble基本say・thinkブロックおよび組み込みdefault profile値を比較したスクリーンショット](./assets/turbowarp-say-think-block-comparison.png)
 
-ブロック図は最小構成を示します。project開始後にstyle定義を1回実行し、以後は標準ブロックに対応するBubbleの`say`／`think`を使います。
+ブロック図は設定不要の基本経路と、custom style用の統合表示ブロックを示します。短いブロックは対応する組み込みstyleを自動選択します。calloutでは不可分な本体＋tail/trailの組、両styleが使う予約text profile `default`、共通のfont、行高、幅、padding、角丸、色、border描画順、配置を示します。named custom styleには`show [MESSAGE] with bubble style [STYLE]`を使います。旧styled say/think opcodeは保存済みproject互換用の非表示定義として残します。
 
 次のsetterを使うと、意図的にcustom profileへ切り替わります。
 
@@ -199,7 +198,7 @@ set bubble reveal unit [CHARACTER] every [0.05] seconds layout [RESERVED] for bu
 set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
 set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
 set bubble voice [HeroVoice] for bubble style [hero-dialogue]
-say [海へ出発！] with bubble style [hero-dialogue]
+show [海へ出発！] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] seconds
 ```
 
@@ -213,7 +212,7 @@ finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] sec
 set runtime variable [input] to []
 listen for key [Space] set runtime var [input] to [pressed]
 listen for touch on this sprite set runtime var [input] to [pressed]
-say [海へ出発！] with bubble style [hero-dialogue]
+show [海へ出発！] with bubble style [hero-dialogue]
 wait with this bubble until condition [input == "pressed"] or timeout after [10] seconds
 close this bubble
 ```
@@ -255,14 +254,13 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 
 TurboWarp adapterはこれらをschedulerのフレームごとに進め、各フレームの進行率へ`ease`を適用します。`shake`は吹き出し全体を方向・回数付きで揺らし、`explode`はportraitと文字を含むsurface全体を拡大して元へ戻し、`animate bubble shape`は指定時間中に現在の外形から`THINKING`、`DREAMING`、`YELLING`、`WAVY`、`WHISPERING`などへcross-fadeします。仕様では、吹き出しが表示される時点を「表示開始」、隠れる時点を「表示終了」と呼びます。
 
-## 9. sayとthink
+## 9. named Bubble styleを表示する
 
 ```text
-say [MESSAGE] with bubble style [STYLE]
-think [MESSAGE] with bubble style [STYLE]
+show [MESSAGE] with bubble style [STYLE]
 ```
 
-どちらも同じvisual style、表情レイヤー、placement、animation mode制御を使えます。`say`／`think`だけで形状を固定せず、`set bubble visual style`で`NORMAL`、`THINKING`などを明示的に選びます。Composition APIのsurfaceには`say`／`think`のkindも渡されるため、独自hostではkindに応じた追加表現も可能です。
+選択したBubble styleが、本体とtail/trailの形を一体で決め、text profile、表情レイヤー、placement、animation設定も保持します。`set bubble visual style`は`NORMAL`（speech本体＋speech tail）や`THINKING`（thought本体＋round trail）のような不可分の組を選ぶブロックで、tail形状だけを独立して指定する設定はありません。standalone extensionは、表示ブロックに競合し得る別の種類を選ばせず、そのstyleから内部描画kindを導きます。
 
 同じsprite、clone、またはStageで新しい`say`／`think`を実行すると、以前のBubbleをtimerやdrawableごと破棄してから置き換えます。Stageでは背景相対placementだけを使用できます。
 
@@ -278,36 +276,39 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 
 ## 11. ブロック一覧
 
-| ブロック                                                                                                       | 説明                                                    |
-| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Bubble styleを定義または再定義する                      |
-| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Actor相対方向・角度、または背景相対領域を設定する       |
-| `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Actor boundsからtail先端までの距離を設定する            |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Bubble本体のSVG形状を10種類から設定する                 |
-| `set bubble tail length [LENGTH] for bubble style [STYLE]`                                                     | Bubble borderからtail先端までの基準長を設定する         |
-| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                                       | 本体位置と、文字を含む全体のscaleを設定する             |
-| `set portrait base [ASSET] for bubble style [STYLE]`                                                           | portraitのベース画像を設定する                          |
-| `set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]` | portraitの有無、端／隅の配置、変形、角丸を設定する      |
-| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                   | 目パチ差分と間隔を設定する                              |
-| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                | 口パク差分と間隔を設定する                              |
-| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                | `awaiting-continue`中の「次へ」アニメーションを設定する |
-| `set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]`               | CHARACTER／WORD／LINE／BLOCKの逐次表示を設定する        |
-| `set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]`                                 | WORDの区切り文字集合と表示可否を設定する                |
-| `set bubble reveal sound [ASSET] for bubble style [STYLE]`                                                     | 表示単位ごとの効果音を設定する                          |
-| `set bubble voice [ASSET] for bubble style [STYLE]`                                                            | 表示開始時のフルボイスを設定する                        |
-| `finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds`                                  | 未表示単位を最後まで進め、条件またはtimeoutを待つ       |
-| `set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`                            | 表示開始animationを設定する                             |
-| `set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`                            | 表示終了animationを設定する                             |
-| `animate this bubble [MOTION]`                                                                                 | Bubble全体のanimationを再生する                         |
-| `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                                            | 吹き出し全体を指定方向へ揺らす                          |
-| `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                                         | 吹き出し全体を相対倍率で変化させる                      |
-| `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                                   | Bubble外形を時間経過で切り替える                        |
-| `say [MESSAGE] with bubble style [STYLE]`                                                                      | `talking` modeでsay表示を開始・置換する                 |
-| `think [MESSAGE] with bubble style [STYLE]`                                                                    | `talking` modeでthink表示を開始・置換する               |
-| `set this bubble animation mode [MODE]`                                                                        | `talking`、`awaiting-continue`、`idle`からmodeを選ぶ    |
-| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Runtime Expressionの条件成立またはtimeoutまで待つ       |
-| `close this bubble`                                                                                            | 自分のBubbleと所有resourceを解放する                    |
-| `Bubble version`                                                                                               | Bubble実装versionを返す                                 |
+| ブロック                                                                                                       | 説明                                                      |
+| -------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Bubble styleを定義または再定義する                        |
+| `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Actor相対方向・角度、または背景相対領域を設定する         |
+| `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Actor boundsからtail先端までの距離を設定する              |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | 不可分なSVG本体＋tail/trailの組を10種類から設定する       |
+| `set bubble tail length [LENGTH] for bubble style [STYLE]`                                                     | Bubble borderからtail先端までの基準長を設定する           |
+| `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                                       | 本体位置と、文字を含む全体のscaleを設定する               |
+| `set portrait base [ASSET] for bubble style [STYLE]`                                                           | portraitのベース画像を設定する                            |
+| `set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]` | portraitの有無、端／隅の配置、変形、角丸を設定する        |
+| `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                   | 目パチ差分と間隔を設定する                                |
+| `set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                | 口パク差分と間隔を設定する                                |
+| `set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                | `awaiting-continue`中の「次へ」アニメーションを設定する   |
+| `set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]`               | CHARACTER／WORD／LINE／BLOCKの逐次表示を設定する          |
+| `set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]`                                 | WORDの区切り文字集合と表示可否を設定する                  |
+| `set bubble reveal sound [ASSET] for bubble style [STYLE]`                                                     | 表示単位ごとの効果音を設定する                            |
+| `set bubble voice [ASSET] for bubble style [STYLE]`                                                            | 表示開始時のフルボイスを設定する                          |
+| `finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds`                                  | 未表示単位を最後まで進め、条件またはtimeoutを待つ         |
+| `set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`                            | 表示開始animationを設定する                               |
+| `set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]`                            | 表示終了animationを設定する                               |
+| `animate this bubble [MOTION]`                                                                                 | Bubble全体のanimationを再生する                           |
+| `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                                            | 吹き出し全体を指定方向へ揺らす                            |
+| `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                                         | 吹き出し全体を相対倍率で変化させる                        |
+| `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                                   | Bubble外形を時間経過で切り替える                          |
+| `say [MESSAGE]`                                                                                                | 組み込み`say` styleのspeech本体＋tailを表示する           |
+| `think [MESSAGE]`                                                                                              | 組み込み`think` styleのthought本体＋round trailを表示する |
+| `show [MESSAGE] with bubble style [STYLE]`                                                                     | styleが持つ本体＋tail/trailの一組を表示する               |
+| `set this bubble animation mode [MODE]`                                                                        | `talking`、`awaiting-continue`、`idle`からmodeを選ぶ      |
+| `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Runtime Expressionの条件成立またはtimeoutまで待つ         |
+| `close this bubble`                                                                                            | 自分のBubbleと所有resourceを解放する                      |
+| `Bubble version`                                                                                               | Bubble実装versionを返す                                   |
+
+旧`say/think [MESSAGE] with bubble style [STYLE]` opcodeを使う保存済みprojectは引き続き動作しますが、この互換ブロック2個はpaletteに表示しません。新しいscriptでは統合`show`ブロックを使い、選択styleだけで本体とtail/trailの形を決めます。
 
 ## 12. よくあるエラー
 
@@ -317,7 +318,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 | SVG overlay backendのエラー        | `renderer.addOverlay()`対応hostを使うか`scratch-render`を明示する        |
 | Async Inputを要求するエラー        | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
-| `bubble style is not defined`      | `define bubble style`を先に実行する。緑の旗の再実行時も再定義する        |
+| `bubble style is not defined`      | 組み込みの短いsay／thinkを使うか、named custom styleを先に定義する       |
 | image assetが未登録                | `register resource ... as asset ...`の完了後にBubbleを表示する           |
 | assetが画像ではない                | `MIME type of asset [NAME]`で`image/*`か確認する                         |
 | continue framesが1枚               | 2枚以上にするか、空にしてcontinue表示を解除する                          |

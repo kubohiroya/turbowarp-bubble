@@ -67,7 +67,7 @@
       "opcode": "setBubbleVisualStyle",
       "blockType": "COMMAND",
       "text": "set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]",
-      "description": "Sets the SVG body shape used by this bubble style.",
+      "description": "Sets the inseparable SVG body and tail or trail shape pair used by this bubble style.",
       "arguments": {
         "VISUAL_STYLE": {
           "type": "STRING",
@@ -290,10 +290,39 @@
       }
     },
     {
+      "opcode": "say",
+      "blockType": "COMMAND",
+      "text": "say [MESSAGE]",
+      "description": "Shows or replaces this sprite's Scratch-compatible default say bubble. An empty message closes it.",
+      "arguments": {
+        "MESSAGE": { "type": "STRING", "defaultValue": "Hello!" }
+      }
+    },
+    {
+      "opcode": "think",
+      "blockType": "COMMAND",
+      "text": "think [MESSAGE]",
+      "description": "Shows or replaces this sprite's Scratch-compatible default think bubble. An empty message closes it.",
+      "arguments": {
+        "MESSAGE": { "type": "STRING", "defaultValue": "Hmm..." }
+      }
+    },
+    {
+      "opcode": "showWithBubbleStyle",
+      "blockType": "COMMAND",
+      "text": "show [MESSAGE] with bubble style [STYLE]",
+      "description": "Shows or replaces this sprite's Bubble. The selected style determines the complete body and tail or trail shape.",
+      "arguments": {
+        "MESSAGE": { "type": "STRING", "defaultValue": "Hello!" },
+        "STYLE": { "type": "STRING", "defaultValue": "say" }
+      }
+    },
+    {
       "opcode": "sayWithBubbleStyle",
       "blockType": "COMMAND",
       "text": "say [MESSAGE] with bubble style [STYLE]",
       "description": "Shows or replaces this sprite's say bubble in talking animation mode. An empty message closes the basic profile.",
+      "hideFromPalette": true,
       "arguments": {
         "MESSAGE": { "type": "STRING", "defaultValue": "Hello!" },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
@@ -304,6 +333,7 @@
       "blockType": "COMMAND",
       "text": "think [MESSAGE] with bubble style [STYLE]",
       "description": "Shows or replaces this sprite's think bubble in talking animation mode. An empty message closes the basic profile.",
+      "hideFromPalette": true,
       "arguments": {
         "MESSAGE": { "type": "STRING", "defaultValue": "Hmm..." },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }

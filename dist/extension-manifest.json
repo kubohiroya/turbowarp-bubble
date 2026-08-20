@@ -95,6 +95,16 @@
       "arguments": []
     },
     {
+      "opcode": "say",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MESSAGE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
       "opcode": "sayWithBubbleStyle",
       "blockType": "COMMAND",
       "arguments": [
@@ -423,6 +433,30 @@
           "id": "EASE",
           "type": "STRING",
           "menu": "ease"
+        }
+      ]
+    },
+    {
+      "opcode": "showWithBubbleStyle",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MESSAGE",
+          "type": "STRING"
+        },
+        {
+          "id": "STYLE",
+          "type": "STRING"
+        }
+      ]
+    },
+    {
+      "opcode": "think",
+      "blockType": "COMMAND",
+      "arguments": [
+        {
+          "id": "MESSAGE",
+          "type": "STRING"
         }
       ]
     },

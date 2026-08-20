@@ -343,7 +343,7 @@ const blockComparisonMetadata = inspectPng(
 );
 if (
   blockComparisonMetadata.width !== 888 ||
-  blockComparisonMetadata.height !== 344
+  blockComparisonMetadata.height !== 740
 ) {
   throw new Error(
     `Unexpected TurboWarp block comparison dimensions: ${JSON.stringify(blockComparisonMetadata)}`,
@@ -361,8 +361,9 @@ const requiredManualReferences = [
   "set blink frames",
   "set lip-sync frames",
   "set continue frames",
-  "say [MESSAGE] with bubble style",
-  "think [MESSAGE] with bubble style",
+  "say [MESSAGE]",
+  "think [MESSAGE]",
+  "show [MESSAGE] with bubble style",
   "set this bubble animation mode",
   "wait with this bubble until condition",
   "close this bubble",

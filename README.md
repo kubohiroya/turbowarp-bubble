@@ -34,7 +34,7 @@ flowchart LR
   wait --> close[Close and release resources]
 ```
 
-The table below maps the 0.8.0 feature set to its public entry points. The standalone extension exposes 28 blocks generated from `src/block-definitions.json`; the full list appears under [Available blocks](#available-blocks).
+The table below maps the 0.8.0 feature set to its public entry points. The standalone extension exposes 29 palette blocks generated from 31 definitions; two hidden legacy definitions keep previously saved styled say/think blocks working. The full visible list appears under [Available blocks](#available-blocks).
 
 | Area                              | What this README covers                                                                            | Public entry points                                      |
 | --------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -320,7 +320,7 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 4. Load Runtime Expression 0.4.0 for `finish [UNIT] ...`; load both Async Input 0.4.0 and Runtime Expression 0.4.0 for `wait with this bubble until condition ...`.
 5. Load Bubble 0.8.0 last. The SVG Text 0.8.1 layout provider is included in the Bubble bundle.
 
-Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Manager, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading the extensions, place a `define bubble style` block followed by a `say` or `think` block. Defining a style with text style `default` and no additional style-setting blocks selects the Scratch-compatible basic profile. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
+Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Manager, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 
 ```text
 # Add only when using portraits, blink, lip-sync, continue, or audio
@@ -364,7 +364,7 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 | `set portrait base [ASSET] for bubble style [STYLE]`                                                           | Sets the portrait base; an empty value removes the entire portrait   |
 | `set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]` | Sets portrait placement, local transform, and rounded corners        |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Sets the distance from Actor bounds to the tail tip                  |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Selects one of ten SVG body shapes                                   |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Selects one of ten inseparable SVG body + tail/trail pairs           |
 | `set bubble tail length [LENGTH] for bubble style [STYLE]`                                                     | Sets the nominal length from the body border to the tail tip         |
 | `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                                       | Sets the body offset and whole-Bubble scale                          |
 | `set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]`                                   | Sets blink frames and interval                                       |
@@ -381,8 +381,9 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 | `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                                            | Shakes the complete Bubble surface                                   |
 | `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                                         | Applies relative-scale cycles to the Bubble                          |
 | `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                                   | Transitions the Bubble outline                                       |
-| `say [MESSAGE] with bubble style [STYLE]`                                                                      | Starts or replaces a `say` Bubble in `talking` mode                  |
-| `think [MESSAGE] with bubble style [STYLE]`                                                                    | Starts or replaces a `think` Bubble in `talking` mode                |
+| `say [MESSAGE]`                                                                                                | Uses built-in style `say`: speech body and speech tail               |
+| `think [MESSAGE]`                                                                                              | Uses built-in style `think`: thought body and round trail            |
+| `show [MESSAGE] with bubble style [STYLE]`                                                                     | Shows the body and tail/trail pair owned by the selected style       |
 | `set this bubble animation mode [MODE]`                                                                        | Selects `talking`, `awaiting-continue`, or `idle`                    |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Waits for a Runtime Expression condition or optional timeout         |
 | `close this bubble`                                                                                            | Releases this target's Bubble and owned resources                    |
@@ -390,19 +391,19 @@ Bubble owns a display for each calling sprite, clone, or Stage. With the default
 
 `ASSETS` is a comma-separated list of names registered with Asset Manager; surrounding whitespace is removed, and names cannot contain commas. Blink and lip-sync accept one or more frames, continue indicators require at least two, and an empty list removes the setting. Frame intervals must be finite and greater than zero. Reveal intervals, animation durations, and timeouts accept zero; a zero reveal interval disables automatic advance, while a zero timeout disables the time limit.
 
-The unmodified `default` text style uses the Scratch-compatible basic profile. `say` uses a speech tail and `think` uses a thought trail; both use 14px Helvetica, 16px line height, a 170px maximum line width, 50px minimum text width, 10px padding, 16px corners, a white fill, and Scratch text/stroke colors. The profile starts on the Actor's right, flips to the left only when that side fits, follows Actor bounds, fences the Stage top and sides, formats numeric block inputs like Scratch, limits text to 330 characters, and closes on an empty block input.
+Bubble provides two built-in Bubble styles. `say` owns the speech body and speech tail; `think` owns the thought body and round trail. The body and tail/trail are one visual-style choice rather than independently selected properties. The matching short block selects each style automatically, so neither a style-definition block nor a style input is required. Both styles use the reserved text profile `default`: 14px Helvetica, 16px line height, a 170px maximum line width, 50px minimum text width, 10px padding, 16px corners, a white fill, and Scratch text/stroke colors. The 4px SVG stroke is painted before the white fill, which covers its inner half and leaves the same thin visible outline as TurboWarp's standard bubble. The profile starts on the Actor's right, flips to the left only when that side fits, follows Actor bounds, fences the Stage top and sides, formats numeric block inputs like Scratch, limits text to 330 characters, and closes on an empty block input.
 
 ##### TurboWarp standard comparison
 
-The following screenshots were captured from the same TurboWarp Editor project with the English UI, a `Cat` sprite at `x=-80`, `y=0`, size `80%`, a white Stage, and matching `Hello!` / `Hmm...` inputs. The left column runs TurboWarp's standard Looks blocks. The right column runs Bubble's basic profile with only `define bubble style [dialogue] using text style [default]`; no visual, placement, or size setter is used.
+The following screenshots were captured from the same TurboWarp Editor project with the English UI, a `Cat` sprite at `x=-80`, `y=0`, size `80%`, a white Stage, and matching `Hello!` / `Hmm...` inputs. The left column runs TurboWarp's standard Looks blocks. The right column runs Bubble's basic blocks with their matching built-in `say` / `think` styles; no definition or setter block is used.
 
 ![TurboWarp standard say and think bubbles compared on the Stage with Bubble's basic profile](docs/assets/turbowarp-say-think-stage-comparison.png)
 
 The Stage comparison shows the right-side placement, content-sized body, and the speech tail or thought trail pointing back toward the Actor in each implementation. Bubble draws an independent SVG surface, so the screenshot is the visual reference for its renderer output rather than a reused image of TurboWarp's native bubble.
 
-![TurboWarp standard say and think blocks compared with the Bubble basic-profile definition, say, and think blocks](docs/assets/turbowarp-say-think-block-comparison.png)
+![TurboWarp standard say and think blocks compared with Bubble's no-setup basic say and think blocks and the built-in default profile values](docs/assets/turbowarp-say-think-block-comparison.png)
 
-The block comparison shows the minimum setup. Run the Bubble style definition once after the project starts, then use its `say` and `think` blocks as the standard-block counterparts.
+The block comparison shows the no-setup basic path and the unified custom-style block. Bubble's short `say` and `think` blocks automatically use the matching built-in styles; the callout shows each inseparable body-plus-tail/trail pair, maps both to the reserved text profile `default`, and lists the shared metrics. Named custom styles use `show [MESSAGE] with bubble style [STYLE]`, so the display operation does not select a second, potentially conflicting kind. The former styled say/think opcodes remain hidden compatibility definitions for saved projects.
 
 Any explicit style-setting block—or a text style name other than `default`—selects the existing custom profile. Within that profile the omitted visual style is `NORMAL` and the omitted placement is `up-right`; explicit visual styles, placement, distance, tail length, offsets, portrait, continue indicator, reveal, audio, and motion retain their existing behavior. With the default `svg-overlay` backend, the selected body is an SVG DOM layer in the shared overlay root. Explicit `scratch-render` mode instead uses an SVG skin and renderer drawable. Closing or replacing a Bubble, stopping its target, or disposing the runtime releases whichever resources the selected backend owns.
 
@@ -531,7 +532,7 @@ set bubble hide animation [fadeOut] for [0.2] seconds for bubble style [hero-dia
 set runtime variable [input] to []
 listen for key [Space] set runtime var [input] to [pressed]
 listen for touch on this sprite set runtime var [input] to [pressed]
-say [Set/sail!] with bubble style [hero-dialogue]
+show [Set/sail!] with bubble style [hero-dialogue]
 finish [WORD] with condition [input == "pressed"] or timeout after [10] seconds
 shake this bubble direction [90] count [2] ease [easeInOut]
 close this bubble

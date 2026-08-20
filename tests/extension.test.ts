@@ -662,7 +662,11 @@ describe("Bubble extension", () => {
     const harness = createRuntime();
     const extension = createScratchRenderExtension(harness.runtime);
     const info = extension.getInfo() as {
-      blocks: Array<{ opcode: string }>;
+      blocks: Array<{
+        arguments?: Record<string, { defaultValue: number | string }>;
+        hideFromPalette?: boolean;
+        opcode: string;
+      }>;
       docsURI: string;
       id: string;
       blockIconURI: string;
@@ -708,6 +712,9 @@ describe("Bubble extension", () => {
       "shakeBubble",
       "explodeBubble",
       "animateBubbleShape",
+      "say",
+      "think",
+      "showWithBubbleStyle",
       "sayWithBubbleStyle",
       "thinkWithBubbleStyle",
       "setBubbleAnimationMode",
@@ -715,6 +722,14 @@ describe("Bubble extension", () => {
       "closeBubble",
       "getVersion",
     ]);
+    expect(
+      info.blocks.find((block) => block.opcode === "showWithBubbleStyle")
+        ?.arguments?.STYLE?.defaultValue,
+    ).toBe("say");
+    for (const opcode of ["sayWithBubbleStyle", "thinkWithBubbleStyle"])
+      expect(
+        info.blocks.find((block) => block.opcode === opcode)?.hideFromPalette,
+      ).toBe(true);
     expect(info.menus.animationMode).toEqual({
       acceptReporters: true,
       items: ["talking", "awaiting-continue", "idle"],
@@ -904,16 +919,12 @@ describe("Bubble extension", () => {
     await extension.closeBubble({}, { target });
   });
 
-  it("matches Scratch say/think defaults and clears on an empty message", async () => {
+  it("provides built-in say and think styles that match Scratch and clear on an empty message", async () => {
     const harness = createRuntime();
     const extension = createScratchRenderExtension(harness.runtime);
     const target = actor();
-    extension.defineBubbleStyle({ STYLE: "basic", TEXT_STYLE: "default" });
 
-    await extension.sayWithBubbleStyle(
-      { MESSAGE: 1.234, STYLE: "basic" },
-      { target },
-    );
+    await extension.say({ MESSAGE: 1.234 }, { target });
 
     const say = harness.createdSvgSkins.at(-1)!;
     expect(say).toContain('data-bubble-kind="say"');
@@ -921,24 +932,42 @@ describe("Bubble extension", () => {
     expect(say).toContain(">1.23</text>");
     expect(say).not.toContain("<circle");
     expect(say).toContain("scale(-1 1)");
+    expect(say.match(/paint-order="stroke fill"/gu)).toHaveLength(1);
     expect(harness.positions.get(harness.created[0]!)).toEqual([87, -34]);
     expect(harness.visibility.get(harness.created[1]!)).toBe(false);
 
-    await extension.thinkWithBubbleStyle(
-      { MESSAGE: "Hi", STYLE: "basic" },
-      { target },
-    );
+    await extension.think({ MESSAGE: "Hi" }, { target });
     const think = harness.createdSvgSkins.at(-1)!;
     expect(think).toContain('data-bubble-kind="think"');
     expect(think).toContain("<circle");
     expect(think).toContain("scale(-1 1)");
+    expect(think.match(/paint-order="stroke fill"/gu)).toHaveLength(3);
 
-    await extension.sayWithBubbleStyle(
-      { MESSAGE: "", STYLE: "basic" },
-      { target },
-    );
+    await extension.say({ MESSAGE: "" }, { target });
     expect(harness.destroyed).toHaveLength(4);
     expect(harness.visibility.get(harness.created.at(-2)!)).toBe(false);
+  });
+
+  it("lets the selected Bubble style determine the complete basic shape", async () => {
+    const harness = createRuntime();
+    const extension = createScratchRenderExtension(harness.runtime);
+    const target = actor();
+
+    await extension.showWithBubbleStyle(
+      { MESSAGE: "Hello", STYLE: "say" },
+      { target },
+    );
+    expect(harness.createdSvgSkins.at(-1)).toContain('data-bubble-kind="say"');
+    expect(harness.createdSvgSkins.at(-1)).not.toContain("<circle");
+
+    await extension.showWithBubbleStyle(
+      { MESSAGE: "Hmm", STYLE: "think" },
+      { target },
+    );
+    expect(harness.createdSvgSkins.at(-1)).toContain(
+      'data-bubble-kind="think"',
+    );
+    expect(harness.createdSvgSkins.at(-1)).toContain("<circle");
   });
 
   it("points the Scratch-compatible tail right when the bubble moves left", async () => {
@@ -1021,7 +1050,7 @@ describe("Bubble extension", () => {
       VISUAL_STYLE: "THINKING",
     });
 
-    await extension.sayWithBubbleStyle(
+    await extension.showWithBubbleStyle(
       { MESSAGE: "Hi", STYLE: "thought" },
       { target },
     );

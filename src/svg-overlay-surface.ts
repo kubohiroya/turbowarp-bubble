@@ -750,6 +750,7 @@ const allowedBodyAttributes = new Set([
   "font-size",
   "height",
   "opacity",
+  "paint-order",
   "r",
   "rx",
   "stroke",

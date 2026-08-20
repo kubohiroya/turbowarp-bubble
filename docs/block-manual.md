@@ -59,7 +59,7 @@ For a remote image, pass its HTTPS URL as `RESOURCE_ID`. Bubble accepts only ass
 
 ## 3. Select a text layout style
 
-Standalone Bubble bundles the SVG Text 0.8.1 layout composition. A style that uses `default` and has no additional style settings selects Bubble's Scratch-compatible basic profile. It gives `say` and `think` their standard tails, content-sized body, 14px Helvetica text, right-first placement with a fit-dependent left flip, 330-character block-input limit, and empty-message close behavior. Any other text style name or explicit style-setting block selects the custom profile. Custom text styles are initialized on first use with transparent-background SVG Text defaults. If a project separately loads the stock SVG Text 0.8.1 extension before Bubble, Bubble uses its public `getLayoutCapability()` instead and preserves the named styles defined by SVG Text blocks. An older loaded SVG Text extension without that handoff produces an explicit compatibility error rather than silently replacing the style; select the documented scratch-render fallback only when needed.
+Standalone Bubble bundles the SVG Text 0.8.1 layout composition and installs two Bubble styles: `say` owns the speech body and speech tail, while `think` owns the thought body and round trail. A style's body and tail/trail shapes are one visual choice, not separately selected properties. The short `say [MESSAGE]` and `think [MESSAGE]` blocks select the matching style automatically, so the basic path needs neither a style definition nor a style input. Both styles use the reserved text profile `default`, a content-sized body, 14px Helvetica text, right-first placement with a fit-dependent left flip, 330-character block-input limit, and empty-message close behavior. Their 4px SVG stroke is painted before the white fill, hiding the inner half so the visible outline matches TurboWarp's standard bubble. Any other text style name or explicit style-setting block selects the custom profile. Custom text styles are initialized on first use with transparent-background SVG Text defaults. If a project separately loads the stock SVG Text 0.8.1 extension before Bubble, Bubble uses its public `getLayoutCapability()` instead and preserves the named styles defined by SVG Text blocks. An older loaded SVG Text extension without that handoff produces an explicit compatibility error rather than silently replacing the style; select the documented scratch-render fallback only when needed.
 
 ```text
 define bubble style [hero-dialogue] using text style [default]
@@ -69,25 +69,24 @@ Application hosts that need custom fonts, colors, or alignment can define styles
 
 ## 4. Define a Bubble style
 
-For a basic Bubble, associate a Bubble style name with `default` and run no other style-setting block:
+For a basic Bubble, use the short blocks directly. They select the built-in Bubble styles `say` and `think`, respectively:
 
 ```text
-define bubble style [basic] using text style [default]
-say [Hello!] with bubble style [basic]
-think [Hmm…] with bubble style [basic]
+say [Hello!]
+think [Hmm…]
 ```
 
 ### TurboWarp standard comparison
 
-These screenshots come from one TurboWarp Editor project using the English UI, a `Cat` sprite at `x=-80`, `y=0`, size `80%`, a white Stage, and matching `Hello!` / `Hmm...` inputs. The standard Looks blocks are on the left. Bubble's basic profile is on the right and uses only `define bubble style [dialogue] using text style [default]`; no setter changes its shape, placement, or size.
+These screenshots come from one TurboWarp Editor project using the English UI, a `Cat` sprite at `x=-80`, `y=0`, size `80%`, a white Stage, and matching `Hello!` / `Hmm...` inputs. The standard Looks blocks are on the left. Bubble's short basic blocks are on the right and use their matching built-in `say` / `think` styles; no definition or setter block is used.
 
 ![TurboWarp standard say and think bubbles compared on the Stage with Bubble's basic profile](./assets/turbowarp-say-think-stage-comparison.png)
 
 The Stage panels show the right-side placement, content-sized body, and the speech tail or thought trail pointing back toward the Actor in each implementation. Bubble renders an independent SVG surface, and every panel is a crop of the actual TurboWarp Stage.
 
-![TurboWarp standard say and think blocks compared with the Bubble basic-profile definition, say, and think blocks](./assets/turbowarp-say-think-block-comparison.png)
+![TurboWarp standard say and think blocks compared with Bubble's no-setup basic say and think blocks and built-in default profile values](./assets/turbowarp-say-think-block-comparison.png)
 
-The block image shows the minimum setup. Run the style definition once after the project starts; then use Bubble's `say` and `think` blocks as the standard-block counterparts.
+The block image shows the no-setup path and the unified custom-style block. The short blocks select the matching built-in styles automatically. The callout shows each inseparable body-plus-tail/trail pair, maps both styles to the reserved text profile `default`, and lists the shared typography, geometry, colors, border paint order, and placement. Use `show [MESSAGE] with bubble style [STYLE]` for named custom styles. The former styled say/think opcodes remain hidden compatibility definitions for saved projects.
 
 The following setters intentionally switch the style to the custom profile:
 
@@ -199,7 +198,7 @@ set bubble reveal unit [CHARACTER] every [0.05] seconds layout [RESERVED] for bu
 set bubble word delimiters [ /] show [false] for bubble style [hero-dialogue]
 set bubble reveal sound [Typewriter] for bubble style [hero-dialogue]
 set bubble voice [HeroVoice] for bubble style [hero-dialogue]
-say [Let's head for the sea!] with bubble style [hero-dialogue]
+show [Let's head for the sea!] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] seconds
 ```
 
@@ -213,7 +212,7 @@ finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] sec
 set runtime variable [input] to []
 listen for key [Space] set runtime var [input] to [pressed]
 listen for touch on this sprite set runtime var [input] to [pressed]
-say [Let's head for the sea!] with bubble style [hero-dialogue]
+show [Let's head for the sea!] with bubble style [hero-dialogue]
 wait with this bubble until condition [input == "pressed"] or timeout after [10] seconds
 close this bubble
 ```
@@ -255,14 +254,13 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 
 The TurboWarp adapter advances these motions on scheduler frames and applies `ease` to each frame. `shake` applies direction and count to the complete Bubble surface, `explode` expands and returns the relative scale of text and portrait together, and `animate bubble shape` cross-fades the current outline into styles such as `THINKING`, `DREAMING`, `YELLING`, `WAVY`, or `WHISPERING` during the requested speed and duration.
 
-## 9. `say` and `think`
+## 9. Showing a named Bubble style
 
 ```text
-say [MESSAGE] with bubble style [STYLE]
-think [MESSAGE] with bubble style [STYLE]
+show [MESSAGE] with bubble style [STYLE]
 ```
 
-Both blocks support the same visual styles, portrait layers, placement, and animation-mode control. The block name does not force a shape; explicitly choose `NORMAL`, `THINKING`, or another shape with `set bubble visual style`. The Composition API surface still receives a `say`/`think` kind, so a custom host can add its own kind-dependent behavior.
+The selected Bubble style determines the body and tail/trail together, along with its text profile, portrait layers, placement, and animation settings. `set bubble visual style` selects an inseparable pair such as `NORMAL` (speech body + speech tail) or `THINKING` (thought body + round trail); there is no independent tail-shape setting. The standalone extension derives its internal rendering kind from that style instead of asking the display block for a second, potentially conflicting choice.
 
 Running a new `say` or `think` on the same sprite, clone, or Stage disposes the previous Bubble and its timers/drawables before replacing it. The Stage supports stage-relative placement only.
 
@@ -283,7 +281,7 @@ When a clone stops or is deleted, its timers, overlay DOM, and image leases are 
 | `define bubble style [STYLE] using text style [TEXT_STYLE]`                                                    | Define or redefine a Bubble style                                       |
 | `set bubble placement [PLACEMENT] for bubble style [STYLE]`                                                    | Set an actor direction/angle or a stage-relative region                 |
 | `set bubble distance [DISTANCE] for bubble style [STYLE]`                                                      | Set the distance from actor bounds to the tail tip                      |
-| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Select one of ten SVG body shapes                                       |
+| `set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]`                                              | Select one of ten inseparable SVG body + tail/trail pairs               |
 | `set bubble tail length [LENGTH] for bubble style [STYLE]`                                                     | Set the nominal border-to-tip tail length                               |
 | `set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]`                                       | Set body position and whole-Bubble scale, including text                |
 | `set portrait base [ASSET] for bubble style [STYLE]`                                                           | Set the portrait base image                                             |
@@ -302,29 +300,32 @@ When a clone stops or is deleted, its timers, overlay DOM, and image leases are 
 | `shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]`                                            | Shake the complete Bubble surface                                       |
 | `explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]`                                         | Apply relative scale cycles to the Bubble                               |
 | `animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds`                                   | Transition the Bubble outline                                           |
-| `say [MESSAGE] with bubble style [STYLE]`                                                                      | Start or replace a `say` Bubble in `talking` mode                       |
-| `think [MESSAGE] with bubble style [STYLE]`                                                                    | Start or replace a `think` Bubble in `talking` mode                     |
+| `say [MESSAGE]`                                                                                                | Show built-in style `say`: speech body and speech tail                  |
+| `think [MESSAGE]`                                                                                              | Show built-in style `think`: thought body and round trail               |
+| `show [MESSAGE] with bubble style [STYLE]`                                                                     | Show the complete body and tail/trail pair owned by a style             |
 | `set this bubble animation mode [MODE]`                                                                        | Select `talking`, `awaiting-continue`, or `idle` for this Bubble        |
 | `wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds`                         | Await a Runtime Expression condition or optional timeout                |
 | `close this bubble`                                                                                            | Release this target's Bubble and owned resources                        |
 | `Bubble version`                                                                                               | Report the Bubble implementation version                                |
 
+Saved projects using the former `say/think [MESSAGE] with bubble style [STYLE]` opcodes continue to run, but those two compatibility blocks are hidden from the palette. New scripts use the unified `show` block so the selected style alone determines the complete body and tail/trail shape.
+
 ## 12. Troubleshooting
 
-| Symptom                              | Cause and solution                                                            |
-| ------------------------------------ | ----------------------------------------------------------------------------- |
-| Asset Manager required error         | Load Asset Manager 0.12.x without sandbox before using image/media assets     |
-| SVG overlay backend error            | Use a host with `renderer.addOverlay()` or explicitly select `scratch-render` |
-| Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait           |
-| Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait    |
-| `bubble style is not defined`        | Run `define bubble style` first, including after restarting with green flag   |
-| Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble       |
-| Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                              |
-| Only one continue frame              | Supply at least two frames, or clear the setting                              |
-| Frame interval error                 | Use a finite `SECONDS` value greater than zero                                |
-| Actor-relative Bubble from the Stage | Use `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`                                 |
-| Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value    |
-| Eyes or mouth are misaligned         | Match canvas size, center, and transparent area across all portrait layers    |
+| Symptom                              | Cause and solution                                                              |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
+| Asset Manager required error         | Load Asset Manager 0.12.x without sandbox before using image/media assets       |
+| SVG overlay backend error            | Use a host with `renderer.addOverlay()` or explicitly select `scratch-render`   |
+| Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait             |
+| Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait      |
+| `bubble style is not defined`        | Use the built-in short say/think blocks, or define the named custom style first |
+| Image asset is not registered        | Wait for `register resource ... as asset ...` before showing the Bubble         |
+| Asset is not an image                | Confirm `MIME type of asset [NAME]` is `image/*`                                |
+| Only one continue frame              | Supply at least two frames, or clear the setting                                |
+| Frame interval error                 | Use a finite `SECONDS` value greater than zero                                  |
+| Actor-relative Bubble from the Stage | Use `HEADER_LIKE`, `CENTER`, or `FOOTER_LIKE`                                   |
+| Invalid placement                    | Use a 16-way direction, alias, 0–360 degree angle, or stage-relative value      |
+| Eyes or mouth are misaligned         | Match canvas size, center, and transparent area across all portrait layers      |
 
 ## 13. Automatic cleanup
 
