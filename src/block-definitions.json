@@ -5,7 +5,7 @@
       "opcode": "defineBubbleStyle",
       "blockType": "COMMAND",
       "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
-      "description": "Defines or replaces a bubble style and references a named SVG Text layout style.",
+      "description": "Defines or replaces a bubble style. The default text style without further settings uses the Scratch-compatible basic profile.",
       "arguments": {
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" },
         "TEXT_STYLE": { "type": "STRING", "defaultValue": "default" }
@@ -293,7 +293,7 @@
       "opcode": "sayWithBubbleStyle",
       "blockType": "COMMAND",
       "text": "say [MESSAGE] with bubble style [STYLE]",
-      "description": "Shows or replaces this sprite's layered say bubble in talking animation mode.",
+      "description": "Shows or replaces this sprite's say bubble in talking animation mode. An empty message closes the basic profile.",
       "arguments": {
         "MESSAGE": { "type": "STRING", "defaultValue": "Hello!" },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }
@@ -303,7 +303,7 @@
       "opcode": "thinkWithBubbleStyle",
       "blockType": "COMMAND",
       "text": "think [MESSAGE] with bubble style [STYLE]",
-      "description": "Shows or replaces this sprite's layered think bubble in talking animation mode.",
+      "description": "Shows or replaces this sprite's think bubble in talking animation mode. An empty message closes the basic profile.",
       "arguments": {
         "MESSAGE": { "type": "STRING", "defaultValue": "Hmm..." },
         "STYLE": { "type": "STRING", "defaultValue": "dialogue" }

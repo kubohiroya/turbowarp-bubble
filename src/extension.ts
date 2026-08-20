@@ -8,6 +8,8 @@ import {
   normalizeBubblePortraitPlacement,
   normalizeBubbleTailLength,
   bubbleVisualStyles,
+  formatScratchBubbleArgument,
+  isScratchDefaultBubbleStyleInput,
   type BubblePlacement,
   type BubbleVisualStyle,
 } from "./composition.js";
@@ -931,6 +933,14 @@ export class BubbleExtension implements TurboWarpExtension {
       );
     }
     this.cancelWait(target.id, "Bubble wait was replaced.");
+    const scratchDefault = isScratchDefaultBubbleStyleInput(style);
+    const message = scratchDefault
+      ? formatScratchBubbleArgument(args.MESSAGE)
+      : this.toString(args.MESSAGE);
+    if (scratchDefault && message === "") {
+      await this.releaseOwnedTarget(target.id);
+      return;
+    }
     const composition = this.getComposition();
     let handle: BubbleHandle;
     try {
@@ -938,7 +948,7 @@ export class BubbleExtension implements TurboWarpExtension {
         actor: target,
         actorKey: target.id,
         kind,
-        text: this.toString(args.MESSAGE),
+        text: message,
         styleName: style.name,
       });
     } catch (error) {

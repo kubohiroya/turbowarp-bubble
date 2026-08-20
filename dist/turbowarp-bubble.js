@@ -47,7 +47,7 @@
         "opcode": "defineBubbleStyle",
         "blockType": "COMMAND",
         "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
-        "description": "Defines or replaces a bubble style and references a named SVG Text layout style.",
+        "description": "Defines or replaces a bubble style. The default text style without further settings uses the Scratch-compatible basic profile.",
         "arguments": {
           "STYLE": {
             "type": "STRING",
@@ -478,7 +478,7 @@
         "opcode": "sayWithBubbleStyle",
         "blockType": "COMMAND",
         "text": "say [MESSAGE] with bubble style [STYLE]",
-        "description": "Shows or replaces this sprite's layered say bubble in talking animation mode.",
+        "description": "Shows or replaces this sprite's say bubble in talking animation mode. An empty message closes the basic profile.",
         "arguments": {
           "MESSAGE": {
             "type": "STRING",
@@ -494,7 +494,7 @@
         "opcode": "thinkWithBubbleStyle",
         "blockType": "COMMAND",
         "text": "think [MESSAGE] with bubble style [STYLE]",
-        "description": "Shows or replaces this sprite's layered think bubble in talking animation mode.",
+        "description": "Shows or replaces this sprite's think bubble in talking animation mode. An empty message closes the basic profile.",
         "arguments": {
           "MESSAGE": {
             "type": "STRING",
@@ -6016,7 +6016,7 @@
   function bubbleBodyMinimumSize(...styles) {
     return styles.some((style) => style === "THINKING" || style === "DREAMING") ? cloudBodyMinimumSize : emptyBodyMinimumSize;
   }
-  function escapeXml$1(value) {
+  function escapeXml$2(value) {
     return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
   }
   function requireDimension(value, fallback) {
@@ -6434,9 +6434,9 @@
       x: width / 2,
       y: height / 2
     } : transformedBodyGeometry(roundedRectanglePoints(width, height), width, height, direction, tailLength, offset).bodyCenter;
-    const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml$1(textColor)}" font-family="${escapeXml$1(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml$1(line)}</text>`).join("");
+    const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml$2(textColor)}" font-family="${escapeXml$2(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml$2(line)}</text>`).join("");
     const body = shapeTransition === void 0 ? renderBody(input.style, width, height, direction, fill, border, tailLength, offset) : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(shapeTransition.from, width, height, direction, fill, border, tailLength, offset)}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(shapeTransition.to, width, height, direction, fill, border, tailLength, offset)}</g>`;
-    const title = escapeXml$1(input.title ?? `${input.style} bubble`);
+    const title = escapeXml$2(input.title ?? `${input.style} bubble`);
     const transitionAttributes = shapeTransition === void 0 ? "" : ` data-bubble-shape-transition-from="${shapeTransition.from}" data-bubble-shape-transition-to="${shapeTransition.to}" data-bubble-shape-transition-progress="${shapeTransition.progress.toFixed(4)}"`;
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}" data-bubble-body-width="${width}" data-bubble-body-height="${height}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
   }
@@ -8529,6 +8529,144 @@
     if (typeof value !== "number" || !Number.isFinite(value) || value < 0) throw new TypeError("Bubble portrait corner radius must be zero or greater.");
     return value;
   }
+  var scratchDefaultOptionalStyleKeys = Object.freeze([
+    "placement",
+    "maxWidth",
+    "textLocale",
+    "distance",
+    "tailLength",
+    "offset",
+    "visualStyle",
+    "portrait",
+    "continueIndicator",
+    "reveal",
+    "audio",
+    "showAnimation",
+    "hideAnimation"
+  ]);
+  function isRecord$6(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+  /**
+  * The block-level basic style is intentionally narrow. Any explicit layout,
+  * body, media, reveal, or motion option selects the existing custom renderer.
+  */
+  function bubbleLayoutProfileForStyleInput(value) {
+    if (!isRecord$6(value)) return "custom";
+    if (typeof value.textStyle !== "string" || value.textStyle.trim() !== "default") return "custom";
+    return scratchDefaultOptionalStyleKeys.every((key) => value[key] === void 0) ? "scratch-default" : "custom";
+  }
+  function isScratchDefaultBubbleStyleInput(value) {
+    return bubbleLayoutProfileForStyleInput(value) === "scratch-default";
+  }
+  /** Matches the numeric presentation and length limit used by say/think. */
+  function formatScratchBubbleArgument(value) {
+    let formatted = value;
+    if (typeof value === "number" && Math.abs(value) >= .01 && value % 1 !== 0) formatted = value.toFixed(2);
+    return String(formatted).slice(0, 330);
+  }
+  function estimatedHelveticaWidth(text) {
+    let units = 0;
+    for (const character of text) {
+      if (/\p{Mark}/u.test(character)) continue;
+      if (/\s/u.test(character)) {
+        units += .35;
+        continue;
+      }
+      units += (character.codePointAt(0) ?? 0) <= 127 ? .62 : 1;
+    }
+    return units * 14;
+  }
+  function layoutScratchBubbleText(value, measureText = estimatedHelveticaWidth) {
+    const text = value.slice(0, 330);
+    const measured = (candidate) => {
+      let width;
+      try {
+        width = measureText(candidate);
+      } catch {
+        return estimatedHelveticaWidth(candidate);
+      }
+      return Number.isFinite(width) && width >= 0 ? width : estimatedHelveticaWidth(candidate);
+    };
+    const wrapped = wrapText({
+      text,
+      maxWidth: 170,
+      measureText: measured
+    });
+    const lines = Object.freeze(wrapped.lines.map((line) => Object.freeze({
+      text: line.text,
+      width: line.width
+    })));
+    return Object.freeze({
+      lines,
+      maxLineWidth: Math.max(0, ...lines.map((line) => line.width)),
+      text: lines.map((line) => line.text).join("\n")
+    });
+  }
+  function scratchBubbleMetrics(layout) {
+    const lineCount = Math.max(1, layout.lines.length);
+    const paddedWidth = Math.max(layout.maxLineWidth, 50) + 20;
+    const paddedHeight = 16 * lineCount + 20;
+    return Object.freeze({
+      bodyHeight: paddedHeight + 4,
+      bodyWidth: paddedWidth + 4,
+      height: paddedHeight + 4 + 12,
+      paddedHeight,
+      paddedWidth,
+      width: paddedWidth + 4
+    });
+  }
+  function positionScratchBubble(input) {
+    const stageLeft = -input.stageWidth / 2;
+    const stageRight = input.stageWidth / 2;
+    const stageTop = input.stageHeight / 2;
+    let pointsLeft = input.pointsLeft;
+    if (!pointsLeft && input.width + input.bounds.right > stageRight && input.bounds.left - input.width > stageLeft) pointsLeft = true;
+    else if (pointsLeft && input.bounds.left - input.width < stageLeft && input.width + input.bounds.right < stageRight) pointsLeft = false;
+    const left = pointsLeft ? Math.min(stageRight - input.width, Math.max(stageLeft, input.bounds.left - input.width)) : Math.max(stageLeft, Math.min(stageRight - input.width, input.bounds.right));
+    const top = Math.min(stageTop, input.bounds.bottom + input.height);
+    return Object.freeze({
+      centerX: left + input.width / 2,
+      centerY: top - input.height / 2,
+      left,
+      pointsLeft,
+      top
+    });
+  }
+  function escapeXml$1(value) {
+    return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
+  }
+  function scratchBodyPath(metrics) {
+    const { paddedHeight: height, paddedWidth: width } = metrics;
+    const radius = Math.min(16, width / 2, height / 2);
+    return [
+      `M ${radius} ${height}`,
+      `Q 0 ${height} 0 ${height - radius}`,
+      `L 0 ${radius}`,
+      `Q 0 0 ${radius} 0`,
+      `L ${width - radius} 0`,
+      `Q ${width} 0 ${width} ${radius}`,
+      `L ${width} ${height - radius}`,
+      `Q ${width} ${height} ${width - radius} ${height}`
+    ].join(" ");
+  }
+  function scratchSayBody(metrics) {
+    const { paddedHeight: height, paddedWidth: width } = metrics;
+    return `<path d="${`${scratchBodyPath(metrics)} C ${width - 16} ${height + 4} ${width - 12} ${height + 8} ${width - 12} ${height + 10} Q ${width - 12} ${height + 12} ${width - 14} ${height + 12} C ${width - 17} ${height + 12} ${width - 27} ${height + 8} ${width - 32} ${height} Z`}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" stroke-linejoin="round"/>`;
+  }
+  function scratchThinkBody(metrics) {
+    const { paddedHeight: height, paddedWidth: width } = metrics;
+    return `<path d="${`${scratchBodyPath(metrics)} L ${width - 28} ${height} A 4 4 0 0 1 ${width - 36} ${height} Z`}" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4" stroke-linejoin="round"/><circle cx="${width - 25.25}" cy="${height + 7.25}" r="2.25" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4"/><circle cx="${width - 17.5}" cy="${height + 9.5}" r="1.5" fill="white" stroke="rgba(0, 0, 0, 0.15)" stroke-width="4"/>`;
+  }
+  function renderScratchBubbleSvg(input) {
+    const metrics = scratchBubbleMetrics(input.layout);
+    const body = input.kind === "say" ? scratchSayBody(metrics) : scratchThinkBody(metrics);
+    const bodyTransform = input.pointsLeft ? `translate(${metrics.width} 0) scale(-1 1) translate(2 2)` : `translate(2 2)`;
+    const firstBaseline = 24.6;
+    const text = input.layout.lines.map((line, index) => `<text x="12" y="${firstBaseline + 16 * index}" fill="#575E75" font-family="Helvetica, sans-serif" font-size="14" xml:space="preserve">${escapeXml$1(line.text)}</text>`).join("");
+    const title = escapeXml$1(input.title ?? `${input.kind} bubble`);
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${metrics.width}" height="${metrics.height}" viewBox="0 0 ${metrics.width} ${metrics.height}" role="img" data-bubble-profile="scratch-default" data-bubble-kind="${input.kind}"><title>${title}</title><g transform="${bodyTransform}">${body}</g>${text}</svg>`;
+  }
   //#endregion
   //#region src/composition.ts
   var BubbleCompositionError = class extends Error {
@@ -8733,9 +8871,11 @@
       maxWidth = value.maxWidth;
     }
     const textLocale = value.textLocale === void 0 ? void 0 : requireName$1(value.textLocale, "Bubble style text locale");
+    const layoutProfile = bubbleLayoutProfileForStyleInput(value);
     return Object.freeze({
       name: requireName$1(value.name, "Bubble style name"),
       textStyle: requireName$1(value.textStyle, "Bubble text style name"),
+      layoutProfile,
       ...maxWidth === void 0 ? {} : { maxWidth },
       ...textLocale === void 0 ? {} : { textLocale },
       placement,
@@ -8826,6 +8966,10 @@
     ], ...style.continueIndicator?.frames ?? []];
   }
   function formatBubbleText(text, style, textCapability) {
+    if (style.layoutProfile === "scratch-default") return layoutScratchBubbleText(text, (candidate) => typeof textCapability.measureText === "function" ? textCapability.measureText({
+      styleName: style.textStyle,
+      text: candidate
+    }) : NaN).text;
     if (style.maxWidth === void 0) return text;
     if (typeof textCapability.measureText !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Bubble style maxWidth requires the text capability measureText method.");
     return wrapText({
@@ -8960,6 +9104,7 @@
       let activeStyle = style;
       if (input.reveal !== void 0) activeStyle = Object.freeze({
         ...style,
+        layoutProfile: "custom",
         reveal: input.reveal
       });
       let currentText = input.text;
@@ -9047,21 +9192,34 @@
           kind: input.kind,
           style: activeStyle
         })), activeStyle);
-        const fullText = formatBubbleText(input.text, activeStyle, textCapability);
+        const applySurfaceText = async (rawText, nextStyle = activeStyle) => {
+          if (nextStyle.layoutProfile === "scratch-default" && surface?.renderScratchText) {
+            const layout = layoutScratchBubbleText(rawText, (candidate) => typeof textCapability.measureText === "function" ? textCapability.measureText({
+              styleName: nextStyle.textStyle,
+              text: candidate
+            }) : NaN);
+            await surface.renderScratchText(layout);
+            return;
+          }
+          if (!surface) return;
+          textCapability.setText({
+            styleName: nextStyle.textStyle,
+            target: surface.targets.text,
+            text: formatBubbleText(rawText, nextStyle, textCapability)
+          });
+          textOwned = true;
+        };
         if (reveal?.layout === "RESERVED") {
+          const fullText = formatBubbleText(input.text, activeStyle, textCapability);
           textCapability.setText({
             styleName: activeStyle.textStyle,
             target: surface.targets.text,
             text: fullText
           });
+          textOwned = true;
           surface.captureTextLayout?.();
         }
-        textCapability.setText({
-          styleName: activeStyle.textStyle,
-          target: surface.targets.text,
-          text: formatBubbleText(reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text, activeStyle, textCapability)
-        });
-        textOwned = true;
+        await applySurfaceText(reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text);
         await primeStyleImages(activeStyle, styleImageResolver, surface);
         createStyleLoops(activeStyle, styleImageResolver, surface);
         let currentAnimationMode = "idle";
@@ -9070,11 +9228,7 @@
         const renderVisibleText = async () => {
           if (!surface) return;
           const visible = reveal ? revealedBubbleText(revealChunks, revealedCount) : currentText;
-          textCapability.setText({
-            styleName: activeStyle.textStyle,
-            target: surface.targets.text,
-            text: formatBubbleText(visible, activeStyle, textCapability)
-          });
+          await applySurfaceText(visible);
           await surface.show();
         };
         const stopRevealTimer = () => {
@@ -9151,6 +9305,7 @@
                     target: surface.targets.text,
                     text: formatBubbleText(text, activeStyle, textCapability)
                   });
+                  textOwned = true;
                   surface.captureTextLayout?.();
                 }
                 await renderVisibleText();
@@ -9195,13 +9350,10 @@
                   target: surface.targets.text,
                   text: formatBubbleText(currentText, nextStyle, textCapability)
                 });
+                textOwned = true;
                 surface.captureTextLayout?.();
               }
-              textCapability.setText({
-                styleName: nextStyle.textStyle,
-                target: surface.targets.text,
-                text: formatBubbleText(currentText, nextStyle, textCapability)
-              });
+              await applySurfaceText(currentText, nextStyle);
               createStyleLoops(nextStyle, nextImageResolver, surface);
               await Promise.all([
                 surface.setLayerVisible("portraitBase", nextStyle.portrait !== void 0),
@@ -9263,6 +9415,7 @@
                     target: surface.targets.text,
                     text: formatBubbleText(currentText, activeStyle, textCapability)
                   });
+                  textOwned = true;
                   surface.captureTextLayout?.();
                 }
               }
@@ -9325,10 +9478,19 @@
             }
             transitionTail = transitionTail.then(async () => {
               if (normalized.name === "animateBubbleShape" && normalized.visualStyle) {
-                const nextStyle = Object.freeze({
+                const transitionStyle = Object.freeze({
                   ...activeStyle,
+                  layoutProfile: "custom"
+                });
+                const nextStyle = Object.freeze({
+                  ...transitionStyle,
                   visualStyle: normalized.visualStyle
                 });
+                if (activeStyle.layoutProfile === "scratch-default") {
+                  await surface?.updateStyle(transitionStyle);
+                  await applySurfaceText(currentText, transitionStyle);
+                  await surface?.show();
+                }
                 await surface?.animate?.(normalized);
                 activeStyle = nextStyle;
                 await surface?.updateStyle(activeStyle);
@@ -10959,6 +11121,7 @@
     "g",
     "path",
     "rect",
+    "text",
     "title"
   ]);
   var allowedBodyAttributes = /* @__PURE__ */ new Set([
@@ -10969,6 +11132,8 @@
     "data-tail-base-on-border",
     "fill",
     "fill-rule",
+    "font-family",
+    "font-size",
     "height",
     "opacity",
     "r",
@@ -10979,6 +11144,7 @@
     "stroke-width",
     "transform",
     "width",
+    "xml:space",
     "x",
     "y"
   ]);
@@ -10992,7 +11158,7 @@
       if (/javascript:|url\s*\(/iu.test(value)) throw new TypeError("Bubble body SVG contains an unsafe attribute value.");
       result.setAttribute(attribute, value);
     }
-    if (name === "title") result.textContent = source.textContent ?? "";
+    if (name === "title" || name === "text") result.textContent = source.textContent ?? "";
     for (const child of Array.from(source.children)) result.appendChild(copyAllowedBodyNode(child, document));
     return result;
   }
@@ -11014,7 +11180,7 @@
     target.setDisplaySize(size);
     return size;
   }
-  function createSvgOverlaySurface(manager, actor, actorKey, style, scheduler) {
+  function createSvgOverlaySurface(manager, actor, actorKey, kind, style, scheduler) {
     const { document, renderer } = manager;
     const sequence = overlaySurfaceSequence;
     overlaySurfaceSequence += 1;
@@ -11067,6 +11233,8 @@
     let motionOpacity = 1;
     let center = [0, 0];
     let shapeTransition;
+    let scratchTextLayout;
+    let scratchPointsLeft = false;
     const applyMotionTransform = (native = manager.updateNativeSize()) => {
       const centerX = native.width / 2 + center[0];
       const centerY = native.height / 2 - center[1];
@@ -11084,15 +11252,53 @@
     const updateVisibility = (nativeSize) => {
       const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
       const visible = surfaceVisible && actorVisible && motionOpacity > 0;
+      const scratchDefaultRendered = currentStyle.layoutProfile === "scratch-default" && scratchTextLayout !== void 0;
       surfaceGroup.setAttribute("visibility", visible ? "visible" : "hidden");
-      bodyGroup.setAttribute("visibility", visible && currentStyle.visualStyle !== "NO_BUBBLE" ? "visible" : "hidden");
-      textGroup.setAttribute("visibility", visible ? "visible" : "hidden");
+      bodyGroup.setAttribute("visibility", visible && (scratchDefaultRendered || currentStyle.visualStyle !== "NO_BUBBLE") ? "visible" : "hidden");
+      textGroup.setAttribute("visibility", visible && !scratchDefaultRendered ? "visible" : "hidden");
       for (const [layer, target] of layerTargets) target.setVisible(visible && layerAllowedByStyle(layer) && (layerVisibility.get(layer) ?? false));
       applyMotionTransform(nativeSize);
     };
     const position = () => {
       if (disposed) return;
       const native = manager.updateNativeSize();
+      if (currentStyle.layoutProfile === "scratch-default" && scratchTextLayout !== void 0) {
+        const metrics = scratchBubbleMetrics(scratchTextLayout);
+        const nextPosition = positionScratchBubble({
+          bounds: targetBounds$1(actor),
+          height: metrics.height,
+          pointsLeft: scratchPointsLeft,
+          stageHeight: native.height,
+          stageWidth: native.width,
+          width: metrics.width
+        });
+        scratchPointsLeft = nextPosition.pointsLeft;
+        center = [nextPosition.centerX, nextPosition.centerY];
+        const nextBodySignature = JSON.stringify({
+          kind,
+          layout: scratchTextLayout,
+          pointsLeft: scratchPointsLeft
+        });
+        if (nextBodySignature !== bodySignature) {
+          replaceBodyFromCanonicalSvg(bodyGroup, renderScratchBubbleSvg({
+            kind,
+            layout: scratchTextLayout,
+            pointsLeft: scratchPointsLeft,
+            title: `${currentStyle.name} ${kind} Bubble`
+          }), document);
+          bodySignature = nextBodySignature;
+        }
+        bodyGroup.setAttribute("data-bubble-style", "SCRATCH_DEFAULT");
+        bodyGroup.setAttribute("data-bubble-profile", "scratch-default");
+        bodyGroup.setAttribute("data-bubble-kind", kind);
+        bodyGroup.setAttribute("data-bubble-body-width", String(metrics.width));
+        bodyGroup.setAttribute("data-bubble-body-height", String(metrics.height));
+        bodyGroup.setAttribute("transform", `translate(${native.width / 2 + nextPosition.left} ${native.height / 2 - nextPosition.top})`);
+        updateVisibility(native);
+        return;
+      }
+      bodyGroup.removeAttribute("data-bubble-profile");
+      bodyGroup.removeAttribute("data-bubble-kind");
       const scaleMultiplier = currentStyle.placement.basis === "actor" ? currentStyle.offset.scalePercent / 100 : 1;
       const nativeTextSize = text.getCapturedSize() ?? text.getSize();
       const textSize = {
@@ -11283,6 +11489,12 @@
       },
       clearTextLayout() {
         text.clearCapturedLayout();
+        position();
+      },
+      renderScratchText(layout) {
+        if (disposed) return;
+        scratchTextLayout = layout;
+        bodySignature = "";
         position();
       },
       async animate(motion) {
@@ -11592,7 +11804,7 @@
     const vector = bubbleDirectionVector(direction);
     return (Math.atan2(-vector.x, -vector.y) * 180 / Math.PI % 360 + 360) % 360;
   }
-  function createSurface(runtime, actor, actorKey, style, scheduler) {
+  function createSurface(runtime, actor, actorKey, kind, style, scheduler) {
     const renderer = runtime.renderer;
     const sequence = surfaceSequence;
     surfaceSequence += 1;
@@ -11645,6 +11857,8 @@
       let motionScaleMultiplier = 1;
       let motionOpacity = 1;
       let shapeTransition;
+      let scratchTextLayout;
+      let scratchPointsLeft = false;
       const applyMotionTransforms = () => {
         for (const target of drawables) {
           const basePosition = layoutPositions.get(target.drawableID);
@@ -11656,8 +11870,9 @@
       };
       const updateVisibility = () => {
         const actorVisible = currentStyle.placement.basis === "background" || actor.visible !== false;
-        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && currentStyle.visualStyle !== "NO_BUBBLE" && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
-        renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
+        const scratchDefaultRendered = currentStyle.layoutProfile === "scratch-default" && scratchTextLayout !== void 0;
+        renderer.updateDrawableVisible(body.drawableID, surfaceVisible && actorVisible && (scratchDefaultRendered || currentStyle.visualStyle !== "NO_BUBBLE") && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
+        renderer.updateDrawableVisible(text.drawableID, surfaceVisible && actorVisible && !scratchDefaultRendered && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
         for (const [layer, target] of layerTargets) renderer.updateDrawableVisible(target.drawableID, surfaceVisible && actorVisible && (layerVisibility.get(layer) ?? false) && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
         if (portraitMask) renderer.updateDrawableVisible(portraitMask.drawableID, surfaceVisible && actorVisible && currentStyle.portrait !== void 0 && currentStyle.portrait.cornerRadius > 0 && currentStyle.visualStyle !== "NO_BUBBLE" && (layerVisibility.get("portraitBase") ?? false) && (renderer.updateDrawableEffect !== void 0 || motionOpacity > 0));
         applyMotionTransforms();
@@ -11665,6 +11880,51 @@
       };
       const position = () => {
         if (disposed) return;
+        if (currentStyle.layoutProfile === "scratch-default" && scratchTextLayout !== void 0) {
+          const nativeSize = renderer.getNativeSize();
+          const stageWidth = Array.isArray(nativeSize) && Number(nativeSize[0]) > 0 ? Number(nativeSize[0]) : 480;
+          const stageHeight = Array.isArray(nativeSize) && Number(nativeSize[1]) > 0 ? Number(nativeSize[1]) : 360;
+          const metrics = scratchBubbleMetrics(scratchTextLayout);
+          const nextPosition = positionScratchBubble({
+            bounds: targetBounds(actor),
+            height: metrics.height,
+            pointsLeft: scratchPointsLeft,
+            stageHeight,
+            stageWidth,
+            width: metrics.width
+          });
+          scratchPointsLeft = nextPosition.pointsLeft;
+          const nextBodySkinSignature = JSON.stringify({
+            kind,
+            layout: scratchTextLayout,
+            pointsLeft: scratchPointsLeft
+          });
+          if (nextBodySkinSignature !== cachedBodySkinSignature) {
+            const nextSkinId = renderer.createSVGSkin(renderScratchBubbleSvg({
+              kind,
+              layout: scratchTextLayout,
+              pointsLeft: scratchPointsLeft,
+              title: `${currentStyle.name} ${kind} Bubble`
+            }));
+            if (!Number.isInteger(nextSkinId) || nextSkinId < 0) throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "TurboWarp did not create the Scratch-compatible Bubble SVG skin.");
+            try {
+              renderer.updateDrawableSkinId(body.drawableID, nextSkinId);
+            } catch (error) {
+              renderer.destroySkin(nextSkinId);
+              throw error;
+            }
+            const previousBodySkinId = bodySkinId;
+            bodySkinId = nextSkinId;
+            cachedBodySkinSignature = nextBodySkinSignature;
+            if (previousBodySkinId !== void 0) renderer.destroySkin(previousBodySkinId);
+          }
+          renderer.updateDrawableScale(body.drawableID, [100, 100]);
+          renderer.updateDrawablePosition(body.drawableID, [nextPosition.centerX, nextPosition.centerY]);
+          layoutPositions.set(body.drawableID, [nextPosition.centerX, nextPosition.centerY]);
+          layoutScales.set(body.drawableID, [100, 100]);
+          updateVisibility();
+          return;
+        }
         const scaleMultiplier = currentStyle.placement.basis === "actor" ? currentStyle.offset.scalePercent / 100 : 1;
         const nativeTextSize = reservedTextSize ?? readSize(renderer, text, {
           width: 180,
@@ -11872,7 +12132,9 @@
         originalVisualChange?.(changedTarget);
         position();
       };
+      const nativeSizeHook = () => position();
       if (currentStyle.placement.basis === "actor") actor.onTargetVisualChange = visualChangeHook;
+      renderer.on?.("NativeSizeChanged", nativeSizeHook);
       return Object.freeze({
         targets,
         setLayerVisible(layer, visible) {
@@ -11905,6 +12167,12 @@
         },
         clearTextLayout() {
           reservedTextSize = void 0;
+          position();
+        },
+        renderScratchText(layout) {
+          if (disposed) return;
+          scratchTextLayout = layout;
+          cachedBodySkinSignature = "";
           position();
         },
         async animate(motion) {
@@ -12029,6 +12297,7 @@
         dispose() {
           if (disposed) return;
           disposed = true;
+          renderer.off?.("NativeSizeChanged", nativeSizeHook);
           if (currentStyle.placement.basis === "actor" && actor.onTargetVisualChange === visualChangeHook) actor.onTargetVisualChange = originalVisualChange ?? null;
           for (const target of [...drawables].reverse()) renderer.destroyDrawable(target.drawableID, spriteLayer);
           if (bodySkinId !== void 0) {
@@ -12143,9 +12412,9 @@
       ...imageResolver === void 0 ? {} : { imageResolver },
       audio,
       textCapability,
-      createSurface({ actor, actorKey, style }) {
+      createSurface({ actor, actorKey, kind, style }) {
         if (!isRecord(actor) || typeof actor.id !== "string") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-        return renderBackend === "svg-overlay" ? createSvgOverlaySurface(overlayManager, actor, actorKey, style, scheduler) : createSurface(runtime, actor, actorKey, style, scheduler);
+        return renderBackend === "svg-overlay" ? createSvgOverlaySurface(overlayManager, actor, actorKey, kind, style, scheduler) : createSurface(runtime, actor, actorKey, kind, style, scheduler);
       },
       ...options.scheduler === void 0 ? {} : { scheduler: options.scheduler },
       ...options.onAnimationError === void 0 ? {} : { onAnimationError: options.onAnimationError }
@@ -12742,6 +13011,12 @@
       const placement = normalizeBubblePlacement(style.placement ?? "up-right");
       if (target.isStage && placement.basis === "actor") throw extensionError("actor-relative bubble placement requires a sprite or clone.");
       this.cancelWait(target.id, "Bubble wait was replaced.");
+      const scratchDefault = isScratchDefaultBubbleStyleInput(style);
+      const message = scratchDefault ? formatScratchBubbleArgument(args.MESSAGE) : this.toString(args.MESSAGE);
+      if (scratchDefault && message === "") {
+        await this.releaseOwnedTarget(target.id);
+        return;
+      }
       const composition = this.getComposition();
       let handle;
       try {
@@ -12749,7 +13024,7 @@
           actor: target,
           actorKey: target.id,
           kind,
-          text: this.toString(args.MESSAGE),
+          text: message,
           styleName: style.name
         });
       } catch (error) {

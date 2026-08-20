@@ -6,6 +6,7 @@ import {
   type BubbleLayer,
   type BubbleScheduler,
   type BubbleSurface,
+  type BubbleSurfaceFactoryInput,
   type BubbleTextCapability,
 } from "../src/composition.js";
 
@@ -158,6 +159,56 @@ describe("Bubble composition", () => {
     });
 
     expect(handle.animationMode).toBe("talking");
+    await handle.close();
+  });
+
+  it("routes the unmodified default style through the Scratch text surface", async () => {
+    const setText = vi.fn();
+    const renderScratchText = vi.fn();
+    const createSurface = vi.fn(
+      (input: BubbleSurfaceFactoryInput) =>
+        ({
+          targets: { text: {} },
+          setLayerVisible: vi.fn(),
+          updateStyle: vi.fn(),
+          renderScratchText,
+          show: vi.fn(),
+          hide: vi.fn(),
+          dispose: vi.fn(),
+          input,
+        }) as BubbleSurface,
+    );
+    const composition = createBubbleComposition({
+      textCapability: {
+        setText,
+        measureText: ({ text }) => text.length * 7,
+        releaseTarget: vi.fn(),
+      },
+      createSurface,
+    });
+    composition.defineStyle({ name: "basic", textStyle: "default" });
+
+    const handle = await composition.show({
+      actor: {},
+      actorKey: "basic-actor",
+      kind: "think",
+      text: "Hello",
+      styleName: "basic",
+    });
+
+    expect(createSurface).toHaveBeenCalledWith(
+      expect.objectContaining({
+        kind: "think",
+        style: expect.objectContaining({ layoutProfile: "scratch-default" }),
+      }),
+    );
+    expect(renderScratchText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        text: "Hello",
+        maxLineWidth: 35,
+      }),
+    );
+    expect(setText).not.toHaveBeenCalled();
     await handle.close();
   });
 
