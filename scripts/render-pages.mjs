@@ -26,7 +26,7 @@ const locales = [
     lang: "en",
     source: resolve(docsRoot, "block-manual.md"),
     output: resolve(docsRoot, "index.html"),
-    title: "TurboWarp Bubble Block Manual",
+    title: "TurboWarp-Bubble Block Manual",
     description:
       "Block manual for TurboWarp Bubble, including shapes, placement, portraits, blinking, lip-sync, and the animated continue indicator.",
     skip: "Skip to the manual",

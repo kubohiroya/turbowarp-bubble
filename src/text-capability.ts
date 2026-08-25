@@ -1,7 +1,7 @@
 /**
  * Opaque host-owned target used by a text capability.
  *
- * The capability may be implemented by TurboWarp SVG Text or by another
+ * The capability may be implemented by TurboWarp-SVG-Text or by another
  * renderer in a different host environment.
  */
 export type BubbleTextTarget = object;

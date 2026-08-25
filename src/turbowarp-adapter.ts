@@ -1541,7 +1541,7 @@ export function createTurboWarpBubbleComposition(
       if (typeof method !== "function") {
         throw new BubbleRuntimeAdapterError(
           "BUBBLE-RUNTIME-002",
-          "TurboWarp Asset Manager does not provide audio playback.",
+          "TurboWarp-Asset-Manager does not provide audio playback.",
         );
       }
       await method.call(extension, { NAME: name });
