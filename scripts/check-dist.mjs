@@ -41,7 +41,7 @@ const packageManifest = JSON.parse(
 );
 const readme = await readFile(new URL("../README.md", import.meta.url), "utf8");
 const japaneseReadme = await readFile(
-  new URL("../README_ja.md", import.meta.url),
+  new URL("../README.ja.md", import.meta.url),
   "utf8",
 );
 const manual = await readFile(
@@ -67,7 +67,7 @@ if (!extension.includes(`EXTENSION_VERSION = "${packageVersion}"`)) {
 }
 for (const [source, expected, label] of [
   [readme, `current release is Bubble ${packageVersion}`, "README.md"],
-  [japaneseReadme, `現在のリリースはBubble ${packageVersion}`, "README_ja.md"],
+  [japaneseReadme, `現在のリリースはBubble ${packageVersion}`, "README.ja.md"],
   [manual, `Bubble ${packageVersion}`, "docs/block-manual.md"],
   [japaneseManual, `Bubble ${packageVersion}`, "docs/block-manual.ja.md"],
 ]) {
@@ -78,7 +78,7 @@ for (const [source, expected, label] of [
 const releaseUrl = `@kubohiroya/turbowarp-bubble@${packageVersion}/dist/turbowarp-bubble.js`;
 for (const [source, label] of [
   [readme, "README.md"],
-  [japaneseReadme, "README_ja.md"],
+  [japaneseReadme, "README.ja.md"],
   [manual, "docs/block-manual.md"],
   [japaneseManual, "docs/block-manual.ja.md"],
 ]) {
