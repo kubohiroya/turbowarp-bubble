@@ -1,0 +1,25 @@
+{
+  "profile": "extension-composition-with-third-party-notices",
+  "packageName": "@kubohiroya/turbowarp-bubble",
+  "extensionId": "kubohiroyabubble",
+  "standaloneBundle": "dist/turbowarp-bubble.js",
+  "compositionBundle": "dist/composition.js",
+  "typesEntry": "dist/types/composition.d.ts",
+  "readmes": {
+    "english": "README.md",
+    "japanese": "README.ja.md"
+  },
+  "companionVersions": {
+    "@kubohiroya/turbowarp-svg-text": "0.8.1",
+    "@kubohiroya/turbowarp-asset-manager": "0.13.0",
+    "@kubohiroya/turbowarp-async-input": "0.5.0",
+    "@kubohiroya/turbowarp-runtime-expression": "0.4.0"
+  },
+  "minimumRuntimeCapabilities": {
+    "@kubohiroya/turbowarp-asset-manager": "0.12.1"
+  },
+  "integrationIssues": [
+    "https://github.com/kubohiroya/turbowarp-svg-text/issues/32",
+    "https://github.com/kubohiroya/tm-kamishibai/issues/636"
+  ]
+}

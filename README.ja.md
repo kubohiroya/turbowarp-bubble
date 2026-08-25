@@ -4,7 +4,7 @@
 
 `@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。
 
-現在のリリースはBubble 0.10.0です。既定の描画経路はSVG Text 0.8.1を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Manager 0.12.1、Async Input 0.4.0、Runtime Expression 0.4.0です。再利用可能な名前付きclose policyについては[0.10.0 release notes](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0 release notes](docs/release-notes-0.9.0.md)を参照してください。
+現在のリリースはBubble 0.11.0です。既定の描画経路はSVG Text 0.8.1を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Manager 0.13.0、Async Input 0.5.0、Runtime Expression 0.4.0です。READMEとversion整合検査については[0.11.0 release notes](docs/release-notes-0.11.0.md)、再利用可能な名前付きclose policyについては[0.10.0 release notes](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0 release notes](docs/release-notes-0.9.0.md)を参照してください。
 
 ## READMEの読み方
 
@@ -34,7 +34,7 @@ flowchart LR
   wait --> close[終了・resource解放]
 ```
 
-次の表は0.10.0の機能と公開entry pointの対応です。standalone機能拡張は33定義から31個のpaletteブロックを公開し、保存済みprojectの互換性のため旧styled say/think 2定義を非表示で維持します。表示される全ブロックは[提供ブロック](#提供ブロック)に掲載しています。
+次の表は0.11.0の機能と公開entry pointの対応です。standalone機能拡張は33定義から31個のpaletteブロックを公開し、保存済みprojectの互換性のため旧styled say/think 2定義を非表示で維持します。表示される全ブロックは[提供ブロック](#提供ブロック)に掲載しています。
 
 | 領域                                | このREADMEで説明する内容                                                       | 公開entry point                                        |
 | ----------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------ |
@@ -77,7 +77,7 @@ flowchart TB
 
 `bubbleRenderBackend`を省略した場合の既定値は`"svg-overlay"`です。`renderer.addOverlay(root, "scale")`でstage canvas上に共有SVG rootを置き、body、tail、text、portrait、corner clip、continue indicatorをDOM要素として描画します。文字にはstandalone拡張の共有named-style registry、またはBubble内包compositionから得るSVG Text 0.8.1のhost-neutral layoutを使います。この既定経路ではBubbleの表示、text更新、style更新、animationのために`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼ばず、Bubble由来の処理はscratch-renderの`SVGSkin`／`Silhouette`経路へ入りません。`"scratch-render"`は互換性とロールバックのため明示指定時だけ使用します。
 
-TurboWarpでstock Asset Manager 0.12.1をBubbleより先に読み込むと、Bubbleはportrait等を初めて使う時に`runtime.ext_kubohiroyaassetmanager.getDOMImageCapability()`を呼び、Asset Managerブロックで登録された同じregistryへ遅延接続します。文字だけを使う場合はAsset Managerを読み込みません。Composition APIのhostは、次のようにcapabilityを明示注入できます。
+TurboWarpでstock Asset Manager 0.13.0をBubbleより先に読み込むと、Bubbleはportrait等を初めて使う時に`runtime.ext_kubohiroyaassetmanager.getDOMImageCapability()`を呼び、Asset Managerブロックで登録された同じregistryへ遅延接続します。文字だけを使う場合はAsset Managerを読み込みません。Composition APIのhostは、次のようにcapabilityを明示注入できます。
 
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
@@ -109,9 +109,9 @@ const bubbles = createTurboWarpBubbleComposition(runtime, {
 
 `svgOverlayTextCapability`を省略し、standalone SVG Text 0.8.1がロード済みの場合、Bubbleはfrozenな`getLayoutCapability()`を取得し、SVG Text blockが更新する同じnamed-style registryを解決します。standaloneがない場合だけ、BubbleはSVG Text 0.8.1のlayout compositionを生成し、`default`および初めて参照されたtext-style名を背景透明の既定styleで初期化します。公開handoffがない古いstandaloneが存在する場合はproject styleを黙って置換せず`BUBBLE-RUNTIME-004`を返し、`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけscratch-renderへ戻ります。capabilityを明示注入すると両方の自動経路を置換できます。portrait等を使う場合、Bubble所有の`createAssetManagerSvgOverlayImageCapability()`がAsset Managerの汎用DOM resourceをBubbleの画像契約へ変換します。依存方向はBubbleからAsset Managerへの一方向であり、Asset ManagerはBubbleの型やsecurity markerを参照しません。adapterは両者が許可するMIME typeだけを公開し、検証済みMIME type、intrinsic size、`blob:` URL、`release()`を引き継ぎ、Asset ManagerがsanitizeしたSVGへBubble側のmetadataを付与します。Bubbleは任意SVG文字列を挿入せず、canonical bodyから`path`、`group`等の許可要素・属性だけを`createElementNS()`で再構築します。`script`、event handler、`foreignObject`、外部URLは受け付けません。overlay rootは`pointer-events: none`、`aria-hidden="true"`です。
 
-既定文字providerは直接依存するSVG Text 0.8.1です。別にロードしたstock SVG Textのstyleを維持するには0.8.1の`getLayoutCapability()`が必要です。stock画像拡張同士の自動接続には`getDOMImageCapability()`を公開するAsset Manager 0.12.1以降が必要です。Composition APIから`resolveDOMImageResource()`を明示注入する低レベル経路はAsset Manager 0.12.0以降で利用できます。
+既定文字providerは直接依存するSVG Text 0.8.1です。別にロードしたstock SVG Textのstyleを維持するには0.8.1の`getLayoutCapability()`が必要です。stock画像拡張同士の自動接続には`getDOMImageCapability()`を公開するAsset Manager 0.13.0以降が必要です。Composition APIから`resolveDOMImageResource()`を明示注入する低レベル経路はAsset Manager 0.12.0以降で利用できます。
 
-SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)、stock registry handoffの[turbowarp-asset-manager#106](https://github.com/kubohiroya/turbowarp-asset-manager/issues/106)で公開済みです。Bubbleは上流の公開APIだけを利用し、private field参照やskinからの抽出では代替しません。overlay APIがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。画像使用時にAsset Manager 0.12.1の公開capabilityも明示注入もない場合は`BUBBLE-RUNTIME-002`を返します。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ、overlay API非対応hostで`scratch-render`へ戻ります。
+SVG Text／Asset Managerのskin非依存契約は[turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26)、[turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103)、stock registry handoffの[turbowarp-asset-manager#106](https://github.com/kubohiroya/turbowarp-asset-manager/issues/106)で公開済みです。Bubbleは上流の公開APIだけを利用し、private field参照やskinからの抽出では代替しません。overlay APIがないhostで`svg-overlay`を選ぶと`BUBBLE-RUNTIME-004`を返します。画像使用時にAsset Manager 0.13.0の公開capabilityも明示注入もない場合は`BUBBLE-RUNTIME-002`を返します。`svgOverlayUnsupportedBehavior: "fallback"`を明示した場合だけ、overlay API非対応hostで`scratch-render`へ戻ります。
 
 | host／取得方法                            | `scratch-render` | `svg-overlay`                                          |
 | ----------------------------------------- | ---------------- | ------------------------------------------------------ |
@@ -286,7 +286,7 @@ const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
 const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
-SVG Text 0.8.1は既定のskin非依存文字providerとして通常dependencyに含まれます。別途インストールは不要です。standalone SVG Text 0.8.1を先に読み込むことは任意ですが、読み込むとproject blockで定義したstyleを公開handoff経由で再利用します。Bubbleが宣言するoptional peer dependencyの範囲はAsset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`のままです。現在公開中の推奨版はAsset Manager 0.12.1、Async Input 0.4.0、Runtime Expression 0.4.0です。hostが独自の`svgOverlayTextCapability`を注入する場合も、Bubble自身が利用するSVG Text dependencyは0.8.1に固定されます。
+SVG Text 0.8.1は既定のskin非依存文字providerとして通常dependencyに含まれます。別途インストールは不要です。standalone SVG Text 0.8.1を先に読み込むことは任意ですが、読み込むとproject blockで定義したstyleを公開handoff経由で再利用します。Bubbleが宣言するoptional peer dependencyの範囲はAsset Managerが`>=0.7.0 <1`、Async InputとRuntime Expressionがそれぞれ`>=0.3.0 <1`のままです。現在公開中の推奨版はAsset Manager 0.13.0、Async Input 0.5.0、Runtime Expression 0.4.0です。hostが独自の`svgOverlayTextCapability`を注入する場合も、Bubble自身が利用するSVG Text dependencyは0.8.1に固定されます。
 
 `bubbleRenderBackend: "scratch-render"`へrollbackした場合も、standalone SVG Text拡張が未ロードなら同じ0.8.1 dependencyからskin版providerを生成します。standalone SVG Text拡張が既にロードされているhostでは、互換性のためその既存providerを引き続き使用します。
 
@@ -316,24 +316,24 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 
 1. 入力待ちの例を使う場合は、TurboWarp Editorでプロジェクトを開き、拡張機能の追加からTemporary Variablesを追加します。
 2. 「カスタム拡張機能」を選び、サンドボックスなし（Run without sandbox）で実行できる状態にします。
-3. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Manager 0.12.1を読み込みます。
-4. `finish [UNIT] ...`にはRuntime Expression 0.4.0、conditionを使う待機またはclose policyにはAsync Input 0.4.0とRuntime Expression 0.4.0を読み込みます。timeoutだけのclose policyにはどちらも不要です。
-5. 最後にBubble 0.10.0を読み込みます。SVG Text 0.8.1のlayout providerはBubble bundleに含まれます。
+3. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Manager 0.13.0を読み込みます。
+4. `finish [UNIT] ...`にはRuntime Expression 0.4.0、conditionを使う待機またはclose policyにはAsync Input 0.5.0とRuntime Expression 0.4.0を読み込みます。timeoutだけのclose policyにはどちらも不要です。
+5. 最後にBubble 0.11.0を読み込みます。SVG Text 0.8.1のlayout providerはBubble bundleに含まれます。
 
 文字だけの最小構成はBubbleです。Temporary Variables、Asset Manager、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。Bubbleを読み込むと、基本の`say [MESSAGE]`／`think [MESSAGE]`ブロックはstyle定義なしですぐ使えます。それぞれ組み込みBubble style `say`／`think`を選び、各styleが本体形状とtail/trail形状を不可分な1つの外観として持ちます。どちらも予約text profile `default`を使います。named custom styleが必要な場合だけ`define bubble style`と`show [MESSAGE] with bubble style [STYLE]`を使います。それ以外のnamed text styleや、外形・配置・media・reveal・motionの明示設定はcustom profileになります。
 
 ```text
 # portrait／blink／lip-sync／continue／音声を使う場合だけ追加
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.12.1/dist/asset-manager.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.13.0/dist/asset-manager.js
 
 # conditionを使う統合待機またはclose policyでAsync Inputを追加
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.4.0/dist/async-input.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.5.0/dist/async-input.js
 
 # finishまたはconditionを使う待機／close policyでRuntime Expressionを追加
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js
 
 # Bubble（必ず最後）
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.10.0/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.11.0/dist/turbowarp-bubble.js
 ```
 
 TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発用URLをunsandboxedとして読み込むには、server originを正確に`http://localhost:8000/`とする必要があります。`127.0.0.1`、`0.0.0.0`、ほかのportにはこの例外が適用されません。リポジトリrootで`python3 -m http.server 8000`を実行し、`http://localhost:8000/dist/turbowarp-bubble.js`を読み込んでください。別の方法として、カスタム拡張機能のfileまたはtext入力を選び、**サンドボックスなしで実行する**を有効にできます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。host制約の詳細は[TurboWarpのunsandboxed拡張機能ドキュメント](https://docs.turbowarp.org/development/extensions/unsandboxed)を参照してください。
