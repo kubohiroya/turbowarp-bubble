@@ -387,7 +387,7 @@ for (const text of requiredManualReferences) {
   requireText(japaneseManual, text, "Japanese block manual");
 }
 
-requireText(manual, "TurboWarp Bubble Block Manual", "English block manual");
+requireText(manual, "TurboWarp-Bubble Block Manual", "English block manual");
 requireText(
   japaneseManual,
   "TurboWarp Bubble ブロック利用マニュアル",

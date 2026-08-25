@@ -9,7 +9,7 @@ import {
   type TurboWarpSvgTextExtension,
 } from "../src/turbowarp-svg-text-adapter.js";
 
-describe("TurboWarp SVG Text adapter", () => {
+describe("TurboWarp-SVG-Text adapter", () => {
   it("maps the host-neutral text contract to the extension API", () => {
     const target = { drawableID: 12 };
     const extension: TurboWarpSvgTextExtension = {

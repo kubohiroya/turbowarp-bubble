@@ -5610,7 +5610,7 @@ function Fa(e) {
 	return typeof e == "object" && !!e && !Array.isArray(e);
 }
 function Ia(e) {
-	if (!Fa(e) || typeof e.setText != "function" || typeof e.releaseTextActor != "function") throw TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
+	if (!Fa(e) || typeof e.setText != "function" || typeof e.releaseTextActor != "function") throw TypeError("TurboWarp-SVG-Text adapter requires setText and releaseTextActor.");
 	return e;
 }
 function La(e) {
@@ -5665,7 +5665,7 @@ function Va(e) {
 			t.releaseTextActor(e);
 		},
 		measureText({ styleName: e, text: n }) {
-			if (typeof t.measureText != "function") throw Error("TurboWarp SVG Text does not provide text measurement.");
+			if (typeof t.measureText != "function") throw Error("TurboWarp-SVG-Text does not provide text measurement.");
 			return t.measureText(e, n);
 		}
 	});
@@ -5709,7 +5709,7 @@ function Ua(e) {
 	});
 }
 function Wa(e) {
-	if (!Fa(e) || typeof e.getLayoutCapability != "function") throw TypeError("TurboWarp SVG Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().");
+	if (!Fa(e) || typeof e.getLayoutCapability != "function") throw TypeError("TurboWarp-SVG-Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().");
 	return Ua(e.getLayoutCapability());
 }
 //#endregion
@@ -6930,7 +6930,7 @@ function ss(e, t = {}) {
 		},
 		async playSound(e, t = {}) {
 			let n = f(), r = t.untilDone ? n?.playSoundUntilDone : n?.playSound;
-			if (typeof r != "function") throw new $("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
+			if (typeof r != "function") throw new $("BUBBLE-RUNTIME-002", "TurboWarp-Asset-Manager does not provide audio playback.");
 			await r.call(n, { NAME: e });
 		}
 	}, v = u === "svg-overlay" ? Do(r, c) : void 0;

@@ -1,4 +1,4 @@
-# TurboWarp Bubble Block Manual
+# TurboWarp-Bubble Block Manual
 
 This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp custom extension. A Bubble combines an SVG body, text, a character portrait, blinking and lip-sync layers, and an animated continue indicator.
 

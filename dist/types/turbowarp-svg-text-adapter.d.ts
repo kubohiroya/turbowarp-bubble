@@ -40,7 +40,7 @@ export interface SvgTextLayoutCompositionLike {
     }>): SvgTextLayoutLike;
 }
 /**
- * Adapt the TurboWarp SVG Text extension to Bubble's host-neutral text
+ * Adapt the TurboWarp-SVG-Text extension to Bubble's host-neutral text
  * capability contract.
  */
 export declare function createTurboWarpSvgTextCapability(extensionInput: unknown): BubbleTextCapability;

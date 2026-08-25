@@ -74,7 +74,7 @@ function validateExtension(value: unknown): TurboWarpSvgTextExtension {
     typeof value.releaseTextActor !== "function"
   ) {
     throw new TypeError(
-      "TurboWarp SVG Text adapter requires setText and releaseTextActor.",
+      "TurboWarp-SVG-Text adapter requires setText and releaseTextActor.",
     );
   }
   return value as unknown as TurboWarpSvgTextExtension;
@@ -160,7 +160,7 @@ function adaptSvgTextLayout(value: unknown): BubbleSvgOverlayTextLayout {
 }
 
 /**
- * Adapt the TurboWarp SVG Text extension to Bubble's host-neutral text
+ * Adapt the TurboWarp-SVG-Text extension to Bubble's host-neutral text
  * capability contract.
  */
 export function createTurboWarpSvgTextCapability(
@@ -186,7 +186,7 @@ export function createTurboWarpSvgTextCapability(
     >[0]): number {
       if (typeof extension.measureText !== "function") {
         throw new Error(
-          "TurboWarp SVG Text does not provide text measurement.",
+          "TurboWarp-SVG-Text does not provide text measurement.",
         );
       }
       return extension.measureText(styleName, text);
@@ -274,7 +274,7 @@ export function createTurboWarpSvgTextOverlayTextCapability(
     typeof extensionInput.getLayoutCapability !== "function"
   ) {
     throw new TypeError(
-      "TurboWarp SVG Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().",
+      "TurboWarp-SVG-Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().",
     );
   }
   return createSvgTextOverlayTextCapability(

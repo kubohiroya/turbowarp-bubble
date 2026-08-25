@@ -10584,7 +10584,7 @@
     return typeof value === "object" && value !== null && !Array.isArray(value);
   }
   function validateExtension(value) {
-    if (!isRecord$3(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp SVG Text adapter requires setText and releaseTextActor.");
+    if (!isRecord$3(value) || typeof value.setText !== "function" || typeof value.releaseTextActor !== "function") throw new TypeError("TurboWarp-SVG-Text adapter requires setText and releaseTextActor.");
     return value;
   }
   function validateComposition(value) {
@@ -10630,7 +10630,7 @@
     });
   }
   /**
-  * Adapt the TurboWarp SVG Text extension to Bubble's host-neutral text
+  * Adapt the TurboWarp-SVG-Text extension to Bubble's host-neutral text
   * capability contract.
   */
   function createTurboWarpSvgTextCapability(extensionInput) {
@@ -10646,7 +10646,7 @@
         extension.releaseTextActor(target);
       },
       measureText({ styleName, text }) {
-        if (typeof extension.measureText !== "function") throw new Error("TurboWarp SVG Text does not provide text measurement.");
+        if (typeof extension.measureText !== "function") throw new Error("TurboWarp-SVG-Text does not provide text measurement.");
         return extension.measureText(styleName, text);
       }
     });
@@ -10703,7 +10703,7 @@
   * Adapts the stock SVG Text extension's shared named-style layout registry.
   */
   function createTurboWarpSvgTextOverlayTextCapability(extensionInput) {
-    if (!isRecord$3(extensionInput) || typeof extensionInput.getLayoutCapability !== "function") throw new TypeError("TurboWarp SVG Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().");
+    if (!isRecord$3(extensionInput) || typeof extensionInput.getLayoutCapability !== "function") throw new TypeError("TurboWarp-SVG-Text overlay adapter requires SVG Text 0.8.1 getLayoutCapability().");
     return createSvgTextOverlayTextCapability(extensionInput.getLayoutCapability());
   }
   //#endregion
@@ -12485,7 +12485,7 @@
       async playSound(name, playOptions = {}) {
         const extension = getAssetExtension();
         const method = playOptions.untilDone ? extension?.playSoundUntilDone : extension?.playSound;
-        if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp Asset Manager does not provide audio playback.");
+        if (typeof method !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "TurboWarp-Asset-Manager does not provide audio playback.");
         await method.call(extension, { NAME: name });
       }
     };
