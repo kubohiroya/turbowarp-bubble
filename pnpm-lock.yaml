@@ -12,21 +12,21 @@ importers:
         specifier: 4.0.3
         version: 4.0.3
       '@kubohiroya/turbowarp-svg-text':
-        specifier: 0.9.0
-        version: 0.9.0
+        specifier: 0.10.0
+        version: 0.10.0
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
       '@kubohiroya/turbowarp-asset-manager':
-        specifier: 0.14.0
-        version: 0.14.0
+        specifier: 0.15.0
+        version: 0.15.0
       '@kubohiroya/turbowarp-async-input':
+        specifier: 0.7.0
+        version: 0.7.0
+      '@kubohiroya/turbowarp-runtime-expression':
         specifier: 0.6.0
         version: 0.6.0
-      '@kubohiroya/turbowarp-runtime-expression':
-        specifier: 0.5.0
-        version: 0.5.0
       '@kubohiroya/vite-plugin-turbowarp-extension':
         specifier: 0.4.0
         version: 0.4.0(vite@8.2.1(@types/node@26.1.2))
@@ -133,13 +133,13 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-manager@0.14.0':
-    resolution: {integrity: sha512-al9+X714l2qAre6HtEUOG8iWeTMEdjvjpslQNPSjkFYUrNhRins9S6kwne8lPXNoXgi69PTQv2SmRzgMOOJ8lA==}
-    engines: {node: '>=22'}
+  '@kubohiroya/turbowarp-asset-manager@0.15.0':
+    resolution: {integrity: sha512-0xr5DukQHcDHXHxrkuRQ9Bhuc/pV2MNuLPoYD/P1wbw3DwxRP38k3NW5QvLPIkJyFdQXX+CHuji+Q1/X1mcxvQ==}
+    engines: {node: '>=22.18.0'}
 
-  '@kubohiroya/turbowarp-async-input@0.6.0':
-    resolution: {integrity: sha512-6iPadzy/uNljae+PaUWDP5fQC9wRZ2hol4NirLhTHTtR1vge50YPFJGnijyU9bbKYoq5SfPlP8Jd1IUeOKiGbw==}
-    engines: {node: '>=22'}
+  '@kubohiroya/turbowarp-async-input@0.7.0':
+    resolution: {integrity: sha512-i1imt5i9gnCwiTRqvBKvsSvwQJAroIVyrYeKARJkrMw3lTIfk+Gn5CT6sKXwQCdW+N+6X5JSk3Pr34LNg7+IMw==}
+    engines: {node: '>=22.18.0'}
     peerDependencies:
       '@kubohiroya/turbowarp-jsqr': '>=0.1.0 <1'
       '@kubohiroya/turbowarp-webusb-pasori': '>=0.1.0 <1'
@@ -149,12 +149,13 @@ packages:
       '@kubohiroya/turbowarp-webusb-pasori':
         optional: true
 
-  '@kubohiroya/turbowarp-runtime-expression@0.5.0':
-    resolution: {integrity: sha512-ooamQj66e6sDyjNaoNKvZjiPYrYVwv0kZxkZJ72lk6d1pvqTpZ8Qn1E9onrqk1tCb4Yhnyfz2ZU09iJbhGtwNw==}
-    engines: {node: '>=22'}
+  '@kubohiroya/turbowarp-runtime-expression@0.6.0':
+    resolution: {integrity: sha512-fAhxswUT6dDVQOLsz89I7pEkeU3CoAYQZ/08bXUnVdXAr8exq4RU5wVQZQ+KVbo7WPhCeIldDvC39Vgi0syhBQ==}
+    engines: {node: '>=22.18.0'}
 
-  '@kubohiroya/turbowarp-svg-text@0.9.0':
-    resolution: {integrity: sha512-5pxTPlXRti8tLPypPRYBDmrONYjsngUV3ndqyMaFTzKWbWHTJCGVZYOMvAo/5W45Q6QnfJlPPAmENMJu7ZZeDA==}
+  '@kubohiroya/turbowarp-svg-text@0.10.0':
+    resolution: {integrity: sha512-MIb7rs0m4FssQrEx5k19VzdsNcc+mvklTqM0u+xO2NYelcJj8hm0h7ifVzlUb14FOV7ciZYIraxsUxT0ffSn8A==}
+    engines: {node: '>=22.18.0'}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.4.0':
     resolution: {integrity: sha512-8Uh4TA4pNhFkx/HFIT6gBZTgQY3Lv3LTDYRQN6oWtHHzoiK+Chn9LBtKeagBXDlQsCZC+8WcOGhCGSWHOhxXbw==}
@@ -970,13 +971,13 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-manager@0.14.0': {}
+  '@kubohiroya/turbowarp-asset-manager@0.15.0': {}
 
-  '@kubohiroya/turbowarp-async-input@0.6.0': {}
+  '@kubohiroya/turbowarp-async-input@0.7.0': {}
 
-  '@kubohiroya/turbowarp-runtime-expression@0.5.0': {}
+  '@kubohiroya/turbowarp-runtime-expression@0.6.0': {}
 
-  '@kubohiroya/turbowarp-svg-text@0.9.0': {}
+  '@kubohiroya/turbowarp-svg-text@0.10.0': {}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.4.0(vite@8.2.1(@types/node@26.1.2))':
     dependencies:

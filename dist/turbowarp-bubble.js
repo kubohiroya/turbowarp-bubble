@@ -9857,7 +9857,7 @@
     });
   }
   //#endregion
-  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.9.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
+  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.10.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
   var block_definitions_default = {
     extensionName: "SVG Text",
     blocks: [{
