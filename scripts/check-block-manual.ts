@@ -44,22 +44,22 @@ const japaneseManualUrl = new URL(
   import.meta.url,
 );
 
-function requireText(source, expected, label) {
+function requireText(source: string, expected: string, label: string) {
   if (!source.includes(expected)) {
     throw new Error(`${label} does not contain ${expected}.`);
   }
 }
 
-function forbidText(source, forbidden, label) {
+function forbidText(source: string, forbidden: string, label: string) {
   if (source.includes(forbidden)) {
     throw new Error(`${label} must not contain ${forbidden}.`);
   }
 }
 
-function skipSubBlocks(buffer, startOffset) {
+function skipSubBlocks(buffer: Buffer, startOffset: number) {
   let offset = startOffset;
   while (offset < buffer.length) {
-    const size = buffer[offset];
+    const size = buffer.readUInt8(offset);
     offset += 1;
     if (size === 0) return offset;
     offset += size;
@@ -67,13 +67,13 @@ function skipSubBlocks(buffer, startOffset) {
   throw new Error("GIF sub-block data is truncated.");
 }
 
-function inspectGif(buffer) {
+function inspectGif(buffer: Buffer) {
   if (buffer.subarray(0, 6).toString("ascii") !== "GIF89a") {
     throw new Error("Lifecycle animation must use the GIF89a format.");
   }
   const width = buffer.readUInt16LE(6);
   const height = buffer.readUInt16LE(8);
-  const packed = buffer[10];
+  const packed = buffer.readUInt8(10);
   let offset = 13;
   if ((packed & 0x80) !== 0) {
     offset += 3 * 2 ** ((packed & 0x07) + 1);
@@ -99,7 +99,7 @@ function inspectGif(buffer) {
     if (offset + 9 > buffer.length) {
       throw new Error("GIF image descriptor is truncated.");
     }
-    const imagePacked = buffer[offset + 8];
+    const imagePacked = buffer.readUInt8(offset + 8);
     offset += 9;
     if ((imagePacked & 0x80) !== 0) {
       offset += 3 * 2 ** ((imagePacked & 0x07) + 1);
@@ -110,7 +110,7 @@ function inspectGif(buffer) {
   return { frames, height, loops, width };
 }
 
-function inspectPng(buffer, label) {
+function inspectPng(buffer: Buffer, label: string) {
   const signature = Buffer.from([
     0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
   ]);
@@ -396,7 +396,7 @@ requireText(
 for (const [manualSource, label] of [
   [manual, "English block manual"],
   [japaneseManual, "Japanese block manual"],
-]) {
+] as [string, string][]) {
   forbidText(manualSource, "set this bubble phase", label);
   forbidText(
     manualSource,

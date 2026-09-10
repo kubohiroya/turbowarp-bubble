@@ -7,6 +7,8 @@
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "isolatedModules": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
     "skipLibCheck": true,
     "types": ["node", "vitest/globals"]
   },
@@ -15,8 +17,7 @@
     "tests",
     "scripts",
     "vite.config.ts",
-    "vite.composition.config.ts",
-    "eslint.config.mjs"
+    "vite.composition.config.ts"
   ],
   "exclude": ["tests/composition-consumer.ts"]
 }

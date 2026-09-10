@@ -26,7 +26,61 @@ const colors = Object.freeze({
   temporaryVariables: "#ff8c1a",
 });
 
-function escapeXml(value) {
+interface BlockSegment {
+  input?: string;
+  text?: string;
+}
+
+interface BlockOptions {
+  x: number;
+  y: number;
+  width: number;
+  color: string;
+  lines: BlockSegment[][];
+  fontSize?: number;
+  height?: number;
+  ariaLabel: string;
+}
+
+interface SvgDocumentOptions {
+  width: number;
+  height: number;
+  title: string;
+  description: string;
+  body: string;
+}
+
+interface FaceOptions {
+  centerX: number;
+  centerY: number;
+  eyesClosed: boolean;
+  mouthOpen: boolean;
+  scale?: number;
+}
+
+interface SpeechBubbleOptions {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  message: string;
+  fontSize?: number;
+  indicator?: boolean;
+  indicatorOffset?: number;
+}
+
+interface PhaseCardOptions {
+  x: number;
+  title: string;
+  subtitle: string;
+  phase: string;
+  eyesClosed: boolean;
+  mouthOpen: boolean;
+  indicator: boolean;
+  labels: [name: string, value: string, active: boolean][];
+}
+
+function escapeXml(value: unknown): string {
   return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
@@ -35,7 +89,13 @@ function escapeXml(value) {
     .replaceAll("'", "&apos;");
 }
 
-function svgDocument({ width, height, title, description, body }) {
+function svgDocument({
+  width,
+  height,
+  title,
+  description,
+  body,
+}: SvgDocumentOptions): string {
   const source = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="title description">
   <title id="title">${escapeXml(title)}</title>
@@ -55,7 +115,13 @@ ${body}
   return source.replace(/[\t ]+$/gmu, "");
 }
 
-function embedRenderedSvg(renderedSvg, x, y, width, height) {
+function embedRenderedSvg(
+  renderedSvg: string,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): string {
   const widthMatch = renderedSvg.match(/\bwidth="([0-9.]+)"/u);
   const heightMatch = renderedSvg.match(/\bheight="([0-9.]+)"/u);
   if (!widthMatch || !heightMatch) {
@@ -73,7 +139,11 @@ function embedRenderedSvg(renderedSvg, x, y, width, height) {
   </svg>`;
 }
 
-function inlineRenderedBubble(renderedSvg, x, y) {
+function inlineRenderedBubble(
+  renderedSvg: string,
+  x: number,
+  y: number,
+): string {
   const innerSvg = renderedSvg
     .replace(/^<svg[^>]*>/u, "")
     .replace(/<\/svg>\s*$/u, "");
@@ -86,24 +156,36 @@ function inlineRenderedBubble(renderedSvg, x, y) {
   return `<g transform="translate(${x} ${y})" data-bubble-renderer="${rendererMatch?.[1] ?? "unknown"}"${styleMatch ? ` data-bubble-style="${styleMatch[1]}"` : ""} data-bubble-tail-direction="270">${markedInnerSvg}</g>`;
 }
 
-function panel(x, y, width, height, title) {
+function panel(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  title: string,
+): string {
   return `<g>
     <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="20" fill="${colors.panel}" stroke="#d9deea" stroke-width="2"/>
     <text x="${x + 24}" y="${y + 38}" class="subheading">${escapeXml(title)}</text>
   </g>`;
 }
 
-function estimateTextWidth(value, fontSize = 13) {
+function estimateTextWidth(value: unknown, fontSize = 13): number {
   return [...String(value)].reduce(
     (width, character) =>
-      width + (character.codePointAt(0) > 0xff ? fontSize : fontSize * 0.62),
+      width +
+      ((character.codePointAt(0) ?? 0) > 0xff ? fontSize : fontSize * 0.62),
     0,
   );
 }
 
-function blockLine(segments, x, baseline, fontSize) {
+function blockLine(
+  segments: BlockSegment[],
+  x: number,
+  baseline: number,
+  fontSize: number,
+): string {
   let cursor = x;
-  const output = [];
+  const output: string[] = [];
   for (const segment of segments) {
     if (segment.input !== undefined) {
       const width = Math.max(
@@ -135,7 +217,7 @@ function block({
   fontSize = 13,
   height = lines.length === 1 ? 50 : 72,
   ariaLabel,
-}) {
+}: BlockOptions): string {
   const baselines =
     lines.length === 1
       ? [y + 31]
@@ -143,7 +225,7 @@ function block({
   return `<g role="group" aria-label="${escapeXml(ariaLabel)}">
     <rect x="${x}" y="${y}" width="${width}" height="${height}" rx="12" fill="${color}" stroke="#000000" stroke-opacity="0.14" stroke-width="2"/>
     <rect x="${x + 18}" y="${y}" width="28" height="6" rx="3" fill="#000000" fill-opacity="0.18"/>
-    ${lines.map((line, index) => blockLine(line, x + 17, baselines[index], fontSize)).join("\n")}
+    ${lines.map((line, index) => blockLine(line, x + 17, baselines[index] ?? y + 31, fontSize)).join("\n")}
   </g>`;
 }
 
@@ -568,21 +650,21 @@ function actorTransformGuideSvg() {
       key: "distance-tail",
       title: "distance 12 / tail length 18",
       subtitle: "Actor bounds → tail tip → Bubble border",
-      offset: [0, 0, 100],
+      offset: [0, 0, 100] as const,
       lines: ["基準サイズ", "100%"],
     },
     {
       key: "offset",
       title: "offset [10, -10]",
       subtitle: "tail tipを固定し、本体を右10・下10へ移動",
-      offset: [10, -10, 100],
+      offset: [10, -10, 100] as const,
       lines: ["位置補正", "10, -10"],
     },
     {
       key: "scale",
       title: "offset [0, 0, 120]",
       subtitle: "文字を含む全体を120%化し、Actor側の間隔を維持",
-      offset: [0, 0, 120],
+      offset: [0, 0, 120] as const,
       lines: ["文字も外形も", "120%"],
     },
   ];
@@ -645,14 +727,14 @@ function actorTransformGuideSvg() {
 
 const guideSegmenter = new Intl.Segmenter("ja", { granularity: "grapheme" });
 
-function measureGuideText(text) {
+function measureGuideText(text: string): number {
   return [...guideSegmenter.segment(text)].reduce((width, { segment }) => {
     if (/^[\x20-\x7e]+$/u.test(segment)) return width + 8;
     return width + 16;
   }, 0);
 }
 
-function wrapGuideText(text, maxWidth) {
+function wrapGuideText(text: string, maxWidth: number): string[] {
   return wrapText({ text, maxWidth, measureText: measureGuideText }).lines.map(
     ({ text: line }) => line,
   );
@@ -834,7 +916,13 @@ function bubbleStyleGallerySvg() {
   });
 }
 
-function face({ centerX, centerY, eyesClosed, mouthOpen, scale = 1 }) {
+function face({
+  centerX,
+  centerY,
+  eyesClosed,
+  mouthOpen,
+  scale = 1,
+}: FaceOptions): string {
   const eyeY = centerY - 12 * scale;
   const leftEyeX = centerX - 18 * scale;
   const rightEyeX = centerX + 18 * scale;
@@ -863,7 +951,7 @@ function speechBubble({
   fontSize = 28,
   indicator = false,
   indicatorOffset = 0,
-}) {
+}: SpeechBubbleOptions): string {
   // Keep this guide in lockstep with the canonical Bubble renderer. The
   // renderer's viewport includes a 24px margin around the body, so expand the
   // source viewport and shift the embedded SVG to preserve the card geometry.
@@ -900,7 +988,7 @@ function phaseCard({
   mouthOpen,
   indicator,
   labels,
-}) {
+}: PhaseCardOptions): string {
   return `<g>
     <rect x="${x}" y="86" width="360" height="382" rx="20" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
     <rect x="${x + 20}" y="106" width="170" height="34" rx="17" fill="${phase === "awaiting-continue" ? colors.bubble : "#e8ebf2"}"/>
@@ -989,14 +1077,19 @@ function phaseGuideSvg() {
   });
 }
 
-function timelineSegment(x, width, label, active) {
+function timelineSegment(
+  x: number,
+  width: number,
+  label: string,
+  active: boolean,
+): string {
   return `<g>
     <rect x="${x}" y="72" width="${width}" height="38" rx="19" fill="${active ? colors.bubble : "#dfe3eb"}"/>
     <text x="${x + width / 2}" y="97" text-anchor="middle" style="fill:${active ? "#ffffff" : colors.muted};font-size:14px;font-weight:700">${escapeXml(label)}</text>
   </g>`;
 }
 
-function lifecycleFrameSvg(index) {
+function lifecycleFrameSvg(index: number): string {
   const phase =
     index < 8
       ? "talking"
@@ -1084,8 +1177,8 @@ function lifecycleFrameSvg(index) {
   });
 }
 
-async function run(command, args) {
-  await new Promise((resolvePromise, rejectPromise) => {
+async function run(command: string, args: string[]): Promise<void> {
+  await new Promise<void>((resolvePromise, rejectPromise) => {
     const child = spawn(command, args, { stdio: "inherit" });
     child.on("error", rejectPromise);
     child.on("exit", (code) => {

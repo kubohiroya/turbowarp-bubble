@@ -2,34 +2,47 @@ import assert from "node:assert/strict";
 import { performance } from "node:perf_hooks";
 import process from "node:process";
 import { Window } from "happy-dom";
-import { createTurboWarpBubbleComposition } from "../dist/turbowarp-adapter.js";
+import {
+  createTurboWarpBubbleComposition,
+  type BubbleSvgOverlayTextCapability,
+  type TurboWarpBubbleRenderer,
+} from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
+import type {
+  BubbleTextCapability,
+  BubbleTextTarget,
+} from "@kubohiroya/turbowarp-bubble/composition";
+
+type RendererListener = (...args: unknown[]) => void;
+type BenchmarkBackend = "svg-overlay" | "scratch-render";
+type BenchmarkHarness = ReturnType<typeof createHarness>;
+type BenchmarkRenderer = BenchmarkHarness["renderer"];
 
 const frameBudgetMilliseconds = 1000 / 60;
 const typewriterUpdates = 1000;
 const lifecycleIterations = 100;
 
-function percentile(values, fraction) {
+function percentile(values: number[], fraction: number): number {
   if (values.length === 0) return 0;
   const sorted = [...values].sort((left, right) => left - right);
   const index = Math.min(
     sorted.length - 1,
     Math.max(0, Math.ceil(sorted.length * fraction) - 1),
   );
-  return sorted[index];
+  return sorted[index] ?? 0;
 }
 
-function round(value) {
+function round(value: number): number {
   return Number(value.toFixed(3));
 }
 
-function createImmediateScheduler(frameDurations) {
+function createImmediateScheduler(frameDurations: number[]) {
   let nextHandle = 0;
   const cancelled = new Set();
   return {
-    clearTimeout(handle) {
+    clearTimeout(handle: number) {
       cancelled.add(handle);
     },
-    setTimeout(callback) {
+    setTimeout(callback: () => void) {
       const handle = ++nextHandle;
       Promise.resolve().then(() => {
         if (cancelled.has(handle)) return;
@@ -44,9 +57,9 @@ function createImmediateScheduler(frameDurations) {
 
 function createHarness() {
   const window = new Window({ url: "https://benchmark.invalid/" });
-  const activeDrawables = new Set();
-  const activeSkins = new Set();
-  const listeners = new Map();
+  const activeDrawables = new Set<number>();
+  const activeSkins = new Set<number>();
+  const listeners = new Map<string, Set<RendererListener>>();
   const stats = {
     createDrawable: 0,
     createSvgSkin: 0,
@@ -57,9 +70,9 @@ function createHarness() {
   let nextDrawable = 0;
   let nextSkin = 0;
 
-  const renderer = {
-    addOverlay(element) {
-      window.document.body.appendChild(element);
+  const renderer: TurboWarpBubbleRenderer = {
+    addOverlay(element: Element) {
+      window.document.body.appendChild(element as never);
     },
     createDrawable() {
       const drawableId = ++nextDrawable;
@@ -73,11 +86,11 @@ function createHarness() {
       stats.createSvgSkin += 1;
       return skinId;
     },
-    destroyDrawable(drawableId) {
+    destroyDrawable(drawableId: number) {
       activeDrawables.delete(drawableId);
       stats.destroyDrawable += 1;
     },
-    destroySkin(skinId) {
+    destroySkin(skinId: number) {
       activeSkins.delete(skinId);
       stats.destroySkin += 1;
     },
@@ -87,15 +100,15 @@ function createHarness() {
     getNativeSize() {
       return [480, 360];
     },
-    off(event, listener) {
+    off(event: string, listener: RendererListener) {
       listeners.get(event)?.delete(listener);
     },
-    on(event, listener) {
+    on(event: string, listener: RendererListener) {
       const eventListeners = listeners.get(event) ?? new Set();
       eventListeners.add(listener);
       listeners.set(event, eventListeners);
     },
-    removeOverlay(element) {
+    removeOverlay(element: Element) {
       element.remove();
     },
     setDrawableOrder() {},
@@ -128,12 +141,12 @@ function createHarness() {
   };
 }
 
-function createOverlayTextCapability() {
+function createOverlayTextCapability(): BubbleSvgOverlayTextCapability {
   return {
     layoutText({ text }) {
       const lines = String(text).split("\n");
       return {
-        alignment: "left",
+        alignment: "left" as const,
         fill: "#25283a",
         fontFamily: "Noto Sans JP, sans-serif",
         fontSize: 16,
@@ -149,8 +162,10 @@ function createOverlayTextCapability() {
   };
 }
 
-function createScratchTextCapability(renderer) {
-  const targetSkins = new WeakMap();
+function createScratchTextCapability(
+  renderer: BenchmarkRenderer,
+): BubbleTextCapability {
+  const targetSkins = new WeakMap<BubbleTextTarget, number>();
   return {
     measureText({ text }) {
       return Math.max(1, String(text).length * 9);
@@ -168,8 +183,11 @@ function createScratchTextCapability(renderer) {
         `<svg xmlns="http://www.w3.org/2000/svg"><text>${String(text)}</text></svg>`,
       );
       targetSkins.set(target, skinId);
-      if (typeof target.drawableID === "number") {
-        renderer.updateDrawableSkinId(target.drawableID, skinId);
+      // BubbleTextTarget is opaque in the contract; the Scratch target behind it
+      // carries the drawable id this fake renderer needs.
+      const { drawableID } = target as { drawableID?: unknown };
+      if (typeof drawableID === "number") {
+        renderer.updateDrawableSkinId(drawableID, skinId);
       }
     },
   };
@@ -189,13 +207,19 @@ function createActor() {
   };
 }
 
-function createBenchmarkComposition(backend) {
+type BenchmarkComposition = ReturnType<
+  typeof createBenchmarkComposition
+>["composition"];
+
+function createBenchmarkComposition(backend: BenchmarkBackend) {
   const harness = createHarness();
-  const frameDurations = [];
+  const frameDurations: number[] = [];
   const scheduler = createImmediateScheduler(frameDurations);
   const composition = createTurboWarpBubbleComposition(harness.runtime, {
     bubbleRenderBackend: backend,
-    document: harness.window.document,
+    // happy-dom implements the DOM the adapter needs, but ships its own
+    // structural types, so the two Document declarations do not unify.
+    document: harness.window.document as unknown as Document,
     scheduler,
     ...(backend === "svg-overlay"
       ? { svgOverlayTextCapability: createOverlayTextCapability() }
@@ -208,7 +232,10 @@ function createBenchmarkComposition(backend) {
   return { composition, frameDurations, harness };
 }
 
-async function showBenchmarkBubble(composition, suffix = "") {
+async function showBenchmarkBubble(
+  composition: BenchmarkComposition,
+  suffix = "",
+) {
   return composition.show({
     actor: createActor(),
     actorKey: `benchmark-sprite${suffix}`,
@@ -218,7 +245,7 @@ async function showBenchmarkBubble(composition, suffix = "") {
   });
 }
 
-function residuals(harness) {
+function residuals(harness: BenchmarkHarness) {
   return {
     activeDrawables: harness.activeDrawables.size,
     activeSkins: harness.activeSkins.size,
@@ -229,7 +256,7 @@ function residuals(harness) {
   };
 }
 
-function assertReleased(result) {
+function assertReleased(result: ReturnType<typeof residuals>) {
   assert.deepEqual(result, {
     activeDrawables: 0,
     activeSkins: 0,
@@ -238,7 +265,7 @@ function assertReleased(result) {
   });
 }
 
-async function benchmarkTypewriter(backend) {
+async function benchmarkTypewriter(backend: BenchmarkBackend) {
   const { composition, harness } = createBenchmarkComposition(backend);
   const handle = await showBenchmarkBubble(composition);
   const started = performance.now();
@@ -260,7 +287,7 @@ async function benchmarkTypewriter(backend) {
   };
 }
 
-async function benchmarkAnimations(backend) {
+async function benchmarkAnimations(backend: BenchmarkBackend) {
   const { composition, frameDurations, harness } =
     createBenchmarkComposition(backend);
   const handle = await showBenchmarkBubble(composition);
@@ -297,7 +324,7 @@ async function benchmarkAnimations(backend) {
   };
 }
 
-async function benchmarkLifecycle(backend) {
+async function benchmarkLifecycle(backend: BenchmarkBackend) {
   globalThis.gc?.();
   const heapBefore = process.memoryUsage().heapUsed;
   const { composition, harness } = createBenchmarkComposition(backend);
@@ -328,7 +355,24 @@ async function benchmarkLifecycle(backend) {
   };
 }
 
-const results = {
+interface BackendBenchmark {
+  animations: Awaited<ReturnType<typeof benchmarkAnimations>>;
+  lifecycle: Awaited<ReturnType<typeof benchmarkLifecycle>>;
+  typewriter: Awaited<ReturnType<typeof benchmarkTypewriter>>;
+}
+
+interface BenchmarkReport {
+  environment: { architecture: string; node: string; platform: string };
+  methodology: { animation: string; lifecycle: string; typewriter: string };
+  results: Partial<Record<BenchmarkBackend, BackendBenchmark>>;
+  acceptance?: {
+    callbackBudgetOverrunDifferencePercentagePoints: number;
+    lifecycleResidualsZero: boolean;
+    [key: string]: unknown;
+  };
+}
+
+const results: BenchmarkReport = {
   environment: {
     architecture: process.arch,
     node: process.version,
@@ -343,7 +387,7 @@ const results = {
   results: {},
 };
 
-for (const backend of ["svg-overlay", "scratch-render"]) {
+for (const backend of ["svg-overlay", "scratch-render"] as const) {
   results.results[backend] = {
     animations: await benchmarkAnimations(backend),
     lifecycle: await benchmarkLifecycle(backend),
@@ -352,9 +396,11 @@ for (const backend of ["svg-overlay", "scratch-render"]) {
 }
 
 const overlayOverrun =
-  results.results["svg-overlay"].animations.callbackBudgetOverrunRatePercent;
+  results.results["svg-overlay"]?.animations.callbackBudgetOverrunRatePercent ??
+  0;
 const scratchOverrun =
-  results.results["scratch-render"].animations.callbackBudgetOverrunRatePercent;
+  results.results["scratch-render"]?.animations
+    .callbackBudgetOverrunRatePercent ?? 0;
 results.acceptance = {
   callbackBudgetOverrunDifferencePercentagePoints: round(
     overlayOverrun - scratchOverrun,

@@ -4,6 +4,24 @@ import { argv } from "node:process";
 import { fileURLToPath } from "node:url";
 import { marked } from "marked";
 
+interface Locale {
+  lang: string;
+  source: string;
+  output: string;
+  title: string;
+  description: string;
+  skip: string;
+  brandLabel: string;
+  navLabel: string;
+  nav: [label: string, id: string][];
+  assetPrefix: string;
+  currentLanguage: string;
+  languageLabel: string;
+  englishHref: string;
+  japaneseHref: string;
+  footer: string;
+}
+
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const docsRoot = resolve(projectRoot, "docs");
 const sectionIds = [
@@ -21,7 +39,7 @@ const sectionIds = [
   "regeneration",
 ];
 
-const locales = [
+const locales: Locale[] = [
   {
     lang: "en",
     source: resolve(docsRoot, "block-manual.md"),
@@ -70,7 +88,7 @@ const locales = [
   },
 ];
 
-function escapeHtml(value) {
+function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
     .replaceAll('"', "&quot;")
@@ -78,7 +96,7 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;");
 }
 
-function addSectionIds(content) {
+function addSectionIds(content: string): string {
   let index = 0;
   return content.replaceAll("<h2>", () => {
     const id = sectionIds[index];
@@ -87,7 +105,7 @@ function addSectionIds(content) {
   });
 }
 
-async function renderPage(locale) {
+async function renderPage(locale: Locale): Promise<string> {
   const markdown = await readFile(locale.source, "utf8");
   let content = await marked.parse(markdown, { gfm: true });
   content = addSectionIds(content).replaceAll(

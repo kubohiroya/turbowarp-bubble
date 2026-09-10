@@ -70,7 +70,7 @@ for (const [source, expected, label] of [
   [japaneseReadme, `現在のリリースはBubble ${packageVersion}`, "README.ja.md"],
   [manual, `Bubble ${packageVersion}`, "docs/block-manual.md"],
   [japaneseManual, `Bubble ${packageVersion}`, "docs/block-manual.ja.md"],
-]) {
+] as [string, string, string][]) {
   if (!source.includes(expected)) {
     throw new Error(`${label} does not identify release ${packageVersion}.`);
   }
@@ -81,7 +81,7 @@ for (const [source, label] of [
   [japaneseReadme, "README.ja.md"],
   [manual, "docs/block-manual.md"],
   [japaneseManual, "docs/block-manual.ja.md"],
-]) {
+] as [string, string][]) {
   if (!source.includes(releaseUrl)) {
     throw new Error(`${label} does not use the ${packageVersion} CDN URL.`);
   }
@@ -205,7 +205,7 @@ for (const nodeApi of ["node:", "process.", "Buffer."]) {
     ["dist/reveal.js", reveal],
     ["dist/turbowarp-adapter.js", turboWarpAdapter],
     ["dist/turbowarp-bubble.js", extension],
-  ]) {
+  ] as [string, string][]) {
     if (output.includes(nodeApi)) {
       throw new Error(`${fileName} contains Node.js API: ${nodeApi}`);
     }

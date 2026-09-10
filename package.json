@@ -49,6 +49,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "pnpm run build:extension && pnpm run build:composition && pnpm run build:reveal && pnpm run build:turbowarp-adapter && pnpm run build:types",
@@ -61,14 +64,14 @@
     "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts vite.reveal.config.ts vite.turbowarp-adapter.config.ts eslint.config.mjs",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "docs:render": "node scripts/render-block-manual-assets.mjs && pnpm run docs:pages",
-    "docs:pages": "node scripts/render-pages.mjs",
-    "docs:pages:check": "node scripts/render-pages.mjs --check",
-    "docs:check": "node scripts/check-block-manual.mjs && pnpm run docs:pages:check",
-    "benchmark:render-backends": "pnpm run build && node --expose-gc scripts/benchmark-render-backends.mjs",
+    "docs:render": "node scripts/render-block-manual-assets.ts && pnpm run docs:pages",
+    "docs:pages": "node scripts/render-pages.ts",
+    "docs:pages:check": "node scripts/render-pages.ts --check",
+    "docs:check": "node scripts/check-block-manual.ts && pnpm run docs:pages:check",
+    "benchmark:render-backends": "pnpm run build && node --expose-gc scripts/benchmark-render-backends.ts",
     "test": "vitest run",
-    "check:dist": "pnpm run build && node scripts/check-dist.mjs",
-    "repo:check": "node scripts/check-repo.mjs",
+    "check:dist": "pnpm run build && node scripts/check-dist.ts",
+    "repo:check": "node scripts/check-repo.ts",
     "pack:check": "npm pack --dry-run --ignore-scripts",
     "release:check": "pnpm publish --dry-run --access public --no-git-checks",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run test && pnpm run docs:check && pnpm run check:dist && pnpm run types:composition:check && pnpm run repo:check && pnpm run pack:check",
