@@ -8476,6 +8476,84 @@
     });
   }
   //#endregion
+  //#region src/content-run.ts
+  function isRecord$7(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+  function requireExactRunKeys(run, keys) {
+    const allowed = /* @__PURE__ */ new Set(["type", ...keys]);
+    const unknown = Object.keys(run).filter((key) => !allowed.has(key));
+    if (unknown.length > 0) throw new TypeError(`Bubble content run has unknown properties: ${unknown.join(", ")}.`);
+    for (const key of keys) if (typeof run[key] !== "string") throw new TypeError(`Bubble content run ${key} must be a string.`);
+  }
+  function normalizeRun(value) {
+    if (!isRecord$7(value)) throw new TypeError("Bubble content run must be an object.");
+    if (value.type === "text") {
+      requireExactRunKeys(value, ["text"]);
+      return Object.freeze({
+        text: value.text,
+        type: "text"
+      });
+    }
+    if (value.type === "ruby") {
+      requireExactRunKeys(value, ["base", "reading"]);
+      const base = value.base;
+      const reading = value.reading;
+      if (base.length === 0) throw new TypeError("Bubble ruby run base must not be empty.");
+      if (reading.length === 0) throw new TypeError("Bubble ruby run reading must not be empty.");
+      return Object.freeze({
+        base,
+        reading,
+        type: "ruby"
+      });
+    }
+    throw new TypeError("Bubble content run type must be text or ruby.");
+  }
+  /**
+  * Accepts a plain string or a content run sequence and returns frozen runs.
+  * A string always yields a single text run so the plain path stays unchanged.
+  */
+  function normalizeBubbleContent(value) {
+    if (typeof value === "string") return Object.freeze([Object.freeze({
+      text: value,
+      type: "text"
+    })]);
+    if (!Array.isArray(value)) throw new TypeError("Bubble text must be a string or content run array.");
+    const runs = value.map((run) => normalizeRun(run)).filter((run) => run.type !== "text" || run.text.length > 0);
+    if (runs.length === 0) return Object.freeze([Object.freeze({
+      text: "",
+      type: "text"
+    })]);
+    return Object.freeze(runs);
+  }
+  /** True when the content carries no ruby run and can use the string path. */
+  function isPlainBubbleContent(content) {
+    return content.every((run) => run.type === "text");
+  }
+  /**
+  * Projects content to plain text. Ruby runs contribute their base only, so the
+  * projection matches what a reader sees on the baseline.
+  */
+  function bubbleContentPlainText(content) {
+    return content.map((run) => run.type === "ruby" ? run.base : run.text).join("");
+  }
+  /** Merges adjacent text runs so revealed content stays compact. */
+  function mergeBubbleContent(content) {
+    const runs = [];
+    for (const run of content) {
+      const previous = runs[runs.length - 1];
+      if (run.type === "text" && previous?.type === "text") {
+        runs[runs.length - 1] = Object.freeze({
+          text: `${previous.text}${run.text}`,
+          type: "text"
+        });
+        continue;
+      }
+      runs.push(run);
+    }
+    return Object.freeze(runs);
+  }
+  //#endregion
   //#region src/reveal.ts
   var bubbleRevealUnits = Object.freeze([
     "CHARACTER",
@@ -8568,8 +8646,74 @@
     const parts = rawParts;
     return Object.freeze(parts.length > 0 ? parts : [text]);
   }
-  function revealedBubbleText(chunks, count) {
-    return chunks.slice(0, Math.max(0, Math.min(count, chunks.length))).join("");
+  function contentChunk(runs) {
+    return Object.freeze(mergeBubbleContent(Object.freeze([...runs])));
+  }
+  function textRun(text) {
+    return Object.freeze({
+      text,
+      type: "text"
+    });
+  }
+  /**
+  * Splits content on line or block boundaries. A ruby run is never split, so it
+  * always stays inside the chunk that carries its surrounding text.
+  */
+  function splitContentByBoundary(content, unit) {
+    const chunks = [];
+    let current = [];
+    const closeChunk = () => {
+      if (current.length === 0) return;
+      chunks.push(contentChunk(current));
+      current = [];
+    };
+    for (const run of content) {
+      if (run.type === "ruby") {
+        current.push(run);
+        continue;
+      }
+      if (unit === "LINE") {
+        for (const part of run.text.split(/(?<=\n)/u)) {
+          if (part.length === 0) continue;
+          current.push(textRun(part));
+          if (part.endsWith("\n")) closeChunk();
+        }
+        continue;
+      }
+      const parts = run.text.split(/(\n{2,})/u);
+      for (const [index, part] of parts.entries()) {
+        if (part.length === 0) continue;
+        current.push(textRun(part));
+        if (index % 2 === 1) closeChunk();
+      }
+    }
+    closeChunk();
+    return Object.freeze(chunks.length > 0 ? chunks : [contentChunk(content)]);
+  }
+  /**
+  * Returns append-only content chunks; joining the first n chunks gives the
+  * visible content. Plain content delegates to {@link splitBubbleText} so the
+  * string path keeps its exact behaviour, and a ruby run is always one whole
+  * reveal unit for every reveal unit kind.
+  */
+  function splitBubbleContent(content, reveal) {
+    if (isPlainBubbleContent(content)) return Object.freeze(splitBubbleText(bubbleContentPlainText(content), reveal).map((text) => Object.freeze([textRun(text)])));
+    if (reveal.unit === "LINE" || reveal.unit === "BLOCK") return splitContentByBoundary(content, reveal.unit);
+    const chunks = [];
+    for (const run of content) {
+      if (run.type === "ruby") {
+        chunks.push(Object.freeze([run]));
+        continue;
+      }
+      const parts = reveal.unit === "CHARACTER" ? graphemes(run.text) : splitWords(run.text, reveal.delimiters, reveal.showDelimiters);
+      for (const part of parts) chunks.push(Object.freeze([textRun(part)]));
+    }
+    return Object.freeze(chunks.length > 0 ? chunks : [Object.freeze([textRun("")])]);
+  }
+  /** Joins the first n content chunks into the currently visible content. */
+  function revealedBubbleContent(chunks, count) {
+    const visible = chunks.slice(0, Math.max(0, Math.min(count, chunks.length)));
+    return mergeBubbleContent(Object.freeze(visible.flat()));
   }
   //#endregion
   //#region src/portrait-layout.ts
@@ -9046,6 +9190,27 @@
       ...style.portrait.lipSync?.frames ?? []
     ], ...style.continueIndicator?.frames ?? []];
   }
+  /**
+  * Ruby annotations must never be dropped silently, so content that carries a
+  * ruby run requires a text capability that implements the rich path.
+  */
+  function requireRichTextCapability(textCapability) {
+    const setRichText = textCapability.setRichText;
+    if (typeof setRichText !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Bubble ruby content requires the text capability setRichText method.");
+    return setRichText;
+  }
+  /**
+  * Splits content into reveal chunks, preferring a capability that lays the
+  * runs out itself. The Bubble fallback keeps every ruby run whole.
+  */
+  function splitContentForReveal(content, reveal, styleName, textCapability) {
+    if (!isPlainBubbleContent(content) && typeof textCapability.splitRichText === "function") return textCapability.splitRichText({
+      reveal,
+      runs: content,
+      styleName
+    });
+    return splitBubbleContent(content, reveal);
+  }
   function formatBubbleText(text, style, textCapability) {
     if (style.layoutProfile === "scratch-default") return layoutScratchBubbleText(text, (candidate) => typeof textCapability.measureText === "function" ? textCapability.measureText({
       styleName: style.textStyle,
@@ -9135,7 +9300,12 @@
       "styleName"
     ], ["animationMode", "reveal"], "Show bubble input");
     if (!validKinds.has(value.kind)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble kind must be say or think.");
-    if (typeof value.text !== "string") throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string.");
+    let content;
+    try {
+      content = normalizeBubbleContent(value.text);
+    } catch (error) {
+      throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble text is invalid.");
+    }
     const animationMode = value.animationMode ?? "talking";
     if (!validAnimationModes$1.has(animationMode)) throw new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble animation mode is invalid.");
     let reveal;
@@ -9148,7 +9318,7 @@
       actor: value.actor,
       actorKey: requireName$1(value.actorKey, "Bubble actor key"),
       kind: value.kind,
-      text: value.text,
+      content,
       styleName: requireName$1(value.styleName, "Bubble style name"),
       animationMode,
       ...reveal === void 0 ? {} : { reveal }
@@ -9188,7 +9358,7 @@
         layoutProfile: "custom",
         reveal: input.reveal
       });
-      let currentText = input.text;
+      let currentContent = input.content;
       const resolveStyleImageCapability = (nextStyle) => {
         const assetNames = new Set(styleAssetNames(nextStyle));
         const nextImageResolver = assetNames.size === 0 ? void 0 : requireImageResolver(imageResolver);
@@ -9262,7 +9432,7 @@
       let lipSyncLoop;
       let indicatorLoop;
       let reveal = activeStyle.reveal;
-      let revealChunks = reveal ? splitBubbleText(input.text, reveal) : Object.freeze([input.text]);
+      let revealChunks = reveal ? splitContentForReveal(input.content, reveal, activeStyle.textStyle, textCapability) : Object.freeze([input.content]);
       let revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
       let revealTimer;
       let revealGeneration = 0;
@@ -9273,7 +9443,29 @@
           kind: input.kind,
           style: activeStyle
         })), activeStyle);
-        const applySurfaceText = async (rawText, nextStyle = activeStyle) => {
+        const applyRichText = (content, nextStyle, target) => {
+          requireRichTextCapability(textCapability)({
+            runs: content,
+            styleName: nextStyle.textStyle,
+            target,
+            ...nextStyle.maxWidth === void 0 ? {} : { maxWidth: nextStyle.maxWidth }
+          });
+          textOwned = true;
+        };
+        /**
+        * The whole bubble content, not the currently revealed slice, selects
+        * the path. A partially revealed prefix that happens to carry no ruby
+        * must not fall back to the plain renderer mid-reveal.
+        */
+        const usesRichPath = () => !isPlainBubbleContent(currentContent);
+        const applySurfaceContent = async (content, nextStyle = activeStyle) => {
+          if (usesRichPath()) {
+            if (!surface) return;
+            if (nextStyle.layoutProfile === "scratch-default" && surface.renderScratchText) throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Bubble ruby content requires a rich text capability; the scratch-default surface renders plain text only.");
+            applyRichText(content, nextStyle, surface.targets.text);
+            return;
+          }
+          const rawText = bubbleContentPlainText(content);
           if (nextStyle.layoutProfile === "scratch-default" && surface?.renderScratchText) {
             const layout = layoutScratchBubbleText(rawText, (candidate) => typeof textCapability.measureText === "function" ? textCapability.measureText({
               styleName: nextStyle.textStyle,
@@ -9290,17 +9482,20 @@
           });
           textOwned = true;
         };
-        if (reveal?.layout === "RESERVED") {
-          const fullText = formatBubbleText(input.text, activeStyle, textCapability);
-          textCapability.setText({
-            styleName: activeStyle.textStyle,
-            target: surface.targets.text,
-            text: fullText
-          });
-          textOwned = true;
+        const applyReservedLayout = (content, nextStyle = activeStyle) => {
+          if (!surface) return;
+          if (!usesRichPath()) {
+            textCapability.setText({
+              styleName: nextStyle.textStyle,
+              target: surface.targets.text,
+              text: formatBubbleText(bubbleContentPlainText(content), nextStyle, textCapability)
+            });
+            textOwned = true;
+          } else applyRichText(content, nextStyle, surface.targets.text);
           surface.captureTextLayout?.();
-        }
-        await applySurfaceText(reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text);
+        };
+        if (reveal?.layout === "RESERVED") applyReservedLayout(input.content);
+        await applySurfaceContent(reveal ? revealedBubbleContent(revealChunks, revealedCount) : input.content);
         await primeStyleImages(activeStyle, styleImageResolver, surface);
         createStyleLoops(activeStyle, styleImageResolver, surface);
         let currentAnimationMode = "idle";
@@ -9308,8 +9503,8 @@
         let transitionTail = Promise.resolve();
         const renderVisibleText = async () => {
           if (!surface) return;
-          const visible = reveal ? revealedBubbleText(revealChunks, revealedCount) : currentText;
-          await applySurfaceText(visible);
+          const visible = reveal ? revealedBubbleContent(revealChunks, revealedCount) : currentContent;
+          await applySurfaceContent(visible);
           await surface.show();
         };
         const stopRevealTimer = () => {
@@ -9372,23 +9567,20 @@
           },
           setText(text) {
             if (closed) return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-005", `Bubble is already closed: ${input.actorKey}`));
-            if (typeof text !== "string") return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", "Bubble text must be a string."));
+            let nextContent;
+            try {
+              nextContent = normalizeBubbleContent(text);
+            } catch (error) {
+              return Promise.reject(new BubbleCompositionError("BUBBLE-COMPOSITION-001", error instanceof Error ? error.message : "Bubble text is invalid."));
+            }
             transitionTail = transitionTail.then(async () => {
               if (!surface) return;
               stopRevealTimer();
-              currentText = text;
+              currentContent = nextContent;
               if (reveal) {
-                revealChunks = splitBubbleText(text, reveal);
+                revealChunks = splitContentForReveal(nextContent, reveal, activeStyle.textStyle, textCapability);
                 revealedCount = Math.min(1, revealChunks.length);
-                if (reveal.layout === "RESERVED") {
-                  textCapability.setText({
-                    styleName: activeStyle.textStyle,
-                    target: surface.targets.text,
-                    text: formatBubbleText(text, activeStyle, textCapability)
-                  });
-                  textOwned = true;
-                  surface.captureTextLayout?.();
-                }
+                if (reveal.layout === "RESERVED") applyReservedLayout(nextContent);
                 await renderVisibleText();
                 scheduleReveal();
               } else await renderVisibleText();
@@ -9422,19 +9614,11 @@
               await surface.updateStyle(nextStyle);
               activeStyle = nextStyle;
               reveal = nextStyle.reveal;
-              revealChunks = reveal ? splitBubbleText(currentText, reveal) : Object.freeze([currentText]);
+              revealChunks = reveal ? splitContentForReveal(currentContent, reveal, nextStyle.textStyle, textCapability) : Object.freeze([currentContent]);
               revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
               stopRevealTimer();
-              if (reveal?.layout === "RESERVED") {
-                textCapability.setText({
-                  styleName: nextStyle.textStyle,
-                  target: surface.targets.text,
-                  text: formatBubbleText(currentText, nextStyle, textCapability)
-                });
-                textOwned = true;
-                surface.captureTextLayout?.();
-              }
-              await applySurfaceText(currentText, nextStyle);
+              if (reveal?.layout === "RESERVED") applyReservedLayout(currentContent, nextStyle);
+              await applySurfaceContent(currentContent, nextStyle);
               createStyleLoops(nextStyle, nextImageResolver, surface);
               await Promise.all([
                 surface.setLayerVisible("portraitBase", nextStyle.portrait !== void 0),
@@ -9488,17 +9672,9 @@
                   ...reveal ?? {},
                   unit: finishInput.unit
                 });
-                revealChunks = splitBubbleText(currentText, reveal);
+                revealChunks = splitContentForReveal(currentContent, reveal, activeStyle.textStyle, textCapability);
                 revealedCount = Math.min(1, revealChunks.length);
-                if (reveal.layout === "RESERVED" && surface) {
-                  textCapability.setText({
-                    styleName: activeStyle.textStyle,
-                    target: surface.targets.text,
-                    text: formatBubbleText(currentText, activeStyle, textCapability)
-                  });
-                  textOwned = true;
-                  surface.captureTextLayout?.();
-                }
+                if (reveal.layout === "RESERVED" && surface) applyReservedLayout(currentContent);
               }
               if (reveal) while (await advanceReveal());
               const condition = finishInput.condition;
@@ -9569,7 +9745,7 @@
                 });
                 if (activeStyle.layoutProfile === "scratch-default") {
                   await surface?.updateStyle(transitionStyle);
-                  await applySurfaceText(currentText, transitionStyle);
+                  await applySurfaceContent(currentContent, transitionStyle);
                   await surface?.show();
                 }
                 await surface?.animate?.(normalized);
@@ -10672,6 +10848,19 @@
     if (typeof composition.measureText === "function") capability.measureText = ({ styleName, text }) => composition.measureText?.({
       styleName,
       text
+    }) ?? 0;
+    if (typeof composition.setRichText === "function") capability.setRichText = ({ maxWidth, runs, styleName, target }) => {
+      composition.setRichText?.({
+        runs,
+        styleName,
+        target,
+        ...maxWidth === void 0 ? {} : { maxWidth }
+      });
+    };
+    if (typeof composition.measureRichText === "function") capability.measureRichText = ({ maxWidth, runs, styleName }) => composition.measureRichText?.({
+      runs,
+      styleName,
+      ...maxWidth === void 0 ? {} : { maxWidth }
     }) ?? 0;
     return Object.freeze(capability);
   }

@@ -1,3 +1,4 @@
+import { type BubbleContent } from "./content-run.js";
 export declare const bubbleRevealUnits: readonly ["CHARACTER", "WORD", "LINE", "BLOCK"];
 export type BubbleRevealUnit = (typeof bubbleRevealUnits)[number];
 export type BubbleRevealLayout = "DYNAMIC" | "RESERVED";
@@ -24,3 +25,12 @@ export declare function normalizeBubbleReveal(value: unknown): NormalizedBubbleR
 /** Returns append-only chunks; joining the first n chunks gives the visible text. */
 export declare function splitBubbleText(text: string, reveal: NormalizedBubbleReveal): readonly string[];
 export declare function revealedBubbleText(chunks: readonly string[], count: number): string;
+/**
+ * Returns append-only content chunks; joining the first n chunks gives the
+ * visible content. Plain content delegates to {@link splitBubbleText} so the
+ * string path keeps its exact behaviour, and a ruby run is always one whole
+ * reveal unit for every reveal unit kind.
+ */
+export declare function splitBubbleContent(content: BubbleContent, reveal: NormalizedBubbleReveal): readonly BubbleContent[];
+/** Joins the first n content chunks into the currently visible content. */
+export declare function revealedBubbleContent(chunks: readonly BubbleContent[], count: number): BubbleContent;

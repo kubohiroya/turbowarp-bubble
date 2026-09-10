@@ -24,9 +24,17 @@ import {
 } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 import {
   normalizeBubbleReveal,
+  revealedBubbleContent,
+  splitBubbleContent,
   splitBubbleText,
   type NormalizedBubbleReveal,
 } from "@kubohiroya/turbowarp-bubble/reveal";
+import {
+  normalizeBubbleContent,
+  type BubbleContent,
+  type BubbleContentInput,
+  type BubbleContentRun,
+} from "@kubohiroya/turbowarp-bubble/composition";
 
 declare const runtime: Parameters<
   typeof createSvgTextComposition
@@ -145,3 +153,25 @@ const reveal: NormalizedBubbleReveal = normalizeBubbleReveal({
 });
 const revealChunks: readonly string[] = splitBubbleText("A👩‍🚀B", reveal);
 void revealChunks;
+
+// Content runs reach the public API from both the composition and reveal
+// subpaths, and reveal splitting keeps a ruby run whole.
+const authored: BubbleContentInput = [
+  { text: "私は ", type: "text" },
+  { base: "中野", reading: "なかの", type: "ruby" },
+  { text: " です", type: "text" },
+];
+const content: BubbleContent = normalizeBubbleContent(authored);
+const contentChunks: readonly BubbleContent[] = splitBubbleContent(
+  content,
+  reveal,
+);
+const visibleRuns: readonly BubbleContentRun[] = revealedBubbleContent(
+  contentChunks,
+  1,
+);
+void visibleRuns;
+
+declare const richHandle: BubbleHandle;
+void richHandle.setText(authored);
+void richHandle.setText("plain string still works");

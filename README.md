@@ -691,6 +691,34 @@ await bubble.finish({
 await bubble.close();
 ```
 
+### Ruby annotations with content runs
+
+`show()` and `handle.setText()` accept either a plain string or a sequence of content runs, so a host DSL can carry ruby (furigana) into a bubble:
+
+```ts
+await bubbles.show({
+  actor,
+  actorKey: "hero",
+  kind: "say",
+  styleName: "dialogue",
+  text: [
+    { type: "text", text: "私は " },
+    { type: "ruby", base: "中野", reading: "なかの" },
+    { type: "text", text: " です" },
+  ],
+  reveal: { unit: "CHARACTER", intervalSeconds: 0.05 },
+});
+```
+
+A run is `{ type: "text", text }` or `{ type: "ruby", base, reading }`, matching `SvgTextContentRun` from `@kubohiroya/turbowarp-svg-text`, so `createSvgTextCompositionCapability` forwards runs without converting them.
+
+Compatibility and failure rules:
+
+- The `text: string` path is unchanged. A string, or runs that contain no ruby, keep using `setText` on the text capability along with the existing wrapping and measurement.
+- A ruby run is one whole reveal unit for `CHARACTER`, `WORD`, `LINE`, and `BLOCK`, so `中野` never appears without its reading.
+- Rendering ruby requires a text capability that implements `setRichText`. When ruby runs reach a capability without it, Bubble raises `BUBBLE-COMPOSITION-007` rather than silently drawing the base text and dropping the author's reading.
+- A capability may also implement `measureRichText` and `splitRichText`. When `splitRichText` is present, Bubble delegates reveal splitting to it; otherwise Bubble splits the runs itself and keeps each ruby run whole.
+
 The returned handle's `setText(text)` updates the body text on the same surface and can be used for progressive text display. `handle.updateStyle(style)` applies a style change immediately to a displayed Bubble. Showing a new Bubble with the same `actorKey` completely destroys and then replaces the previous Bubble. `releaseTarget`, `releaseAll`, and `dispose` also release owned timers, text-capability targets, and surfaces. State is not shared between compositions.
 
 ## License and source code

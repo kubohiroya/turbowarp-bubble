@@ -1,4 +1,5 @@
 import type {
+  BubbleContent,
   BubbleTextCapability,
   BubbleTextTarget,
 } from "./text-capability.js";
@@ -27,6 +28,17 @@ interface SvgTextCompositionLike {
   measureText?(input: {
     readonly styleName: string;
     readonly text: string;
+  }): number;
+  setRichText?(input: {
+    readonly maxWidth?: number;
+    readonly runs: BubbleContent;
+    readonly styleName: string;
+    readonly target: unknown;
+  }): void;
+  measureRichText?(input: {
+    readonly maxWidth?: number;
+    readonly runs: BubbleContent;
+    readonly styleName: string;
   }): number;
 }
 
@@ -213,6 +225,25 @@ export function createSvgTextCompositionCapability(
   if (typeof composition.measureText === "function") {
     capability.measureText = ({ styleName, text }): number =>
       composition.measureText?.({ styleName, text }) ?? 0;
+  }
+  // Content runs share SVG Text's shape, so they pass through unconverted.
+  if (typeof composition.setRichText === "function") {
+    capability.setRichText = ({ maxWidth, runs, styleName, target }): void => {
+      composition.setRichText?.({
+        runs,
+        styleName,
+        target,
+        ...(maxWidth === undefined ? {} : { maxWidth }),
+      });
+    };
+  }
+  if (typeof composition.measureRichText === "function") {
+    capability.measureRichText = ({ maxWidth, runs, styleName }): number =>
+      composition.measureRichText?.({
+        runs,
+        styleName,
+        ...(maxWidth === undefined ? {} : { maxWidth }),
+      }) ?? 0;
   }
   return Object.freeze(capability);
 }

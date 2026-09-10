@@ -18,12 +18,19 @@ import { bubbleVisualStyles, type BubbleVisualStyle } from "./bubble-svg.js";
 import { wrapText } from "./text-layout.js";
 import {
   normalizeBubbleReveal,
-  revealedBubbleText,
-  splitBubbleText,
+  revealedBubbleContent,
+  splitBubbleContent,
   type BubbleRevealInput,
   type BubbleRevealUnit,
   type NormalizedBubbleReveal,
 } from "./reveal.js";
+import {
+  bubbleContentPlainText,
+  isPlainBubbleContent,
+  normalizeBubbleContent,
+  type BubbleContent,
+  type BubbleContentInput,
+} from "./content-run.js";
 import type {
   BubbleTextCapability,
   BubbleTextTarget,
@@ -100,13 +107,27 @@ export {
 export {
   bubbleRevealUnits,
   normalizeBubbleReveal,
+  revealedBubbleContent,
   revealedBubbleText,
+  splitBubbleContent,
   splitBubbleText,
   type BubbleRevealInput,
   type BubbleRevealLayout,
   type BubbleRevealUnit,
   type NormalizedBubbleReveal,
 } from "./reveal.js";
+export {
+  bubbleContentPlainText,
+  bubbleContentReadingText,
+  isPlainBubbleContent,
+  mergeBubbleContent,
+  normalizeBubbleContent,
+  type BubbleContent,
+  type BubbleContentInput,
+  type BubbleContentRubyRun,
+  type BubbleContentRun,
+  type BubbleContentTextRun,
+} from "./content-run.js";
 export {
   bubblePortraitPlacements,
   defaultBubblePortraitCornerRadius,
@@ -340,7 +361,8 @@ export interface ShowBubbleInput {
   readonly actor: unknown;
   readonly actorKey: string;
   readonly kind: BubbleKind;
-  readonly text: string;
+  /** Plain text, or content runs carrying ruby annotations. */
+  readonly text: BubbleContentInput;
   readonly styleName: string;
   readonly animationMode?: BubbleAnimationMode;
   readonly reveal?: BubbleRevealInput;
@@ -350,7 +372,7 @@ export interface BubbleHandle {
   readonly actorKey: string;
   readonly kind: BubbleKind;
   readonly animationMode: BubbleAnimationMode;
-  setText(text: string): Promise<void>;
+  setText(text: BubbleContentInput): Promise<void>;
   updateStyle(style: BubbleStyleInput): Promise<void>;
   setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
   revealNext(): Promise<boolean>;
@@ -1043,6 +1065,42 @@ function styleAssetNames(style: NormalizedStyle): readonly string[] {
   ];
 }
 
+/**
+ * Ruby annotations must never be dropped silently, so content that carries a
+ * ruby run requires a text capability that implements the rich path.
+ */
+function requireRichTextCapability(
+  textCapability: BubbleTextCapability,
+): NonNullable<BubbleTextCapability["setRichText"]> {
+  const setRichText = textCapability.setRichText;
+  if (typeof setRichText !== "function") {
+    throw new BubbleCompositionError(
+      "BUBBLE-COMPOSITION-007",
+      "Bubble ruby content requires the text capability setRichText method.",
+    );
+  }
+  return setRichText;
+}
+
+/**
+ * Splits content into reveal chunks, preferring a capability that lays the
+ * runs out itself. The Bubble fallback keeps every ruby run whole.
+ */
+function splitContentForReveal(
+  content: BubbleContent,
+  reveal: NormalizedBubbleReveal,
+  styleName: string,
+  textCapability: BubbleTextCapability,
+): readonly BubbleContent[] {
+  if (
+    !isPlainBubbleContent(content) &&
+    typeof textCapability.splitRichText === "function"
+  ) {
+    return textCapability.splitRichText({ reveal, runs: content, styleName });
+  }
+  return splitBubbleContent(content, reveal);
+}
+
 function formatBubbleText(
   text: string,
   style: BubbleStyle,
@@ -1168,7 +1226,7 @@ interface NormalizedShowBubbleInput {
   readonly actor: unknown;
   readonly actorKey: string;
   readonly kind: BubbleKind;
-  readonly text: string;
+  readonly content: BubbleContent;
   readonly styleName: string;
   readonly animationMode: BubbleAnimationMode;
   readonly reveal?: NormalizedBubbleReveal;
@@ -1193,10 +1251,13 @@ function normalizeShowInput(value: unknown): NormalizedShowBubbleInput {
       "Bubble kind must be say or think.",
     );
   }
-  if (typeof value.text !== "string") {
+  let content: BubbleContent;
+  try {
+    content = normalizeBubbleContent(value.text);
+  } catch (error) {
     throw new BubbleCompositionError(
       "BUBBLE-COMPOSITION-001",
-      "Bubble text must be a string.",
+      error instanceof Error ? error.message : "Bubble text is invalid.",
     );
   }
   const animationMode = value.animationMode ?? "talking";
@@ -1221,7 +1282,7 @@ function normalizeShowInput(value: unknown): NormalizedShowBubbleInput {
     actor: value.actor,
     actorKey: requireName(value.actorKey, "Bubble actor key"),
     kind: value.kind as BubbleKind,
-    text: value.text,
+    content,
     styleName: requireName(value.styleName, "Bubble style name"),
     animationMode: animationMode as BubbleAnimationMode,
     ...(reveal === undefined ? {} : { reveal }),
@@ -1296,7 +1357,7 @@ export function createBubbleComposition(
         reveal: input.reveal,
       });
     }
-    let currentText = input.text;
+    let currentContent = input.content;
     const resolveStyleImageCapability = (
       nextStyle: BubbleStyle,
     ): BubbleImageCapability | undefined => {
@@ -1443,9 +1504,14 @@ export function createBubbleComposition(
     let lipSyncLoop: FrameLoop | undefined;
     let indicatorLoop: FrameLoop | undefined;
     let reveal = activeStyle.reveal;
-    let revealChunks: readonly string[] = reveal
-      ? splitBubbleText(input.text, reveal)
-      : Object.freeze([input.text]);
+    let revealChunks: readonly BubbleContent[] = reveal
+      ? splitContentForReveal(
+          input.content,
+          reveal,
+          activeStyle.textStyle,
+          textCapability,
+        )
+      : Object.freeze([input.content]);
     let revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
     let revealTimer: unknown;
     let revealGeneration = 0;
@@ -1461,10 +1527,46 @@ export function createBubbleComposition(
         ),
         activeStyle,
       );
-      const applySurfaceText = async (
-        rawText: string,
+      const applyRichText = (
+        content: BubbleContent,
+        nextStyle: BubbleStyle,
+        target: BubbleTextTarget,
+      ): void => {
+        requireRichTextCapability(textCapability)({
+          runs: content,
+          styleName: nextStyle.textStyle,
+          target,
+          ...(nextStyle.maxWidth === undefined
+            ? {}
+            : { maxWidth: nextStyle.maxWidth }),
+        });
+        textOwned = true;
+      };
+      /**
+       * The whole bubble content, not the currently revealed slice, selects
+       * the path. A partially revealed prefix that happens to carry no ruby
+       * must not fall back to the plain renderer mid-reveal.
+       */
+      const usesRichPath = (): boolean => !isPlainBubbleContent(currentContent);
+      const applySurfaceContent = async (
+        content: BubbleContent,
         nextStyle: BubbleStyle = activeStyle,
       ): Promise<void> => {
+        if (usesRichPath()) {
+          if (!surface) return;
+          if (
+            nextStyle.layoutProfile === "scratch-default" &&
+            surface.renderScratchText
+          ) {
+            throw new BubbleCompositionError(
+              "BUBBLE-COMPOSITION-007",
+              "Bubble ruby content requires a rich text capability; the scratch-default surface renders plain text only.",
+            );
+          }
+          applyRichText(content, nextStyle, surface.targets.text);
+          return;
+        }
+        const rawText = bubbleContentPlainText(content);
         if (
           nextStyle.layoutProfile === "scratch-default" &&
           surface?.renderScratchText
@@ -1488,22 +1590,32 @@ export function createBubbleComposition(
         });
         textOwned = true;
       };
-      if (reveal?.layout === "RESERVED") {
-        const fullText = formatBubbleText(
-          input.text,
-          activeStyle,
-          textCapability,
-        );
-        textCapability.setText({
-          styleName: activeStyle.textStyle,
-          target: surface.targets.text,
-          text: fullText,
-        });
-        textOwned = true;
+      const applyReservedLayout = (
+        content: BubbleContent,
+        nextStyle: BubbleStyle = activeStyle,
+      ): void => {
+        if (!surface) return;
+        if (!usesRichPath()) {
+          textCapability.setText({
+            styleName: nextStyle.textStyle,
+            target: surface.targets.text,
+            text: formatBubbleText(
+              bubbleContentPlainText(content),
+              nextStyle,
+              textCapability,
+            ),
+          });
+          textOwned = true;
+        } else {
+          applyRichText(content, nextStyle, surface.targets.text);
+        }
         surface.captureTextLayout?.();
-      }
-      await applySurfaceText(
-        reveal ? revealedBubbleText(revealChunks, revealedCount) : input.text,
+      };
+      if (reveal?.layout === "RESERVED") applyReservedLayout(input.content);
+      await applySurfaceContent(
+        reveal
+          ? revealedBubbleContent(revealChunks, revealedCount)
+          : input.content,
       );
 
       await primeStyleImages(activeStyle, styleImageResolver, surface);
@@ -1516,9 +1628,9 @@ export function createBubbleComposition(
       const renderVisibleText = async (): Promise<void> => {
         if (!surface) return;
         const visible = reveal
-          ? revealedBubbleText(revealChunks, revealedCount)
-          : currentText;
-        await applySurfaceText(visible);
+          ? revealedBubbleContent(revealChunks, revealedCount)
+          : currentContent;
+        await applySurfaceContent(visible);
         await surface.show();
       };
       const stopRevealTimer = (): void => {
@@ -1610,7 +1722,7 @@ export function createBubbleComposition(
         get animationMode(): BubbleAnimationMode {
           return currentAnimationMode;
         },
-        setText(text: string): Promise<void> {
+        setText(text: BubbleContentInput): Promise<void> {
           if (closed) {
             return Promise.reject(
               new BubbleCompositionError(
@@ -1619,30 +1731,33 @@ export function createBubbleComposition(
               ),
             );
           }
-          if (typeof text !== "string") {
+          let nextContent: BubbleContent;
+          try {
+            nextContent = normalizeBubbleContent(text);
+          } catch (error) {
             return Promise.reject(
               new BubbleCompositionError(
                 "BUBBLE-COMPOSITION-001",
-                "Bubble text must be a string.",
+                error instanceof Error
+                  ? error.message
+                  : "Bubble text is invalid.",
               ),
             );
           }
           transitionTail = transitionTail.then(async () => {
             if (!surface) return;
             stopRevealTimer();
-            currentText = text;
+            currentContent = nextContent;
             if (reveal) {
-              revealChunks = splitBubbleText(text, reveal);
+              revealChunks = splitContentForReveal(
+                nextContent,
+                reveal,
+                activeStyle.textStyle,
+                textCapability,
+              );
               revealedCount = Math.min(1, revealChunks.length);
-              if (reveal.layout === "RESERVED") {
-                textCapability.setText({
-                  styleName: activeStyle.textStyle,
-                  target: surface.targets.text,
-                  text: formatBubbleText(text, activeStyle, textCapability),
-                });
-                textOwned = true;
-                surface.captureTextLayout?.();
-              }
+              if (reveal.layout === "RESERVED")
+                applyReservedLayout(nextContent);
               await renderVisibleText();
               scheduleReveal();
             } else {
@@ -1689,20 +1804,18 @@ export function createBubbleComposition(
             activeStyle = nextStyle;
             reveal = nextStyle.reveal;
             revealChunks = reveal
-              ? splitBubbleText(currentText, reveal)
-              : Object.freeze([currentText]);
+              ? splitContentForReveal(
+                  currentContent,
+                  reveal,
+                  nextStyle.textStyle,
+                  textCapability,
+                )
+              : Object.freeze([currentContent]);
             revealedCount = reveal ? Math.min(1, revealChunks.length) : 1;
             stopRevealTimer();
-            if (reveal?.layout === "RESERVED") {
-              textCapability.setText({
-                styleName: nextStyle.textStyle,
-                target: surface.targets.text,
-                text: formatBubbleText(currentText, nextStyle, textCapability),
-              });
-              textOwned = true;
-              surface.captureTextLayout?.();
-            }
-            await applySurfaceText(currentText, nextStyle);
+            if (reveal?.layout === "RESERVED")
+              applyReservedLayout(currentContent, nextStyle);
+            await applySurfaceContent(currentContent, nextStyle);
             createStyleLoops(nextStyle, nextImageResolver, surface);
             await Promise.all([
               surface.setLayerVisible(
@@ -1816,21 +1929,15 @@ export function createBubbleComposition(
                 ...(reveal ?? {}),
                 unit: finishInput.unit,
               });
-              revealChunks = splitBubbleText(currentText, reveal);
+              revealChunks = splitContentForReveal(
+                currentContent,
+                reveal,
+                activeStyle.textStyle,
+                textCapability,
+              );
               revealedCount = Math.min(1, revealChunks.length);
-              if (reveal.layout === "RESERVED" && surface) {
-                textCapability.setText({
-                  styleName: activeStyle.textStyle,
-                  target: surface.targets.text,
-                  text: formatBubbleText(
-                    currentText,
-                    activeStyle,
-                    textCapability,
-                  ),
-                });
-                textOwned = true;
-                surface.captureTextLayout?.();
-              }
+              if (reveal.layout === "RESERVED" && surface)
+                applyReservedLayout(currentContent);
             }
             if (reveal) {
               while (await advanceReveal()) {
@@ -1933,7 +2040,7 @@ export function createBubbleComposition(
               // motion has reached its final frame.
               if (activeStyle.layoutProfile === "scratch-default") {
                 await surface?.updateStyle(transitionStyle);
-                await applySurfaceText(currentText, transitionStyle);
+                await applySurfaceContent(currentContent, transitionStyle);
                 await surface?.show();
               }
               await surface?.animate?.(normalized);
