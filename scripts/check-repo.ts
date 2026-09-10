@@ -3,29 +3,70 @@ import { dirname, resolve } from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 
+interface PackageManifest {
+  name: string;
+  version: string;
+  dependencies?: Record<string, string>;
+  devDependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  files?: string[];
+  [key: string]: unknown;
+}
+
+interface RepoPolicy {
+  profile: string;
+  packageName: string;
+  extensionId: string;
+  standaloneBundle: string;
+  compositionBundle: string;
+  typesEntry: string;
+  readmes: {
+    english: string;
+    japanese: string;
+  };
+  companionVersions: {
+    "@kubohiroya/turbowarp-svg-text": string;
+    "@kubohiroya/turbowarp-asset-manager": string;
+    "@kubohiroya/turbowarp-async-input": string;
+    "@kubohiroya/turbowarp-runtime-expression": string;
+  };
+  minimumRuntimeCapabilities: {
+    "@kubohiroya/turbowarp-asset-manager": string;
+  };
+  integrationIssues: string[];
+}
+
+type DependencySection =
+  "dependencies" | "devDependencies" | "peerDependencies";
+
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
-async function readText(path) {
+async function readText(path: string): Promise<string> {
   return readFile(resolve(projectRoot, path), "utf8");
 }
 
-async function readJson(path) {
-  return JSON.parse(await readText(path));
+async function readJson<T = unknown>(path: string): Promise<T> {
+  return JSON.parse(await readText(path)) as T;
 }
 
-function requireText(source, expected, label) {
+function requireText(source: string, expected: string, label: string) {
   if (!source.includes(expected)) {
     throw new Error(`${label} does not contain ${expected}.`);
   }
 }
 
-function forbidText(source, forbidden, label) {
+function forbidText(source: string, forbidden: string, label: string) {
   if (source.includes(forbidden)) {
     throw new Error(`${label} must not contain ${forbidden}.`);
   }
 }
 
-function requireDependencyVersion(manifest, section, name, version) {
+function requireDependencyVersion(
+  manifest: PackageManifest,
+  section: DependencySection,
+  name: string,
+  version: string,
+) {
   const actual = manifest[section]?.[name];
   if (actual !== version) {
     throw new Error(
@@ -34,7 +75,11 @@ function requireDependencyVersion(manifest, section, name, version) {
   }
 }
 
-function requirePeerRange(manifest, name, range) {
+function requirePeerRange(
+  manifest: PackageManifest,
+  name: string,
+  range: string,
+) {
   const actual = manifest.peerDependencies?.[name];
   if (actual !== range) {
     throw new Error(
@@ -45,8 +90,8 @@ function requirePeerRange(manifest, name, range) {
 
 const [manifest, policy, readme, japaneseReadme, manual, japaneseManual] =
   await Promise.all([
-    readJson("package.json"),
-    readJson("repo-policy.json"),
+    readJson<PackageManifest>("package.json"),
+    readJson<RepoPolicy>("repo-policy.json"),
     readText("README.md"),
     readText("README.ja.md"),
     readText("docs/block-manual.md"),
@@ -100,7 +145,7 @@ for (const [source, label] of [
   [japaneseReadme, "README.ja.md"],
   [manual, "docs/block-manual.md"],
   [japaneseManual, "docs/block-manual.ja.md"],
-]) {
+] as [string, string][]) {
   requireText(source, `Bubble ${version}`, label);
   requireText(source, bubbleCdn, label);
 }
@@ -115,7 +160,7 @@ requireDependencyVersion(
 for (const name of [
   "@kubohiroya/turbowarp-async-input",
   "@kubohiroya/turbowarp-runtime-expression",
-]) {
+] as const) {
   requireDependencyVersion(manifest, "devDependencies", name, companions[name]);
   requirePeerRange(manifest, name, ">=0.3.0 <1");
 }
@@ -142,7 +187,7 @@ for (const [name, versionText] of companionLabels) {
     [japaneseReadme, "README.ja.md"],
     [manual, "docs/block-manual.md"],
     [japaneseManual, "docs/block-manual.ja.md"],
-  ]) {
+  ] as [string, string][]) {
     requireText(source, `${name} ${versionText}`, label);
   }
 }

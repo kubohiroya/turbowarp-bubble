@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -49,6 +49,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=22.18.0"
+  },
   "scripts": {
     "typecheck": "tsc --noEmit",
     "build": "pnpm run build:extension && pnpm run build:composition && pnpm run build:reveal && pnpm run build:turbowarp-adapter && pnpm run build:types",
@@ -61,14 +64,14 @@
     "lint": "eslint src tests scripts vite.config.ts vite.composition.config.ts vite.reveal.config.ts vite.turbowarp-adapter.config.ts eslint.config.mjs",
     "format": "prettier --check .",
     "format:write": "prettier --write .",
-    "docs:render": "node scripts/render-block-manual-assets.mjs && pnpm run docs:pages",
-    "docs:pages": "node scripts/render-pages.mjs",
-    "docs:pages:check": "node scripts/render-pages.mjs --check",
-    "docs:check": "node scripts/check-block-manual.mjs && pnpm run docs:pages:check",
-    "benchmark:render-backends": "pnpm run build && node --expose-gc scripts/benchmark-render-backends.mjs",
+    "docs:render": "node scripts/render-block-manual-assets.ts && pnpm run docs:pages",
+    "docs:pages": "node scripts/render-pages.ts",
+    "docs:pages:check": "node scripts/render-pages.ts --check",
+    "docs:check": "node scripts/check-block-manual.ts && pnpm run docs:pages:check",
+    "benchmark:render-backends": "pnpm run build && node --expose-gc scripts/benchmark-render-backends.ts",
     "test": "vitest run",
-    "check:dist": "pnpm run build && node scripts/check-dist.mjs",
-    "repo:check": "node scripts/check-repo.mjs",
+    "check:dist": "pnpm run build && node scripts/check-dist.ts",
+    "repo:check": "node scripts/check-repo.ts",
     "pack:check": "npm pack --dry-run --ignore-scripts",
     "release:check": "pnpm publish --dry-run --access public --no-git-checks",
     "check": "pnpm run typecheck && pnpm run lint && pnpm run format && pnpm run test && pnpm run docs:check && pnpm run check:dist && pnpm run types:composition:check && pnpm run repo:check && pnpm run pack:check",
@@ -92,10 +95,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@kubohiroya/turbowarp-asset-manager": "0.13.0",
-    "@kubohiroya/turbowarp-async-input": "0.5.0",
-    "@kubohiroya/turbowarp-runtime-expression": "0.4.0",
-    "@kubohiroya/vite-plugin-turbowarp-extension": "0.1.1",
+    "@kubohiroya/turbowarp-asset-manager": "0.15.0",
+    "@kubohiroya/turbowarp-async-input": "0.7.0",
+    "@kubohiroya/turbowarp-runtime-expression": "0.6.0",
+    "@kubohiroya/vite-plugin-turbowarp-extension": "0.4.0",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
     "happy-dom": "20.0.8",
@@ -120,6 +123,6 @@
   ],
   "dependencies": {
     "@cto.af/linebreak": "4.0.3",
-    "@kubohiroya/turbowarp-svg-text": "0.8.1"
+    "@kubohiroya/turbowarp-svg-text": "0.10.0"
   }
 }

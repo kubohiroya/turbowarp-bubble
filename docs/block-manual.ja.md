@@ -8,15 +8,15 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.8.1のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。
+入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.10.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |    1 | Temporary Variables      | TurboWarpの拡張機能ライブラリから追加                                                                    |
-|    2 | Async Input 0.5.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.5.0/dist/async-input.js`               |
-|    3 | Runtime Expression 0.4.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.4.0/dist/runtime-expression.js` |
-|    4 | Asset Manager 0.13.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.13.0/dist/asset-manager.js`          |
-|    5 | Bubble 0.11.0            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.11.0/dist/turbowarp-bubble.js`              |
+|    2 | Async Input 0.7.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.0/dist/async-input.js`               |
+|    3 | Runtime Expression 0.6.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.0/dist/runtime-expression.js` |
+|    4 | Asset Manager 0.15.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.15.0/dist/asset-manager.js`          |
+|    5 | Bubble 0.12.0            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.12.0/dist/turbowarp-bubble.js`              |
 
 開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 
@@ -59,7 +59,7 @@ URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubb
 
 ## 3. 文字layout styleを選ぶ
 
-standalone BubbleはSVG Text 0.8.1のlayout compositionを内包し、2つのBubble styleを組み込みます。`say`はspeech本体とspeech tail、`think`はthought本体とround trailを持ち、本体とtail/trailの形は別項目ではなく1つのvisual styleとして選びます。短い`say [MESSAGE]`／`think [MESSAGE]`ブロックが対応styleを自動選択するため、基本経路にはstyle定義もstyle入力も不要です。どちらも予約text profile `default`、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseを使います。4pxのSVG strokeを白いfillより先に描き、内側半分を隠すことで、見かけの輪郭をTurboWarp標準と同じ細さにします。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.8.1をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
+standalone BubbleはSVG Text 0.10.0のlayout compositionを内包し、2つのBubble styleを組み込みます。`say`はspeech本体とspeech tail、`think`はthought本体とround trailを持ち、本体とtail/trailの形は別項目ではなく1つのvisual styleとして選びます。短い`say [MESSAGE]`／`think [MESSAGE]`ブロックが対応styleを自動選択するため、基本経路にはstyle定義もstyle入力も不要です。どちらも予約text profile `default`、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseを使います。4pxのSVG strokeを白いfillより先に描き、内側半分を隠すことで、見かけの輪郭をTurboWarp標準と同じ細さにします。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.10.0をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開`getLayoutCapability()`を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。
 
 ```text
 define bubble style [hero-dialogue] using text style [default]
