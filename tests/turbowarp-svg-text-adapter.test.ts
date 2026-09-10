@@ -183,3 +183,46 @@ describe("TurboWarp-SVG-Text adapter", () => {
     );
   });
 });
+
+describe("SVG Text composition rich pass-through", () => {
+  const runs = Object.freeze([
+    Object.freeze({ text: "私は ", type: "text" as const }),
+    Object.freeze({ base: "中野", reading: "なかの", type: "ruby" as const }),
+  ]);
+
+  it("forwards content runs to SVG Text without converting them", () => {
+    const setRichText = vi.fn();
+    const measureRichText = vi.fn(() => 42);
+    const capability = createSvgTextCompositionCapability({
+      setText: vi.fn(),
+      releaseTarget: vi.fn(),
+      setRichText,
+      measureRichText,
+    });
+    const target = { drawableID: 3 };
+    capability.setRichText?.({ runs, styleName: "s", target });
+    expect(setRichText).toHaveBeenCalledWith({
+      runs,
+      styleName: "s",
+      target,
+    });
+    expect(setRichText.mock.calls[0]?.[0].runs).toBe(runs);
+    capability.setRichText?.({ maxWidth: 200, runs, styleName: "s", target });
+    expect(setRichText).toHaveBeenLastCalledWith({
+      maxWidth: 200,
+      runs,
+      styleName: "s",
+      target,
+    });
+    expect(capability.measureRichText?.({ runs, styleName: "s" })).toBe(42);
+  });
+
+  it("omits the rich methods when SVG Text does not provide them", () => {
+    const capability = createSvgTextCompositionCapability({
+      setText: vi.fn(),
+      releaseTarget: vi.fn(),
+    });
+    expect(capability.setRichText).toBeUndefined();
+    expect(capability.measureRichText).toBeUndefined();
+  });
+});

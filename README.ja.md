@@ -691,6 +691,34 @@ await bubble.finish({
 await bubble.close();
 ```
 
+### content runによるルビ表示
+
+`show()`と`handle.setText()`は、文字列に加えてcontent runの並びを受け取ります。ホスト側のDSLが本文へ書いたルビ（ふりがな）を、そのまま吹き出しへ渡せます。
+
+```ts
+await bubbles.show({
+  actor,
+  actorKey: "hero",
+  kind: "say",
+  styleName: "dialogue",
+  text: [
+    { type: "text", text: "私は " },
+    { type: "ruby", base: "中野", reading: "なかの" },
+    { type: "text", text: " です" },
+  ],
+  reveal: { unit: "CHARACTER", intervalSeconds: 0.05 },
+});
+```
+
+runは`{ type: "text", text }`または`{ type: "ruby", base, reading }`で、`@kubohiroya/turbowarp-svg-text`の`SvgTextContentRun`と同じ形です。そのため`createSvgTextCompositionCapability`はrunsを変換せずそのまま渡します。
+
+互換性と失敗時の扱いは次のとおりです。
+
+- `text: string`の経路は変更していません。文字列、およびrubyを含まないrunsは、これまでどおりtext capabilityの`setText`と既存の折り返し・計測を使います。
+- rubyのrunは`CHARACTER`／`WORD`／`LINE`／`BLOCK`のいずれのreveal unitでも1単位として扱うため、`中野`がreadingを伴わずに現れることはありません。
+- rubyの描画には`setRichText`を実装したtext capabilityが必要です。未実装のcapabilityへrubyのrunsが渡された場合、baseだけを黙って描くのではなく`BUBBLE-COMPOSITION-007`で明示的に失敗します。
+- capabilityは`measureRichText`と`splitRichText`も実装できます。`splitRichText`があるときはrevealの分割をcapabilityへ委譲し、無いときはBubbleが分割してrubyのrunを分割せずに保ちます。
+
 返されたhandleの`setText(text)`は同じsurface上の本文を更新し、文字送りなどに利用できます。`handle.updateStyle(style)`は表示中のBubbleへstyle変更を即時適用します。同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、text capability target、surfaceを解放します。composition間で状態は共有しません。
 
 ## ライセンスとソースコード

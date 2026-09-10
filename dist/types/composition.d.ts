@@ -2,6 +2,7 @@ import { type BubblePlacement, type BubblePlacementInput } from "./placement.js"
 import { type BubbleOffset, type BubbleOffsetInput } from "./actor-transform.js";
 import { type BubbleVisualStyle } from "./bubble-svg.js";
 import { type BubbleRevealInput, type BubbleRevealUnit, type NormalizedBubbleReveal } from "./reveal.js";
+import { type BubbleContentInput } from "./content-run.js";
 import type { BubbleTextCapability, BubbleTextTarget } from "./text-capability.js";
 import { type BubblePortraitOffset, type BubblePortraitOffsetInput, type BubblePortraitPlacement } from "./portrait-layout.js";
 import { type BubbleLayoutProfile, type ScratchBubbleTextLayout } from "./scratch-default.js";
@@ -10,7 +11,8 @@ export { UnicodeLineBreakProvider, wrapText, type LineBreakOpportunity, type Lin
 export { bubbleBackgroundRegions, bubbleDirectionAliases, bubbleDirectionNames, defaultBubblePlacementInput, normalizeBubblePlacement, type BubbleActorPlacement, type BubbleBackgroundPlacement, type BubbleBackgroundRegion, type BubbleDirectionAlias, type BubbleDirectionName, type BubblePlacement, type BubblePlacementInput, } from "./placement.js";
 export { actorRelativeBubbleCenter, defaultBubbleDistance, defaultBubbleOffset, defaultBubbleTailLength, normalizeBubbleDistance, normalizeBubbleOffset, normalizeBubbleTailLength, type ActorBounds, type ActorRelativeCenterInput, type BubbleOffset, type BubbleOffsetInput, } from "./actor-transform.js";
 export { bubbleBodyCenterOffset, bubbleVisualStyles, renderBubbleSvg, type BubbleBodyCenterOffsetInput, type BubbleShapeTransition, type BubbleVisualStyle, type RenderBubbleSvgInput, } from "./bubble-svg.js";
-export { bubbleRevealUnits, normalizeBubbleReveal, revealedBubbleText, splitBubbleText, type BubbleRevealInput, type BubbleRevealLayout, type BubbleRevealUnit, type NormalizedBubbleReveal, } from "./reveal.js";
+export { bubbleRevealUnits, normalizeBubbleReveal, revealedBubbleContent, revealedBubbleText, splitBubbleContent, splitBubbleText, type BubbleRevealInput, type BubbleRevealLayout, type BubbleRevealUnit, type NormalizedBubbleReveal, } from "./reveal.js";
+export { bubbleContentPlainText, bubbleContentReadingText, isPlainBubbleContent, mergeBubbleContent, normalizeBubbleContent, type BubbleContent, type BubbleContentInput, type BubbleContentRubyRun, type BubbleContentRun, type BubbleContentTextRun, } from "./content-run.js";
 export { bubblePortraitPlacements, defaultBubblePortraitCornerRadius, defaultBubblePortraitOffset, defaultBubblePortraitPlacement, normalizeBubblePortraitCornerRadius, normalizeBubblePortraitOffset, normalizeBubblePortraitPlacement, type BubblePortraitOffset, type BubblePortraitOffsetInput, type BubblePortraitPlacement, } from "./portrait-layout.js";
 export { bubbleLayoutProfileForStyleInput, formatScratchBubbleArgument, isScratchDefaultBubbleStyleInput, layoutScratchBubbleText, positionScratchBubble, renderScratchBubbleSvg, scratchBubbleMetrics, scratchBubbleCornerRadius, scratchBubbleFontSize, scratchBubbleLineHeight, scratchBubbleMaximumLineWidth, scratchBubbleMinimumTextWidth, scratchBubblePadding, scratchBubbleStrokeWidth, scratchBubbleTailHeight, scratchBubbleTextLimit, type BubbleLayoutProfile, type ScratchBubbleKind, type ScratchBubbleMetrics, type ScratchBubblePosition, type ScratchBubblePositionInput, type ScratchBubbleTextLayout, type ScratchBubbleTextLine, } from "./scratch-default.js";
 export type BubbleKind = "say" | "think";
@@ -167,7 +169,8 @@ export interface ShowBubbleInput {
     readonly actor: unknown;
     readonly actorKey: string;
     readonly kind: BubbleKind;
-    readonly text: string;
+    /** Plain text, or content runs carrying ruby annotations. */
+    readonly text: BubbleContentInput;
     readonly styleName: string;
     readonly animationMode?: BubbleAnimationMode;
     readonly reveal?: BubbleRevealInput;
@@ -176,7 +179,7 @@ export interface BubbleHandle {
     readonly actorKey: string;
     readonly kind: BubbleKind;
     readonly animationMode: BubbleAnimationMode;
-    setText(text: string): Promise<void>;
+    setText(text: BubbleContentInput): Promise<void>;
     updateStyle(style: BubbleStyleInput): Promise<void>;
     setAnimationMode(mode: BubbleAnimationMode): Promise<void>;
     revealNext(): Promise<boolean>;

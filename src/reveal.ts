@@ -1,3 +1,11 @@
+import {
+  bubbleContentPlainText,
+  isPlainBubbleContent,
+  mergeBubbleContent,
+  type BubbleContent,
+  type BubbleContentRun,
+} from "./content-run.js";
+
 export const bubbleRevealUnits = Object.freeze([
   "CHARACTER",
   "WORD",
@@ -178,4 +186,98 @@ export function revealedBubbleText(
   count: number,
 ): string {
   return chunks.slice(0, Math.max(0, Math.min(count, chunks.length))).join("");
+}
+
+function contentChunk(runs: readonly BubbleContentRun[]): BubbleContent {
+  return Object.freeze(mergeBubbleContent(Object.freeze([...runs])));
+}
+
+function textRun(text: string): BubbleContentRun {
+  return Object.freeze({ text, type: "text" as const });
+}
+
+/**
+ * Splits content on line or block boundaries. A ruby run is never split, so it
+ * always stays inside the chunk that carries its surrounding text.
+ */
+function splitContentByBoundary(
+  content: BubbleContent,
+  unit: "BLOCK" | "LINE",
+): readonly BubbleContent[] {
+  const chunks: BubbleContent[] = [];
+  let current: BubbleContentRun[] = [];
+  const closeChunk = (): void => {
+    if (current.length === 0) return;
+    chunks.push(contentChunk(current));
+    current = [];
+  };
+  for (const run of content) {
+    if (run.type === "ruby") {
+      current.push(run);
+      continue;
+    }
+    if (unit === "LINE") {
+      for (const part of run.text.split(/(?<=\n)/u)) {
+        if (part.length === 0) continue;
+        current.push(textRun(part));
+        if (part.endsWith("\n")) closeChunk();
+      }
+      continue;
+    }
+    // A captured separator lands on every odd index and closes the block.
+    const parts = run.text.split(/(\n{2,})/u);
+    for (const [index, part] of parts.entries()) {
+      if (part.length === 0) continue;
+      current.push(textRun(part));
+      if (index % 2 === 1) closeChunk();
+    }
+  }
+  closeChunk();
+  return Object.freeze(chunks.length > 0 ? chunks : [contentChunk(content)]);
+}
+
+/**
+ * Returns append-only content chunks; joining the first n chunks gives the
+ * visible content. Plain content delegates to {@link splitBubbleText} so the
+ * string path keeps its exact behaviour, and a ruby run is always one whole
+ * reveal unit for every reveal unit kind.
+ */
+export function splitBubbleContent(
+  content: BubbleContent,
+  reveal: NormalizedBubbleReveal,
+): readonly BubbleContent[] {
+  if (isPlainBubbleContent(content)) {
+    return Object.freeze(
+      splitBubbleText(bubbleContentPlainText(content), reveal).map((text) =>
+        Object.freeze([textRun(text)]),
+      ),
+    );
+  }
+  if (reveal.unit === "LINE" || reveal.unit === "BLOCK") {
+    return splitContentByBoundary(content, reveal.unit);
+  }
+  const chunks: BubbleContent[] = [];
+  for (const run of content) {
+    if (run.type === "ruby") {
+      chunks.push(Object.freeze([run]));
+      continue;
+    }
+    const parts =
+      reveal.unit === "CHARACTER"
+        ? graphemes(run.text)
+        : splitWords(run.text, reveal.delimiters, reveal.showDelimiters);
+    for (const part of parts) chunks.push(Object.freeze([textRun(part)]));
+  }
+  return Object.freeze(
+    chunks.length > 0 ? chunks : [Object.freeze([textRun("")])],
+  );
+}
+
+/** Joins the first n content chunks into the currently visible content. */
+export function revealedBubbleContent(
+  chunks: readonly BubbleContent[],
+  count: number,
+): BubbleContent {
+  const visible = chunks.slice(0, Math.max(0, Math.min(count, chunks.length)));
+  return mergeBubbleContent(Object.freeze(visible.flat()));
 }
