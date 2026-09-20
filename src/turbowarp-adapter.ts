@@ -1431,14 +1431,15 @@ export function createTurboWarpBubbleComposition(
     clearTimeout: (handle: unknown) =>
       globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
   };
-  const runtimeAssetExtension =
+  const getRuntimeAssetExtension = ():
+    TurboWarpAssetManagerExtension | undefined =>
     runtime.ext_kubohiroyaassetcache ?? runtime.ext_kubohiroyaassetmanager;
   const getAssetExtension = (): TurboWarpAssetManagerExtension =>
-    requireAssetManager(runtimeAssetExtension);
+    requireAssetManager(getRuntimeAssetExtension());
   let assetManagerDOMImages: AssetManagerDOMImageCapability | undefined;
   const getAssetManagerDOMImages = (): AssetManagerDOMImageCapability => {
     assetManagerDOMImages ??= requireAssetManagerDOMImageCapability(
-      runtimeAssetExtension,
+      getRuntimeAssetExtension(),
     );
     return assetManagerDOMImages;
   };

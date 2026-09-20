@@ -314,6 +314,32 @@ describe("TurboWarp composition adapter", () => {
     expect(() => createScratchRenderComposition(harness.runtime)).not.toThrow();
   });
 
+  it("resolves Asset Cache registered after composition construction", async () => {
+    const source = createRuntime();
+    const assetCache = source.runtime.ext_kubohiroyaassetcache;
+    if (assetCache === undefined)
+      throw new Error("Asset Cache fixture is missing");
+    const harness = createRuntime({ assetManager: false });
+    const composition = createScratchRenderComposition(harness.runtime);
+    Object.assign(harness.runtime, { ext_kubohiroyaassetcache: assetCache });
+    composition.defineStyle({
+      name: "dialogue",
+      textStyle: "dialogue",
+      portrait: { base: "Face" },
+    });
+
+    const handle = await composition.show({
+      actor: actor(),
+      actorKey: "Hero",
+      kind: "say",
+      text: "Hello",
+      styleName: "dialogue",
+    });
+
+    expect([...harness.drawableSkins.values()]).toContain(11);
+    await handle.close();
+  });
+
   it("accepts host-owned Asset Cache and SVG Text compositions", async () => {
     const harness = createRuntime({
       assetManager: false,

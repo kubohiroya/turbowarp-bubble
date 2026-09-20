@@ -7017,7 +7017,7 @@ function bs(e, t = {}) {
 	let u = i === "svg-overlay" && l === void 0 ? "svg-overlay" : "scratch-render", d = t.scheduler ?? {
 		setTimeout: (e, t) => globalThis.setTimeout(e, t),
 		clearTimeout: (e) => globalThis.clearTimeout(e)
-	}, f = n.ext_kubohiroyaassetcache ?? n.ext_kubohiroyaassetmanager, p = () => us(f), m, h = () => (m ??= ds(f), m), g;
+	}, f = () => n.ext_kubohiroyaassetcache ?? n.ext_kubohiroyaassetmanager, p = () => us(f()), m, h = () => (m ??= ds(f()), m), g;
 	if (u === "svg-overlay") try {
 		g = Po(a, r);
 	} catch (e) {
