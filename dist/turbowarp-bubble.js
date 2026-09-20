@@ -12614,11 +12614,11 @@
       setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
       clearTimeout: (handle) => globalThis.clearTimeout(handle)
     };
-    const runtimeAssetExtension = runtime.ext_kubohiroyaassetcache ?? runtime.ext_kubohiroyaassetmanager;
-    const getAssetExtension = () => requireAssetManager(runtimeAssetExtension);
+    const getRuntimeAssetExtension = () => runtime.ext_kubohiroyaassetcache ?? runtime.ext_kubohiroyaassetmanager;
+    const getAssetExtension = () => requireAssetManager(getRuntimeAssetExtension());
     let assetManagerDOMImages;
     const getAssetManagerDOMImages = () => {
-      assetManagerDOMImages ?? (assetManagerDOMImages = requireAssetManagerDOMImageCapability(runtimeAssetExtension));
+      assetManagerDOMImages ?? (assetManagerDOMImages = requireAssetManagerDOMImageCapability(getRuntimeAssetExtension()));
       return assetManagerDOMImages;
     };
     let textCapability;
