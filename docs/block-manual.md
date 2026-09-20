@@ -8,21 +8,21 @@ This manual explains how to use `turbowarp-bubble` as an unsandboxed TurboWarp c
 
 ## 1. Load the required extensions
 
-The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.10.0 layout provider and creates no text skin on its default SVG overlay. Asset Manager is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only for condition-based Bubble waits and close policies; a timeout-only close policy needs neither.
+The complete input-wait example uses five extensions. Add Temporary Variables from TurboWarp's extension library, then load the custom extensions needed by the selected features with **Run without sandbox** enabled. Bubble bundles the host-neutral SVG Text 0.10.0 layout provider and creates no text skin on its default SVG overlay. Asset Cache is required for portrait, lip-sync, continue indicator, voice, and display-sound assets. Async Input and Runtime Expression are required only for condition-based Bubble waits and close policies; a timeout-only close policy needs neither.
 
 | Order | Extension                | URL                                                                                                      |
 | ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |     1 | Temporary Variables      | Add from the TurboWarp extension library                                                                 |
 |     2 | Async Input 0.7.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.0/dist/async-input.js`               |
 |     3 | Runtime Expression 0.6.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.0/dist/runtime-expression.js` |
-|     4 | Asset Manager 0.15.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.15.0/dist/asset-manager.js`          |
-|     5 | Bubble 0.12.0            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.12.0/dist/turbowarp-bubble.js`              |
+|     4 | Asset Cache 0.1.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.1.0/dist/asset-cache.js`               |
+|     5 | Bubble 0.13.0            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.0/dist/turbowarp-bubble.js`              |
 
-To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Manager, or if Async Input or Runtime Expression is missing when it starts a condition-based Bubble wait. The lower-level Composition API can inject another text capability.
+To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Cache, or if Async Input or Runtime Expression is missing when it starts a condition-based Bubble wait. The lower-level Composition API can inject another text capability.
 
 See also:
 
-- [Asset Manager guide](https://kubohiroya.github.io/turbowarp-asset-manager/)
+- [Asset Cache guide](https://kubohiroya.github.io/turbowarp-asset-cache/)
 - [Async Input guide](https://kubohiroya.github.io/turbowarp-async-input/)
 - [Runtime Expression guide](https://kubohiroya.github.io/turbowarp-runtime-expression/)
 - [SVG Text guide](https://kubohiroya.github.io/turbowarp-svg-text/)
@@ -31,19 +31,19 @@ See also:
 
 The following example stores costumes in a hidden asset sprite named `Assets`.
 
-| Costume           | Asset Manager name | Contents                                                   |
-| ----------------- | ------------------ | ---------------------------------------------------------- |
-| `HeroFace`        | `HeroFace`         | Face, hair, and outline, excluding the animated eyes/mouth |
-| `HeroEyesOpen`    | `HeroEyesOpen`     | Transparent overlay containing only the open eyes          |
-| `HeroEyesClosed`  | `HeroEyesClosed`   | Transparent overlay containing only the closed eyes        |
-| `HeroMouthClosed` | `HeroMouthClosed`  | Transparent overlay containing only the closed mouth       |
-| `HeroMouthOpen`   | `HeroMouthOpen`    | Transparent overlay containing only the open mouth         |
-| `Next1`           | `Next1`            | First frame of the continue indicator                      |
-| `Next2`           | `Next2`            | Second frame of the continue indicator                     |
+| Costume           | Asset Cache name  | Contents                                                   |
+| ----------------- | ----------------- | ---------------------------------------------------------- |
+| `HeroFace`        | `HeroFace`        | Face, hair, and outline, excluding the animated eyes/mouth |
+| `HeroEyesOpen`    | `HeroEyesOpen`    | Transparent overlay containing only the open eyes          |
+| `HeroEyesClosed`  | `HeroEyesClosed`  | Transparent overlay containing only the closed eyes        |
+| `HeroMouthClosed` | `HeroMouthClosed` | Transparent overlay containing only the closed mouth       |
+| `HeroMouthOpen`   | `HeroMouthOpen`   | Transparent overlay containing only the open mouth         |
+| `Next1`           | `Next1`           | First frame of the continue indicator                      |
+| `Next2`           | `Next2`           | Second frame of the continue indicator                     |
 
 Use the same canvas size and center point for the base, eye, and mouth images. Keep overlay backgrounds transparent; mismatched canvases or centers make the layers drift when composed.
 
-Register each costume with Asset Manager:
+Register each costume with Asset Cache:
 
 ```text
 register resource [costume:Assets:HeroFace] as asset [HeroFace]
@@ -55,7 +55,7 @@ register resource [costume:Assets:Next1] as asset [Next1]
 register resource [costume:Assets:Next2] as asset [Next2]
 ```
 
-For a remote image, pass its HTTPS URL as `RESOURCE_ID`. Bubble accepts only assets already registered with Asset Manager whose MIME type is `image/*`.
+For a remote image, pass its HTTPS URL as `RESOURCE_ID`. Bubble accepts only assets already registered with Asset Cache whose MIME type is `image/*`.
 
 ## 3. Select a text layout style
 
@@ -178,7 +178,7 @@ set continue frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 ```
 
-`ASSETS` is a comma-separated list of Asset Manager names. Surrounding whitespace is removed; commas cannot be part of an asset name.
+`ASSETS` is a comma-separated list of Asset Cache names. Surrounding whitespace is removed; commas cannot be part of an asset name.
 
 - Blink and lip-sync animations accept one or more frames. A single frame remains static.
 - Use two or more continue frames so the loop is visible.
@@ -202,7 +202,7 @@ show [Let's head for the sea!] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] seconds
 ```
 
-`DYNAMIC` recalculates the Bubble size and placement after each unit. `RESERVED` measures the final text first and reserves that layout while units appear. `set bubble reveal sound` plays a named Asset Manager audio asset per unit, while `set bubble voice` plays full voice audio when the Bubble starts. Text display remains available without audio.
+`DYNAMIC` recalculates the Bubble size and placement after each unit. `RESERVED` measures the final text first and reserves that layout while units appear. `set bubble reveal sound` plays a named Asset Cache audio asset per unit, while `set bubble voice` plays full voice audio when the Bubble starts. Text display remains available without audio.
 
 ## 6. Show dialogue and wait for input
 
@@ -328,7 +328,7 @@ Saved projects using the former `say/think [MESSAGE] with bubble style [STYLE]` 
 
 | Symptom                              | Cause and solution                                                              |
 | ------------------------------------ | ------------------------------------------------------------------------------- |
-| Asset Manager required error         | Load Asset Manager 0.12.x without sandbox before using image/media assets       |
+| Asset Cache required error           | Load Asset Cache 0.1.0 without sandbox before using image/media assets          |
 | SVG overlay backend error            | Use a host with `renderer.addOverlay()` or explicitly select `scratch-render`   |
 | Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait             |
 | Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait      |
@@ -353,7 +353,7 @@ Bubble automatically releases its owned timers, overlay DOM, and image leases in
 - the whole project stops; or
 - the TurboWarp runtime is disposed.
 
-Assets registered with Asset Manager are not owned by Bubble. To remove an unused registered image from memory, close the Bubble first and then use Asset Manager's `delete asset [NAME] from memory` block.
+Assets registered with Asset Cache are not owned by Bubble. To remove an unused registered image from memory, close the Bubble first and then use Asset Cache's `delete asset [NAME] from memory` block.
 
 ## 14. Regenerating the manual assets
 

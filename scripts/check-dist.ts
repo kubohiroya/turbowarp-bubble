@@ -230,7 +230,7 @@ for (const value of [
   "setBubbleAnimationMode",
   "waitForBubbleContinue",
   "waitAndCloseBubbleWithPolicy",
-  "kubohiroyaassetmanager",
+  "kubohiroyaassetcache",
   "kubohiroyasvgtext",
 ]) {
   if (!extension.includes(value)) {

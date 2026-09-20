@@ -18,9 +18,9 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
-      '@kubohiroya/turbowarp-asset-manager':
-        specifier: 0.15.0
-        version: 0.15.0
+      '@kubohiroya/turbowarp-asset-cache':
+        specifier: 0.1.0
+        version: 0.1.0(@kubohiroya/turbowarp-named-data@0.1.0)
       '@kubohiroya/turbowarp-async-input':
         specifier: 0.7.0
         version: 0.7.0
@@ -133,9 +133,11 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-manager@0.15.0':
-    resolution: {integrity: sha512-0xr5DukQHcDHXHxrkuRQ9Bhuc/pV2MNuLPoYD/P1wbw3DwxRP38k3NW5QvLPIkJyFdQXX+CHuji+Q1/X1mcxvQ==}
+  '@kubohiroya/turbowarp-asset-cache@0.1.0':
+    resolution: {integrity: sha512-mHikiU0uEMmyWpTzXDihhDpaPGvxc4IyoQ6AmuF8LuxtLjCsitV9JPylorKNzEShHpy4Yd7xumOyUwCpmPqkKA==}
     engines: {node: '>=22.18.0'}
+    peerDependencies:
+      '@kubohiroya/turbowarp-named-data': ^0.1.0
 
   '@kubohiroya/turbowarp-async-input@0.7.0':
     resolution: {integrity: sha512-i1imt5i9gnCwiTRqvBKvsSvwQJAroIVyrYeKARJkrMw3lTIfk+Gn5CT6sKXwQCdW+N+6X5JSk3Pr34LNg7+IMw==}
@@ -148,6 +150,10 @@ packages:
         optional: true
       '@kubohiroya/turbowarp-webusb-pasori':
         optional: true
+
+  '@kubohiroya/turbowarp-named-data@0.1.0':
+    resolution: {integrity: sha512-VNbV2Lr7MA1RhcJNfQjmqCDuQmqmuS223b+kYIHkZGQ8ZvdnxTGxs5vo3foY+nZqnTQEnJ6QrOlpsw/taFCOLg==}
+    engines: {node: '>=22.18.0'}
 
   '@kubohiroya/turbowarp-runtime-expression@0.6.0':
     resolution: {integrity: sha512-fAhxswUT6dDVQOLsz89I7pEkeU3CoAYQZ/08bXUnVdXAr8exq4RU5wVQZQ+KVbo7WPhCeIldDvC39Vgi0syhBQ==}
@@ -971,9 +977,13 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-manager@0.15.0': {}
+  '@kubohiroya/turbowarp-asset-cache@0.1.0(@kubohiroya/turbowarp-named-data@0.1.0)':
+    dependencies:
+      '@kubohiroya/turbowarp-named-data': 0.1.0
 
   '@kubohiroya/turbowarp-async-input@0.7.0': {}
+
+  '@kubohiroya/turbowarp-named-data@0.1.0': {}
 
   '@kubohiroya/turbowarp-runtime-expression@0.6.0': {}
 

@@ -74,7 +74,7 @@
 </blockquote>
 <p><img src="../assets/block-quick-start.svg" alt="Next1とNext2を個別登録し、入力listenerを準備してBubble内蔵待機を使うブロック例"></p>
 <h2 id="requirements">1. 必要な拡張機能</h2>
-<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.10.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。</p>
+<p>入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.10.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Cacheが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。</p>
 <table>
 <thead>
 <tr>
@@ -100,19 +100,19 @@
 </tr>
 <tr>
 <td align="right">4</td>
-<td>Asset Manager 0.15.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.15.0/dist/asset-manager.js</code></td>
+<td>Asset Cache 0.1.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.1.0/dist/asset-cache.js</code></td>
 </tr>
 <tr>
 <td align="right">5</td>
-<td>Bubble 0.12.0</td>
-<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.12.0/dist/turbowarp-bubble.js</code></td>
+<td>Bubble 0.13.0</td>
+<td><code>https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.0/dist/turbowarp-bubble.js</code></td>
 </tr>
 </tbody></table>
-<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。</p>
+<p>開発中のBubbleを試す場合は、このリポジトリの<code>dist/turbowarp-bubble.js</code>をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Cacheがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。</p>
 <p>参考：</p>
 <ul>
-<li><a href="https://kubohiroya.github.io/turbowarp-asset-manager/ja/">Asset Manager 日本語ガイド</a></li>
+<li><a href="https://kubohiroya.github.io/turbowarp-asset-cache/ja/">Asset Cache 日本語ガイド</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-async-input/ja/">Async Input 日本語ガイド</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-runtime-expression/ja/">Runtime Expression 日本語ガイド</a></li>
 <li><a href="https://kubohiroya.github.io/turbowarp-svg-text/ja/">SVG Text 日本語ガイド</a></li>
@@ -123,7 +123,7 @@
 <thead>
 <tr>
 <th>costume</th>
-<th>Asset Managerへ登録する名前</th>
+<th>Asset Cacheへ登録する名前</th>
 <th>内容</th>
 </tr>
 </thead>
@@ -164,7 +164,7 @@
 </tr>
 </tbody></table>
 <p>ベース、目、口の画像は同じcanvasサイズと同じ中心位置で作ります。差分画像の背景は透明にしてください。位置やcanvasサイズが異なると、レイヤーを重ねたときに目や口がずれます。</p>
-<p>Asset Managerのブロックで各costumeを登録します。</p>
+<p>Asset Cacheのブロックで各costumeを登録します。</p>
 <pre><code class="language-text">register resource [costume:Assets:HeroFace] as asset [HeroFace]
 register resource [costume:Assets:HeroEyesOpen] as asset [HeroEyesOpen]
 register resource [costume:Assets:HeroEyesClosed] as asset [HeroEyesClosed]
@@ -173,7 +173,7 @@ register resource [costume:Assets:HeroMouthOpen] as asset [HeroMouthOpen]
 register resource [costume:Assets:Next1] as asset [Next1]
 register resource [costume:Assets:Next2] as asset [Next2]
 </code></pre>
-<p>URL画像を使う場合は、<code>RESOURCE_ID</code>へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが<code>image/*</code>のアセットだけです。</p>
+<p>URL画像を使う場合は、<code>RESOURCE_ID</code>へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Cacheへ登録済みでMIME typeが<code>image/*</code>のアセットだけです。</p>
 <h2 id="text-style">3. 文字layout styleを選ぶ</h2>
 <p>standalone BubbleはSVG Text 0.10.0のlayout compositionを内包し、2つのBubble styleを組み込みます。<code>say</code>はspeech本体とspeech tail、<code>think</code>はthought本体とround trailを持ち、本体とtail/trailの形は別項目ではなく1つのvisual styleとして選びます。短い<code>say [MESSAGE]</code>／<code>think [MESSAGE]</code>ブロックが対応styleを自動選択するため、基本経路にはstyle定義もstyle入力も不要です。どちらも予約text profile <code>default</code>、内容に追従するサイズ、14px Helvetica、右側優先・収まりに応じた左反転、block入力の330文字上限、空文字でのcloseを使います。4pxのSVG strokeを白いfillより先に描き、内側半分を隠すことで、見かけの輪郭をTurboWarp標準と同じ細さにします。それ以外のtext style名やstyle設定ブロックを使うとcustom profileになります。custom text styleは初回参照時に背景透明のSVG Text既定styleとして初期化されます。stock SVG Text 0.10.0をBubbleより先に別拡張として読み込んだprojectでは、Bubbleが公開<code>getLayoutCapability()</code>を使い、SVG Text blockで定義したnamed styleを維持します。handoffのない古いSVG Textがロード済みならstyleを黙って置換せず互換errorを返し、必要な場合だけ文書化済みscratch-render fallbackを選択します。</p>
 <pre><code class="language-text">define bubble style [hero-dialogue] using text style [default]
@@ -264,7 +264,7 @@ set lip-sync frames [HeroMouthClosed,HeroMouthOpen]
 set continue frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 </code></pre>
-<p><code>ASSETS</code>はカンマ区切りのAsset Managerアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。</p>
+<p><code>ASSETS</code>はカンマ区切りのAsset Cacheアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。</p>
 <ul>
 <li>目パチと口パクは1枚以上指定できます。1枚だけなら表示は固定されます。</li>
 <li>「次へ」はループが分かるよう2枚以上必要です。</li>
@@ -284,7 +284,7 @@ set bubble voice [HeroVoice] for bubble style [hero-dialogue]
 show [海へ出発！] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == &quot;pressed&quot;] or timeout after [10] seconds
 </code></pre>
-<p><code>DYNAMIC</code>は表示単位ごとに吹き出しの大きさと配置を再計算し、<code>RESERVED</code>は最終的な文字量を先に計測して表示中の外形を予約します。<code>set bubble reveal sound</code>は単位ごと、<code>set bubble voice</code>は表示開始時にAsset Managerの名前付き音声を再生します。音声がなくても文字表示は利用できます。</p>
+<p><code>DYNAMIC</code>は表示単位ごとに吹き出しの大きさと配置を再計算し、<code>RESERVED</code>は最終的な文字量を先に計測して表示中の外形を予約します。<code>set bubble reveal sound</code>は単位ごと、<code>set bubble voice</code>は表示開始時にAsset Cacheの名前付き音声を再生します。音声がなくても文字表示は利用できます。</p>
 <h2 id="animation-modes">6. セリフを表示して入力を待つ</h2>
 <p><code>say</code>または<code>think</code>はBubbleを表示するとすぐ次のブロックへ進み、初期animation modeは<code>talking</code>になります。</p>
 <pre><code class="language-text">set runtime variable [input] to []
@@ -507,8 +507,8 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 </tr>
 </thead>
 <tbody><tr>
-<td>Asset Managerを要求するエラー</td>
-<td>画像・メディアアセットを使う前にAsset Manager 0.12.xを読み込む</td>
+<td>Asset Cacheを要求するエラー</td>
+<td>画像・メディアアセットを使う前にAsset Cache 0.1.0を読み込む</td>
 </tr>
 <tr>
 <td>SVG overlay backendのエラー</td>
@@ -569,7 +569,7 @@ animate bubble shape to [WAVY] speed [1] for [0.5] seconds
 <li>projectの全停止</li>
 <li>TurboWarp runtimeの破棄</li>
 </ul>
-<p>Asset Managerへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Managerの<code>delete asset [NAME] from memory</code>を使います。</p>
+<p>Asset Cacheへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Cacheの<code>delete asset [NAME] from memory</code>を使います。</p>
 <h2>14. マニュアル画像の再生成</h2>
 <p>図とGIFはリポジトリ内のスクリプトから再生成できます。GIF生成にはImageMagickの<code>magick</code>コマンドが必要です。</p>
 <p>2つの<code>turbowarp-say-think-*-comparison.png</code>はrenderer previewから生成した図ではなく、TurboWarp Editorの実画面です。第4章に記載した撮影条件を使い、<code>docs:render</code>では上書きしません。</p>

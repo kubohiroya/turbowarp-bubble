@@ -12002,11 +12002,11 @@
     }));
   }
   function requireAssetManager(value) {
-    if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
+    if (!isRecord(value) || typeof value.isLoaded !== "function" || typeof value.getAssetMimeType !== "function" || typeof value.resolveSkin !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-cache or provide options.imageResolver before using image features.");
     return value;
   }
   function requireAssetManagerDOMImageCapability(value) {
-    if (!isRecord(value) || typeof value.getDOMImageCapability !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-manager 0.12.1 or a host-provided options.svgOverlayImageCapability.");
+    if (!isRecord(value) || typeof value.getDOMImageCapability !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-cache 0.1.0 or a host-provided options.svgOverlayImageCapability.");
     const capability = value.getDOMImageCapability();
     if (!isRecord(capability) || typeof capability.isRegistered !== "function" || typeof capability.getMimeType !== "function" || typeof capability.resolveDOMImageResource !== "function") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-002", "Asset Manager did not provide a valid DOM image capability.");
     return capability;
@@ -12614,10 +12614,11 @@
       setTimeout: (callback, milliseconds) => globalThis.setTimeout(callback, milliseconds),
       clearTimeout: (handle) => globalThis.clearTimeout(handle)
     };
-    const getAssetExtension = () => requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+    const runtimeAssetExtension = runtime.ext_kubohiroyaassetcache ?? runtime.ext_kubohiroyaassetmanager;
+    const getAssetExtension = () => requireAssetManager(runtimeAssetExtension);
     let assetManagerDOMImages;
     const getAssetManagerDOMImages = () => {
-      assetManagerDOMImages ?? (assetManagerDOMImages = requireAssetManagerDOMImageCapability(runtime.ext_kubohiroyaassetmanager));
+      assetManagerDOMImages ?? (assetManagerDOMImages = requireAssetManagerDOMImageCapability(runtimeAssetExtension));
       return assetManagerDOMImages;
     };
     let textCapability;
@@ -12744,7 +12745,7 @@
     textStyle: "default"
   })]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.12.0";
+  var EXTENSION_VERSION = "0.13.0";
   var BLOCK_ICON_URI = `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 13h40a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H30L17 55v-9h-5a5 5 0 0 1-5-5V18a5 5 0 0 1 5-5Z\"/><g fill=\"#fff\"><circle cx=\"23\" cy=\"30\" r=\"3\"/><circle cx=\"32\" cy=\"30\" r=\"3\"/><circle cx=\"41\" cy=\"30\" r=\"3\"/></g></svg>")}`;
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);

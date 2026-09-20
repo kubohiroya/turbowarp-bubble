@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -78,7 +78,7 @@
     "prepack": "pnpm run check"
   },
   "peerDependencies": {
-    "@kubohiroya/turbowarp-asset-manager": ">=0.7.0 <1",
+    "@kubohiroya/turbowarp-asset-cache": ">=0.1.0 <1",
     "@kubohiroya/turbowarp-async-input": ">=0.3.0 <1",
     "@kubohiroya/turbowarp-runtime-expression": ">=0.3.0 <1"
   },
@@ -86,7 +86,7 @@
     "@kubohiroya/turbowarp-async-input": {
       "optional": true
     },
-    "@kubohiroya/turbowarp-asset-manager": {
+    "@kubohiroya/turbowarp-asset-cache": {
       "optional": true
     },
     "@kubohiroya/turbowarp-runtime-expression": {
@@ -95,7 +95,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@kubohiroya/turbowarp-asset-manager": "0.15.0",
+    "@kubohiroya/turbowarp-asset-cache": "0.1.0",
     "@kubohiroya/turbowarp-async-input": "0.7.0",
     "@kubohiroya/turbowarp-runtime-expression": "0.6.0",
     "@kubohiroya/vite-plugin-turbowarp-extension": "0.4.0",

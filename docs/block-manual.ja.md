@@ -8,21 +8,21 @@
 
 ## 1. 必要な拡張機能
 
-入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.10.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Managerが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。
+入力待ちを含む完全な例では5つの拡張機能を使います。TurboWarpの拡張機能ライブラリからTemporary Variablesを追加し、選択した機能に必要なカスタム拡張機能を「サンドボックスなしで実行」を許可して読み込みます。BubbleはSVG Text 0.10.0のhost-neutral layout providerをbundle内に持ち、既定のSVG overlayではskinを作りません。portrait、lip-sync、continue indicator、フルボイス、表示効果音などのメディアアセットにはAsset Cacheが必要です。Async InputとRuntime Expressionはconditionを使うBubble待機またはclose policyで必要です。timeoutだけのclose policyにはどちらも不要です。
 
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |    1 | Temporary Variables      | TurboWarpの拡張機能ライブラリから追加                                                                    |
 |    2 | Async Input 0.7.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.0/dist/async-input.js`               |
 |    3 | Runtime Expression 0.6.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.0/dist/runtime-expression.js` |
-|    4 | Asset Manager 0.15.0     | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-manager@0.15.0/dist/asset-manager.js`          |
-|    5 | Bubble 0.12.0            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.12.0/dist/turbowarp-bubble.js`              |
+|    4 | Asset Cache 0.1.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.1.0/dist/asset-cache.js`               |
+|    5 | Bubble 0.13.0            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.0/dist/turbowarp-bubble.js`              |
 
-開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Managerがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
+開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Cacheがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 
 参考：
 
-- [Asset Manager 日本語ガイド](https://kubohiroya.github.io/turbowarp-asset-manager/ja/)
+- [Asset Cache 日本語ガイド](https://kubohiroya.github.io/turbowarp-asset-cache/ja/)
 - [Async Input 日本語ガイド](https://kubohiroya.github.io/turbowarp-async-input/ja/)
 - [Runtime Expression 日本語ガイド](https://kubohiroya.github.io/turbowarp-runtime-expression/ja/)
 - [SVG Text 日本語ガイド](https://kubohiroya.github.io/turbowarp-svg-text/ja/)
@@ -31,19 +31,19 @@
 
 例では`Assets`という素材用spriteに、次のcostumeを入れます。素材用spriteは画面上で非表示でも構いません。
 
-| costume           | Asset Managerへ登録する名前 | 内容                                             |
-| ----------------- | --------------------------- | ------------------------------------------------ |
-| `HeroFace`        | `HeroFace`                  | 顔、髪、輪郭などのベース。動かす目と口は含めない |
-| `HeroEyesOpen`    | `HeroEyesOpen`              | 開いた目だけを描いた透明差分                     |
-| `HeroEyesClosed`  | `HeroEyesClosed`            | 閉じた目だけを描いた透明差分                     |
-| `HeroMouthClosed` | `HeroMouthClosed`           | 閉じた口だけを描いた透明差分                     |
-| `HeroMouthOpen`   | `HeroMouthOpen`             | 開いた口だけを描いた透明差分                     |
-| `Next1`           | `Next1`                     | 「次へ」アイコンの1枚目                          |
-| `Next2`           | `Next2`                     | 「次へ」アイコンの2枚目                          |
+| costume           | Asset Cacheへ登録する名前 | 内容                                             |
+| ----------------- | ------------------------- | ------------------------------------------------ |
+| `HeroFace`        | `HeroFace`                | 顔、髪、輪郭などのベース。動かす目と口は含めない |
+| `HeroEyesOpen`    | `HeroEyesOpen`            | 開いた目だけを描いた透明差分                     |
+| `HeroEyesClosed`  | `HeroEyesClosed`          | 閉じた目だけを描いた透明差分                     |
+| `HeroMouthClosed` | `HeroMouthClosed`         | 閉じた口だけを描いた透明差分                     |
+| `HeroMouthOpen`   | `HeroMouthOpen`           | 開いた口だけを描いた透明差分                     |
+| `Next1`           | `Next1`                   | 「次へ」アイコンの1枚目                          |
+| `Next2`           | `Next2`                   | 「次へ」アイコンの2枚目                          |
 
 ベース、目、口の画像は同じcanvasサイズと同じ中心位置で作ります。差分画像の背景は透明にしてください。位置やcanvasサイズが異なると、レイヤーを重ねたときに目や口がずれます。
 
-Asset Managerのブロックで各costumeを登録します。
+Asset Cacheのブロックで各costumeを登録します。
 
 ```text
 register resource [costume:Assets:HeroFace] as asset [HeroFace]
@@ -55,7 +55,7 @@ register resource [costume:Assets:Next1] as asset [Next1]
 register resource [costume:Assets:Next2] as asset [Next2]
 ```
 
-URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Managerへ登録済みでMIME typeが`image/*`のアセットだけです。
+URL画像を使う場合は、`RESOURCE_ID`へHTTPS URLを指定します。Bubbleに設定できるのは、Asset Cacheへ登録済みでMIME typeが`image/*`のアセットだけです。
 
 ## 3. 文字layout styleを選ぶ
 
@@ -178,7 +178,7 @@ set continue frames [Next1,Next2]
   every [0.2] seconds for bubble style [hero-dialogue]
 ```
 
-`ASSETS`はカンマ区切りのAsset Managerアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。
+`ASSETS`はカンマ区切りのAsset Cacheアセット名です。名前の前後の空白は除去されます。アセット名自体にカンマは使用できません。
 
 - 目パチと口パクは1枚以上指定できます。1枚だけなら表示は固定されます。
 - 「次へ」はループが分かるよう2枚以上必要です。
@@ -202,7 +202,7 @@ show [海へ出発！] with bubble style [hero-dialogue]
 finish [CHARACTER] with condition [input == "pressed"] or timeout after [10] seconds
 ```
 
-`DYNAMIC`は表示単位ごとに吹き出しの大きさと配置を再計算し、`RESERVED`は最終的な文字量を先に計測して表示中の外形を予約します。`set bubble reveal sound`は単位ごと、`set bubble voice`は表示開始時にAsset Managerの名前付き音声を再生します。音声がなくても文字表示は利用できます。
+`DYNAMIC`は表示単位ごとに吹き出しの大きさと配置を再計算し、`RESERVED`は最終的な文字量を先に計測して表示中の外形を予約します。`set bubble reveal sound`は単位ごと、`set bubble voice`は表示開始時にAsset Cacheの名前付き音声を再生します。音声がなくても文字表示は利用できます。
 
 ## 6. セリフを表示して入力を待つ
 
@@ -328,7 +328,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 
 | 状況                                 | 原因と対処                                                               |
 | ------------------------------------ | ------------------------------------------------------------------------ |
-| Asset Managerを要求するエラー        | 画像・メディアアセットを使う前にAsset Manager 0.12.xを読み込む           |
+| Asset Cacheを要求するエラー          | 画像・メディアアセットを使う前にAsset Cache 0.1.0を読み込む              |
 | SVG overlay backendのエラー          | `renderer.addOverlay()`対応hostを使うか`scratch-render`を明示する        |
 | Async Inputを要求するエラー          | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー   | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
@@ -353,7 +353,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 - projectの全停止
 - TurboWarp runtimeの破棄
 
-Asset Managerへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Managerの`delete asset [NAME] from memory`を使います。
+Asset Cacheへ登録したアセット自体はBubbleの所有物ではありません。不要になった登録画像をメモリから削除する場合は、Bubbleを閉じた後にAsset Cacheの`delete asset [NAME] from memory`を使います。
 
 ## 14. マニュアル画像の再生成
 
