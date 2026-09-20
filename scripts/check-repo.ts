@@ -26,12 +26,12 @@ interface RepoPolicy {
   };
   companionVersions: {
     "@kubohiroya/turbowarp-svg-text": string;
-    "@kubohiroya/turbowarp-asset-manager": string;
+    "@kubohiroya/turbowarp-asset-cache": string;
     "@kubohiroya/turbowarp-async-input": string;
     "@kubohiroya/turbowarp-runtime-expression": string;
   };
   minimumRuntimeCapabilities: {
-    "@kubohiroya/turbowarp-asset-manager": string;
+    "@kubohiroya/turbowarp-asset-cache": string;
   };
   integrationIssues: string[];
 }
@@ -167,14 +167,14 @@ for (const name of [
 requireDependencyVersion(
   manifest,
   "devDependencies",
-  "@kubohiroya/turbowarp-asset-manager",
-  companions["@kubohiroya/turbowarp-asset-manager"],
+  "@kubohiroya/turbowarp-asset-cache",
+  companions["@kubohiroya/turbowarp-asset-cache"],
 );
-requirePeerRange(manifest, "@kubohiroya/turbowarp-asset-manager", ">=0.7.0 <1");
+requirePeerRange(manifest, "@kubohiroya/turbowarp-asset-cache", ">=0.1.0 <1");
 
 const companionLabels = [
   ["SVG Text", companions["@kubohiroya/turbowarp-svg-text"]],
-  ["Asset Manager", companions["@kubohiroya/turbowarp-asset-manager"]],
+  ["Asset Cache", companions["@kubohiroya/turbowarp-asset-cache"]],
   ["Async Input", companions["@kubohiroya/turbowarp-async-input"]],
   [
     "Runtime Expression",

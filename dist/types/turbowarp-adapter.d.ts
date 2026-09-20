@@ -46,7 +46,7 @@ export interface TurboWarpAssetManagerExtension {
     getAssetMimeType(args: Readonly<{
         NAME: unknown;
     }>): string;
-    /** Available from Asset Manager 0.12.1 for the skin-free overlay path. */
+    /** Public skin-free overlay path provided by Asset Cache. */
     getDOMImageCapability?(): AssetManagerDOMImageCapability;
     playSound?(args: Readonly<{
         NAME: unknown;
@@ -62,6 +62,8 @@ export interface TurboWarpAssetManagerExtension {
 }
 export interface TurboWarpBubbleRuntime {
     readonly renderer: TurboWarpBubbleRenderer;
+    readonly ext_kubohiroyaassetcache?: TurboWarpAssetManagerExtension;
+    /** Deprecated compatibility lookup for projects that have not migrated their extension ID. */
     readonly ext_kubohiroyaassetmanager?: TurboWarpAssetManagerExtension;
     readonly ext_kubohiroyasvgtext?: TurboWarpSvgTextExtension;
     requestRedraw?(): void;

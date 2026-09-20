@@ -1,4 +1,4 @@
-import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-manager/composition";
+import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-cache/composition";
 import {
   createSvgTextComposition,
   createSvgTextLayoutComposition,

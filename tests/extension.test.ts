@@ -233,7 +233,7 @@ function createRuntime(
       : {}),
     ...((options.assetManager ?? true)
       ? {
-          ext_kubohiroyaassetmanager: {
+          ext_kubohiroyaassetcache: {
             isLoaded: ({ NAME }: { NAME: unknown }) => assets.has(String(NAME)),
             getAssetMimeType: ({ NAME }: { NAME: unknown }) =>
               assets.get(String(NAME))?.mimeType ?? "",
@@ -308,13 +308,13 @@ afterEach(() => {
 });
 
 describe("TurboWarp composition adapter", () => {
-  it("defers Asset Manager lookup until a media style is shown", () => {
+  it("defers Asset Cache lookup until a media style is shown", () => {
     const harness = createRuntime({ assetManager: false });
 
     expect(() => createScratchRenderComposition(harness.runtime)).not.toThrow();
   });
 
-  it("accepts host-owned Asset Manager and SVG Text compositions", async () => {
+  it("accepts host-owned Asset Cache and SVG Text compositions", async () => {
     const harness = createRuntime({
       assetManager: false,
       svgTextExtension: false,
@@ -505,7 +505,7 @@ describe("TurboWarp composition adapter", () => {
 });
 
 describe("Bubble extension", () => {
-  it("uses stock Asset Manager resources on the skin-free default path", async () => {
+  it("uses stock Asset Cache resources on the skin-free default path", async () => {
     const harness = createRuntime();
     const window = new Window();
     const addOverlay = vi.fn((element: Element) => {
@@ -624,7 +624,7 @@ describe("Bubble extension", () => {
     expect(harness.created).not.toHaveLength(0);
   });
 
-  it("requires Asset Manager 0.12.1 only when the default overlay uses images", async () => {
+  it("requires Asset Cache 0.1.0 only when the default overlay uses images", async () => {
     const harness = createRuntime({ assetManager: false });
     const window = new Window();
     Object.assign(harness.renderer, {
@@ -655,7 +655,7 @@ describe("Bubble extension", () => {
         { MESSAGE: "portrait", STYLE: "dialogue" },
         { target },
       ),
-    ).rejects.toThrow("turbowarp-asset-manager 0.12.1");
+    ).rejects.toThrow("turbowarp-asset-cache 0.1.0");
   });
 
   it("publishes the intended blocks and animation mode menu", () => {

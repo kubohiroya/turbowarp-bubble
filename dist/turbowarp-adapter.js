@@ -6633,11 +6633,11 @@ function ls(e) {
 	}));
 }
 function us(e) {
-	if (!ns(e) || typeof e.isLoaded != "function" || typeof e.getAssetMimeType != "function" || typeof e.resolveSkin != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.");
+	if (!ns(e) || typeof e.isLoaded != "function" || typeof e.getAssetMimeType != "function" || typeof e.resolveSkin != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-cache or provide options.imageResolver before using image features.");
 	return e;
 }
 function ds(e) {
-	if (!ns(e) || typeof e.getDOMImageCapability != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-manager 0.12.1 or a host-provided options.svgOverlayImageCapability.");
+	if (!ns(e) || typeof e.getDOMImageCapability != "function") throw new $("BUBBLE-RUNTIME-002", "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-cache 0.1.0 or a host-provided options.svgOverlayImageCapability.");
 	let t = e.getDOMImageCapability();
 	if (!ns(t) || typeof t.isRegistered != "function" || typeof t.getMimeType != "function" || typeof t.resolveDOMImageResource != "function") throw new $("BUBBLE-RUNTIME-002", "Asset Manager did not provide a valid DOM image capability.");
 	return t;
@@ -7017,69 +7017,69 @@ function bs(e, t = {}) {
 	let u = i === "svg-overlay" && l === void 0 ? "svg-overlay" : "scratch-render", d = t.scheduler ?? {
 		setTimeout: (e, t) => globalThis.setTimeout(e, t),
 		clearTimeout: (e) => globalThis.clearTimeout(e)
-	}, f = () => us(n.ext_kubohiroyaassetmanager), p, m = () => (p ??= ds(n.ext_kubohiroyaassetmanager), p), h;
+	}, f = n.ext_kubohiroyaassetcache ?? n.ext_kubohiroyaassetmanager, p = () => us(f), m, h = () => (m ??= ds(f), m), g;
 	if (u === "svg-overlay") try {
-		h = Po(a, r);
+		g = Po(a, r);
 	} catch (e) {
 		throw new $("BUBBLE-RUNTIME-004", `Bubble SVG overlay text capability is invalid: ${e instanceof Error ? e.message : String(e)}`);
 	}
-	else if (t.textCapability !== void 0) h = t.textCapability;
+	else if (t.textCapability !== void 0) g = t.textCapability;
 	else try {
-		h = n.ext_kubohiroyasvgtext === void 0 ? ls(n) : eo(n.ext_kubohiroyasvgtext);
+		g = n.ext_kubohiroyasvgtext === void 0 ? ls(n) : eo(n.ext_kubohiroyasvgtext);
 	} catch (e) {
 		throw new $("BUBBLE-RUNTIME-003", `Bubble could not initialize the scratch-render text provider: ${e instanceof Error ? e.message : String(e)}`);
 	}
-	let g;
+	let _;
 	if (u === "svg-overlay") try {
-		g = zo(t.svgOverlayImageCapability ?? lo(Object.freeze({
+		_ = zo(t.svgOverlayImageCapability ?? lo(Object.freeze({
 			isRegistered(e) {
-				return m().isRegistered(e);
+				return h().isRegistered(e);
 			},
 			getMimeType(e) {
-				return m().getMimeType(e);
+				return h().getMimeType(e);
 			},
 			resolveDOMImageResource(e) {
-				return m().resolveDOMImageResource(e);
+				return h().resolveDOMImageResource(e);
 			}
 		})));
 	} catch (e) {
 		throw new $("BUBBLE-RUNTIME-004", `Bubble SVG overlay image capability is invalid: ${e instanceof Error ? e.message : String(e)}`);
 	}
-	else g = t.imageResolver ?? {
+	else _ = t.imageResolver ?? {
 		isRegistered(e) {
-			return f().isLoaded({ NAME: e });
+			return p().isLoaded({ NAME: e });
 		},
 		getMimeType(e) {
-			return f().getAssetMimeType({ NAME: e });
+			return p().getAssetMimeType({ NAME: e });
 		},
 		async applyToTarget(e, t) {
 			let i = t.drawableID;
 			if (!Number.isInteger(i) || i < 0) throw new $("BUBBLE-RUNTIME-001", "Bubble image target drawable is invalid.");
-			let a = await f().resolveSkin(e);
+			let a = await p().resolveSkin(e);
 			if (!ns(a) || !Number.isInteger(a.skinId) || a.skinId < 0) throw new $("BUBBLE-RUNTIME-002", `Asset Manager did not resolve an image skin: ${String(e)}`);
 			r.updateDrawableSkinId(i, a.skinId), n.requestRedraw?.();
 		}
 	};
-	let _ = t.audio ?? {
+	let v = t.audio ?? {
 		isRegistered(e) {
-			return f().isLoaded({ NAME: e });
+			return p().isLoaded({ NAME: e });
 		},
 		getMimeType(e) {
-			return f().getAssetMimeType({ NAME: e });
+			return p().getAssetMimeType({ NAME: e });
 		},
 		async playSound(e, t = {}) {
-			let n = f(), r = t.untilDone ? n?.playSoundUntilDone : n?.playSound;
+			let n = p(), r = t.untilDone ? n?.playSoundUntilDone : n?.playSound;
 			if (typeof r != "function") throw new $("BUBBLE-RUNTIME-002", "TurboWarp-Asset-Manager does not provide audio playback.");
 			await r.call(n, { NAME: e });
 		}
-	}, v = u === "svg-overlay" ? Bo(r, c) : void 0;
+	}, y = u === "svg-overlay" ? Bo(r, c) : void 0;
 	return qa({
-		...g === void 0 ? {} : { imageResolver: g },
-		audio: _,
-		textCapability: h,
+		..._ === void 0 ? {} : { imageResolver: _ },
+		audio: v,
+		textCapability: g,
 		createSurface({ actor: e, actorKey: t, kind: r, style: i }) {
 			if (!ns(e) || typeof e.id != "string") throw new $("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
-			return u === "svg-overlay" ? Yo(v, e, t, r, i, d) : ys(n, e, t, r, i, d);
+			return u === "svg-overlay" ? Yo(y, e, t, r, i, d) : ys(n, e, t, r, i, d);
 		},
 		...t.scheduler === void 0 ? {} : { scheduler: t.scheduler },
 		...t.onAnimationError === void 0 ? {} : { onAnimationError: t.onAnimationError }

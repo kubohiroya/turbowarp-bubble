@@ -156,7 +156,7 @@ export interface TurboWarpBubbleRenderer {
 export interface TurboWarpAssetManagerExtension {
   isLoaded(args: Readonly<{ NAME: unknown }>): boolean;
   getAssetMimeType(args: Readonly<{ NAME: unknown }>): string;
-  /** Available from Asset Manager 0.12.1 for the skin-free overlay path. */
+  /** Public skin-free overlay path provided by Asset Cache. */
   getDOMImageCapability?(): AssetManagerDOMImageCapability;
   playSound?(args: Readonly<{ NAME: unknown }>): Promise<void>;
   playSoundUntilDone?(args: Readonly<{ NAME: unknown }>): Promise<void>;
@@ -167,6 +167,8 @@ export interface TurboWarpAssetManagerExtension {
 
 export interface TurboWarpBubbleRuntime {
   readonly renderer: TurboWarpBubbleRenderer;
+  readonly ext_kubohiroyaassetcache?: TurboWarpAssetManagerExtension;
+  /** Deprecated compatibility lookup for projects that have not migrated their extension ID. */
   readonly ext_kubohiroyaassetmanager?: TurboWarpAssetManagerExtension;
   readonly ext_kubohiroyasvgtext?: TurboWarpSvgTextExtension;
   requestRedraw?(): void;
@@ -386,7 +388,7 @@ function requireAssetManager(value: unknown): TurboWarpAssetManagerExtension {
   ) {
     throw new BubbleRuntimeAdapterError(
       "BUBBLE-RUNTIME-002",
-      "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-manager or provide options.imageResolver before using image features.",
+      "Bubble image assets require an imageResolver capability. Load @kubohiroya/turbowarp-asset-cache or provide options.imageResolver before using image features.",
     );
   }
   return value as unknown as TurboWarpAssetManagerExtension;
@@ -398,7 +400,7 @@ function requireAssetManagerDOMImageCapability(
   if (!isRecord(value) || typeof value.getDOMImageCapability !== "function") {
     throw new BubbleRuntimeAdapterError(
       "BUBBLE-RUNTIME-002",
-      "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-manager 0.12.1 or a host-provided options.svgOverlayImageCapability.",
+      "Bubble SVG overlay image assets require @kubohiroya/turbowarp-asset-cache 0.1.0 or a host-provided options.svgOverlayImageCapability.",
     );
   }
   const capability = value.getDOMImageCapability();
@@ -1429,12 +1431,14 @@ export function createTurboWarpBubbleComposition(
     clearTimeout: (handle: unknown) =>
       globalThis.clearTimeout(handle as ReturnType<typeof setTimeout>),
   };
+  const runtimeAssetExtension =
+    runtime.ext_kubohiroyaassetcache ?? runtime.ext_kubohiroyaassetmanager;
   const getAssetExtension = (): TurboWarpAssetManagerExtension =>
-    requireAssetManager(runtime.ext_kubohiroyaassetmanager);
+    requireAssetManager(runtimeAssetExtension);
   let assetManagerDOMImages: AssetManagerDOMImageCapability | undefined;
   const getAssetManagerDOMImages = (): AssetManagerDOMImageCapability => {
     assetManagerDOMImages ??= requireAssetManagerDOMImageCapability(
-      runtime.ext_kubohiroyaassetmanager,
+      runtimeAssetExtension,
     );
     return assetManagerDOMImages;
   };
