@@ -107,6 +107,10 @@ function addSectionIds(content: string): string {
 
 async function renderPage(locale: Locale): Promise<string> {
   const markdown = await readFile(locale.source, "utf8");
+  const blockReference = await readFile(
+    resolve(docsRoot, "block-reference.html"),
+    "utf8",
+  );
   let content = await marked.parse(markdown, { gfm: true });
   content = addSectionIds(content).replaceAll(
     'src="./assets/',
@@ -188,6 +192,7 @@ async function renderPage(locale: Locale): Promise<string> {
   <main id="manual" class="manual">
 ${content}  </main>
   <footer class="site-footer">${escapeHtml(locale.footer)}</footer>
+${blockReference}
 </body>
 </html>
 `;

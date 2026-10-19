@@ -1,4 +1,5 @@
 import definitions from "./block-definitions.json";
+import { registerFixedInputEditors } from "./fixed-input-editors.js";
 import {
   normalizeBubbleDistance,
   normalizeBubbleOffset,
@@ -148,6 +149,7 @@ export class BubbleExtension implements TurboWarpExtension {
   private readonly waitScheduler: BubbleScheduler;
   private composition: BubbleComposition | null = null;
   private disposed = false;
+  private fixedEditorsDispose: (() => void) | undefined;
 
   public constructor(
     runtime = Scratch.vm?.runtime as BubbleExtensionRuntime | undefined,
@@ -183,6 +185,12 @@ export class BubbleExtension implements TurboWarpExtension {
   }
 
   public getInfo(): Record<string, unknown> {
+    if (!this.disposed) {
+      this.fixedEditorsDispose ??= registerFixedInputEditors(
+        Scratch,
+        this.runtime,
+      );
+    }
     return {
       id: extensionConfig.id,
       name: Scratch.translate(definitions.extensionName),
@@ -778,6 +786,7 @@ export class BubbleExtension implements TurboWarpExtension {
   public async dispose(): Promise<void> {
     if (this.disposed) return;
     this.disposed = true;
+    this.fixedEditorsDispose?.();
     this.cancelAllWaits("Bubble extension was disposed.");
     if (this.composition) await this.composition.dispose();
     this.handles.clear();

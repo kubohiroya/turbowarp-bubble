@@ -579,5 +579,2029 @@ pnpm docs:check
 <p><code>docs:check</code>は、SVGのviewBox、production renderer／wrapText由来marker、全visual style、GIFの寸法・16フレーム・ループ設定、マニュアルから画像と全16ブロックへの参照、およびPages用HTMLが最新であることを検証します。</p>
   </main>
   <footer class="site-footer">ソースコードはMPL-2.0で公開されています。</footer>
+<style id="block-reference-style">
+  #extension-block-reference {
+    max-width: 72rem;
+    margin: 2rem auto;
+    padding: 1rem;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+  }
+  #extension-block-reference .block-reference-entry {
+    display: block;
+    scroll-margin-top: 6rem;
+    margin: 2rem 0;
+    padding: 1rem;
+    border: 1px solid currentColor;
+    border-radius: 0.5rem;
+  }
+  #extension-block-reference .block-reference-table {
+    overflow-x: auto;
+  }
+  #extension-block-reference table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+  #extension-block-reference th,
+  #extension-block-reference td {
+    text-align: left;
+    vertical-align: top;
+    border: 1px solid currentColor;
+    padding: 0.5rem;
+  }
+  #extension-block-reference code {
+    white-space: pre-wrap;
+  }
+  #extension-block-reference a:focus-visible {
+    outline: 3px solid currentColor;
+    outline-offset: 3px;
+  }
+</style>
+<!-- BEGIN COMPLETE BLOCK REFERENCE -->
+<section
+  lang="en"
+  id="extension-block-reference"
+  aria-labelledby="block-reference-title"
+>
+  <h2 id="block-reference-title">Bubble: complete block reference</h2>
+  <p>
+    All 33 blocks are documented below, including compatibility blocks and
+    blocks available through optional features. Select a block to read its
+    behavior, arguments, default values, and menu choices. Each block has a
+    permanent link.
+  </p>
+  <nav aria-label="Block reference">
+    <ul>
+      <li>
+        <a href="#block-defineBubbleStyle"
+          ><code
+            >define bubble style [STYLE] using text style [TEXT_STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-defineBubbleClosePolicy"
+          ><code
+            >define bubble close policy [POLICY] trigger [TRIGGER] condition
+            [CONDITION] timeout [TIMEOUT] seconds</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubblePlacement"
+          ><code
+            >set bubble placement [PLACEMENT] for bubble style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setPortraitBase"
+          ><code>set portrait base [ASSET] for bubble style [STYLE]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-setPortraitLayout"
+          ><code
+            >set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner
+            radius [RADIUS] px for bubble style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleDistance"
+          ><code
+            >set bubble distance [DISTANCE] for bubble style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleVisualStyle"
+          ><code
+            >set bubble visual style [VISUAL_STYLE] for bubble style
+            [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleTailLength"
+          ><code
+            >set bubble tail length [LENGTH] for bubble style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleOffset"
+          ><code
+            >set bubble offset x [X] y [Y] scale [SCALE] % for bubble style
+            [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBlinkFrames"
+          ><code
+            >set blink frames [ASSETS] every [SECONDS] seconds for bubble style
+            [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setLipSyncFrames"
+          ><code
+            >set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble
+            style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setContinueFrames"
+          ><code
+            >set continue frames [ASSETS] every [SECONDS] seconds for bubble
+            style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleReveal"
+          ><code
+            >set bubble reveal unit [UNIT] every [SECONDS] seconds layout
+            [LAYOUT] for bubble style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleWordDelimiters"
+          ><code
+            >set bubble word delimiters [DELIMITERS] show [SHOW] for bubble
+            style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleRevealSound"
+          ><code
+            >set bubble reveal sound [ASSET] for bubble style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleVoice"
+          ><code>set bubble voice [ASSET] for bubble style [STYLE]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-finishBubbleReveal"
+          ><code
+            >finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT]
+            seconds</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleShowAnimation"
+          ><code
+            >set bubble show animation [MOTION] for [SECONDS] seconds for bubble
+            style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleHideAnimation"
+          ><code
+            >set bubble hide animation [MOTION] for [SECONDS] seconds for bubble
+            style [STYLE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-animateBubble"
+          ><code>animate this bubble [MOTION]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-shakeBubble"
+          ><code
+            >shake this bubble direction [DIRECTION] count [COUNT] ease
+            [EASE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-explodeBubble"
+          ><code
+            >explode this bubble relative scale [SCALE] count [COUNT] ease
+            [EASE]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-animateBubbleShape"
+          ><code
+            >animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS]
+            seconds</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-say"><code>say [MESSAGE]</code></a>
+      </li>
+      <li>
+        <a href="#block-think"><code>think [MESSAGE]</code></a>
+      </li>
+      <li>
+        <a href="#block-showWithBubbleStyle"
+          ><code>show [MESSAGE] with bubble style [STYLE]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-sayWithBubbleStyle"
+          ><code>say [MESSAGE] with bubble style [STYLE]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-thinkWithBubbleStyle"
+          ><code>think [MESSAGE] with bubble style [STYLE]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-setBubbleAnimationMode"
+          ><code>set this bubble animation mode [MODE]</code></a
+        >
+      </li>
+      <li>
+        <a href="#block-waitForBubbleContinue"
+          ><code
+            >wait with this bubble until condition [CONDITION] or timeout after
+            [TIMEOUT] seconds</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-waitAndCloseBubbleWithPolicy"
+          ><code
+            >wait and close this bubble using close policy [POLICY]</code
+          ></a
+        >
+      </li>
+      <li>
+        <a href="#block-closeBubble"><code>close this bubble</code></a>
+      </li>
+      <li>
+        <a href="#block-getVersion"><code>Bubble version</code></a>
+      </li>
+    </ul>
+  </nav>
+  <article id="block-defineBubbleStyle" class="block-reference-entry">
+    <h3>
+      <code>define bubble style [STYLE] using text style [TEXT_STYLE]</code>
+    </h3>
+    <p>
+      Defines or replaces a bubble style. The default text style without further
+      settings uses the Scratch-compatible basic profile.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>defineBubbleStyle</code>.
+      <a href="#block-defineBubbleStyle">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>TEXT_STYLE</code></th>
+            <td>STRING</td>
+            <td><code>default</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-defineBubbleClosePolicy" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >define bubble close policy [POLICY] trigger [TRIGGER] condition
+        [CONDITION] timeout [TIMEOUT] seconds</code
+      >
+    </h3>
+    <p>
+      Defines or replaces a named close policy. The trigger explicitly selects a
+      condition, a timeout, or whichever happens first.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>defineBubbleClosePolicy</code>.
+      <a href="#block-defineBubbleClosePolicy">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>POLICY</code></th>
+            <td>STRING</td>
+            <td><code>advance-or-timeout</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>TRIGGER</code></th>
+            <td>STRING</td>
+            <td><code>condition-or-timeout</code></td>
+            <td>
+              <ul>
+                <li><code>condition</code></li>
+                <li><code>timeout</code></li>
+                <li><code>condition-or-timeout</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>CONDITION</code></th>
+            <td>STRING</td>
+            <td><code>input == &quot;pressed&quot;</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>TIMEOUT</code></th>
+            <td>NUMBER</td>
+            <td><code>10</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubblePlacement" class="block-reference-entry">
+    <h3>
+      <code>set bubble placement [PLACEMENT] for bubble style [STYLE]</code>
+    </h3>
+    <p>
+      Sets an actor-relative direction/angle or a background-relative region.
+      Direction aliases and Scratch-style degrees from 0 through 360 are
+      accepted.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubblePlacement</code>.
+      <a href="#block-setBubblePlacement">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>PLACEMENT</code></th>
+            <td>STRING</td>
+            <td><code>up-right</code></td>
+            <td>
+              <ul>
+                <li><code>up</code></li>
+                <li><code>up-up-right</code></li>
+                <li><code>up-right</code></li>
+                <li><code>right-up-right</code></li>
+                <li><code>right</code></li>
+                <li><code>right-down-right</code></li>
+                <li><code>down-right</code></li>
+                <li><code>down-down-right</code></li>
+                <li><code>down</code></li>
+                <li><code>down-down-left</code></li>
+                <li><code>down-left</code></li>
+                <li><code>left-down-left</code></li>
+                <li><code>left</code></li>
+                <li><code>left-up-left</code></li>
+                <li><code>up-left</code></li>
+                <li><code>up-up-left</code></li>
+                <li><code>HEADER_LIKE</code></li>
+                <li><code>CENTER</code></li>
+                <li><code>FOOTER_LIKE</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setPortraitBase" class="block-reference-entry">
+    <h3><code>set portrait base [ASSET] for bubble style [STYLE]</code></h3>
+    <p>
+      Sets the registered image asset used as the portrait base. An empty asset
+      removes the complete portrait.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setPortraitBase</code>.
+      <a href="#block-setPortraitBase">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ASSET</code></th>
+            <td>STRING</td>
+            <td><code>HeroFace</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setPortraitLayout" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius
+        [RADIUS] px for bubble style [STYLE]</code
+      >
+    </h3>
+    <p>
+      Places the portrait at a bubble edge or corner with a local offset, zoom,
+      and rounded corners. NONE removes the portrait.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setPortraitLayout</code>.
+      <a href="#block-setPortraitLayout">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>PLACEMENT</code></th>
+            <td>STRING</td>
+            <td><code>left</code></td>
+            <td>
+              <ul>
+                <li><code>none</code></li>
+                <li><code>left</code></li>
+                <li><code>right</code></li>
+                <li><code>top-left</code></li>
+                <li><code>top-right</code></li>
+                <li><code>bottom-left</code></li>
+                <li><code>bottom-right</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>X</code></th>
+            <td>NUMBER</td>
+            <td><code>0</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>Y</code></th>
+            <td>NUMBER</td>
+            <td><code>0</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>ZOOM</code></th>
+            <td>NUMBER</td>
+            <td><code>100</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>RADIUS</code></th>
+            <td>NUMBER</td>
+            <td><code>0</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleDistance" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code>set bubble distance [DISTANCE] for bubble style [STYLE]</code>
+    </h3>
+    <p>
+      Sets the distance from the actor bounds to the tail tip for actor-relative
+      placement.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleDistance</code>.
+      <a href="#block-setBubbleDistance">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>DISTANCE</code></th>
+            <td>NUMBER</td>
+            <td><code>12</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleVisualStyle" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]</code
+      >
+    </h3>
+    <p>
+      Sets the inseparable SVG body and tail or trail shape pair used by this
+      bubble style.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleVisualStyle</code>.
+      <a href="#block-setBubbleVisualStyle">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>VISUAL_STYLE</code></th>
+            <td>STRING</td>
+            <td><code>NORMAL</code></td>
+            <td>
+              <ul>
+                <li><code>NORMAL</code></li>
+                <li><code>THINKING</code></li>
+                <li><code>DREAMING</code></li>
+                <li><code>YELLING</code></li>
+                <li><code>OFF_PANEL</code></li>
+                <li><code>WAVY</code></li>
+                <li><code>WHISPERING</code></li>
+                <li><code>ANNOUNCEMENT</code></li>
+                <li><code>NARRATION</code></li>
+                <li><code>NO_BUBBLE</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleTailLength" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code>set bubble tail length [LENGTH] for bubble style [STYLE]</code>
+    </h3>
+    <p>
+      Sets the nominal length from the bubble border to the tail tip for
+      actor-relative placement.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleTailLength</code>.
+      <a href="#block-setBubbleTailLength">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>LENGTH</code></th>
+            <td>NUMBER</td>
+            <td><code>18</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleOffset" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set bubble offset x [X] y [Y] scale [SCALE] % for bubble style
+        [STYLE]</code
+      >
+    </h3>
+    <p>
+      Offsets and scales the bubble body while keeping scale-only actor distance
+      constant.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleOffset</code>.
+      <a href="#block-setBubbleOffset">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>X</code></th>
+            <td>NUMBER</td>
+            <td><code>0</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>Y</code></th>
+            <td>NUMBER</td>
+            <td><code>0</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SCALE</code></th>
+            <td>NUMBER</td>
+            <td><code>100</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBlinkFrames" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set blink frames [ASSETS] every [SECONDS] seconds for bubble style
+        [STYLE]</code
+      >
+    </h3>
+    <p>
+      Sets comma-separated registered image assets for the portrait blink layer.
+      An empty list removes blink animation.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBlinkFrames</code>.
+      <a href="#block-setBlinkFrames">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ASSETS</code></th>
+            <td>STRING</td>
+            <td><code>EyesOpen,EyesClosed</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.4</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setLipSyncFrames" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style
+        [STYLE]</code
+      >
+    </h3>
+    <p>
+      Sets comma-separated registered image assets for the portrait lip-sync
+      layer. An empty list removes lip-sync animation.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setLipSyncFrames</code>.
+      <a href="#block-setLipSyncFrames">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ASSETS</code></th>
+            <td>STRING</td>
+            <td><code>MouthClosed,MouthOpen</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.1</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setContinueFrames" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set continue frames [ASSETS] every [SECONDS] seconds for bubble style
+        [STYLE]</code
+      >
+    </h3>
+    <p>
+      Sets at least two comma-separated registered image assets for the
+      awaiting-continue indicator. An empty list removes the indicator.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setContinueFrames</code>.
+      <a href="#block-setContinueFrames">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ASSETS</code></th>
+            <td>STRING</td>
+            <td><code>Next1,Next2</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.2</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleReveal" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT]
+        for bubble style [STYLE]</code
+      >
+    </h3>
+    <p>
+      Sets CHARACTER, WORD, LINE, or BLOCK sequential reveal. WORD uses the
+      configured delimiters; DYNAMIC reflows as text grows and RESERVED reserves
+      the final text size.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleReveal</code>.
+      <a href="#block-setBubbleReveal">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>UNIT</code></th>
+            <td>STRING</td>
+            <td><code>CHARACTER</code></td>
+            <td>
+              <ul>
+                <li><code>CHARACTER</code></li>
+                <li><code>WORD</code></li>
+                <li><code>LINE</code></li>
+                <li><code>BLOCK</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.05</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>LAYOUT</code></th>
+            <td>STRING</td>
+            <td><code>DYNAMIC</code></td>
+            <td>
+              <ul>
+                <li><code>DYNAMIC</code></li>
+                <li><code>RESERVED</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleWordDelimiters" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style
+        [STYLE]</code
+      >
+    </h3>
+    <p>
+      Sets the character set used by WORD reveal and chooses whether delimiters
+      remain visible.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleWordDelimiters</code>.
+      <a href="#block-setBubbleWordDelimiters">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>DELIMITERS</code></th>
+            <td>STRING</td>
+            <td><code> /</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SHOW</code></th>
+            <td>STRING</td>
+            <td><code>false</code></td>
+            <td>
+              <ul>
+                <li><code>false</code></li>
+                <li><code>true</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleRevealSound" class="block-reference-entry">
+    <h3>
+      <code>set bubble reveal sound [ASSET] for bubble style [STYLE]</code>
+    </h3>
+    <p>
+      Sets a named audio asset played once per CHARACTER, WORD, LINE, or BLOCK
+      reveal.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleRevealSound</code>.
+      <a href="#block-setBubbleRevealSound">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ASSET</code></th>
+            <td>STRING</td>
+            <td><code>Typewriter</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleVoice" class="block-reference-entry">
+    <h3><code>set bubble voice [ASSET] for bubble style [STYLE]</code></h3>
+    <p>Sets the named full-voice audio asset played when the Bubble starts.</p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleVoice</code>.
+      <a href="#block-setBubbleVoice">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>ASSET</code></th>
+            <td>STRING</td>
+            <td><code>Voice</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-finishBubbleReveal" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT]
+        seconds</code
+      >
+    </h3>
+    <p>
+      Reveals the remaining units and waits for the Runtime Expression condition
+      or timeout before completing.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>finishBubbleReveal</code>.
+      <a href="#block-finishBubbleReveal">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>UNIT</code></th>
+            <td>STRING</td>
+            <td><code>CHARACTER</code></td>
+            <td>
+              <ul>
+                <li><code>CHARACTER</code></li>
+                <li><code>WORD</code></li>
+                <li><code>LINE</code></li>
+                <li><code>BLOCK</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>CONDITION</code></th>
+            <td>STRING</td>
+            <td><code>input == &quot;pressed&quot;</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>TIMEOUT</code></th>
+            <td>NUMBER</td>
+            <td><code>10</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleShowAnimation" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set bubble show animation [MOTION] for [SECONDS] seconds for bubble
+        style [STYLE]</code
+      >
+    </h3>
+    <p>Selects the animation played when a Bubble starts displaying.</p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleShowAnimation</code>.
+      <a href="#block-setBubbleShowAnimation">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MOTION</code></th>
+            <td>STRING</td>
+            <td><code>fadeIn</code></td>
+            <td>
+              <ul>
+                <li><code>fadeIn</code></li>
+                <li><code>floatIn</code></li>
+                <li><code>zoomIn</code></li>
+                <li><code>riseUp</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.2</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleHideAnimation" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >set bubble hide animation [MOTION] for [SECONDS] seconds for bubble
+        style [STYLE]</code
+      >
+    </h3>
+    <p>
+      Selects the animation played before a Bubble is closed. It works with both
+      DYNAMIC and RESERVED layout.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleHideAnimation</code>.
+      <a href="#block-setBubbleHideAnimation">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MOTION</code></th>
+            <td>STRING</td>
+            <td><code>fadeOut</code></td>
+            <td>
+              <ul>
+                <li><code>fadeOut</code></li>
+                <li><code>floatOut</code></li>
+                <li><code>zoomOut</code></li>
+                <li><code>sink</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.2</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-animateBubble" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3><code>animate this bubble [MOTION]</code></h3>
+    <p>
+      Plays an immediate display animation such as shake, explode, or a named
+      show/hide motion.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>animateBubble</code>.
+      <a href="#block-animateBubble">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MOTION</code></th>
+            <td>STRING</td>
+            <td><code>shake</code></td>
+            <td>
+              <ul>
+                <li><code>fadeIn</code></li>
+                <li><code>floatIn</code></li>
+                <li><code>zoomIn</code></li>
+                <li><code>riseUp</code></li>
+                <li><code>fadeOut</code></li>
+                <li><code>floatOut</code></li>
+                <li><code>zoomOut</code></li>
+                <li><code>sink</code></li>
+                <li><code>shake</code></li>
+                <li><code>explode</code></li>
+                <li><code>animateBubbleShape</code></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-shakeBubble" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]</code
+      >
+    </h3>
+    <p>
+      Shakes the complete Bubble surface, including portrait and text, with an
+      easing selection.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>shakeBubble</code>.
+      <a href="#block-shakeBubble">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>DIRECTION</code></th>
+            <td>NUMBER</td>
+            <td><code>90</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>COUNT</code></th>
+            <td>NUMBER</td>
+            <td><code>2</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>EASE</code></th>
+            <td>STRING</td>
+            <td><code>easeInOut</code></td>
+            <td>
+              <ul>
+                <li><code>linear</code></li>
+                <li><code>easeIn</code></li>
+                <li><code>easeOut</code></li>
+                <li><code>easeInOut</code></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-explodeBubble" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >explode this bubble relative scale [SCALE] count [COUNT] ease
+        [EASE]</code
+      >
+    </h3>
+    <p>
+      Changes the complete Bubble surface size by a relative amount for the
+      requested number of cycles.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>explodeBubble</code>.
+      <a href="#block-explodeBubble">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>SCALE</code></th>
+            <td>NUMBER</td>
+            <td><code>1.15</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>COUNT</code></th>
+            <td>NUMBER</td>
+            <td><code>2</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>EASE</code></th>
+            <td>STRING</td>
+            <td><code>easeOut</code></td>
+            <td>
+              <ul>
+                <li><code>linear</code></li>
+                <li><code>easeIn</code></li>
+                <li><code>easeOut</code></li>
+                <li><code>easeInOut</code></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-animateBubbleShape" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS]
+        seconds</code
+      >
+    </h3>
+    <p>
+      Transitions the Bubble outline to THINKING, DREAMING, YELLING, WAVY,
+      WHISPERING, or another visual style.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>animateBubbleShape</code>.
+      <a href="#block-animateBubbleShape">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>VISUAL_STYLE</code></th>
+            <td>STRING</td>
+            <td><code>WAVY</code></td>
+            <td>
+              <ul>
+                <li><code>NORMAL</code></li>
+                <li><code>THINKING</code></li>
+                <li><code>DREAMING</code></li>
+                <li><code>YELLING</code></li>
+                <li><code>OFF_PANEL</code></li>
+                <li><code>WAVY</code></li>
+                <li><code>WHISPERING</code></li>
+                <li><code>ANNOUNCEMENT</code></li>
+                <li><code>NARRATION</code></li>
+                <li><code>NO_BUBBLE</code></li>
+              </ul>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SPEED</code></th>
+            <td>NUMBER</td>
+            <td><code>1</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>SECONDS</code></th>
+            <td>NUMBER</td>
+            <td><code>0.5</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-say" class="block-reference-entry">
+    <h3><code>say [MESSAGE]</code></h3>
+    <p>
+      Shows or replaces this sprite&#x27;s Scratch-compatible default say
+      bubble. An empty message closes it.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>say</code>.
+      <a href="#block-say">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MESSAGE</code></th>
+            <td>STRING</td>
+            <td><code>Hello!</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-think" class="block-reference-entry">
+    <h3><code>think [MESSAGE]</code></h3>
+    <p>
+      Shows or replaces this sprite&#x27;s Scratch-compatible default think
+      bubble. An empty message closes it.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>think</code>.
+      <a href="#block-think">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MESSAGE</code></th>
+            <td>STRING</td>
+            <td><code>Hmm...</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-showWithBubbleStyle" class="block-reference-entry">
+    <h3><code>show [MESSAGE] with bubble style [STYLE]</code></h3>
+    <p>
+      Shows or replaces this sprite&#x27;s Bubble. The selected style determines
+      the complete body and tail or trail shape.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>showWithBubbleStyle</code>.
+      <a href="#block-showWithBubbleStyle">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MESSAGE</code></th>
+            <td>STRING</td>
+            <td><code>Hello!</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>say</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-sayWithBubbleStyle" class="block-reference-entry">
+    <h3><code>say [MESSAGE] with bubble style [STYLE]</code></h3>
+    <p>
+      Shows or replaces this sprite&#x27;s say bubble in talking animation mode.
+      An empty message closes the basic profile.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>sayWithBubbleStyle</code>.
+      <a href="#block-sayWithBubbleStyle">Permanent link</a>
+    </p>
+    <p>Compatibility block, hidden from the palette.</p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MESSAGE</code></th>
+            <td>STRING</td>
+            <td><code>Hello!</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-thinkWithBubbleStyle" class="block-reference-entry">
+    <h3><code>think [MESSAGE] with bubble style [STYLE]</code></h3>
+    <p>
+      Shows or replaces this sprite&#x27;s think bubble in talking animation
+      mode. An empty message closes the basic profile.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>thinkWithBubbleStyle</code>.
+      <a href="#block-thinkWithBubbleStyle">Permanent link</a>
+    </p>
+    <p>Compatibility block, hidden from the palette.</p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MESSAGE</code></th>
+            <td>STRING</td>
+            <td><code>Hmm...</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>STYLE</code></th>
+            <td>STRING</td>
+            <td><code>dialogue</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-setBubbleAnimationMode" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3><code>set this bubble animation mode [MODE]</code></h3>
+    <p>
+      Changes this sprite&#x27;s bubble animation mode. Awaiting continue stops
+      lip-sync animation and starts the configured continue frames.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>setBubbleAnimationMode</code>.
+      <a href="#block-setBubbleAnimationMode">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>MODE</code></th>
+            <td>STRING</td>
+            <td><code>awaiting-continue</code></td>
+            <td>
+              <ul>
+                <li><code>talking</code></li>
+                <li><code>awaiting-continue</code></li>
+                <li><code>idle</code></li>
+              </ul>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-waitForBubbleContinue" class="block-reference-entry">
+    <p>
+      <a href="#fixed-input-editing">Fixed input editor / 固定入力の編集</a>
+    </p>
+    <h3>
+      <code
+        >wait with this bubble until condition [CONDITION] or timeout after
+        [TIMEOUT] seconds</code
+      >
+    </h3>
+    <p>
+      Switches to awaiting-continue mode, evaluates a Runtime Expression
+      condition using variables updated by Async Input, and waits until the
+      condition is true or the timeout expires. Zero disables the timeout.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>waitForBubbleContinue</code>.
+      <a href="#block-waitForBubbleContinue">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>CONDITION</code></th>
+            <td>STRING</td>
+            <td><code>input == &quot;pressed&quot;</code></td>
+            <td></td>
+          </tr>
+          <tr>
+            <th scope="row"><code>TIMEOUT</code></th>
+            <td>NUMBER</td>
+            <td><code>10</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article
+    id="block-waitAndCloseBubbleWithPolicy"
+    class="block-reference-entry"
+  >
+    <h3><code>wait and close this bubble using close policy [POLICY]</code></h3>
+    <p>
+      Snapshots the named close policy, waits for its trigger, then closes this
+      sprite&#x27;s bubble and releases its resources.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>waitAndCloseBubbleWithPolicy</code>.
+      <a href="#block-waitAndCloseBubbleWithPolicy">Permanent link</a>
+    </p>
+    <div class="block-reference-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Argument</th>
+            <th>Type</th>
+            <th>Default value</th>
+            <th>Menu choices</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row"><code>POLICY</code></th>
+            <td>STRING</td>
+            <td><code>advance-or-timeout</code></td>
+            <td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+  <article id="block-closeBubble" class="block-reference-entry">
+    <h3><code>close this bubble</code></h3>
+    <p>
+      Closes this sprite&#x27;s bubble and releases its timers and rendering
+      resources.
+    </p>
+    <p>
+      Block type: COMMAND. Opcode: <code>closeBubble</code>.
+      <a href="#block-closeBubble">Permanent link</a>
+    </p>
+    <p>This block has no arguments.</p>
+  </article>
+  <article id="block-getVersion" class="block-reference-entry">
+    <h3><code>Bubble version</code></h3>
+    <p>Returns the Bubble implementation version.</p>
+    <p>
+      Block type: REPORTER. Opcode: <code>getVersion</code>.
+      <a href="#block-getVersion">Permanent link</a>
+    </p>
+    <p>This block has no arguments.</p>
+  </article>
+  <p>
+    <a href="https://github.com/kubohiroya/turbowarp-bubble/blob/main/README.md"
+      >Repository guide and examples</a
+    >
+  </p>
+</section>
+<!-- END COMPLETE BLOCK REFERENCE -->
+<section id="fixed-input-editing">
+  <h2>固定入力の編集 / Fixed input editing</h2>
+  <p>
+    GUI起動時の
+    <code>blockEditorDialogs=1&amp;blockEditorFixedInputs=1</code>
+    が必要です（既定OFF）。標準literalだけを編集し、reporter・非対応fieldは評価せず保持します。旧GUIでは通常のブロック動作を維持します。
+  </p>
+  <p>
+    Static enum values are selected explicitly. New numeric edits must be finite
+    JSON number tokens; unfinished buffers cannot be saved. Unchanged aliases,
+    spaces and existing raw values are retained. Runtime style names, assets and
+    expressions are not evaluated or resolved by this editor.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Block / 固定アンカー</th>
+        <th>Arguments / UI</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">
+          <a href="#block-defineBubbleClosePolicy"
+            ><code>defineBubbleClosePolicy</code></a
+          >
+        </th>
+        <td><code>TRIGGER</code> (enum), <code>TIMEOUT</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setPortraitLayout"><code>setPortraitLayout</code></a>
+        </th>
+        <td>
+          <code>PLACEMENT</code> (enum), <code>X</code> (number),
+          <code>Y</code> (number), <code>ZOOM</code> (number),
+          <code>RADIUS</code> (number)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleDistance"><code>setBubbleDistance</code></a>
+        </th>
+        <td><code>DISTANCE</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleVisualStyle"
+            ><code>setBubbleVisualStyle</code></a
+          >
+        </th>
+        <td><code>VISUAL_STYLE</code> (enum)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleTailLength"
+            ><code>setBubbleTailLength</code></a
+          >
+        </th>
+        <td><code>LENGTH</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleOffset"><code>setBubbleOffset</code></a>
+        </th>
+        <td>
+          <code>X</code> (number), <code>Y</code> (number),
+          <code>SCALE</code> (number)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBlinkFrames"><code>setBlinkFrames</code></a>
+        </th>
+        <td><code>SECONDS</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setLipSyncFrames"><code>setLipSyncFrames</code></a>
+        </th>
+        <td><code>SECONDS</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setContinueFrames"><code>setContinueFrames</code></a>
+        </th>
+        <td><code>SECONDS</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleReveal"><code>setBubbleReveal</code></a>
+        </th>
+        <td>
+          <code>UNIT</code> (enum), <code>SECONDS</code> (number),
+          <code>LAYOUT</code> (enum)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleWordDelimiters"
+            ><code>setBubbleWordDelimiters</code></a
+          >
+        </th>
+        <td><code>SHOW</code> (enum)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-finishBubbleReveal"
+            ><code>finishBubbleReveal</code></a
+          >
+        </th>
+        <td><code>UNIT</code> (enum), <code>TIMEOUT</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleShowAnimation"
+            ><code>setBubbleShowAnimation</code></a
+          >
+        </th>
+        <td><code>MOTION</code> (enum), <code>SECONDS</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleHideAnimation"
+            ><code>setBubbleHideAnimation</code></a
+          >
+        </th>
+        <td><code>MOTION</code> (enum), <code>SECONDS</code> (number)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-animateBubble"><code>animateBubble</code></a>
+        </th>
+        <td><code>MOTION</code> (enum)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-shakeBubble"><code>shakeBubble</code></a>
+        </th>
+        <td>
+          <code>DIRECTION</code> (number), <code>COUNT</code> (number),
+          <code>EASE</code> (enum)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-explodeBubble"><code>explodeBubble</code></a>
+        </th>
+        <td>
+          <code>SCALE</code> (number), <code>COUNT</code> (number),
+          <code>EASE</code> (enum)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-animateBubbleShape"
+            ><code>animateBubbleShape</code></a
+          >
+        </th>
+        <td>
+          <code>VISUAL_STYLE</code> (enum), <code>SPEED</code> (number),
+          <code>SECONDS</code> (number)
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-setBubbleAnimationMode"
+            ><code>setBubbleAnimationMode</code></a
+          >
+        </th>
+        <td><code>MODE</code> (enum)</td>
+      </tr>
+      <tr>
+        <th scope="row">
+          <a href="#block-waitForBubbleContinue"
+            ><code>waitForBubbleContinue</code></a
+          >
+        </th>
+        <td><code>TIMEOUT</code> (number)</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>
+    <code>defineBubbleClosePolicy</code> は
+    TRIGGERがconditionならTIMEOUTを非表示にし、timeout系だけ正の有限値を検査します。CONDITIONは読取専用です。selector変更先がcondition系ならCONDITIONの非空literalを確認し、reporterは未評価としてselector変更を拒否します。selector未変更でcondition-or-timeoutならCONDITION
+    reporterを保持しTIMEOUTだけ保存できます。
+  </p>
+  <p>
+    TIMEOUT
+    draft20／保存値10で非表示→再表示なら20を復元し、無効bufferも保持・再検査します。非表示のまま保存成功ならprojectは10を維持し、dialog終了時に20を破棄します。SHOWはbooleanではなく文字列false/trueです。frame秒&gt;0、reveal/motion/wait秒&gt;=0、countは正整数です。未編集の数値は他項目編集時に新規検査しません。
+  </p>
+  <p>
+    同じdialog内の保存失敗ではdraftを保持します。保存成功・取消・dispose・project/target/登録失効で未保存draftを破棄し、再openは現在のrawから開始します。変更しないraw・reporter・sb3形式に移行は不要です。数値の新入力はblank・hex・非有限値を拒否し、既存rawの開閉にこの新入力規則を遡及しません。
+  </p>
+  <p>
+    Schemaの正本は <code>schemas/block-editor-fixed-inputs.schema.json</code> の
+    <code>$defs/&lt;opcode&gt;/properties/&lt;argument&gt;</code>
+    です。各bindingは正本fragmentを直接参照し、生成Schemaを別の正本として扱いません。local実装の検証を公開サイトのdeploy完了と同一視せず、公開後URL到達は配布工程で確認します。
+  </p>
+</section>
+
 </body>
 </html>

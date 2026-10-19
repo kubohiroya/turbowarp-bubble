@@ -735,3 +735,7 @@ pnpm check
 ```
 
 `pnpm check`は型検査、lint、format、単体テスト、配布物検査、外部consumer型検査、npm pack dry-runを実行します。
+
+## 固定入力の編集
+
+起動時の `blockEditorDialogs=1&blockEditorFixedInputs=1` でoptional GUI編集を有効にします（既定OFF）。[全ブロックの固定アンカーと保持規則](docs/ja/index.html#fixed-input-editing)を参照してください。Schema正本は `schemas/block-editor-fixed-inputs.schema.json` です。raw値・reporter・既存runtime/composition APIを維持します。共通エディターはGit commit `485f0e550e622235624b5e9176820161aeeba252` に固定したdev/type依存で、製品bundleへruntime importを追加しません。

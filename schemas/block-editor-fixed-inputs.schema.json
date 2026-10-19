@@ -1,0 +1,316 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://kubohiroya.github.io/turbowarp-bubble/schemas/block-editor-fixed-inputs.schema.json",
+  "title": "turbowarp-bubble fixed editing contracts",
+  "$defs": {
+    "defineBubbleClosePolicy": {
+      "type": "object",
+      "properties": {
+        "TRIGGER": {
+          "type": "string",
+          "enum": ["condition", "timeout", "condition-or-timeout"]
+        },
+        "TIMEOUT": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setPortraitLayout": {
+      "type": "object",
+      "properties": {
+        "PLACEMENT": {
+          "type": "string",
+          "enum": [
+            "none",
+            "left",
+            "right",
+            "top-left",
+            "top-right",
+            "bottom-left",
+            "bottom-right"
+          ]
+        },
+        "X": {
+          "type": "number"
+        },
+        "Y": {
+          "type": "number"
+        },
+        "ZOOM": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "RADIUS": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleDistance": {
+      "type": "object",
+      "properties": {
+        "DISTANCE": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleVisualStyle": {
+      "type": "object",
+      "properties": {
+        "VISUAL_STYLE": {
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "THINKING",
+            "DREAMING",
+            "YELLING",
+            "OFF_PANEL",
+            "WAVY",
+            "WHISPERING",
+            "ANNOUNCEMENT",
+            "NARRATION",
+            "NO_BUBBLE"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleTailLength": {
+      "type": "object",
+      "properties": {
+        "LENGTH": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleOffset": {
+      "type": "object",
+      "properties": {
+        "X": {
+          "type": "number"
+        },
+        "Y": {
+          "type": "number"
+        },
+        "SCALE": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBlinkFrames": {
+      "type": "object",
+      "properties": {
+        "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setLipSyncFrames": {
+      "type": "object",
+      "properties": {
+        "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setContinueFrames": {
+      "type": "object",
+      "properties": {
+        "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleReveal": {
+      "type": "object",
+      "properties": {
+        "UNIT": {
+          "type": "string",
+          "enum": ["CHARACTER", "WORD", "LINE", "BLOCK"]
+        },
+        "SECONDS": {
+          "type": "number",
+          "minimum": 0
+        },
+        "LAYOUT": {
+          "type": "string",
+          "enum": ["DYNAMIC", "RESERVED"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleWordDelimiters": {
+      "type": "object",
+      "properties": {
+        "SHOW": {
+          "type": "string",
+          "enum": ["false", "true"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "finishBubbleReveal": {
+      "type": "object",
+      "properties": {
+        "UNIT": {
+          "type": "string",
+          "enum": ["CHARACTER", "WORD", "LINE", "BLOCK"]
+        },
+        "TIMEOUT": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleShowAnimation": {
+      "type": "object",
+      "properties": {
+        "MOTION": {
+          "type": "string",
+          "enum": ["fadeIn", "floatIn", "zoomIn", "riseUp"]
+        },
+        "SECONDS": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleHideAnimation": {
+      "type": "object",
+      "properties": {
+        "MOTION": {
+          "type": "string",
+          "enum": ["fadeOut", "floatOut", "zoomOut", "sink"]
+        },
+        "SECONDS": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "animateBubble": {
+      "type": "object",
+      "properties": {
+        "MOTION": {
+          "type": "string",
+          "enum": [
+            "fadeIn",
+            "floatIn",
+            "zoomIn",
+            "riseUp",
+            "fadeOut",
+            "floatOut",
+            "zoomOut",
+            "sink",
+            "shake",
+            "explode",
+            "animateBubbleShape"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "shakeBubble": {
+      "type": "object",
+      "properties": {
+        "DIRECTION": {
+          "type": "number"
+        },
+        "COUNT": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "EASE": {
+          "type": "string",
+          "enum": ["linear", "easeIn", "easeOut", "easeInOut"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "explodeBubble": {
+      "type": "object",
+      "properties": {
+        "SCALE": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "COUNT": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "EASE": {
+          "type": "string",
+          "enum": ["linear", "easeIn", "easeOut", "easeInOut"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "animateBubbleShape": {
+      "type": "object",
+      "properties": {
+        "VISUAL_STYLE": {
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "THINKING",
+            "DREAMING",
+            "YELLING",
+            "OFF_PANEL",
+            "WAVY",
+            "WHISPERING",
+            "ANNOUNCEMENT",
+            "NARRATION",
+            "NO_BUBBLE"
+          ]
+        },
+        "SPEED": {
+          "type": "number",
+          "minimum": 0
+        },
+        "SECONDS": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    },
+    "setBubbleAnimationMode": {
+      "type": "object",
+      "properties": {
+        "MODE": {
+          "type": "string",
+          "enum": ["talking", "awaiting-continue", "idle"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "waitForBubbleContinue": {
+      "type": "object",
+      "properties": {
+        "TIMEOUT": {
+          "type": "number",
+          "minimum": 0
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

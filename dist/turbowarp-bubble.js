@@ -751,6 +751,529 @@
       }
     }
   };
+  var block_editor_fixed_inputs_schema_default = {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    $id: "https://kubohiroya.github.io/turbowarp-bubble/schemas/block-editor-fixed-inputs.schema.json",
+    title: "turbowarp-bubble fixed editing contracts",
+    $defs: {
+      "defineBubbleClosePolicy": {
+        "type": "object",
+        "properties": {
+          "TRIGGER": {
+            "type": "string",
+            "enum": [
+              "condition",
+              "timeout",
+              "condition-or-timeout"
+            ]
+          },
+          "TIMEOUT": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setPortraitLayout": {
+        "type": "object",
+        "properties": {
+          "PLACEMENT": {
+            "type": "string",
+            "enum": [
+              "none",
+              "left",
+              "right",
+              "top-left",
+              "top-right",
+              "bottom-left",
+              "bottom-right"
+            ]
+          },
+          "X": { "type": "number" },
+          "Y": { "type": "number" },
+          "ZOOM": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "RADIUS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleDistance": {
+        "type": "object",
+        "properties": { "DISTANCE": {
+          "type": "number",
+          "minimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleVisualStyle": {
+        "type": "object",
+        "properties": { "VISUAL_STYLE": {
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "THINKING",
+            "DREAMING",
+            "YELLING",
+            "OFF_PANEL",
+            "WAVY",
+            "WHISPERING",
+            "ANNOUNCEMENT",
+            "NARRATION",
+            "NO_BUBBLE"
+          ]
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleTailLength": {
+        "type": "object",
+        "properties": { "LENGTH": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleOffset": {
+        "type": "object",
+        "properties": {
+          "X": { "type": "number" },
+          "Y": { "type": "number" },
+          "SCALE": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBlinkFrames": {
+        "type": "object",
+        "properties": { "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setLipSyncFrames": {
+        "type": "object",
+        "properties": { "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setContinueFrames": {
+        "type": "object",
+        "properties": { "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleReveal": {
+        "type": "object",
+        "properties": {
+          "UNIT": {
+            "type": "string",
+            "enum": [
+              "CHARACTER",
+              "WORD",
+              "LINE",
+              "BLOCK"
+            ]
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          },
+          "LAYOUT": {
+            "type": "string",
+            "enum": ["DYNAMIC", "RESERVED"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleWordDelimiters": {
+        "type": "object",
+        "properties": { "SHOW": {
+          "type": "string",
+          "enum": ["false", "true"]
+        } },
+        "additionalProperties": false
+      },
+      "finishBubbleReveal": {
+        "type": "object",
+        "properties": {
+          "UNIT": {
+            "type": "string",
+            "enum": [
+              "CHARACTER",
+              "WORD",
+              "LINE",
+              "BLOCK"
+            ]
+          },
+          "TIMEOUT": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleShowAnimation": {
+        "type": "object",
+        "properties": {
+          "MOTION": {
+            "type": "string",
+            "enum": [
+              "fadeIn",
+              "floatIn",
+              "zoomIn",
+              "riseUp"
+            ]
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleHideAnimation": {
+        "type": "object",
+        "properties": {
+          "MOTION": {
+            "type": "string",
+            "enum": [
+              "fadeOut",
+              "floatOut",
+              "zoomOut",
+              "sink"
+            ]
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "animateBubble": {
+        "type": "object",
+        "properties": { "MOTION": {
+          "type": "string",
+          "enum": [
+            "fadeIn",
+            "floatIn",
+            "zoomIn",
+            "riseUp",
+            "fadeOut",
+            "floatOut",
+            "zoomOut",
+            "sink",
+            "shake",
+            "explode",
+            "animateBubbleShape"
+          ]
+        } },
+        "additionalProperties": false
+      },
+      "shakeBubble": {
+        "type": "object",
+        "properties": {
+          "DIRECTION": { "type": "number" },
+          "COUNT": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "EASE": {
+            "type": "string",
+            "enum": [
+              "linear",
+              "easeIn",
+              "easeOut",
+              "easeInOut"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "explodeBubble": {
+        "type": "object",
+        "properties": {
+          "SCALE": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "COUNT": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "EASE": {
+            "type": "string",
+            "enum": [
+              "linear",
+              "easeIn",
+              "easeOut",
+              "easeInOut"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "animateBubbleShape": {
+        "type": "object",
+        "properties": {
+          "VISUAL_STYLE": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "THINKING",
+              "DREAMING",
+              "YELLING",
+              "OFF_PANEL",
+              "WAVY",
+              "WHISPERING",
+              "ANNOUNCEMENT",
+              "NARRATION",
+              "NO_BUBBLE"
+            ]
+          },
+          "SPEED": {
+            "type": "number",
+            "minimum": 0
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleAnimationMode": {
+        "type": "object",
+        "properties": { "MODE": {
+          "type": "string",
+          "enum": [
+            "talking",
+            "awaiting-continue",
+            "idle"
+          ]
+        } },
+        "additionalProperties": false
+      },
+      "waitForBubbleContinue": {
+        "type": "object",
+        "properties": { "TIMEOUT": {
+          "type": "number",
+          "minimum": 0
+        } },
+        "additionalProperties": false
+      }
+    }
+  };
+  //#endregion
+  //#region src/fixed-input-editors.ts
+  var contracts = block_editor_fixed_inputs_schema_default.$defs;
+  var repository = "turbowarp-bubble";
+  var canonicalSource = {
+    repository,
+    path: "schemas/block-editor-fixed-inputs.schema.json"
+  };
+  var contractRevision = "fixed-inputs-v1";
+  var numberToken = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/u;
+  /** New input only: never run this strict lexical policy over unmodified raw fields. */
+  function fixedNumber(value) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string" || !numberToken.test(value.trim())) throw new TypeError("Invalid fixed number.");
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new TypeError("Invalid fixed number.");
+    return number;
+  }
+  function existingNumber(value) {
+    if (typeof value !== "string" && typeof value !== "number") throw new TypeError("Invalid numeric projection.");
+    if (typeof value === "string" && value.trim() === "") throw new TypeError("Unprojected existing numeric field.");
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new TypeError("Invalid numeric projection.");
+    return number;
+  }
+  function normalizeChoice(opcode, argument, value) {
+    const trimmed = value.trim();
+    if ([
+      "VISUAL_STYLE",
+      "UNIT",
+      "LAYOUT"
+    ].includes(argument)) return trimmed.toUpperCase();
+    if ([
+      "TRIGGER",
+      "SHOW",
+      "MODE",
+      "PLACEMENT"
+    ].includes(argument)) {
+      const lowered = trimmed.toLowerCase();
+      return opcode === "setPortraitLayout" ? lowered.replaceAll("_", "-") : lowered;
+    }
+    return trimmed;
+  }
+  function bundle(opcode, argument) {
+    const source = {
+      ...canonicalSource,
+      symbol: `/$defs/${opcode}/properties/${argument}`
+    };
+    return {
+      identity: {
+        ownerId: repository,
+        contractId: `${opcode}.${argument}`,
+        revision: contractRevision,
+        variantId: "fixed"
+      },
+      dialect: "draft-07",
+      root: {
+        retrievalUri: `${block_editor_fixed_inputs_schema_default.$id}?binding=${opcode}.${argument}`,
+        document: contracts[opcode].properties[argument],
+        artifact: {
+          role: "canonical-schema",
+          source
+        }
+      },
+      resources: [],
+      provenance: {
+        canonicalSources: [
+          source,
+          {
+            repository,
+            path: "src/block-definitions.json"
+          },
+          {
+            repository,
+            path: "src/extension.ts",
+            symbol: opcode
+          }
+        ],
+        generatedFiles: [],
+        referenceSchemas: [],
+        generationSources: []
+      }
+    };
+  }
+  function fixedInputEditorOptions() {
+    return Object.entries(contracts).map(([opcode, contract]) => {
+      const bindings = Object.entries(contract.properties).map(([argument, schema]) => ({
+        argument,
+        schemaBundle: bundle(opcode, argument),
+        control: schema.enum ? {
+          kind: "enum",
+          choices: schema.enum.map((value) => ({
+            value,
+            label: value
+          }))
+        } : { kind: schema.type === "number" || schema.type === "integer" ? "number" : "color" },
+        read(value) {
+          if (schema.type === "number" || schema.type === "integer") return existingNumber(value);
+          if (typeof value !== "string") throw new TypeError("Invalid string projection.");
+          return schema.enum ? normalizeChoice(opcode, argument, value) : value;
+        },
+        encode(value) {
+          if (schema.type === "number" || schema.type === "integer") {
+            fixedNumber(value);
+            return typeof value === "number" ? Object.is(value, -0) ? "-0" : String(value) : value.trim();
+          }
+          if (typeof value !== "string") throw new TypeError("Invalid fixed string.");
+          return value;
+        },
+        validateCandidate(candidate) {
+          let valid;
+          try {
+            if (schema.type === "number" || schema.type === "integer") {
+              const number = existingNumber(candidate);
+              valid = (schema.type !== "integer" || Number.isInteger(number)) && (schema.minimum === void 0 || number >= schema.minimum) && (schema.maximum === void 0 || number <= schema.maximum) && (schema.exclusiveMinimum === void 0 || number > schema.exclusiveMinimum);
+            } else valid = typeof candidate === "string" && (schema.enum ? schema.enum.includes(candidate) : new RegExp(schema.pattern, "u").test(candidate));
+          } catch {
+            valid = false;
+          }
+          return valid ? [] : [{
+            path: argument,
+            message: "Check this value before saving."
+          }];
+        }
+      }));
+      return {
+        apiVersion: 1,
+        extensionId: extensionConfig$1.id,
+        editorId: `${extensionConfig$1.id}.fixed.${opcode}`,
+        opcodes: [`${extensionConfig$1.id}_${opcode}`],
+        contractId: `${repository}.${opcode}.fixed`,
+        contractRevision,
+        bindings,
+        validationContext: () => ({
+          consumerId: repository,
+          nowMs: 0,
+          settings: null
+        }),
+        ...opcode === "defineBubbleClosePolicy" ? {
+          readOnlyArguments: ["CONDITION"],
+          dependencies: [{
+            selector: "TRIGGER",
+            dependents: ["TIMEOUT"]
+          }],
+          branchPolicies: [{
+            selector: "TRIGGER",
+            normalize: {
+              trim: true,
+              lowercase: true
+            },
+            cases: [
+              {
+                values: ["condition"],
+                activeDependents: [],
+                requireOnSelectorChange: [{
+                  argument: "CONDITION",
+                  rule: "nonempty-string"
+                }]
+              },
+              {
+                values: ["timeout"],
+                activeDependents: ["TIMEOUT"]
+              },
+              {
+                values: ["condition-or-timeout"],
+                activeDependents: ["TIMEOUT"],
+                requireOnSelectorChange: [{
+                  argument: "CONDITION",
+                  rule: "nonempty-string"
+                }]
+              }
+            ]
+          }]
+        } : {}
+      };
+    });
+  }
+  /** Optional GUI capability; ordinary runtime/composition consumers do not load the editor. */
+  function registerFixedInputEditors(scratch, runtime) {
+    const api = scratch.gui?.blockEditors;
+    if (api?.apiVersion !== 1 || typeof api.registerFixedInputEditor !== "function") return void 0;
+    const events = runtime;
+    const removers = [];
+    let active = true;
+    const dispose = () => {
+      if (!active) return;
+      active = false;
+      events.off?.("RUNTIME_DISPOSED", dispose);
+      for (const remove of removers.splice(0).reverse()) remove();
+    };
+    try {
+      for (const options of fixedInputEditorOptions()) removers.push(api.registerFixedInputEditor.call(api, options));
+      events.on?.("RUNTIME_DISPOSED", dispose);
+    } catch (error) {
+      dispose();
+      throw error;
+    }
+    return dispose;
+  }
   //#endregion
   //#region src/placement.ts
   var bubbleDirectionNames = [
@@ -12763,6 +13286,7 @@
       _defineProperty(this, "waitScheduler", void 0);
       _defineProperty(this, "composition", null);
       _defineProperty(this, "disposed", false);
+      _defineProperty(this, "fixedEditorsDispose", void 0);
       if (!runtime) throw extensionError("TurboWarp runtime is unavailable.");
       this.runtime = runtime;
       this.options = options;
@@ -12784,6 +13308,7 @@
       });
     }
     getInfo() {
+      if (!this.disposed) this.fixedEditorsDispose ?? (this.fixedEditorsDispose = registerFixedInputEditors(Scratch, this.runtime));
       return {
         id: extensionConfig$1.id,
         name: Scratch.translate(block_definitions_default$1.extensionName),
@@ -13185,6 +13710,7 @@
     async dispose() {
       if (this.disposed) return;
       this.disposed = true;
+      this.fixedEditorsDispose?.();
       this.cancelAllWaits("Bubble extension was disposed.");
       if (this.composition) await this.composition.dispose();
       this.handles.clear();
