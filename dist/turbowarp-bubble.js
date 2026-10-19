@@ -751,6 +751,529 @@
       }
     }
   };
+  var block_editor_fixed_inputs_schema_default$1 = {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    $id: "https://kubohiroya.github.io/turbowarp-bubble/schemas/block-editor-fixed-inputs.schema.json",
+    title: "turbowarp-bubble fixed editing contracts",
+    $defs: {
+      "defineBubbleClosePolicy": {
+        "type": "object",
+        "properties": {
+          "TRIGGER": {
+            "type": "string",
+            "enum": [
+              "condition",
+              "timeout",
+              "condition-or-timeout"
+            ]
+          },
+          "TIMEOUT": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setPortraitLayout": {
+        "type": "object",
+        "properties": {
+          "PLACEMENT": {
+            "type": "string",
+            "enum": [
+              "none",
+              "left",
+              "right",
+              "top-left",
+              "top-right",
+              "bottom-left",
+              "bottom-right"
+            ]
+          },
+          "X": { "type": "number" },
+          "Y": { "type": "number" },
+          "ZOOM": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "RADIUS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleDistance": {
+        "type": "object",
+        "properties": { "DISTANCE": {
+          "type": "number",
+          "minimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleVisualStyle": {
+        "type": "object",
+        "properties": { "VISUAL_STYLE": {
+          "type": "string",
+          "enum": [
+            "NORMAL",
+            "THINKING",
+            "DREAMING",
+            "YELLING",
+            "OFF_PANEL",
+            "WAVY",
+            "WHISPERING",
+            "ANNOUNCEMENT",
+            "NARRATION",
+            "NO_BUBBLE"
+          ]
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleTailLength": {
+        "type": "object",
+        "properties": { "LENGTH": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleOffset": {
+        "type": "object",
+        "properties": {
+          "X": { "type": "number" },
+          "Y": { "type": "number" },
+          "SCALE": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBlinkFrames": {
+        "type": "object",
+        "properties": { "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setLipSyncFrames": {
+        "type": "object",
+        "properties": { "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setContinueFrames": {
+        "type": "object",
+        "properties": { "SECONDS": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        } },
+        "additionalProperties": false
+      },
+      "setBubbleReveal": {
+        "type": "object",
+        "properties": {
+          "UNIT": {
+            "type": "string",
+            "enum": [
+              "CHARACTER",
+              "WORD",
+              "LINE",
+              "BLOCK"
+            ]
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          },
+          "LAYOUT": {
+            "type": "string",
+            "enum": ["DYNAMIC", "RESERVED"]
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleWordDelimiters": {
+        "type": "object",
+        "properties": { "SHOW": {
+          "type": "string",
+          "enum": ["false", "true"]
+        } },
+        "additionalProperties": false
+      },
+      "finishBubbleReveal": {
+        "type": "object",
+        "properties": {
+          "UNIT": {
+            "type": "string",
+            "enum": [
+              "CHARACTER",
+              "WORD",
+              "LINE",
+              "BLOCK"
+            ]
+          },
+          "TIMEOUT": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleShowAnimation": {
+        "type": "object",
+        "properties": {
+          "MOTION": {
+            "type": "string",
+            "enum": [
+              "fadeIn",
+              "floatIn",
+              "zoomIn",
+              "riseUp"
+            ]
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleHideAnimation": {
+        "type": "object",
+        "properties": {
+          "MOTION": {
+            "type": "string",
+            "enum": [
+              "fadeOut",
+              "floatOut",
+              "zoomOut",
+              "sink"
+            ]
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "animateBubble": {
+        "type": "object",
+        "properties": { "MOTION": {
+          "type": "string",
+          "enum": [
+            "fadeIn",
+            "floatIn",
+            "zoomIn",
+            "riseUp",
+            "fadeOut",
+            "floatOut",
+            "zoomOut",
+            "sink",
+            "shake",
+            "explode",
+            "animateBubbleShape"
+          ]
+        } },
+        "additionalProperties": false
+      },
+      "shakeBubble": {
+        "type": "object",
+        "properties": {
+          "DIRECTION": { "type": "number" },
+          "COUNT": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "EASE": {
+            "type": "string",
+            "enum": [
+              "linear",
+              "easeIn",
+              "easeOut",
+              "easeInOut"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "explodeBubble": {
+        "type": "object",
+        "properties": {
+          "SCALE": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "COUNT": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "EASE": {
+            "type": "string",
+            "enum": [
+              "linear",
+              "easeIn",
+              "easeOut",
+              "easeInOut"
+            ]
+          }
+        },
+        "additionalProperties": false
+      },
+      "animateBubbleShape": {
+        "type": "object",
+        "properties": {
+          "VISUAL_STYLE": {
+            "type": "string",
+            "enum": [
+              "NORMAL",
+              "THINKING",
+              "DREAMING",
+              "YELLING",
+              "OFF_PANEL",
+              "WAVY",
+              "WHISPERING",
+              "ANNOUNCEMENT",
+              "NARRATION",
+              "NO_BUBBLE"
+            ]
+          },
+          "SPEED": {
+            "type": "number",
+            "minimum": 0
+          },
+          "SECONDS": {
+            "type": "number",
+            "minimum": 0
+          }
+        },
+        "additionalProperties": false
+      },
+      "setBubbleAnimationMode": {
+        "type": "object",
+        "properties": { "MODE": {
+          "type": "string",
+          "enum": [
+            "talking",
+            "awaiting-continue",
+            "idle"
+          ]
+        } },
+        "additionalProperties": false
+      },
+      "waitForBubbleContinue": {
+        "type": "object",
+        "properties": { "TIMEOUT": {
+          "type": "number",
+          "minimum": 0
+        } },
+        "additionalProperties": false
+      }
+    }
+  };
+  //#endregion
+  //#region src/fixed-input-editors.ts
+  var contracts$1 = block_editor_fixed_inputs_schema_default$1.$defs;
+  var repository$1 = "turbowarp-bubble";
+  var canonicalSource$1 = {
+    repository: repository$1,
+    path: "schemas/block-editor-fixed-inputs.schema.json"
+  };
+  var contractRevision$1 = "fixed-inputs-v1";
+  var numberToken$1 = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/u;
+  /** New input only: never run this strict lexical policy over unmodified raw fields. */
+  function fixedNumber$1(value) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string" || !numberToken$1.test(value.trim())) throw new TypeError("Invalid fixed number.");
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new TypeError("Invalid fixed number.");
+    return number;
+  }
+  function existingNumber$1(value) {
+    if (typeof value !== "string" && typeof value !== "number") throw new TypeError("Invalid numeric projection.");
+    if (typeof value === "string" && value.trim() === "") throw new TypeError("Unprojected existing numeric field.");
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new TypeError("Invalid numeric projection.");
+    return number;
+  }
+  function normalizeChoice$1(opcode, argument, value) {
+    const trimmed = value.trim();
+    if ([
+      "VISUAL_STYLE",
+      "UNIT",
+      "LAYOUT"
+    ].includes(argument)) return trimmed.toUpperCase();
+    if ([
+      "TRIGGER",
+      "SHOW",
+      "MODE",
+      "PLACEMENT"
+    ].includes(argument)) {
+      const lowered = trimmed.toLowerCase();
+      return opcode === "setPortraitLayout" ? lowered.replaceAll("_", "-") : lowered;
+    }
+    return trimmed;
+  }
+  function bundle$1(opcode, argument) {
+    const source = {
+      ...canonicalSource$1,
+      symbol: `/$defs/${opcode}/properties/${argument}`
+    };
+    return {
+      identity: {
+        ownerId: repository$1,
+        contractId: `${opcode}.${argument}`,
+        revision: contractRevision$1,
+        variantId: "fixed"
+      },
+      dialect: "draft-07",
+      root: {
+        retrievalUri: `${block_editor_fixed_inputs_schema_default$1.$id}?binding=${opcode}.${argument}`,
+        document: contracts$1[opcode].properties[argument],
+        artifact: {
+          role: "canonical-schema",
+          source
+        }
+      },
+      resources: [],
+      provenance: {
+        canonicalSources: [
+          source,
+          {
+            repository: repository$1,
+            path: "src/block-definitions.json"
+          },
+          {
+            repository: repository$1,
+            path: "src/extension.ts",
+            symbol: opcode
+          }
+        ],
+        generatedFiles: [],
+        referenceSchemas: [],
+        generationSources: []
+      }
+    };
+  }
+  function fixedInputEditorOptions$1() {
+    return Object.entries(contracts$1).map(([opcode, contract]) => {
+      const bindings = Object.entries(contract.properties).map(([argument, schema]) => ({
+        argument,
+        schemaBundle: bundle$1(opcode, argument),
+        control: schema.enum ? {
+          kind: "enum",
+          choices: schema.enum.map((value) => ({
+            value,
+            label: value
+          }))
+        } : { kind: schema.type === "number" || schema.type === "integer" ? "number" : "color" },
+        read(value) {
+          if (schema.type === "number" || schema.type === "integer") return existingNumber$1(value);
+          if (typeof value !== "string") throw new TypeError("Invalid string projection.");
+          return schema.enum ? normalizeChoice$1(opcode, argument, value) : value;
+        },
+        encode(value) {
+          if (schema.type === "number" || schema.type === "integer") {
+            fixedNumber$1(value);
+            return typeof value === "number" ? Object.is(value, -0) ? "-0" : String(value) : value.trim();
+          }
+          if (typeof value !== "string") throw new TypeError("Invalid fixed string.");
+          return value;
+        },
+        validateCandidate(candidate) {
+          let valid;
+          try {
+            if (schema.type === "number" || schema.type === "integer") {
+              const number = existingNumber$1(candidate);
+              valid = (schema.type !== "integer" || Number.isInteger(number)) && (schema.minimum === void 0 || number >= schema.minimum) && (schema.maximum === void 0 || number <= schema.maximum) && (schema.exclusiveMinimum === void 0 || number > schema.exclusiveMinimum);
+            } else valid = typeof candidate === "string" && (schema.enum ? schema.enum.includes(candidate) : new RegExp(schema.pattern, "u").test(candidate));
+          } catch {
+            valid = false;
+          }
+          return valid ? [] : [{
+            path: argument,
+            message: "Check this value before saving."
+          }];
+        }
+      }));
+      return {
+        apiVersion: 1,
+        extensionId: extensionConfig$1.id,
+        editorId: `${extensionConfig$1.id}.fixed.${opcode}`,
+        opcodes: [`${extensionConfig$1.id}_${opcode}`],
+        contractId: `${repository$1}.${opcode}.fixed`,
+        contractRevision: contractRevision$1,
+        bindings,
+        validationContext: () => ({
+          consumerId: repository$1,
+          nowMs: 0,
+          settings: null
+        }),
+        ...opcode === "defineBubbleClosePolicy" ? {
+          readOnlyArguments: ["CONDITION"],
+          dependencies: [{
+            selector: "TRIGGER",
+            dependents: ["TIMEOUT"]
+          }],
+          branchPolicies: [{
+            selector: "TRIGGER",
+            normalize: {
+              trim: true,
+              lowercase: true
+            },
+            cases: [
+              {
+                values: ["condition"],
+                activeDependents: [],
+                requireOnSelectorChange: [{
+                  argument: "CONDITION",
+                  rule: "nonempty-string"
+                }]
+              },
+              {
+                values: ["timeout"],
+                activeDependents: ["TIMEOUT"]
+              },
+              {
+                values: ["condition-or-timeout"],
+                activeDependents: ["TIMEOUT"],
+                requireOnSelectorChange: [{
+                  argument: "CONDITION",
+                  rule: "nonempty-string"
+                }]
+              }
+            ]
+          }]
+        } : {}
+      };
+    });
+  }
+  /** Optional GUI capability; ordinary runtime/composition consumers do not load the editor. */
+  function registerFixedInputEditors$1(scratch, runtime) {
+    const api = scratch.gui?.blockEditors;
+    if (api?.apiVersion !== 1 || typeof api.registerFixedInputEditor !== "function") return void 0;
+    const events = runtime;
+    const removers = [];
+    let active = true;
+    const dispose = () => {
+      if (!active) return;
+      active = false;
+      events.off?.("RUNTIME_DISPOSED", dispose);
+      for (const remove of removers.splice(0).reverse()) remove();
+    };
+    try {
+      for (const options of fixedInputEditorOptions$1()) removers.push(api.registerFixedInputEditor.call(api, options));
+      events.on?.("RUNTIME_DISPOSED", dispose);
+    } catch (error) {
+      dispose();
+      throw error;
+    }
+    return dispose;
+  }
   //#endregion
   //#region src/placement.ts
   var bubbleDirectionNames = [
@@ -9857,7 +10380,7 @@
     });
   }
   //#endregion
-  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.10.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
+  //#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.10.1/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
   var block_definitions_default = {
     extensionName: "SVG Text",
     blocks: [{
@@ -9917,6 +10440,37 @@
       ]
     } }
   };
+  var block_editor_fixed_inputs_schema_default = {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    $id: "https://kubohiroya.github.io/turbowarp-svg-text/schemas/block-editor-fixed-inputs.schema.json",
+    title: "turbowarp-svg-text fixed editing contracts",
+    $defs: { "defineStyle": {
+      "type": "object",
+      "properties": {
+        "BACKGROUND": {
+          "type": "string",
+          "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "description": "New native colour_picker candidate only. Common host commit485f0e550e622235624b5e9176820161aeeba252 src/turbowarp/fixed-fields.js restricts new candidates to 3/6-digit hex; the existing runtime also accepts #4/#8, transparent and CSS colours."
+        },
+        "TEXT_COLOR": {
+          "type": "string",
+          "pattern": "^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$",
+          "description": "New native colour_picker candidate only. Common host commit485f0e550e622235624b5e9176820161aeeba252 src/turbowarp/fixed-fields.js restricts new candidates to 3/6-digit hex; the existing runtime also accepts #4/#8, transparent and CSS colours."
+        },
+        "SIZE": { "type": "number" },
+        "ALIGN": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ]
+        }
+      },
+      "additionalProperties": false
+    } },
+    description: "Fixed editing contract for changed standard native fields, not the complete runtime input domain. Colour candidates intersect the common host #RGB/#RRGGBB allowlist with owner validity; existing broader colour raw values are retained unchanged."
+  };
   var extensionConfig = {
     id: "kubohiroyasvgtext",
     slug: "svg-text",
@@ -9926,6 +10480,164 @@
     license: "MPL-2.0",
     unsandboxed: true
   };
+  var contracts = block_editor_fixed_inputs_schema_default.$defs;
+  var repository = "turbowarp-svg-text";
+  var canonicalSource = {
+    repository,
+    path: "schemas/block-editor-fixed-inputs.schema.json"
+  };
+  var contractRevision = "fixed-inputs-v1";
+  var numberToken = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?$/u;
+  /** New input only: never run this strict lexical policy over unmodified raw fields. */
+  function fixedNumber(value) {
+    if (typeof value === "number" && Number.isFinite(value)) return value;
+    if (typeof value !== "string" || !numberToken.test(value.trim())) throw new TypeError("Invalid fixed number.");
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new TypeError("Invalid fixed number.");
+    return number;
+  }
+  function existingNumber(value) {
+    if (typeof value !== "string" && typeof value !== "number") throw new TypeError("Invalid numeric projection.");
+    if (typeof value === "string" && value.trim() === "") throw new TypeError("Unprojected existing numeric field.");
+    const number = Number(value);
+    if (!Number.isFinite(number)) throw new TypeError("Invalid numeric projection.");
+    return number;
+  }
+  function normalizeChoice(opcode, argument, value) {
+    return value.trim().toLowerCase();
+  }
+  function bundle(opcode, argument) {
+    const source = {
+      ...canonicalSource,
+      symbol: `/$defs/${opcode}/properties/${argument}`
+    };
+    return {
+      identity: {
+        ownerId: repository,
+        contractId: `${opcode}.${argument}`,
+        revision: contractRevision,
+        variantId: "fixed"
+      },
+      dialect: "draft-07",
+      root: {
+        retrievalUri: `${block_editor_fixed_inputs_schema_default.$id}?binding=${opcode}.${argument}`,
+        document: contracts[opcode].properties[argument],
+        artifact: {
+          role: "canonical-schema",
+          source
+        }
+      },
+      resources: [],
+      provenance: {
+        canonicalSources: [
+          source,
+          {
+            repository,
+            path: "src/fixed-input-editors.ts",
+            symbol: "fixedInputEditorOptions"
+          },
+          {
+            repository: "turbowarp-extension-data-editor",
+            path: "src/turbowarp/fixed-fields.js",
+            version: "485f0e550e622235624b5e9176820161aeeba252",
+            symbol: "prepareFixedChange"
+          },
+          {
+            repository,
+            path: "src/block-definitions.json"
+          },
+          {
+            repository,
+            path: "src/extension.ts",
+            symbol: opcode
+          }
+        ],
+        generatedFiles: [],
+        referenceSchemas: [],
+        generationSources: []
+      }
+    };
+  }
+  function fixedInputEditorOptions() {
+    return Object.entries(contracts).map(([opcode, contract]) => {
+      const bindings = Object.entries(contract.properties).map(([argument, schema]) => ({
+        argument,
+        schemaBundle: bundle(opcode, argument),
+        control: schema.enum ? {
+          kind: "enum",
+          choices: schema.enum.map((value) => ({
+            value,
+            label: value
+          }))
+        } : { kind: schema.type === "number" || schema.type === "integer" ? "number" : "color" },
+        read(value) {
+          if (schema.type === "number" || schema.type === "integer") return existingNumber(value);
+          if (typeof value !== "string") throw new TypeError("Invalid string projection.");
+          return schema.enum ? normalizeChoice(opcode, argument, value) : value;
+        },
+        encode(value) {
+          if (schema.type === "number" || schema.type === "integer") {
+            fixedNumber(value);
+            return typeof value === "number" ? Object.is(value, -0) ? "-0" : String(value) : value.trim();
+          }
+          if (typeof value !== "string") throw new TypeError("Invalid fixed string.");
+          if (schema.pattern && /^#[\da-f]{3}$/iu.test(value)) return `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`;
+          return value;
+        },
+        validateCandidate(candidate) {
+          let valid;
+          try {
+            if (schema.type === "number" || schema.type === "integer") {
+              const number = existingNumber(candidate);
+              valid = (schema.type !== "integer" || Number.isInteger(number)) && (schema.minimum === void 0 || number >= schema.minimum) && (schema.maximum === void 0 || number <= schema.maximum) && (schema.exclusiveMinimum === void 0 || number > schema.exclusiveMinimum);
+            } else valid = typeof candidate === "string" && (schema.enum ? schema.enum.includes(candidate) : new RegExp(schema.pattern, "u").test(candidate));
+          } catch {
+            valid = false;
+          }
+          return valid ? [] : [{
+            path: argument,
+            message: "Check this value before saving."
+          }];
+        }
+      }));
+      return {
+        apiVersion: 1,
+        extensionId: extensionConfig.id,
+        editorId: `${extensionConfig.id}.fixed.${opcode}`,
+        opcodes: [`${extensionConfig.id}_${opcode}`],
+        contractId: `${repository}.${opcode}.fixed`,
+        contractRevision,
+        bindings,
+        validationContext: () => ({
+          consumerId: repository,
+          nowMs: 0,
+          settings: null
+        })
+      };
+    });
+  }
+  /** Optional GUI capability; ordinary runtime/composition consumers do not load the editor. */
+  function registerFixedInputEditors(scratch, runtime) {
+    const api = scratch.gui?.blockEditors;
+    if (api?.apiVersion !== 1 || typeof api.registerFixedInputEditor !== "function") return void 0;
+    const events = runtime;
+    const removers = [];
+    let active = true;
+    const dispose = () => {
+      if (!active) return;
+      active = false;
+      events.off?.("RUNTIME_DISPOSED", dispose);
+      for (const remove of removers.splice(0).reverse()) remove();
+    };
+    try {
+      for (const options of fixedInputEditorOptions()) removers.push(api.registerFixedInputEditor.call(api, options));
+      events.on?.("RUNTIME_DISPOSED", dispose);
+    } catch (error) {
+      dispose();
+      throw error;
+    }
+    return dispose;
+  }
   var baseStageWidth = 480;
   var baseStageHeight = 360;
   var defaultFontPercent$1 = 100;
@@ -10275,6 +10987,7 @@
       });
     }
     getInfo() {
+      this.fixedEditorsDispose ?? (this.fixedEditorsDispose = registerFixedInputEditors(Scratch, this.runtime));
       return {
         id: extensionConfig.id,
         name: Scratch.translate(block_definitions_default.extensionName),
@@ -12745,7 +13458,7 @@
     textStyle: "default"
   })]);
   var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-  var EXTENSION_VERSION = "0.13.0";
+  var EXTENSION_VERSION = "0.13.1";
   var BLOCK_ICON_URI = `data:image/svg+xml,${encodeURIComponent("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><path fill=\"none\" stroke=\"#fff\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 13h40a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H30L17 55v-9h-5a5 5 0 0 1-5-5V18a5 5 0 0 1 5-5Z\"/><g fill=\"#fff\"><circle cx=\"23\" cy=\"30\" r=\"3\"/><circle cx=\"32\" cy=\"30\" r=\"3\"/><circle cx=\"41\" cy=\"30\" r=\"3\"/></g></svg>")}`;
   function extensionError(message) {
     const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
@@ -12763,6 +13476,7 @@
       _defineProperty(this, "waitScheduler", void 0);
       _defineProperty(this, "composition", null);
       _defineProperty(this, "disposed", false);
+      _defineProperty(this, "fixedEditorsDispose", void 0);
       if (!runtime) throw extensionError("TurboWarp runtime is unavailable.");
       this.runtime = runtime;
       this.options = options;
@@ -12784,6 +13498,7 @@
       });
     }
     getInfo() {
+      if (!this.disposed) this.fixedEditorsDispose ?? (this.fixedEditorsDispose = registerFixedInputEditors$1(Scratch, this.runtime));
       return {
         id: extensionConfig$1.id,
         name: Scratch.translate(block_definitions_default$1.extensionName),
@@ -13185,6 +13900,7 @@
     async dispose() {
       if (this.disposed) return;
       this.disposed = true;
+      this.fixedEditorsDispose?.();
       this.cancelAllWaits("Bubble extension was disposed.");
       if (this.composition) await this.composition.dispose();
       this.handles.clear();

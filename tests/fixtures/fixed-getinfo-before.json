@@ -1,0 +1,666 @@
+{
+  "id": "kubohiroyabubble",
+  "name": "Bubble",
+  "docsURI": "https://kubohiroya.github.io/turbowarp-bubble/",
+  "blockIconURI": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M12%2013h40a5%205%200%200%201%205%205v23a5%205%200%200%201-5%205H30L17%2055v-9h-5a5%205%200%200%201-5-5V18a5%205%200%200%201%205-5Z%22%2F%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%2223%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2241%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E",
+  "color1": "#ff6680",
+  "color2": "#e64d6a",
+  "color3": "#b83255",
+  "blocks": [
+    {
+      "opcode": "defineBubbleStyle",
+      "blockType": "command",
+      "text": "define bubble style [STYLE] using text style [TEXT_STYLE]",
+      "arguments": {
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        },
+        "TEXT_STYLE": {
+          "type": "string",
+          "defaultValue": "default"
+        }
+      }
+    },
+    {
+      "opcode": "defineBubbleClosePolicy",
+      "blockType": "command",
+      "text": "define bubble close policy [POLICY] trigger [TRIGGER] condition [CONDITION] timeout [TIMEOUT] seconds",
+      "arguments": {
+        "POLICY": {
+          "type": "string",
+          "defaultValue": "advance-or-timeout"
+        },
+        "TRIGGER": {
+          "type": "string",
+          "defaultValue": "condition-or-timeout",
+          "menu": "closePolicyTrigger"
+        },
+        "CONDITION": {
+          "type": "string",
+          "defaultValue": "input == \"pressed\""
+        },
+        "TIMEOUT": {
+          "type": "number",
+          "defaultValue": 10
+        }
+      }
+    },
+    {
+      "opcode": "setBubblePlacement",
+      "blockType": "command",
+      "text": "set bubble placement [PLACEMENT] for bubble style [STYLE]",
+      "arguments": {
+        "PLACEMENT": {
+          "type": "string",
+          "defaultValue": "up-right",
+          "menu": "placement"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setPortraitBase",
+      "blockType": "command",
+      "text": "set portrait base [ASSET] for bubble style [STYLE]",
+      "arguments": {
+        "ASSET": {
+          "type": "string",
+          "defaultValue": "HeroFace"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setPortraitLayout",
+      "blockType": "command",
+      "text": "set portrait [PLACEMENT] offset x [X] y [Y] zoom [ZOOM] % corner radius [RADIUS] px for bubble style [STYLE]",
+      "arguments": {
+        "PLACEMENT": {
+          "type": "string",
+          "defaultValue": "left",
+          "menu": "portraitPlacement"
+        },
+        "X": {
+          "type": "number",
+          "defaultValue": 0
+        },
+        "Y": {
+          "type": "number",
+          "defaultValue": 0
+        },
+        "ZOOM": {
+          "type": "number",
+          "defaultValue": 100
+        },
+        "RADIUS": {
+          "type": "number",
+          "defaultValue": 0
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleDistance",
+      "blockType": "command",
+      "text": "set bubble distance [DISTANCE] for bubble style [STYLE]",
+      "arguments": {
+        "DISTANCE": {
+          "type": "number",
+          "defaultValue": 12
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleVisualStyle",
+      "blockType": "command",
+      "text": "set bubble visual style [VISUAL_STYLE] for bubble style [STYLE]",
+      "arguments": {
+        "VISUAL_STYLE": {
+          "type": "string",
+          "defaultValue": "NORMAL",
+          "menu": "visualStyle"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleTailLength",
+      "blockType": "command",
+      "text": "set bubble tail length [LENGTH] for bubble style [STYLE]",
+      "arguments": {
+        "LENGTH": {
+          "type": "number",
+          "defaultValue": 18
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleOffset",
+      "blockType": "command",
+      "text": "set bubble offset x [X] y [Y] scale [SCALE] % for bubble style [STYLE]",
+      "arguments": {
+        "X": {
+          "type": "number",
+          "defaultValue": 0
+        },
+        "Y": {
+          "type": "number",
+          "defaultValue": 0
+        },
+        "SCALE": {
+          "type": "number",
+          "defaultValue": 100
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBlinkFrames",
+      "blockType": "command",
+      "text": "set blink frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "arguments": {
+        "ASSETS": {
+          "type": "string",
+          "defaultValue": "EyesOpen,EyesClosed"
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.4
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setLipSyncFrames",
+      "blockType": "command",
+      "text": "set lip-sync frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "arguments": {
+        "ASSETS": {
+          "type": "string",
+          "defaultValue": "MouthClosed,MouthOpen"
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.1
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setContinueFrames",
+      "blockType": "command",
+      "text": "set continue frames [ASSETS] every [SECONDS] seconds for bubble style [STYLE]",
+      "arguments": {
+        "ASSETS": {
+          "type": "string",
+          "defaultValue": "Next1,Next2"
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.2
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleReveal",
+      "blockType": "command",
+      "text": "set bubble reveal unit [UNIT] every [SECONDS] seconds layout [LAYOUT] for bubble style [STYLE]",
+      "arguments": {
+        "UNIT": {
+          "type": "string",
+          "defaultValue": "CHARACTER",
+          "menu": "revealUnit"
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.05
+        },
+        "LAYOUT": {
+          "type": "string",
+          "defaultValue": "DYNAMIC",
+          "menu": "revealLayout"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleWordDelimiters",
+      "blockType": "command",
+      "text": "set bubble word delimiters [DELIMITERS] show [SHOW] for bubble style [STYLE]",
+      "arguments": {
+        "DELIMITERS": {
+          "type": "string",
+          "defaultValue": " /"
+        },
+        "SHOW": {
+          "type": "string",
+          "defaultValue": "false",
+          "menu": "boolean"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleRevealSound",
+      "blockType": "command",
+      "text": "set bubble reveal sound [ASSET] for bubble style [STYLE]",
+      "arguments": {
+        "ASSET": {
+          "type": "string",
+          "defaultValue": "Typewriter"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleVoice",
+      "blockType": "command",
+      "text": "set bubble voice [ASSET] for bubble style [STYLE]",
+      "arguments": {
+        "ASSET": {
+          "type": "string",
+          "defaultValue": "Voice"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "finishBubbleReveal",
+      "blockType": "command",
+      "text": "finish [UNIT] with condition [CONDITION] or timeout after [TIMEOUT] seconds",
+      "arguments": {
+        "UNIT": {
+          "type": "string",
+          "defaultValue": "CHARACTER",
+          "menu": "revealUnit"
+        },
+        "CONDITION": {
+          "type": "string",
+          "defaultValue": "input == \"pressed\""
+        },
+        "TIMEOUT": {
+          "type": "number",
+          "defaultValue": 10
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleShowAnimation",
+      "blockType": "command",
+      "text": "set bubble show animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]",
+      "arguments": {
+        "MOTION": {
+          "type": "string",
+          "defaultValue": "fadeIn",
+          "menu": "showMotion"
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.2
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleHideAnimation",
+      "blockType": "command",
+      "text": "set bubble hide animation [MOTION] for [SECONDS] seconds for bubble style [STYLE]",
+      "arguments": {
+        "MOTION": {
+          "type": "string",
+          "defaultValue": "fadeOut",
+          "menu": "hideMotion"
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.2
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "animateBubble",
+      "blockType": "command",
+      "text": "animate this bubble [MOTION]",
+      "arguments": {
+        "MOTION": {
+          "type": "string",
+          "defaultValue": "shake",
+          "menu": "motion"
+        }
+      }
+    },
+    {
+      "opcode": "shakeBubble",
+      "blockType": "command",
+      "text": "shake this bubble direction [DIRECTION] count [COUNT] ease [EASE]",
+      "arguments": {
+        "DIRECTION": {
+          "type": "number",
+          "defaultValue": 90
+        },
+        "COUNT": {
+          "type": "number",
+          "defaultValue": 2
+        },
+        "EASE": {
+          "type": "string",
+          "defaultValue": "easeInOut",
+          "menu": "ease"
+        }
+      }
+    },
+    {
+      "opcode": "explodeBubble",
+      "blockType": "command",
+      "text": "explode this bubble relative scale [SCALE] count [COUNT] ease [EASE]",
+      "arguments": {
+        "SCALE": {
+          "type": "number",
+          "defaultValue": 1.15
+        },
+        "COUNT": {
+          "type": "number",
+          "defaultValue": 2
+        },
+        "EASE": {
+          "type": "string",
+          "defaultValue": "easeOut",
+          "menu": "ease"
+        }
+      }
+    },
+    {
+      "opcode": "animateBubbleShape",
+      "blockType": "command",
+      "text": "animate bubble shape to [VISUAL_STYLE] speed [SPEED] for [SECONDS] seconds",
+      "arguments": {
+        "VISUAL_STYLE": {
+          "type": "string",
+          "defaultValue": "WAVY",
+          "menu": "visualStyle"
+        },
+        "SPEED": {
+          "type": "number",
+          "defaultValue": 1
+        },
+        "SECONDS": {
+          "type": "number",
+          "defaultValue": 0.5
+        }
+      }
+    },
+    {
+      "opcode": "say",
+      "blockType": "command",
+      "text": "say [MESSAGE]",
+      "arguments": {
+        "MESSAGE": {
+          "type": "string",
+          "defaultValue": "Hello!"
+        }
+      }
+    },
+    {
+      "opcode": "think",
+      "blockType": "command",
+      "text": "think [MESSAGE]",
+      "arguments": {
+        "MESSAGE": {
+          "type": "string",
+          "defaultValue": "Hmm..."
+        }
+      }
+    },
+    {
+      "opcode": "showWithBubbleStyle",
+      "blockType": "command",
+      "text": "show [MESSAGE] with bubble style [STYLE]",
+      "arguments": {
+        "MESSAGE": {
+          "type": "string",
+          "defaultValue": "Hello!"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "say"
+        }
+      }
+    },
+    {
+      "opcode": "sayWithBubbleStyle",
+      "blockType": "command",
+      "text": "say [MESSAGE] with bubble style [STYLE]",
+      "hideFromPalette": true,
+      "arguments": {
+        "MESSAGE": {
+          "type": "string",
+          "defaultValue": "Hello!"
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "thinkWithBubbleStyle",
+      "blockType": "command",
+      "text": "think [MESSAGE] with bubble style [STYLE]",
+      "hideFromPalette": true,
+      "arguments": {
+        "MESSAGE": {
+          "type": "string",
+          "defaultValue": "Hmm..."
+        },
+        "STYLE": {
+          "type": "string",
+          "defaultValue": "dialogue"
+        }
+      }
+    },
+    {
+      "opcode": "setBubbleAnimationMode",
+      "blockType": "command",
+      "text": "set this bubble animation mode [MODE]",
+      "arguments": {
+        "MODE": {
+          "type": "string",
+          "defaultValue": "awaiting-continue",
+          "menu": "animationMode"
+        }
+      }
+    },
+    {
+      "opcode": "waitForBubbleContinue",
+      "blockType": "command",
+      "text": "wait with this bubble until condition [CONDITION] or timeout after [TIMEOUT] seconds",
+      "arguments": {
+        "CONDITION": {
+          "type": "string",
+          "defaultValue": "input == \"pressed\""
+        },
+        "TIMEOUT": {
+          "type": "number",
+          "defaultValue": 10
+        }
+      }
+    },
+    {
+      "opcode": "waitAndCloseBubbleWithPolicy",
+      "blockType": "command",
+      "text": "wait and close this bubble using close policy [POLICY]",
+      "arguments": {
+        "POLICY": {
+          "type": "string",
+          "defaultValue": "advance-or-timeout"
+        }
+      }
+    },
+    {
+      "opcode": "closeBubble",
+      "blockType": "command",
+      "text": "close this bubble",
+      "arguments": {}
+    },
+    {
+      "opcode": "getVersion",
+      "blockType": "reporter",
+      "text": "Bubble version",
+      "arguments": {}
+    }
+  ],
+  "menus": {
+    "closePolicyTrigger": {
+      "acceptReporters": true,
+      "items": ["condition", "timeout", "condition-or-timeout"]
+    },
+    "portraitPlacement": {
+      "acceptReporters": true,
+      "items": [
+        "none",
+        "left",
+        "right",
+        "top-left",
+        "top-right",
+        "bottom-left",
+        "bottom-right"
+      ]
+    },
+    "visualStyle": {
+      "acceptReporters": true,
+      "items": [
+        "NORMAL",
+        "THINKING",
+        "DREAMING",
+        "YELLING",
+        "OFF_PANEL",
+        "WAVY",
+        "WHISPERING",
+        "ANNOUNCEMENT",
+        "NARRATION",
+        "NO_BUBBLE"
+      ]
+    },
+    "placement": {
+      "acceptReporters": true,
+      "items": [
+        "up",
+        "up-up-right",
+        "up-right",
+        "right-up-right",
+        "right",
+        "right-down-right",
+        "down-right",
+        "down-down-right",
+        "down",
+        "down-down-left",
+        "down-left",
+        "left-down-left",
+        "left",
+        "left-up-left",
+        "up-left",
+        "up-up-left",
+        "HEADER_LIKE",
+        "CENTER",
+        "FOOTER_LIKE"
+      ]
+    },
+    "animationMode": {
+      "acceptReporters": true,
+      "items": ["talking", "awaiting-continue", "idle"]
+    },
+    "revealUnit": {
+      "acceptReporters": true,
+      "items": ["CHARACTER", "WORD", "LINE", "BLOCK"]
+    },
+    "revealLayout": {
+      "acceptReporters": true,
+      "items": ["DYNAMIC", "RESERVED"]
+    },
+    "boolean": {
+      "acceptReporters": true,
+      "items": ["false", "true"]
+    },
+    "showMotion": {
+      "acceptReporters": true,
+      "items": ["fadeIn", "floatIn", "zoomIn", "riseUp"]
+    },
+    "hideMotion": {
+      "acceptReporters": true,
+      "items": ["fadeOut", "floatOut", "zoomOut", "sink"]
+    },
+    "motion": {
+      "acceptReporters": true,
+      "items": [
+        "fadeIn",
+        "floatIn",
+        "zoomIn",
+        "riseUp",
+        "fadeOut",
+        "floatOut",
+        "zoomOut",
+        "sink",
+        "shake",
+        "explode",
+        "animateBubbleShape"
+      ]
+    },
+    "ease": {
+      "acceptReporters": true,
+      "items": ["linear", "easeIn", "easeOut", "easeInOut"]
+    }
+  }
+}
