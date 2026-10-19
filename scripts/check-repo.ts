@@ -162,7 +162,7 @@ for (const name of [
   "@kubohiroya/turbowarp-runtime-expression",
 ] as const) {
   requireDependencyVersion(manifest, "devDependencies", name, companions[name]);
-  requirePeerRange(manifest, name, ">=0.3.0 <1");
+  requirePeerRange(manifest, name, companions[name]);
 }
 requireDependencyVersion(
   manifest,
@@ -170,7 +170,11 @@ requireDependencyVersion(
   "@kubohiroya/turbowarp-asset-cache",
   companions["@kubohiroya/turbowarp-asset-cache"],
 );
-requirePeerRange(manifest, "@kubohiroya/turbowarp-asset-cache", ">=0.1.0 <1");
+requirePeerRange(
+  manifest,
+  "@kubohiroya/turbowarp-asset-cache",
+  companions["@kubohiroya/turbowarp-asset-cache"],
+);
 
 const companionLabels = [
   ["SVG Text", companions["@kubohiroya/turbowarp-svg-text"]],
