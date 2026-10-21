@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -81,7 +81,7 @@
   },
   "peerDependencies": {
     "@kubohiroya/turbowarp-asset-cache": "0.2.2",
-    "@kubohiroya/turbowarp-async-input": "0.7.1",
+    "@kubohiroya/turbowarp-async-input": "0.7.2",
     "@kubohiroya/turbowarp-runtime-expression": "0.6.1"
   },
   "peerDependenciesMeta": {
@@ -98,7 +98,7 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@kubohiroya/turbowarp-asset-cache": "0.2.2",
-    "@kubohiroya/turbowarp-async-input": "0.7.1",
+    "@kubohiroya/turbowarp-async-input": "0.7.2",
     "@kubohiroya/turbowarp-extension-data-editor": "0.2.1",
     "@kubohiroya/turbowarp-extension-manifest": "0.3.2",
     "@kubohiroya/turbowarp-runtime-expression": "0.6.1",
@@ -128,11 +128,5 @@
   "dependencies": {
     "@cto.af/linebreak": "4.0.3",
     "@kubohiroya/turbowarp-svg-text": "0.10.1"
-  },
-  "gitHead": "2b91f80ecc39eabb59db33fbc3d285a213f9cbcc",
-  "x-turbowarp-source": {
-    "revision": "2b91f80ecc39eabb59db33fbc3d285a213f9cbcc",
-    "revisionRole": "base-commit",
-    "sourceState": "local-release-overlay"
   }
 }
