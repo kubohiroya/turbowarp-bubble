@@ -80,29 +80,30 @@ flowchart TB
 TurboWarpでstock Asset Cache 0.2.2をBubbleより先に読み込むと、Bubbleはportrait等を初めて使う時に`runtime.ext_kubohiroyaassetcache.getDOMImageCapability()`を呼び、Asset Cacheブロックで登録された同じregistryへ遅延接続します。文字だけを使う場合はAsset Cacheを読み込みません。Composition APIのhostは、次のようにcapabilityを明示注入できます。
 
 ```ts
-import {createAssetManagerComposition} from '@kubohiroya/turbowarp-asset-cache/composition';
-import {createSvgTextLayoutComposition} from '@kubohiroya/turbowarp-svg-text/composition';
+import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-cache/composition";
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createAssetManagerSvgOverlayImageCapability,
   createSvgTextOverlayTextCapability,
   createTurboWarpBubbleComposition,
-} from '@kubohiroya/turbowarp-bubble/turbowarp-adapter';
+} from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 
 const assets = createAssetManagerComposition();
 const textLayouts = createSvgTextLayoutComposition();
 
 textLayouts.defineStyle({
-  name: 'dialogue-text',
-  alignment: 'left',
-  backgroundColor: 'transparent',
-  font: 'Helvetica',
+  name: "dialogue-text",
+  alignment: "left",
+  backgroundColor: "transparent",
+  font: "Helvetica",
   fontPercent: 100,
-  textColor: '#575e75',
+  textColor: "#575e75",
 });
 
 const bubbles = createTurboWarpBubbleComposition(runtime, {
   svgOverlayTextCapability: createSvgTextOverlayTextCapability(textLayouts),
-  svgOverlayImageCapability: createAssetManagerSvgOverlayImageCapability(assets),
+  svgOverlayImageCapability:
+    createAssetManagerSvgOverlayImageCapability(assets),
 });
 ```
 
@@ -221,10 +222,10 @@ Bubbleの任意`maxWidth`による自動改行では、`@cto.af/linebreak`を利
 `UnicodeLineBreakProvider`はUAX #14の候補を`Intl.Segmenter`の書記素境界で絞るため、句読点や小書き仮名の禁則に加え、結合文字や絵文字の途中分割も避けます。明示改行は維持し、URLなど分割可能な候補がない文字列だけを書記素境界でfallback分割します。
 
 ```ts
-import {wrapText} from '@kubohiroya/turbowarp-bubble/composition';
+import { wrapText } from "@kubohiroya/turbowarp-bubble/composition";
 
 const layout = wrapText({
-  text: 'これは長いセリフです。',
+  text: "これは長いセリフです。",
   maxWidth: 320,
   measureText: (text) => textRenderer.measure(text),
 });
@@ -276,10 +277,13 @@ npm install @kubohiroya/turbowarp-bubble
 逐次表示の正規化と文字列分割だけが必要な利用側は、Bubble composition全体を含めずに小さな`reveal` entryをimportできます。
 
 ```ts
-import {normalizeBubbleReveal, splitBubbleText} from '@kubohiroya/turbowarp-bubble/reveal';
+import {
+  normalizeBubbleReveal,
+  splitBubbleText,
+} from "@kubohiroya/turbowarp-bubble/reveal";
 
-const reveal = normalizeBubbleReveal({unit: 'CHARACTER'});
-const chunks = splitBubbleText('A👩‍🚀B', reveal);
+const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
+const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
 SVG Text 0.10.1は既定のskin非依存文字providerとして通常dependencyに含まれます。別途インストールは不要です。standalone SVG Text 0.10.1を先に読み込むと、project blockで定義したstyleを公開handoff経由で再利用します。今回のoptional peerはAsset Cache 0.2.2、Async Input 0.7.2、Runtime Expression 0.6.1にそれぞれexact固定します。hostが独自の`svgOverlayTextCapability`を注入する場合も、Bubble自身のSVG Text dependencyは0.10.1固定です。Asset Cache 0.1.0はAPI導入履歴の基準であり、今回その旧package版を依存解決に許容する意味ではありません。
@@ -559,7 +563,7 @@ close this bubble
 TurboWarp runtimeのrendererへ接続するhostでは、公開adapterを利用できます。既定ではstandalone SVG Text 0.10.1があればnamed-style handoffを使い、なければ内包layout compositionとSVG overlayを使用します。画像portrait、lip-sync、continue indicator、または音声アセットを使う場合だけ、Asset Cacheを追加でロードしてください。
 
 ```ts
-import {createTurboWarpBubbleComposition} from '@kubohiroya/turbowarp-bubble/turbowarp-adapter';
+import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 
 const bubbles = createTurboWarpBubbleComposition(runtime);
 ```
@@ -572,7 +576,7 @@ import {
   type BubbleImageCapability,
   type BubbleSurfaceFactory,
   type BubbleTextCapability,
-} from '@kubohiroya/turbowarp-bubble/composition';
+} from "@kubohiroya/turbowarp-bubble/composition";
 
 // These are host-owned capabilities. They may be backed by Asset Cache,
 // another asset service, or local application code.
@@ -607,80 +611,80 @@ surfaceは`updateStyle(style)`も実装し、吹き出しの位置・形状・�
 
 ```ts
 bubbles.defineStyle({
-  name: 'hero-dialogue',
-  textStyle: 'dialogue-text',
-  placement: 'north-northeast',
+  name: "hero-dialogue",
+  textStyle: "dialogue-text",
+  placement: "north-northeast",
   distance: 12,
-  visualStyle: 'NORMAL',
+  visualStyle: "NORMAL",
   tailLength: 18,
   offset: [10, -10, 120],
   portrait: {
-    base: 'HeroFace',
+    base: "HeroFace",
     blink: {
-      frames: ['HeroEyesOpen', 'HeroEyesClosed'],
+      frames: ["HeroEyesOpen", "HeroEyesClosed"],
       frameIntervalSeconds: 0.4,
     },
     lipSync: {
-      frames: ['HeroMouthClosed', 'HeroMouthOpen'],
+      frames: ["HeroMouthClosed", "HeroMouthOpen"],
       frameIntervalSeconds: 0.1,
     },
   },
   continueIndicator: {
-    frames: ['Next1', 'Next2'],
+    frames: ["Next1", "Next2"],
     frameIntervalSeconds: 0.2,
   },
   reveal: {
-    unit: 'CHARACTER',
-    layout: 'RESERVED',
+    unit: "CHARACTER",
+    layout: "RESERVED",
     intervalSeconds: 0.05,
-    sound: 'Typewriter',
+    sound: "Typewriter",
   },
   audio: {
-    voice: 'HeroVoice',
-    reveal: 'Typewriter',
-    finish: 'Ready',
+    voice: "HeroVoice",
+    reveal: "Typewriter",
+    finish: "Ready",
   },
-  showAnimation: {name: 'fadeIn', durationSeconds: 0.2},
-  hideAnimation: {name: 'fadeOut', durationSeconds: 0.2},
+  showAnimation: { name: "fadeIn", durationSeconds: 0.2 },
+  hideAnimation: { name: "fadeOut", durationSeconds: 0.2 },
 });
 
 bubbles.defineStyle({
-  name: 'narration',
-  textStyle: 'dialogue-text',
-  placement: 'FOOTER_LIKE',
+  name: "narration",
+  textStyle: "dialogue-text",
+  placement: "FOOTER_LIKE",
   maxWidth: 320,
-  textLocale: 'ja',
+  textLocale: "ja",
 });
 
 const bubble = await bubbles.show({
   actor: heroTarget,
-  actorKey: 'Hero',
-  kind: 'say',
-  text: '海へ出発！',
-  styleName: 'hero-dialogue',
+  actorKey: "Hero",
+  kind: "say",
+  text: "海へ出発！",
+  styleName: "hero-dialogue",
 });
 ```
 
 `show`の初期animation modeは`talking`です。目パチは表示中継続し、口パクが動きます。全文表示後にアプリが「次へ」操作待ちへ移るとき、modeを`awaiting-continue`へ変更します。
 
 ```ts
-await bubble.setAnimationMode('awaiting-continue');
+await bubble.setAnimationMode("awaiting-continue");
 // 口パクを停止して非表示にし、「次へ」アイコンをループ表示します。
 
-await bubble.setAnimationMode('idle');
+await bubble.setAnimationMode("idle");
 // 吹き出しを残したまま、口パクと「次へ」アイコンを停止します。
 
 await bubble.revealNext();
 await bubble.revealAll();
 await bubble.animate({
-  name: 'shake',
+  name: "shake",
   direction: 90,
   count: 2,
-  ease: 'easeInOut',
+  ease: "easeInOut",
 });
 await bubble.finish({
-  unit: 'CHARACTER',
-  condition: () => inputState === 'pressed',
+  unit: "CHARACTER",
+  condition: () => inputState === "pressed",
   timeoutSeconds: 10,
 });
 
@@ -694,15 +698,15 @@ await bubble.close();
 ```ts
 await bubbles.show({
   actor,
-  actorKey: 'hero',
-  kind: 'say',
-  styleName: 'dialogue',
+  actorKey: "hero",
+  kind: "say",
+  styleName: "dialogue",
   text: [
-    {type: 'text', text: '私は '},
-    {type: 'ruby', base: '中野', reading: 'なかの'},
-    {type: 'text', text: ' です'},
+    { type: "text", text: "私は " },
+    { type: "ruby", base: "中野", reading: "なかの" },
+    { type: "text", text: " です" },
   ],
-  reveal: {unit: 'CHARACTER', intervalSeconds: 0.05},
+  reveal: { unit: "CHARACTER", intervalSeconds: 0.05 },
 });
 ```
 

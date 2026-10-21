@@ -80,29 +80,30 @@ The default value of `bubbleRenderBackend` is `"svg-overlay"`. Bubble places a s
 When the stock Asset Cache 0.2.2 extension is loaded before Bubble in TurboWarp, Bubble calls `runtime.ext_kubohiroyaassetcache.getDOMImageCapability()` the first time a portrait or another image feature is used. It then lazily connects to the same registry populated by Asset Cache blocks. Asset Cache is not loaded when only text is used. A Composition API host can inject capabilities explicitly as follows.
 
 ```ts
-import {createAssetManagerComposition} from '@kubohiroya/turbowarp-asset-cache/composition';
-import {createSvgTextLayoutComposition} from '@kubohiroya/turbowarp-svg-text/composition';
+import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-cache/composition";
+import { createSvgTextLayoutComposition } from "@kubohiroya/turbowarp-svg-text/composition";
 import {
   createAssetManagerSvgOverlayImageCapability,
   createSvgTextOverlayTextCapability,
   createTurboWarpBubbleComposition,
-} from '@kubohiroya/turbowarp-bubble/turbowarp-adapter';
+} from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 
 const assets = createAssetManagerComposition();
 const textLayouts = createSvgTextLayoutComposition();
 
 textLayouts.defineStyle({
-  name: 'dialogue-text',
-  alignment: 'left',
-  backgroundColor: 'transparent',
-  font: 'Helvetica',
+  name: "dialogue-text",
+  alignment: "left",
+  backgroundColor: "transparent",
+  font: "Helvetica",
   fontPercent: 100,
-  textColor: '#575e75',
+  textColor: "#575e75",
 });
 
 const bubbles = createTurboWarpBubbleComposition(runtime, {
   svgOverlayTextCapability: createSvgTextOverlayTextCapability(textLayouts),
-  svgOverlayImageCapability: createAssetManagerSvgOverlayImageCapability(assets),
+  svgOverlayImageCapability:
+    createAssetManagerSvgOverlayImageCapability(assets),
 });
 ```
 
@@ -221,10 +222,10 @@ For automatic wrapping with the optional `maxWidth`, Bubble uses `@cto.af/linebr
 `UnicodeLineBreakProvider` restricts UAX #14 candidates to grapheme boundaries reported by `Intl.Segmenter`. In addition to applying line-start and line-end restrictions for punctuation and small kana, this prevents splitting combining characters or emoji. Explicit line breaks are preserved. Only strings with no valid break candidate, such as some URLs, fall back to splitting at grapheme boundaries.
 
 ```ts
-import {wrapText} from '@kubohiroya/turbowarp-bubble/composition';
+import { wrapText } from "@kubohiroya/turbowarp-bubble/composition";
 
 const layout = wrapText({
-  text: 'これは長いセリフです。',
+  text: "これは長いセリフです。",
   maxWidth: 320,
   measureText: (text) => textRenderer.measure(text),
 });
@@ -276,10 +277,13 @@ npm install @kubohiroya/turbowarp-bubble
 Consumers that need only progressive-reveal normalization and string splitting can import the small `reveal` entry point without including the entire Bubble composition.
 
 ```ts
-import {normalizeBubbleReveal, splitBubbleText} from '@kubohiroya/turbowarp-bubble/reveal';
+import {
+  normalizeBubbleReveal,
+  splitBubbleText,
+} from "@kubohiroya/turbowarp-bubble/reveal";
 
-const reveal = normalizeBubbleReveal({unit: 'CHARACTER'});
-const chunks = splitBubbleText('A👩‍🚀B', reveal);
+const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
+const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
 SVG Text 0.10.1 is included as a regular dependency and serves as the default skin-independent text provider. You do not need to install it separately. Loading the standalone SVG Text 0.10.1 extension first is optional, but doing so lets Bubble reuse styles defined by its project blocks through the public handoff. This release pins the optional peers exactly to Asset Cache 0.2.2, Async Input 0.7.2, and Runtime Expression 0.6.1. Bubble also pins its SVG Text dependency to 0.10.1 when a host injects a custom `svgOverlayTextCapability`. The historical Asset Cache 0.1.0 capability-introduction baseline does not permit resolving that old package version in this release.
@@ -559,7 +563,7 @@ Bubble automatically releases its owned timers, overlay DOM, and image leases wh
 Hosts that connect to a TurboWarp runtime renderer can use the public adapter. By default, it uses the SVG Text 0.10.1 named-style handoff when a standalone extension is loaded, otherwise its bundled layout composition, together with an SVG overlay. Load Asset Cache in addition only when using image portraits, lip-sync, continue indicators, or audio assets.
 
 ```ts
-import {createTurboWarpBubbleComposition} from '@kubohiroya/turbowarp-bubble/turbowarp-adapter';
+import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
 
 const bubbles = createTurboWarpBubbleComposition(runtime);
 ```
@@ -572,7 +576,7 @@ import {
   type BubbleImageCapability,
   type BubbleSurfaceFactory,
   type BubbleTextCapability,
-} from '@kubohiroya/turbowarp-bubble/composition';
+} from "@kubohiroya/turbowarp-bubble/composition";
 
 // These are host-owned capabilities. They may be backed by Asset Cache,
 // another asset service, or local application code.
@@ -607,80 +611,80 @@ Image-layer target IDs must be distinct from one another. Targets for layers unu
 
 ```ts
 bubbles.defineStyle({
-  name: 'hero-dialogue',
-  textStyle: 'dialogue-text',
-  placement: 'north-northeast',
+  name: "hero-dialogue",
+  textStyle: "dialogue-text",
+  placement: "north-northeast",
   distance: 12,
-  visualStyle: 'NORMAL',
+  visualStyle: "NORMAL",
   tailLength: 18,
   offset: [10, -10, 120],
   portrait: {
-    base: 'HeroFace',
+    base: "HeroFace",
     blink: {
-      frames: ['HeroEyesOpen', 'HeroEyesClosed'],
+      frames: ["HeroEyesOpen", "HeroEyesClosed"],
       frameIntervalSeconds: 0.4,
     },
     lipSync: {
-      frames: ['HeroMouthClosed', 'HeroMouthOpen'],
+      frames: ["HeroMouthClosed", "HeroMouthOpen"],
       frameIntervalSeconds: 0.1,
     },
   },
   continueIndicator: {
-    frames: ['Next1', 'Next2'],
+    frames: ["Next1", "Next2"],
     frameIntervalSeconds: 0.2,
   },
   reveal: {
-    unit: 'CHARACTER',
-    layout: 'RESERVED',
+    unit: "CHARACTER",
+    layout: "RESERVED",
     intervalSeconds: 0.05,
-    sound: 'Typewriter',
+    sound: "Typewriter",
   },
   audio: {
-    voice: 'HeroVoice',
-    reveal: 'Typewriter',
-    finish: 'Ready',
+    voice: "HeroVoice",
+    reveal: "Typewriter",
+    finish: "Ready",
   },
-  showAnimation: {name: 'fadeIn', durationSeconds: 0.2},
-  hideAnimation: {name: 'fadeOut', durationSeconds: 0.2},
+  showAnimation: { name: "fadeIn", durationSeconds: 0.2 },
+  hideAnimation: { name: "fadeOut", durationSeconds: 0.2 },
 });
 
 bubbles.defineStyle({
-  name: 'narration',
-  textStyle: 'dialogue-text',
-  placement: 'FOOTER_LIKE',
+  name: "narration",
+  textStyle: "dialogue-text",
+  placement: "FOOTER_LIKE",
   maxWidth: 320,
-  textLocale: 'en',
+  textLocale: "en",
 });
 
 const bubble = await bubbles.show({
   actor: heroTarget,
-  actorKey: 'Hero',
-  kind: 'say',
-  text: 'Set sail!',
-  styleName: 'hero-dialogue',
+  actorKey: "Hero",
+  kind: "say",
+  text: "Set sail!",
+  styleName: "hero-dialogue",
 });
 ```
 
 The initial animation mode for `show` is `talking`. Blink continues while the Bubble is displayed, and lip-sync runs. After the full text is visible, change the mode to `awaiting-continue` when the application begins waiting for the user to choose “next.”
 
 ```ts
-await bubble.setAnimationMode('awaiting-continue');
+await bubble.setAnimationMode("awaiting-continue");
 // Stop and hide lip-sync, then loop the "next" icon.
 
-await bubble.setAnimationMode('idle');
+await bubble.setAnimationMode("idle");
 // Keep the Bubble visible, but stop lip-sync and the "next" icon.
 
 await bubble.revealNext();
 await bubble.revealAll();
 await bubble.animate({
-  name: 'shake',
+  name: "shake",
   direction: 90,
   count: 2,
-  ease: 'easeInOut',
+  ease: "easeInOut",
 });
 await bubble.finish({
-  unit: 'CHARACTER',
-  condition: () => inputState === 'pressed',
+  unit: "CHARACTER",
+  condition: () => inputState === "pressed",
   timeoutSeconds: 10,
 });
 
@@ -694,15 +698,15 @@ await bubble.close();
 ```ts
 await bubbles.show({
   actor,
-  actorKey: 'hero',
-  kind: 'say',
-  styleName: 'dialogue',
+  actorKey: "hero",
+  kind: "say",
+  styleName: "dialogue",
   text: [
-    {type: 'text', text: '私は '},
-    {type: 'ruby', base: '中野', reading: 'なかの'},
-    {type: 'text', text: ' です'},
+    { type: "text", text: "私は " },
+    { type: "ruby", base: "中野", reading: "なかの" },
+    { type: "text", text: " です" },
   ],
-  reveal: {unit: 'CHARACTER', intervalSeconds: 0.05},
+  reveal: { unit: "CHARACTER", intervalSeconds: 0.05 },
 });
 ```
 

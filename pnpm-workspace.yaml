@@ -4,7 +4,7 @@ packages:
 onlyBuiltDependencies: []
 minimumReleaseAgeExclude:
   - "@kubohiroya/turbowarp-asset-cache@0.2.2"
-  - '@kubohiroya/turbowarp-async-input@0.7.1 || 0.7.2'
+  - "@kubohiroya/turbowarp-async-input@0.7.1 || 0.7.2"
   - "@kubohiroya/turbowarp-camera-source@0.17.1"
   - "@kubohiroya/turbowarp-extension-data-editor@0.2.1"
   - "@kubohiroya/turbowarp-extension-manifest@0.3.2"
