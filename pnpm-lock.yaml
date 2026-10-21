@@ -22,8 +22,8 @@ importers:
         specifier: 0.2.2
         version: 0.2.2(@kubohiroya/turbowarp-named-data@0.3.1)
       '@kubohiroya/turbowarp-async-input':
-        specifier: 0.7.2
-        version: 0.7.2
+        specifier: 0.7.3
+        version: 0.7.3
       '@kubohiroya/turbowarp-extension-data-editor':
         specifier: 0.2.1
         version: 0.2.1(react@18.3.1)
@@ -145,11 +145,11 @@ packages:
     peerDependencies:
       '@kubohiroya/turbowarp-named-data': 0.3.1
 
-  '@kubohiroya/turbowarp-async-input@0.7.2':
-    resolution: {integrity: sha512-nG/fAwHc0XWFxEbtDVczDs9zaoYz3Qwfy8+X4Gi0yECpo0tWMIrZeuOSfgf4VG5uRNuZH7OQZ1YL4ddKYgzIZQ==}
+  '@kubohiroya/turbowarp-async-input@0.7.3':
+    resolution: {integrity: sha512-2VCCX96yVWu3LmlxJp/e+nQKnKHatNr9j1pxdFceKtWeVtl3u6YrzaZg5Yb1Azo8xXemkRpAc0CO9PwA8sweIA==}
     engines: {node: '>=22'}
     peerDependencies:
-      '@kubohiroya/turbowarp-jsqr': 0.4.2
+      '@kubohiroya/turbowarp-jsqr': 0.4.3
       '@kubohiroya/turbowarp-webusb-pasori': 0.3.1
     peerDependenciesMeta:
       '@kubohiroya/turbowarp-jsqr':
@@ -1119,7 +1119,7 @@ snapshots:
     dependencies:
       '@kubohiroya/turbowarp-named-data': 0.3.1
 
-  '@kubohiroya/turbowarp-async-input@0.7.2': {}
+  '@kubohiroya/turbowarp-async-input@0.7.3': {}
 
   '@kubohiroya/turbowarp-extension-data-editor@0.2.1(react@18.3.1)':
     dependencies:

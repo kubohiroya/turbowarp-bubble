@@ -13,10 +13,10 @@
 | 順番 | 拡張機能                 | 読み込み先                                                                                               |
 | ---: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |    1 | Temporary Variables      | TurboWarpの拡張機能ライブラリから追加                                                                    |
-|    2 | Async Input 0.7.2        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.2/dist/async-input.js`               |
+|    2 | Async Input 0.7.3        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.3/dist/async-input.js`               |
 |    3 | Runtime Expression 0.6.1 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.1/dist/runtime-expression.js` |
 |    4 | Asset Cache 0.2.2        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.2.2/dist/asset-cache.js`               |
-|    5 | Bubble 0.13.2            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.2/dist/turbowarp-bubble.js`              |
+|    5 | Bubble 0.13.3            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.3/dist/turbowarp-bubble.js`              |
 
 開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Cacheがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 

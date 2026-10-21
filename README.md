@@ -4,7 +4,7 @@
 
 `@kubohiroya/turbowarp-bubble` is an unsandboxed extension that manages TurboWarp `say` and `think` displays as separate text, character-expression, and input-waiting indicator layers. It also provides a composition API for using the same features directly from applications.
 
-The current release is Bubble 0.13.2. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.10.1. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.2.2, Async Input 0.7.2, and Runtime Expression 0.6.1. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
+The current release is Bubble 0.13.3. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.10.1. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.2.2, Async Input 0.7.3, and Runtime Expression 0.6.1. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
 
 ## How to read this README
 
@@ -286,7 +286,7 @@ const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
 const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
-SVG Text 0.10.1 is included as a regular dependency and serves as the default skin-independent text provider. You do not need to install it separately. Loading the standalone SVG Text 0.10.1 extension first is optional, but doing so lets Bubble reuse styles defined by its project blocks through the public handoff. This release pins the optional peers exactly to Asset Cache 0.2.2, Async Input 0.7.2, and Runtime Expression 0.6.1. Bubble also pins its SVG Text dependency to 0.10.1 when a host injects a custom `svgOverlayTextCapability`. The historical Asset Cache 0.1.0 capability-introduction baseline does not permit resolving that old package version in this release.
+SVG Text 0.10.1 is included as a regular dependency and serves as the default skin-independent text provider. You do not need to install it separately. Loading the standalone SVG Text 0.10.1 extension first is optional, but doing so lets Bubble reuse styles defined by its project blocks through the public handoff. This release pins the optional peers exactly to Asset Cache 0.2.2, Async Input 0.7.3, and Runtime Expression 0.6.1. Bubble also pins its SVG Text dependency to 0.10.1 when a host injects a custom `svgOverlayTextCapability`. The historical Asset Cache 0.1.0 capability-introduction baseline does not permit resolving that old package version in this release.
 
 After rolling back to `bubbleRenderBackend: "scratch-render"`, Bubble creates a skin-based provider from the same 0.8.1 dependency if the standalone SVG Text extension is not loaded. On a host where the standalone SVG Text extension is already loaded, Bubble continues using that existing provider for compatibility.
 
@@ -317,8 +317,8 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 1. For the input-wait example, open your project in the TurboWarp Editor and add Temporary Variables from the extension library.
 2. Select “Custom Extension” and enable Run without sandbox.
 3. Load Asset Cache 0.2.2 if you use portraits, blinking, lip-sync, continue frames, or audio.
-4. Load Runtime Expression 0.6.1 for `finish [UNIT] ...`; load both Async Input 0.7.2 and Runtime Expression 0.6.1 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
-5. Load Bubble 0.13.2 last. The SVG Text 0.10.1 layout provider is included in the Bubble bundle.
+4. Load Runtime Expression 0.6.1 for `finish [UNIT] ...`; load both Async Input 0.7.3 and Runtime Expression 0.6.1 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
+5. Load Bubble 0.13.3 last. The SVG Text 0.10.1 layout provider is included in the Bubble bundle.
 
 Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Cache, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 
@@ -327,13 +327,13 @@ Bubble alone is the minimum configuration for text-only use. Temporary Variables
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.2.2/dist/asset-cache.js
 
 # Add Async Input for integrated condition waits and close policies
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.2/dist/async-input.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.3/dist/async-input.js
 
 # Add Runtime Expression for finish or condition-based waits and close policies
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.1/dist/runtime-expression.js
 
 # Bubble (always load last)
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.2/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.3/dist/turbowarp-bubble.js
 ```
 
 TurboWarp custom extensions load JavaScript from URLs, so a network connection is required the first time they are loaded. For an unsandboxed development URL, TurboWarp requires the server origin to be exactly `http://localhost:8000/`; `127.0.0.1`, `0.0.0.0`, and other ports do not receive this exception. From the repository root, run `python3 -m http.server 8000`, then load `http://localhost:8000/dist/turbowarp-bubble.js`. Alternatively, choose the custom-extension file or text input and enable **Run extension without sandbox**. The extension does not work when opened directly with `file://` or when run as a sandboxed extension. See [TurboWarp's unsandboxed extension documentation](https://docs.turbowarp.org/development/extensions/unsandboxed) for the host restrictions.

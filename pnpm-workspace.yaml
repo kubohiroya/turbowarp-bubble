@@ -3,6 +3,10 @@ packages:
 
 onlyBuiltDependencies: []
 minimumReleaseAgeExclude:
+  - "@kubohiroya/turbowarp-app-shell@0.3.1"
+  - "@kubohiroya/turbowarp-camera-source@0.19.1"
+  - "@kubohiroya/turbowarp-jsqr@0.4.3"
+  - "@kubohiroya/turbowarp-async-input@0.7.3"
   - "@kubohiroya/turbowarp-asset-cache@0.2.2"
   - "@kubohiroya/turbowarp-async-input@0.7.1 || 0.7.2"
   - "@kubohiroya/turbowarp-camera-source@0.17.1"
