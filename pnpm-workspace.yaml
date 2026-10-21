@@ -3,14 +3,18 @@ packages:
 
 onlyBuiltDependencies: []
 minimumReleaseAgeExclude:
-  - "@kubohiroya/turbowarp-asset-cache@0.2.2"
-  - "@kubohiroya/turbowarp-async-input@0.7.1 || 0.7.2"
-  - "@kubohiroya/turbowarp-camera-source@0.17.1"
-  - "@kubohiroya/turbowarp-extension-data-editor@0.2.1"
-  - "@kubohiroya/turbowarp-extension-manifest@0.3.2"
-  - "@kubohiroya/turbowarp-jsqr@0.4.1"
-  - "@kubohiroya/turbowarp-named-data@0.3.1"
-  - "@kubohiroya/turbowarp-runtime-expression@0.6.1"
-  - "@kubohiroya/turbowarp-svg-text@0.10.1"
-  - "@kubohiroya/turbowarp-webusb-pasori@0.3.1"
-  - "@kubohiroya/vite-plugin-turbowarp-extension@0.6.1"
+  - '@kubohiroya/turbowarp-app-shell@0.3.1'
+  - '@kubohiroya/turbowarp-camera-source@0.19.1'
+  - '@kubohiroya/turbowarp-jsqr@0.4.3'
+  - '@kubohiroya/turbowarp-async-input@0.7.3'
+  - '@kubohiroya/turbowarp-asset-cache@0.2.2'
+  - '@kubohiroya/turbowarp-async-input@0.7.1 || 0.7.2'
+  - '@kubohiroya/turbowarp-camera-source@0.17.1'
+  - '@kubohiroya/turbowarp-extension-data-editor@0.2.1'
+  - '@kubohiroya/turbowarp-extension-manifest@0.3.2'
+  - '@kubohiroya/turbowarp-jsqr@0.4.1'
+  - '@kubohiroya/turbowarp-named-data@0.3.1'
+  - '@kubohiroya/turbowarp-runtime-expression@0.6.1'
+  - '@kubohiroya/turbowarp-svg-text@0.10.1'
+  - '@kubohiroya/turbowarp-webusb-pasori@0.3.1'
+  - '@kubohiroya/vite-plugin-turbowarp-extension@0.6.1'

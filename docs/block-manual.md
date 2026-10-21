@@ -13,10 +13,10 @@ The complete input-wait example uses five extensions. Add Temporary Variables fr
 | Order | Extension                | URL                                                                                                      |
 | ----: | ------------------------ | -------------------------------------------------------------------------------------------------------- |
 |     1 | Temporary Variables      | Add from the TurboWarp extension library                                                                 |
-|     2 | Async Input 0.7.2        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.2/dist/async-input.js`               |
+|     2 | Async Input 0.7.3        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.7.3/dist/async-input.js`               |
 |     3 | Runtime Expression 0.6.1 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.1/dist/runtime-expression.js` |
 |     4 | Asset Cache 0.2.2        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.2.2/dist/asset-cache.js`               |
-|     5 | Bubble 0.13.2            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.2/dist/turbowarp-bubble.js`              |
+|     5 | Bubble 0.13.3            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.3/dist/turbowarp-bubble.js`              |
 
 To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Cache, or if Async Input or Runtime Expression is missing when it starts a condition-based Bubble wait. The lower-level Composition API can inject another text capability.
 
