@@ -30,6 +30,15 @@ const extension = await readFile(
   new URL("../dist/turbowarp-bubble.js", import.meta.url),
   "utf8",
 );
+
+// The host reads the leading comments before allowing extension code to run.
+const header = extension.match(/^(?:\/\/[^\n]*(?:\n|$))*/u)?.[0] ?? "";
+if (!/^\/\/ Unsandboxed: required$/mu.test(header)) {
+  throw new Error(
+    "dist/turbowarp-bubble.js must declare Unsandboxed: required in its header.",
+  );
+}
+
 const manifest = JSON.parse(
   await readFile(
     new URL("../dist/extension-manifest.json", import.meta.url),
