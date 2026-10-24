@@ -3,6 +3,7 @@
 // Description: Layered say and think bubbles with portrait animation and continue indicators.
 // By: Hiroya Kubo
 // License: MPL-2.0
+// Unsandboxed: required
 
 (function (Scratch) {
   'use strict';
