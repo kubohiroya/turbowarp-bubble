@@ -11,8 +11,8 @@
   },
   "companionVersions": {
     "@kubohiroya/turbowarp-svg-text": "0.10.1",
-    "@kubohiroya/turbowarp-asset-cache": "0.2.2",
-    "@kubohiroya/turbowarp-async-input": "0.7.3",
+    "@kubohiroya/turbowarp-asset-cache": "0.3.1",
+    "@kubohiroya/turbowarp-async-input": "0.8.1",
     "@kubohiroya/turbowarp-runtime-expression": "0.6.1"
   },
   "minimumRuntimeCapabilities": {
