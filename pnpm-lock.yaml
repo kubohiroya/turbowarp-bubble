@@ -19,11 +19,11 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
       '@kubohiroya/turbowarp-asset-cache':
-        specifier: 0.2.2
-        version: 0.2.2(@kubohiroya/turbowarp-named-data@0.3.1)
+        specifier: 0.3.1
+        version: 0.3.1(@kubohiroya/turbowarp-named-data@0.3.1)
       '@kubohiroya/turbowarp-async-input':
-        specifier: 0.7.3
-        version: 0.7.3
+        specifier: 0.8.1
+        version: 0.8.1
       '@kubohiroya/turbowarp-extension-data-editor':
         specifier: 0.2.1
         version: 0.2.1(react@18.3.1)
@@ -139,17 +139,17 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-cache@0.2.2':
-    resolution: {integrity: sha512-0gwaK6O5rgzT720hKK5ktL5tjOr7PcdKguv2k0xV/eZTJZ3Yu00lhVVJKIuznuk1MK3sdGRyCvMLE0kT9kwNAg==}
+  '@kubohiroya/turbowarp-asset-cache@0.3.1':
+    resolution: {integrity: sha512-sGQuBzNr/mOeaqxnvkkFJ5fsHO187VdrxTmOr/h5Uz7RrPH8b0e6dQhYV9cEqIryWxodeRGWrhpaJCa5qwMApQ==}
     engines: {node: '>=22.18.0'}
     peerDependencies:
       '@kubohiroya/turbowarp-named-data': 0.3.1
 
-  '@kubohiroya/turbowarp-async-input@0.7.3':
-    resolution: {integrity: sha512-2VCCX96yVWu3LmlxJp/e+nQKnKHatNr9j1pxdFceKtWeVtl3u6YrzaZg5Yb1Azo8xXemkRpAc0CO9PwA8sweIA==}
-    engines: {node: '>=22'}
+  '@kubohiroya/turbowarp-async-input@0.8.1':
+    resolution: {integrity: sha512-7nHjreDsNEONUge8Ea5za1p3IXfQgC2DsXi3edbp8p9QbLCsI4iUkK5K8GSxA34cWxp1rS4nh82yFLy83UzK2A==}
+    engines: {node: '>=22.18.0'}
     peerDependencies:
-      '@kubohiroya/turbowarp-jsqr': 0.4.3
+      '@kubohiroya/turbowarp-jsqr': 0.4.4
       '@kubohiroya/turbowarp-webusb-pasori': 0.3.1
     peerDependenciesMeta:
       '@kubohiroya/turbowarp-jsqr':
@@ -1115,11 +1115,11 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-cache@0.2.2(@kubohiroya/turbowarp-named-data@0.3.1)':
+  '@kubohiroya/turbowarp-asset-cache@0.3.1(@kubohiroya/turbowarp-named-data@0.3.1)':
     dependencies:
       '@kubohiroya/turbowarp-named-data': 0.3.1
 
-  '@kubohiroya/turbowarp-async-input@0.7.3': {}
+  '@kubohiroya/turbowarp-async-input@0.8.1': {}
 
   '@kubohiroya/turbowarp-extension-data-editor@0.2.1(react@18.3.1)':
     dependencies:
