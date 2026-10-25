@@ -151,25 +151,30 @@ requireDependencyVersion(
   manifest,
   "dependencies",
   "@kubohiroya/turbowarp-svg-text",
-  companions["@kubohiroya/turbowarp-svg-text"],
+  `^${companions["@kubohiroya/turbowarp-svg-text"]}`,
 );
 for (const name of [
   "@kubohiroya/turbowarp-async-input",
   "@kubohiroya/turbowarp-runtime-expression",
 ] as const) {
-  requireDependencyVersion(manifest, "devDependencies", name, companions[name]);
-  requirePeerRange(manifest, name, companions[name]);
+  requireDependencyVersion(
+    manifest,
+    "devDependencies",
+    name,
+    `^${companions[name]}`,
+  );
+  requirePeerRange(manifest, name, `^${companions[name]}`);
 }
 requireDependencyVersion(
   manifest,
   "devDependencies",
   "@kubohiroya/turbowarp-asset-cache",
-  companions["@kubohiroya/turbowarp-asset-cache"],
+  `^${companions["@kubohiroya/turbowarp-asset-cache"]}`,
 );
 requirePeerRange(
   manifest,
   "@kubohiroya/turbowarp-asset-cache",
-  companions["@kubohiroya/turbowarp-asset-cache"],
+  `^${companions["@kubohiroya/turbowarp-asset-cache"]}`,
 );
 
 const companionLabels = [
