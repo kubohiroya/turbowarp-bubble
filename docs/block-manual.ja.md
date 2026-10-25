@@ -15,8 +15,8 @@
 |    1 | Temporary Variables      | TurboWarpの拡張機能ライブラリから追加                                                                    |
 |    2 | Async Input 0.8.1        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.8.1/dist/async-input.js`               |
 |    3 | Runtime Expression 0.6.1 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.6.1/dist/runtime-expression.js` |
-|    4 | Asset Cache 0.3.1        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.3.1/dist/asset-cache.js`               |
-|    5 | Bubble 0.13.4            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.4/dist/turbowarp-bubble.js`              |
+|    4 | Asset Cache 0.3.2        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.3.2/dist/asset-cache.js`               |
+|    5 | Bubble 0.13.5            | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.13.5/dist/turbowarp-bubble.js`              |
 
 開発中のBubbleを試す場合は、このリポジトリの`dist/turbowarp-bubble.js`をローカルカスタム拡張機能として読み込みます。既定SVG overlayに必要なrenderer APIがない場合、画像・メディア機能の使用時にAsset Cacheがない場合、condition待機の開始時にAsync InputかRuntime Expressionがない場合は、Bubbleが明示的なエラーを返します。低レベルComposition APIでは別のtext capabilityを注入できます。
 
@@ -328,7 +328,7 @@ cloneが停止・削除された場合は、そのtargetに属するtimer、over
 
 | 状況                                 | 原因と対処                                                               |
 | ------------------------------------ | ------------------------------------------------------------------------ |
-| Asset Cacheを要求するエラー          | 画像・メディアアセットを使う前にAsset Cache 0.3.1を読み込む              |
+| Asset Cacheを要求するエラー          | 画像・メディアアセットを使う前にAsset Cache 0.3.2を読み込む              |
 | SVG overlay backendのエラー          | `renderer.addOverlay()`対応hostを使うか`scratch-render`を明示する        |
 | Async Inputを要求するエラー          | Bubble待機より前にAsync Input 0.3.xをサンドボックスなしで読み込む        |
 | Runtime Expressionを要求するエラー   | Bubble待機より前にRuntime Expression 0.3.xをサンドボックスなしで読み込む |
