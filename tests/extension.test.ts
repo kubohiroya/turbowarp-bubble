@@ -712,8 +712,8 @@ describe("Bubble extension", () => {
     const iconSvg = decodeURIComponent(
       BLOCK_ICON_URI.slice("data:image/svg+xml,".length),
     );
-    expect(iconSvg).toContain('viewBox="0 0 64 64"');
-    expect(iconSvg).toContain('<circle cx="32" cy="30" r="3"/>');
+    expect(iconSvg).toContain('viewBox="0 0 48 48"');
+    expect(iconSvg).toContain("M29 23h10a5 5 0 0 1 5 5v5");
     expect(iconSvg).not.toContain("<rect");
     expect(info.blocks.map((block) => block.opcode)).toEqual([
       "defineBubbleStyle",

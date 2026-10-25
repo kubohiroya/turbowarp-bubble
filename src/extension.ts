@@ -128,7 +128,7 @@ export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
 export const EXTENSION_VERSION = "0.13.5";
 export const BLOCK_ICON_URI = `data:image/svg+xml,${encodeURIComponent(
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><path fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" d="M12 13h40a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H30L17 55v-9h-5a5 5 0 0 1-5-5V18a5 5 0 0 1 5-5Z"/><g fill="#fff"><circle cx="23" cy="30" r="3"/><circle cx="32" cy="30" r="3"/><circle cx="41" cy="30" r="3"/></g></svg>',
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path d="M9 8h17a5 5 0 0 1 5 5v7a5 5 0 0 1-5 5H18l-7 5v-5H9a5 5 0 0 1-5-5v-7a5 5 0 0 1 5-5z" fill="#59C059"/><path d="M29 23h10a5 5 0 0 1 5 5v5a5 5 0 0 1-5 5h-6l-6 4v-4a5 5 0 0 1-3-5v-5a5 5 0 0 1 5-5z" fill="#4C97FF"/></svg>',
 )}`;
 
 function extensionError(message: string): Error {
