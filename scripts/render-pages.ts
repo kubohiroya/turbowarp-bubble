@@ -193,6 +193,10 @@ async function renderPage(locale: Locale): Promise<string> {
 ${content}  </main>
   <footer class="site-footer">${escapeHtml(locale.footer)}</footer>
 ${blockReference}
+<!-- The shared TurboWarp Plus header. It inserts itself at the top of the
+     page in a shadow root, so it cannot disturb the styles below. -->
+<script type="module"
+        src="https://kubohiroya.github.io/turbowarp-plus-site-header/dist/auto.js"></script>
 </body>
 </html>
 `;
