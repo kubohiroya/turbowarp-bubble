@@ -130,12 +130,8 @@ for (const requiredFile of [
   }
 }
 
-requireText(readme, "**English** | [日本語](README.ja.md)", "README.md");
-requireText(
-  japaneseReadme,
-  "[English](README.md) | **日本語**",
-  "README.ja.md",
-);
+requireText(readme, "English | [日本語](README.ja.md)", "README.md");
+requireText(japaneseReadme, "[English](README.md) | 日本語", "README.ja.md");
 forbidText(readme, "README_ja.md", "README.md");
 forbidText(japaneseReadme, "README_ja.md", "README.ja.md");
 
