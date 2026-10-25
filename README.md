@@ -2,7 +2,7 @@
 
 <img src="assets/block-icon.svg" alt="" width="48" height="48">
 
-**English** | [日本語](README.ja.md)
+English | [日本語](README.ja.md)
 
 `@kubohiroya/turbowarp-bubble` is an unsandboxed extension that manages TurboWarp `say` and `think` displays as separate text, character-expression, and input-waiting indicator layers. It also provides a composition API for using the same features directly from applications.
 
