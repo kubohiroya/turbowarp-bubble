@@ -1,0 +1,32 @@
+name: Publish verified release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish-existing:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - name: Install OIDC-capable npm
+        run: npm install --global npm@11.19.0
+      - name: Download verified release artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download v0.14.0 --repo kubohiroya/turbowarp-bubble --pattern kubohiroya-turbowarp-bubble-0.14.0.tgz
+          echo 'bcb306aa78bd615ed5bfc4f10690cd59d5d99a96  kubohiroya-turbowarp-bubble-0.14.0.tgz' | sha1sum --check
+          tar -xOf kubohiroya-turbowarp-bubble-0.14.0.tgz package/package.json > package-metadata.json
+          node --input-type=module -e "import fs from 'node:fs'; const p = JSON.parse(fs.readFileSync('package-metadata.json')); if (p.name !== '@kubohiroya/turbowarp-bubble' || p.version !== '0.14.0') throw new Error('Unexpected package');"
+      - name: Publish verified tarball with provenance
+        run: npm publish ./kubohiroya-turbowarp-bubble-0.14.0.tgz --access public --provenance
