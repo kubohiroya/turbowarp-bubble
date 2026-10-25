@@ -19,13 +19,9 @@
     .header-inner { display: flex; width: min(70rem, calc(100% - 2rem)); min-height: 4.25rem; margin-inline: auto; align-items: center; gap: 1rem; }
     .brand { display: inline-flex; align-items: center; gap: .65rem; color: var(--ink); font-weight: 800; text-decoration: none; white-space: nowrap; }
     .brand-mark { display: grid; width: 2rem; height: 2rem; place-items: center; color: #fff; background: linear-gradient(145deg, #ff6680, #b83255); border-radius: .7rem .7rem .7rem .25rem; box-shadow: 0 7px 18px #b8325559; }
+    .primary-nav a { color: var(--muted); text-decoration: none; }
+    .primary-nav a:hover { color: var(--ink); }
     .primary-nav { display: flex; align-items: center; gap: 1rem; margin-left: auto; font-size: .9rem; }
-    .primary-nav a, .github-link { color: var(--muted); text-decoration: none; }
-    .primary-nav a:hover, .github-link:hover { color: var(--ink); }
-    .github-link { padding: .38rem .55rem; border-radius: .6rem; font-size: .84rem; font-weight: 750; }
-    .language-switch { display: inline-flex; flex: 0 0 auto; padding: .2rem; border: 1px solid var(--line); border-radius: 99rem; background: var(--panel); white-space: nowrap; }
-    .language-switch a { padding: .26rem .58rem; border-radius: 99rem; color: var(--muted); font-size: .82rem; font-weight: 750; text-decoration: none; }
-    .language-switch a[aria-current="page"] { color: var(--ink); background: var(--accent-soft); }
     .manual { width: min(1080px, calc(100% - 2rem)); margin: 2rem auto 4rem; padding: clamp(1rem, 4vw, 3.5rem); background: var(--panel); border: 1px solid var(--line); border-radius: 20px; box-shadow: 0 12px 36px #25283a12; }
     h1, h2, h3 { line-height: 1.35; scroll-margin-top: 5rem; }
     h1 { margin-top: 0; font-size: clamp(1.9rem, 4vw, 2.8rem); }
@@ -40,8 +36,8 @@
     pre code { padding: 0; color: inherit; background: transparent; }
     blockquote { margin-left: 0; padding: .25rem 1rem; color: var(--muted); border-left: 4px solid var(--accent); }
     .site-footer { padding: 0 1rem 3rem; color: var(--muted); text-align: center; font-size: .9rem; }
-    @media (max-width: 850px) { .primary-nav { display: none; } .github-link { margin-left: auto; } }
-    @media (max-width: 620px) { .brand-text { display: none; } .header-inner { gap: .4rem; } .github-link { padding-inline: .3rem; } .language-switch a { padding-inline: .45rem; } .manual { width: 100%; margin-top: 0; border-width: 0; border-radius: 0; box-shadow: none; } }
+    @media (max-width: 850px) { .primary-nav { display: none; } }
+    @media (max-width: 620px) { .brand-text { display: none; } .header-inner { gap: .4rem; } .manual { width: 100%; margin-top: 0; border-width: 0; border-radius: 0; box-shadow: none; } }
     @media print { .site-header, .skip-link { display: none; } body { background: #fff; } }
   </style>
 </head>
@@ -58,11 +54,6 @@
           <a href="#bubble-style">Styles</a>
           <a href="#lifecycle">Display &amp; wait</a>
           <a href="#reference">Block reference</a>
-      </nav>
-      <a class="github-link" href="https://github.com/kubohiroya/turbowarp-bubble">GitHub</a>
-      <nav class="language-switch" aria-label="Language">
-        <a href="./" lang="en" hreflang="en" aria-current="page">English</a>
-        <a href="./ja/" lang="ja" hreflang="ja">日本語</a>
       </nav>
     </div>
   </header>
