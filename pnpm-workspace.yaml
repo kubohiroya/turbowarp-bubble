@@ -3,6 +3,8 @@ packages:
 
 onlyBuiltDependencies: []
 minimumReleaseAgeExclude:
+  - "@kubohiroya/turbowarp-asset-cache@0.3.2"
+  - "@kubohiroya/vite-plugin-turbowarp-extension@0.7.0"
   - "@kubohiroya/turbowarp-asset-cache@0.3.1"
   - "@kubohiroya/turbowarp-async-input@0.8.1"
   - "@kubohiroya/turbowarp-camera-source@0.19.3"

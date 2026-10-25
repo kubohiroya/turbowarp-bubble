@@ -19,8 +19,8 @@ importers:
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
       '@kubohiroya/turbowarp-asset-cache':
-        specifier: 0.3.1
-        version: 0.3.1(@kubohiroya/turbowarp-named-data@0.3.1)
+        specifier: 0.3.2
+        version: 0.3.2(@kubohiroya/turbowarp-named-data@0.3.1)
       '@kubohiroya/turbowarp-async-input':
         specifier: 0.8.1
         version: 0.8.1
@@ -34,8 +34,8 @@ importers:
         specifier: 0.6.1
         version: 0.6.1
       '@kubohiroya/vite-plugin-turbowarp-extension':
-        specifier: 0.6.1
-        version: 0.6.1(vite@8.2.1(@types/node@26.1.2)(yaml@2.9.1))
+        specifier: 0.7.0
+        version: 0.7.0(vite@8.2.1(@types/node@26.1.2)(yaml@2.9.1))
       '@types/node':
         specifier: ^26.1.2
         version: 26.1.2
@@ -139,8 +139,8 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-cache@0.3.1':
-    resolution: {integrity: sha512-sGQuBzNr/mOeaqxnvkkFJ5fsHO187VdrxTmOr/h5Uz7RrPH8b0e6dQhYV9cEqIryWxodeRGWrhpaJCa5qwMApQ==}
+  '@kubohiroya/turbowarp-asset-cache@0.3.2':
+    resolution: {integrity: sha512-XFFh+jO8/xBj71dCn8Ogxaacer92YcdUYlrYBttS/0wNOxJeZnplywYxdBeXID+S0HPBdGIwMiK/Obujw0RoUQ==}
     engines: {node: '>=22.18.0'}
     peerDependencies:
       '@kubohiroya/turbowarp-named-data': 0.3.1
@@ -185,8 +185,8 @@ packages:
     resolution: {integrity: sha512-8yWrD4KR7cTO4FM/8FLhGJoTlWZOzFkyJd2+dIBZSDezQCukvYEJIQB8RZlN7DBW0uONktM3FYy4oXqf6eqRYA==}
     engines: {node: '>=22.18.0'}
 
-  '@kubohiroya/vite-plugin-turbowarp-extension@0.6.1':
-    resolution: {integrity: sha512-p8fvSP3wPNOIzuXvyKayYdx9xvAlwn76unKkIdiSJ2FBsMBkvb5xWfdNXj7ayw54d4qu1KODqsPV4Myn4bPXew==}
+  '@kubohiroya/vite-plugin-turbowarp-extension@0.7.0':
+    resolution: {integrity: sha512-Pd653Ty3f1sRdwvAIGY5YnJmlESGYCN3T4axaLmEfTrKYTqTrrlLQM28cUdu30Y/4oY9vQbVi9d1jBOnTVC+hg==}
     engines: {node: '>=22.18.0'}
     peerDependencies:
       vite: '>=8.0.0'
@@ -1115,7 +1115,7 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-cache@0.3.1(@kubohiroya/turbowarp-named-data@0.3.1)':
+  '@kubohiroya/turbowarp-asset-cache@0.3.2(@kubohiroya/turbowarp-named-data@0.3.1)':
     dependencies:
       '@kubohiroya/turbowarp-named-data': 0.3.1
 
@@ -1141,7 +1141,7 @@ snapshots:
 
   '@kubohiroya/turbowarp-svg-text@0.10.1': {}
 
-  '@kubohiroya/vite-plugin-turbowarp-extension@0.6.1(vite@8.2.1(@types/node@26.1.2)(yaml@2.9.1))':
+  '@kubohiroya/vite-plugin-turbowarp-extension@0.7.0(vite@8.2.1(@types/node@26.1.2)(yaml@2.9.1))':
     dependencies:
       acorn: 8.18.0
       vite: 8.2.1(@types/node@26.1.2)(yaml@2.9.1)
