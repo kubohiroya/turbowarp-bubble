@@ -1,5 +1,7 @@
 # TurboWarp Bubble
 
+<img src="assets/block-icon.svg" alt="" width="48" height="48">
+
 [English](README.md) | **日本語**
 
 `@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。

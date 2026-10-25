@@ -2,7 +2,7 @@
   "id": "kubohiroyabubble",
   "name": "Bubble",
   "docsURI": "https://kubohiroya.github.io/turbowarp-bubble/",
-  "blockIconURI": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Cpath%20fill%3D%22none%22%20stroke%3D%22%23fff%22%20stroke-width%3D%225%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20d%3D%22M12%2013h40a5%205%200%200%201%205%205v23a5%205%200%200%201-5%205H30L17%2055v-9h-5a5%205%200%200%201-5-5V18a5%205%200%200%201%205-5Z%22%2F%3E%3Cg%20fill%3D%22%23fff%22%3E%3Ccircle%20cx%3D%2223%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3Ccircle%20cx%3D%2241%22%20cy%3D%2230%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E",
+  "blockIconURI": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2048%2048%22%3E%3Cpath%20d%3D%22M9%208h17a5%205%200%200%201%205%205v7a5%205%200%200%201-5%205H18l-7%205v-5H9a5%205%200%200%201-5-5v-7a5%205%200%200%201%205-5z%22%20fill%3D%22%2359C059%22%2F%3E%3Cpath%20d%3D%22M29%2023h10a5%205%200%200%201%205%205v5a5%205%200%200%201-5%205h-6l-6%204v-4a5%205%200%200%201-3-5v-5a5%205%200%200%201%205-5z%22%20fill%3D%22%234C97FF%22%2F%3E%3C%2Fsvg%3E",
   "color1": "#ff6680",
   "color2": "#e64d6a",
   "color3": "#b83255",
