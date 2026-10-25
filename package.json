@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.13.5",
+  "version": "0.14.0",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": "Hiroya Kubo <hiroya@cuc.ac.jp>",
   "type": "module",
@@ -81,9 +81,9 @@
     "test:fixed-inputs:native": "node --test tests/fixed-inputs.native.mjs"
   },
   "peerDependencies": {
-    "@kubohiroya/turbowarp-asset-cache": "^0.3.2",
-    "@kubohiroya/turbowarp-async-input": "^0.8.1",
-    "@kubohiroya/turbowarp-runtime-expression": "^0.6.1"
+    "@kubohiroya/turbowarp-asset-cache": "^0.4.0",
+    "@kubohiroya/turbowarp-async-input": "^0.9.0",
+    "@kubohiroya/turbowarp-runtime-expression": "^0.7.0"
   },
   "peerDependenciesMeta": {
     "@kubohiroya/turbowarp-async-input": {
@@ -98,12 +98,12 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@kubohiroya/turbowarp-asset-cache": "^0.3.2",
-    "@kubohiroya/turbowarp-async-input": "^0.8.1",
-    "@kubohiroya/turbowarp-extension-data-editor": "^0.3.3",
+    "@kubohiroya/turbowarp-asset-cache": "^0.4.0",
+    "@kubohiroya/turbowarp-async-input": "^0.9.0",
+    "@kubohiroya/turbowarp-extension-data-editor": "^0.3.4",
     "@kubohiroya/turbowarp-extension-manifest": "^0.3.2",
-    "@kubohiroya/turbowarp-runtime-expression": "^0.6.1",
-    "@kubohiroya/vite-plugin-turbowarp-extension": "^0.7.0",
+    "@kubohiroya/turbowarp-runtime-expression": "^0.7.0",
+    "@kubohiroya/vite-plugin-turbowarp-extension": "^0.8.0",
     "@types/node": "^26.1.2",
     "eslint": "^10.8.0",
     "happy-dom": "20.0.8",
@@ -128,6 +128,6 @@
   ],
   "dependencies": {
     "@cto.af/linebreak": "4.0.3",
-    "@kubohiroya/turbowarp-svg-text": "^0.10.1"
+    "@kubohiroya/turbowarp-svg-text": "^0.11.0"
   }
 }
