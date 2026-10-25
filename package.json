@@ -34,6 +34,7 @@
     "./package.json": "./package.json"
   },
   "files": [
+    "assets/",
     "dist/",
     "docs/",
     "README.md",
