@@ -1,0 +1,21 @@
+{
+  "baseURL": "https://kubohiroya.github.io/turbowarp-bubble/",
+  "extension": {
+    "id": "kubohiroyabubble",
+    "bundle": "dist/turbowarp-bubble.js",
+    "unsandboxed": true
+  },
+  "samples": [
+    {
+      "name": "say-and-close-bubble",
+      "title": "bubble minimal demo",
+      "instructions": "Press Space to close the bubble",
+      "checks": [
+        {
+          "variable": "sample-result",
+          "equals": "Bubble visible"
+        }
+      ]
+    }
+  ]
+}

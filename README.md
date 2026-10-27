@@ -8,6 +8,14 @@ English | [日本語](README.ja.md)
 
 The current release is Bubble 0.15.0. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.12.0. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.5.0, Async Input 0.10.0, and Runtime Expression 0.8.0. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
 
+## Minimal demo
+
+[Open in TurboWarp Editor](https://turbowarp.org/editor?project_url=https%3A%2F%2Fkubohiroya.github.io%2Fturbowarp-bubble%2Fsamples%2Fsay-and-close-bubble.sb3) · [Download SB3](https://kubohiroya.github.io/turbowarp-bubble/samples/say-and-close-bubble.sb3)
+
+Click the green flag to show the speech bubble. Press Space to close it and release its rendering resources. Restart with the green flag after stopping.
+
+In the official TurboWarp Editor, enable **Run extension without sandbox** and choose **Allow**. The SB3 embeds this repository’s distributed JavaScript. Text-only display uses bundled layout; no additional SVG Text, Asset Cache, or Async Input extension is needed.
+
 ## How to read this README
 
 Choose your environment first so that you only need to read the relevant sections.
