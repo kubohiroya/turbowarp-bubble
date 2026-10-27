@@ -8,6 +8,14 @@
 
 現在のリリースはBubble 0.15.0です。既定の描画経路はSVG Text 0.12.0を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Cache 0.5.0、Async Input 0.10.0、Runtime Expression 0.8.0です。Asset Cacheへの移行については[0.13.0のリリースノート](docs/release-notes-0.13.0.md)、再利用可能な名前付きclose policyについては[0.10.0のリリースノート](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0のリリースノート](docs/release-notes-0.9.0.md)を参照してください。
 
+## 最小デモ
+
+[Open in TurboWarp Editor](https://turbowarp.org/editor?project_url=https%3A%2F%2Fkubohiroya.github.io%2Fturbowarp-bubble%2Fsamples%2Fsay-and-close-bubble.sb3) · [Download SB3](https://kubohiroya.github.io/turbowarp-bubble/samples/say-and-close-bubble.sb3)
+
+緑の旗で吹き出しが表示され、Spaceで閉じて描画資源を解放します。停止後も緑の旗から再実行できます。
+
+公式TurboWarp Editorでカスタム拡張の確認画面の **Run extension without sandbox** をチェックし、**Allow** を選択してください。SB3はこのリポジトリの配布JSを内包します。 文字のみの表示は内蔵レイアウトを使い、SVG Text/Asset Cache/Async Inputの追加読み込みは不要です。
+
 ## READMEの読み方
 
 利用環境を先に決めると、必要な部分だけを読めます。

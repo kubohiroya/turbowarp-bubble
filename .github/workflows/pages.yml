@@ -1,0 +1,48 @@
+name: Deploy documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - docs/**
+      - samples/**
+      - dist/**
+      - src/block-definitions.json
+      - scripts/build-samples.mjs
+      - scripts/prepare-pages.mjs
+      - .github/workflows/pages.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Verify samples and prepare site
+        run: node scripts/prepare-pages.mjs
+      - name: Upload documentation
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
