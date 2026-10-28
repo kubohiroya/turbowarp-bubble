@@ -6,7 +6,7 @@ English | [日本語](README.ja.md)
 
 `@kubohiroya/turbowarp-bubble` is an unsandboxed extension that manages TurboWarp `say` and `think` displays as separate text, character-expression, and input-waiting indicator layers. It also provides a composition API for using the same features directly from applications.
 
-The current release is Bubble 0.15.1. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.12.1. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.5.1, Async Input 0.10.1, and Runtime Expression 0.8.1. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
+The current release is Bubble 0.16.0. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.13.0. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.6.0, Async Input 0.11.0, and Runtime Expression 0.9.0. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
 
 ## Minimal demo
 
@@ -81,13 +81,13 @@ flowchart TB
   extension -."optional".-> input
 ```
 
-In this architecture, Bubble core refers only to the host-neutral `BubbleTextCapability` contract. By default, the TurboWarp adapter calls `createSvgTextLayoutComposition().layoutText()` from its direct dependency, `@kubohiroya/turbowarp-svg-text@0.12.1`, to obtain line layout and text widths without creating SVG skins. When the standalone SVG Text 0.12.1 extension is already loaded, Bubble instead adapts its public `getLayoutCapability()` so styles defined by project blocks retain their font, color, size, and alignment. The bubble outline, tail, portrait placement, and show and hide animations are outside SVG Text's responsibilities. A Composition API host can inject a different implementation as `textCapability`. Image resolution, audio playback, input, and condition evaluation are also separated into capabilities; Asset Cache, Async Input, and Runtime Expression are connected only when their corresponding features are used.
+In this architecture, Bubble core refers only to the host-neutral `BubbleTextCapability` contract. By default, the TurboWarp adapter calls `createSvgTextLayoutComposition().layoutText()` from its direct dependency, `@kubohiroya/turbowarp-svg-text@0.13.0`, to obtain line layout and text widths without creating SVG skins. When the standalone SVG Text 0.13.0 extension is already loaded, Bubble instead adapts its public `getLayoutCapability()` so styles defined by project blocks retain their font, color, size, and alignment. The bubble outline, tail, portrait placement, and show and hide animations are outside SVG Text's responsibilities. A Composition API host can inject a different implementation as `textCapability`. Image resolution, audio playback, input, and condition evaluation are also separated into capabilities; Asset Cache, Async Input, and Runtime Expression are connected only when their corresponding features are used.
 
 ### Rendering backend (SVG overlay by default)
 
-The default value of `bubbleRenderBackend` is `"svg-overlay"`. Bubble places a shared SVG root over the stage canvas with `renderer.addOverlay(root, "scale")`, then renders the body, tail, text, portrait, corner clip, and continue indicator as DOM elements. Text uses host-neutral SVG Text 0.12.1 layout data, either from the loaded standalone extension's shared named-style registry or from Bubble's bundled fallback composition. On this default path, Bubble does not call `createDrawable()`, `createSVGSkin()`, or `createBitmapSkin()` to show bubbles, update text or styles, or run animations, so Bubble-originated work never enters scratch-render's `SVGSkin` / `Silhouette` path. `"scratch-render"` is used only when explicitly selected for compatibility or rollback.
+The default value of `bubbleRenderBackend` is `"svg-overlay"`. Bubble places a shared SVG root over the stage canvas with `renderer.addOverlay(root, "scale")`, then renders the body, tail, text, portrait, corner clip, and continue indicator as DOM elements. Text uses host-neutral SVG Text 0.13.0 layout data, either from the loaded standalone extension's shared named-style registry or from Bubble's bundled fallback composition. On this default path, Bubble does not call `createDrawable()`, `createSVGSkin()`, or `createBitmapSkin()` to show bubbles, update text or styles, or run animations, so Bubble-originated work never enters scratch-render's `SVGSkin` / `Silhouette` path. `"scratch-render"` is used only when explicitly selected for compatibility or rollback.
 
-When the stock Asset Cache 0.5.1 extension is loaded before Bubble in TurboWarp, Bubble calls `runtime.ext_kubohiroyaassetcache.getDOMImageCapability()` the first time a portrait or another image feature is used. It then lazily connects to the same registry populated by Asset Cache blocks. Asset Cache is not loaded when only text is used. A Composition API host can inject capabilities explicitly as follows.
+When the stock Asset Cache 0.6.0 extension is loaded before Bubble in TurboWarp, Bubble calls `runtime.ext_kubohiroyaassetcache.getDOMImageCapability()` the first time a portrait or another image feature is used. It then lazily connects to the same registry populated by Asset Cache blocks. Asset Cache is not loaded when only text is used. A Composition API host can inject capabilities explicitly as follows.
 
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-cache/composition";
@@ -117,9 +117,9 @@ const bubbles = createTurboWarpBubbleComposition(runtime, {
 });
 ```
 
-When `svgOverlayTextCapability` is omitted and standalone SVG Text 0.12.1 is loaded, Bubble obtains its frozen `getLayoutCapability()` and resolves the exact named-style registry populated by SVG Text blocks. If standalone SVG Text is absent, Bubble creates its own SVG Text 0.12.1 layout composition and initializes `default` and each first-referenced text-style name with transparent-background defaults. If an older standalone extension is present without the public handoff, Bubble reports `BUBBLE-RUNTIME-004` instead of silently replacing project styles; explicit `svgOverlayUnsupportedBehavior: "fallback"` selects scratch-render. Supplying a capability directly overrides both automatic paths. For portraits and similar features, Bubble's `createAssetManagerSvgOverlayImageCapability()` converts generic Asset Cache DOM resources into Bubble's image contract. The dependency points one way, from Bubble to Asset Cache; Asset Cache does not refer to Bubble types or security markers. The adapter exposes only MIME types allowed by both packages, carries across the validated MIME type, intrinsic size, `blob:` URL, and `release()`, and adds Bubble metadata to sanitized SVG from Asset Cache. Bubble never inserts arbitrary SVG strings. It reconstructs only allowed elements and attributes, such as `path` and `group`, from the canonical body by using `createElementNS()`. It rejects `script`, event handlers, `foreignObject`, and external URLs. The overlay root uses `pointer-events: none` and `aria-hidden="true"`.
+When `svgOverlayTextCapability` is omitted and standalone SVG Text 0.13.0 is loaded, Bubble obtains its frozen `getLayoutCapability()` and resolves the exact named-style registry populated by SVG Text blocks. If standalone SVG Text is absent, Bubble creates its own SVG Text 0.13.0 layout composition and initializes `default` and each first-referenced text-style name with transparent-background defaults. If an older standalone extension is present without the public handoff, Bubble reports `BUBBLE-RUNTIME-004` instead of silently replacing project styles; explicit `svgOverlayUnsupportedBehavior: "fallback"` selects scratch-render. Supplying a capability directly overrides both automatic paths. For portraits and similar features, Bubble's `createAssetManagerSvgOverlayImageCapability()` converts generic Asset Cache DOM resources into Bubble's image contract. The dependency points one way, from Bubble to Asset Cache; Asset Cache does not refer to Bubble types or security markers. The adapter exposes only MIME types allowed by both packages, carries across the validated MIME type, intrinsic size, `blob:` URL, and `release()`, and adds Bubble metadata to sanitized SVG from Asset Cache. Bubble never inserts arbitrary SVG strings. It reconstructs only allowed elements and attributes, such as `path` and `group`, from the canonical body by using `createElementNS()`. It rejects `script`, event handlers, `foreignObject`, and external URLs. The overlay root uses `pointer-events: none` and `aria-hidden="true"`.
 
-The default text provider is the directly depended-on SVG Text 0.12.1. Preserving styles from a separately loaded stock SVG Text extension requires its 0.8.1 `getLayoutCapability()`. Automatic image connection between stock extensions requires Asset Cache 0.1.0 or later, which exposes `getDOMImageCapability()`. The lower-level path that explicitly injects `resolveDOMImageResource()` from the Composition API is available with Asset Cache 0.1.0 or later.
+The default text provider is the directly depended-on SVG Text 0.13.0. Preserving styles from a separately loaded stock SVG Text extension requires its 0.8.1 `getLayoutCapability()`. Automatic image connection between stock extensions requires Asset Cache 0.1.0 or later, which exposes `getDOMImageCapability()`. The lower-level path that explicitly injects `resolveDOMImageResource()` from the Composition API is available with Asset Cache 0.1.0 or later.
 
 The skin-independent contracts for SVG Text and Asset Cache are published in [turbowarp-svg-text#26](https://github.com/kubohiroya/turbowarp-svg-text/issues/26), [turbowarp-asset-manager#103](https://github.com/kubohiroya/turbowarp-asset-manager/issues/103), and the stock registry handoff in [turbowarp-asset-manager#106](https://github.com/kubohiroya/turbowarp-asset-manager/issues/106). Bubble uses only public upstream APIs and never substitutes private-field access or extraction from skins. Selecting `svg-overlay` on a host without the overlay API returns `BUBBLE-RUNTIME-004`. Using images without either Asset Cache 0.1.0's public capability or an explicitly injected capability returns `BUBBLE-RUNTIME-002`. Bubble falls back to `scratch-render` on a host without the overlay API only when `svgOverlayUnsupportedBehavior: "fallback"` is explicitly specified.
 
@@ -134,7 +134,7 @@ The skin-independent contracts for SVG Text and Asset Cache are published in [tu
 
 When the stage's native size changes, Bubble updates the root `viewBox` and every surface. Fullscreen and high-DPI CSS scaling are delegated to the renderer's `scale` overlay mode. On stop, project reload, target or clone destruction, or composition disposal, Bubble releases listeners, DOM nodes, and capability-owned resources. It calls `removeOverlay(root)` when the last Bubble is closed.
 
-Automated regression tests verify that showing a Bubble, updating text, shaking it, and animating its shape with the default settings create zero Bubble-originated renderer skins or drawables. They also cover native-size updates, the shared root, upstream SVG Text 0.12.1 named-style coordinates and rounded corners, allowed attributes, and object URL release. The manual gates for visual parity and frame-time / memory behavior in Web, Desktop, and Packager are recorded in the [SVG overlay release notes](docs/release-notes-0.8.0.md).
+Automated regression tests verify that showing a Bubble, updating text, shaking it, and animating its shape with the default settings create zero Bubble-originated renderer skins or drawables. They also cover native-size updates, the shared root, upstream SVG Text 0.13.0 named-style coordinates and rounded corners, allowed attributes, and object URL release. The manual gates for visual parity and frame-time / memory behavior in Web, Desktop, and Packager are recorded in the [SVG overlay release notes](docs/release-notes-0.8.0.md).
 
 ### Progressive reveal units (CHARACTER / WORD / LINE / BLOCK)
 
@@ -223,7 +223,7 @@ Per-unit effects play named audio assets; they do not synthesize the displayed s
 | `@kubohiroya/turbowarp-bubble`             | Bubble surfaces, placement, progressive reveal, say / think, expression layers, animation, and input waiting |
 | Application / host                         | Convert application-specific input to Composition API calls as needed                                        |
 
-Bubble does not re-export its dependencies. The lower-level Composition API requires `textCapability` as a contract and is not limited to SVG Text. The TurboWarp adapter uses the separately loaded SVG Text 0.12.1 named-style handoff when available, otherwise it creates the directly depended-on layout composition as its provider. Image, audio, input, and condition-evaluation capabilities are replaceable; the TurboWarp adapter connects Asset Cache lazily, while Composition API hosts can implement `imageResolver` and `audio` themselves. Features that use Asset Cache cover external media beyond images, including full voice clips, typewriter sounds, and per-line or per-paragraph effects.
+Bubble does not re-export its dependencies. The lower-level Composition API requires `textCapability` as a contract and is not limited to SVG Text. The TurboWarp adapter uses the separately loaded SVG Text 0.13.0 named-style handoff when available, otherwise it creates the directly depended-on layout composition as its provider. Image, audio, input, and condition-evaluation capabilities are replaceable; the TurboWarp adapter connects Asset Cache lazily, while Composition API hosts can implement `imageResolver` and `audio` themselves. Features that use Asset Cache cover external media beyond images, including full voice clips, typewriter sounds, and per-line or per-paragraph effects.
 
 ### Automatic wrapping and line-breaking rules
 
@@ -302,7 +302,7 @@ const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
 const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
-SVG Text 0.12.1 is included as a regular dependency and serves as the default skin-independent text provider. You do not need to install it separately. Loading the standalone SVG Text 0.12.1 extension first is optional, but doing so lets Bubble reuse styles defined by its project blocks through the public handoff. This release supports the optional peer ranges starting at Asset Cache 0.5.1, Async Input 0.10.1, and Runtime Expression 0.8.1. Bubble also retains its SVG Text dependency range starting at 0.12.0 when a host injects a custom `svgOverlayTextCapability`. The historical Asset Cache 0.1.0 capability-introduction baseline does not permit resolving that old package version in this release.
+SVG Text 0.13.0 is included as a regular dependency and serves as the default skin-independent text provider. You do not need to install it separately. Loading the standalone SVG Text 0.13.0 extension first is optional, but doing so lets Bubble reuse styles defined by its project blocks through the public handoff. This release supports the optional peer ranges starting at Asset Cache 0.6.0, Async Input 0.11.0, and Runtime Expression 0.9.0. Bubble also retains its SVG Text dependency range starting at 0.13.0 when a host injects a custom `svgOverlayTextCapability`. The historical Asset Cache 0.1.0 capability-introduction baseline does not permit resolving that old package version in this release.
 
 After rolling back to `bubbleRenderBackend: "scratch-render"`, Bubble creates a skin-based provider from the same 0.8.1 dependency if the standalone SVG Text extension is not loaded. On a host where the standalone SVG Text extension is already loaded, Bubble continues using that existing provider for compatibility.
 
@@ -332,24 +332,24 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 
 1. For the input-wait example, open your project in the TurboWarp Editor and add Temporary Variables from the extension library.
 2. Select “Custom Extension” and enable Run without sandbox.
-3. Load Asset Cache 0.5.1 if you use portraits, blinking, lip-sync, continue frames, or audio.
-4. Load Runtime Expression 0.8.1 for `finish [UNIT] ...`; load both Async Input 0.10.1 and Runtime Expression 0.8.1 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
-5. Load Bubble 0.15.1 last. The SVG Text 0.12.1 layout provider is included in the Bubble bundle.
+3. Load Asset Cache 0.6.0 if you use portraits, blinking, lip-sync, continue frames, or audio.
+4. Load Runtime Expression 0.9.0 for `finish [UNIT] ...`; load both Async Input 0.11.0 and Runtime Expression 0.9.0 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
+5. Load Bubble 0.16.0 last. The SVG Text 0.13.0 layout provider is included in the Bubble bundle.
 
 Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Cache, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 
 ```text
 # Add only when using portraits, blink, lip-sync, continue, or audio
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.5.1/dist/asset-cache.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.6.0/dist/asset-cache.js
 
 # Add Async Input for integrated condition waits and close policies
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.10.1/dist/async-input.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.11.0/dist/async-input.js
 
 # Add Runtime Expression for finish or condition-based waits and close policies
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.8.1/dist/runtime-expression.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.9.0/dist/runtime-expression.js
 
 # Bubble (always load last)
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.15.1/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.16.0/dist/turbowarp-bubble.js
 ```
 
 TurboWarp custom extensions load JavaScript from URLs, so a network connection is required the first time they are loaded. For an unsandboxed development URL, TurboWarp requires the server origin to be exactly `http://localhost:8000/`; `127.0.0.1`, `0.0.0.0`, and other ports do not receive this exception. From the repository root, run `python3 -m http.server 8000`, then load `http://localhost:8000/dist/turbowarp-bubble.js`. Alternatively, choose the custom-extension file or text input and enable **Run extension without sandbox**. The extension does not work when opened directly with `file://` or when run as a sandboxed extension. See [TurboWarp's unsandboxed extension documentation](https://docs.turbowarp.org/development/extensions/unsandboxed) for the host restrictions.
@@ -576,7 +576,7 @@ Bubble automatically releases its owned timers, overlay DOM, and image leases wh
 
 ### Composition API
 
-Hosts that connect to a TurboWarp runtime renderer can use the public adapter. By default, it uses the SVG Text 0.12.1 named-style handoff when a standalone extension is loaded, otherwise its bundled layout composition, together with an SVG overlay. Load Asset Cache in addition only when using image portraits, lip-sync, continue indicators, or audio assets.
+Hosts that connect to a TurboWarp runtime renderer can use the public adapter. By default, it uses the SVG Text 0.13.0 named-style handoff when a standalone extension is loaded, otherwise its bundled layout composition, together with an SVG overlay. Load Asset Cache in addition only when using image portraits, lip-sync, continue indicators, or audio assets.
 
 ```ts
 import { createTurboWarpBubbleComposition } from "@kubohiroya/turbowarp-bubble/turbowarp-adapter";
@@ -754,6 +754,6 @@ pnpm check
 
 ## Fixed input editing
 
-The optional GUI capability is enabled only by the startup flags `blockEditorDialogs=1&blockEditorFixedInputs=1` (default OFF). See the [block reference and editing rules](docs/index.html#fixed-input-editing). Canonical property Schemas live in `schemas/block-editor-fixed-inputs.schema.json`; unchanged raw values and reporter inputs are retained. The common editor is a development/type dependency resolved to npm version `@kubohiroya/turbowarp-extension-data-editor@0.4.0` in the lockfile; no common runtime import is added to the extension or composition API.
+The optional GUI capability is enabled only by the startup flags `blockEditorDialogs=1&blockEditorFixedInputs=1` (default OFF). See the [block reference and editing rules](docs/index.html#fixed-input-editing). Canonical property Schemas live in `schemas/block-editor-fixed-inputs.schema.json`; unchanged raw values and reporter inputs are retained. The common editor is a development/type dependency resolved to npm version `@kubohiroya/turbowarp-extension-data-editor@0.5.0` in the lockfile; no common runtime import is added to the extension or composition API.
 
 Run `BLOCK_EDITOR_GUI_ROOT=/absolute/path/to/scratch-gui pnpm test:fixed-inputs:native` after building for the explicit native Blockly/VM transaction checks. This command requires the real GUI vendor dependencies and fails rather than skips if they are unavailable. It is separate from `pnpm test` and from published Pages verification.
