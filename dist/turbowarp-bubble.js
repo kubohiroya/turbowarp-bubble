@@ -6623,6 +6623,105 @@ var emptyBodyMinimumSize = Object.freeze({
 function bubbleBodyMinimumSize(...styles) {
   return styles.some((style) => style === "THINKING" || style === "DREAMING") ? cloudBodyMinimumSize : emptyBodyMinimumSize;
 }
+var contentFitStep = 2;
+var contentFitMaximumSteps = 400;
+var contentFitCache = /* @__PURE__ */ new Map();
+var contentFitCacheLimit = 128;
+/**
+* The region of a style's body that content may occupy without touching the
+* border. Undefined means the style draws no outline around the content.
+*/
+function contentRegion(style, width, height) {
+  switch (style) {
+    case "NO_BUBBLE": return;
+    case "THINKING":
+    case "DREAMING": return cloudValleyPoints(width, height);
+    case "YELLING": return burstBodyPoints(width, height);
+    case "WAVY": return wavyBodyPoints(width, height);
+    case "ANNOUNCEMENT": return roundedRectanglePoints(width, height, 13, 30);
+    case "NORMAL":
+    case "OFF_PANEL":
+    case "WHISPERING":
+    case "NARRATION": return roundedRectanglePoints(width, height);
+  }
+}
+function pointInPolygon(point, polygon) {
+  let inside = false;
+  for (let index = 0, previousIndex = polygon.length - 1; index < polygon.length; previousIndex = index, index += 1) {
+    const current = polygon[index];
+    const previous = polygon[previousIndex];
+    if (!current || !previous) continue;
+    if (current.y > point.y !== previous.y > point.y && point.x < (previous.x - current.x) * (point.y - current.y) / (previous.y - current.y) + current.x) inside = !inside;
+  }
+  return inside;
+}
+/**
+* Counts the sample points where a centered content box, inflated by the
+* clearance, escapes the polygon, plus polygon vertices poking into the box.
+* Zero means the content fits inside the outline.
+*/
+function contentOverflow(polygon, width, height, contentWidth, contentHeight) {
+  const halfWidth = contentWidth / 2 + 6;
+  const halfHeight = contentHeight / 2 + 6;
+  const left = width / 2 - halfWidth;
+  const right = width / 2 + halfWidth;
+  const top = height / 2 - halfHeight;
+  const bottom = height / 2 + halfHeight;
+  const outside = (x, y) => pointInPolygon({
+    x,
+    y
+  }, polygon) ? 0 : 1;
+  let count = 0;
+  const columns = Math.max(1, Math.ceil((right - left) / 4));
+  const rows = Math.max(1, Math.ceil((bottom - top) / 4));
+  for (let index = 0; index <= columns; index += 1) {
+    const sampleX = left + (right - left) * index / columns;
+    count += outside(sampleX, top) + outside(sampleX, bottom);
+  }
+  for (let index = 1; index < rows; index += 1) {
+    const sampleY = top + (bottom - top) * index / rows;
+    count += outside(left, sampleY) + outside(right, sampleY);
+  }
+  for (const vertex of polygon) if (vertex.x > left && vertex.x < right && vertex.y > top && vertex.y < bottom) count += 1;
+  return count;
+}
+/**
+* Computes the Bubble SVG size whose visible outline encloses a content box of
+* the given size with {@link bubbleContentClearance} to spare, for every listed
+* style (all styles of a shape transition must fit the same content).
+*/
+function bubbleBodySizeForContent(input) {
+  const contentWidth = Math.max(0, input.contentWidth);
+  const contentHeight = Math.max(0, input.contentHeight);
+  if (!Number.isFinite(contentWidth) || !Number.isFinite(contentHeight)) throw new TypeError("Bubble content size must be finite.");
+  const styles = [...new Set(input.styles)];
+  const key = `${styles.join(",")}:${contentWidth}:${contentHeight}`;
+  const cached = contentFitCache.get(key);
+  if (cached) return cached;
+  const overflowAt = (width, height) => styles.reduce((sum, style) => {
+    const region = contentRegion(style, width, height);
+    return region ? sum + contentOverflow(region, width, height, contentWidth, contentHeight) : sum;
+  }, 0);
+  const minimum = bubbleBodyMinimumSize(...styles);
+  let width = Math.max(contentWidth + 48, minimum.width);
+  let height = Math.max(contentHeight + 48, minimum.height);
+  for (let step = 0; step < contentFitMaximumSteps && overflowAt(width, height) > 0; step += 1) {
+    const wider = overflowAt(width + contentFitStep, height);
+    const taller = overflowAt(width, height + contentFitStep);
+    if (wider <= taller) width += contentFitStep;
+    if (taller <= wider) height += contentFitStep;
+  }
+  const result = Object.freeze({
+    height,
+    width
+  });
+  if (contentFitCache.size >= contentFitCacheLimit) {
+    const oldest = contentFitCache.keys().next().value;
+    if (oldest !== void 0) contentFitCache.delete(oldest);
+  }
+  contentFitCache.set(key, result);
+  return result;
+}
 function escapeXml$2(value) {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&apos;");
 }
@@ -6637,11 +6736,11 @@ function normalizeDirection(value) {
   if (!Number.isFinite(direction)) throw new TypeError("tailDirection must be finite.");
   return (direction % 360 + 360) % 360;
 }
-function roundedRectanglePoints(width, height, radius = 18) {
-  const left = 24;
-  const top = 24;
-  const right = width - 24;
-  const bottom = height - 24;
+function roundedRectanglePoints(width, height, radius = 18, inset = 24) {
+  const left = inset;
+  const top = inset;
+  const right = width - inset;
+  const bottom = height - inset;
   const segmentsPerCorner = 10;
   return [
     {
@@ -6814,56 +6913,84 @@ function unionBodyAndTail(body, bodyCenter, tip, fill, border, extra = "") {
   if (!outer) throw new Error("JSClipper returned an empty Bubble outline.");
   return `<path d="${polygonPath(outer)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round" data-boolean-operation="union" data-tail-base-on-border="true" ${extra}/>`;
 }
-function smoothClosedPath(points) {
-  const first = points[0];
-  if (!first || points.length < 3) throw new TypeError("Smooth Bubble path requires at least three points.");
-  const format = (value) => value.toFixed(4);
-  const segments = points.map((current, index) => {
-    const previous = points[(index - 1 + points.length) % points.length];
-    const next = points[(index + 1) % points.length];
-    const afterNext = points[(index + 2) % points.length];
-    if (!previous || !next || !afterNext) throw new Error("Smooth Bubble path is invalid.");
-    const firstControl = {
-      x: current.x + (next.x - previous.x) / 6,
-      y: current.y + (next.y - previous.y) / 6
+/** Relative chord lengths that keep cloud puffs from looking machine-regular. */
+var cloudPuffRhythm = Object.freeze([
+  1,
+  .78,
+  1.14,
+  .88,
+  1.06,
+  .8,
+  1.2,
+  .92
+]);
+/**
+* Returns the valleys between cloud puffs. Every puff bulges outward from the
+* polygon through these points, so the polygon is the cloud's inner envelope.
+*/
+function cloudValleyPoints(width, height) {
+  const boxWidth = width - 48;
+  const boxHeight = height - 48;
+  const centerX = width / 2;
+  const centerY = height / 2;
+  const nominalChord = Math.min(40, Math.max(22, 20 + Math.min(boxWidth, boxHeight) * .12 + Math.max(boxWidth, boxHeight) * .03));
+  const puffHeight = nominalChord * .34;
+  const radiusX = Math.max(1, boxWidth / 2 - puffHeight);
+  const radiusY = Math.max(1, boxHeight / 2 - puffHeight);
+  const exponent = 3;
+  const base = (angle) => {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+    return {
+      x: centerX + radiusX * Math.sign(cos) * Math.abs(cos) ** (2 / exponent),
+      y: centerY + radiusY * Math.sign(sin) * Math.abs(sin) ** (2 / exponent)
     };
-    const secondControl = {
-      x: next.x - (afterNext.x - current.x) / 6,
-      y: next.y - (afterNext.y - current.y) / 6
-    };
-    return `C ${format(firstControl.x)} ${format(firstControl.y)} ${format(secondControl.x)} ${format(secondControl.y)} ${format(next.x)} ${format(next.y)}`;
+  };
+  const samples = 720;
+  const cumulative = [0];
+  let previous = base(-Math.PI / 2);
+  for (let index = 1; index <= samples; index += 1) {
+    const current = base(-Math.PI / 2 + index * Math.PI * 2 / samples);
+    cumulative.push((cumulative[index - 1] ?? 0) + Math.hypot(current.x - previous.x, current.y - previous.y));
+    previous = current;
+  }
+  const perimeter = cumulative[samples] ?? 0;
+  const rhythmTotal = cloudPuffRhythm.reduce((sum, value) => sum + value, 0);
+  const count = Math.max(8, Math.round(perimeter / (nominalChord * rhythmTotal) * cloudPuffRhythm.length));
+  const weights = Array.from({ length: count }, (_, index) => cloudPuffRhythm[index % cloudPuffRhythm.length] ?? 1);
+  const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+  const pointAtLength = (length) => {
+    let low = 0;
+    let high = samples;
+    while (high - low > 1) {
+      const middle = low + high >> 1;
+      if ((cumulative[middle] ?? 0) <= length) low = middle;
+      else high = middle;
+    }
+    const from = cumulative[low] ?? 0;
+    const to = cumulative[high] ?? from;
+    const ratio = to > from ? (length - from) / (to - from) : 0;
+    return base(-Math.PI / 2 + (low + ratio) * Math.PI * 2 / samples);
+  };
+  let travelled = 0;
+  return weights.map((weight) => {
+    const point = pointAtLength(travelled / weightTotal * perimeter);
+    travelled += weight;
+    return point;
   });
-  return `M ${format(first.x)} ${format(first.y)} ${segments.join(" ")} Z`;
 }
 function cloudBody(width, height, fill, border) {
-  const x = 24;
-  const y = 24;
-  const right = width - 24;
-  const bottom = height - 24;
-  const bodyWidth = right - x;
-  const bodyHeight = bottom - y;
-  const point = (xRatio, yRatio) => ({
-    x: x + bodyWidth * xRatio,
-    y: y + bodyHeight * yRatio
+  const format = (value) => value.toFixed(4);
+  const points = cloudValleyPoints(width, height);
+  const first = points[0];
+  if (!first) throw new Error("Cloud Bubble path is invalid.");
+  const arcs = points.map((_, index) => {
+    const from = points[index] ?? first;
+    const to = points[(index + 1) % points.length] ?? first;
+    const radius = Math.hypot(to.x - from.x, to.y - from.y) * .56;
+    return `A ${format(radius)} ${format(radius)} 0 0 1 ${format(to.x)} ${format(to.y)}`;
   });
-  return `<path d="${smoothClosedPath([
-    point(0, .5),
-    point(.03, .3),
-    point(.18, .2),
-    point(.28, .04),
-    point(.5, .16),
-    point(.68, .03),
-    point(.84, .18),
-    point(.98, .3),
-    point(1, .52),
-    point(.95, .7),
-    point(.82, .82),
-    point(.68, .97),
-    point(.5, .84),
-    point(.32, .97),
-    point(.18, .82),
-    point(.03, .7)
-  ])}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
+  return `<path d="M ${format(first.x)} ${format(first.y)} ${arcs.join(" ")} Z" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
 }
 function thoughtTrail(body, bodyCenter, tip, fill, border, dreaming) {
   const tipVector = subtract(tip, bodyCenter);
@@ -12303,9 +12430,11 @@ function createSvgOverlaySurface(manager, actor, actorKey, kind, style, schedule
     const indicatorSize = fitImage(continueIndicator, indicatorBoxSize$1, scaleMultiplier);
     const totalWidth = portraitSize.width + (hasPortrait ? contentGap$1 * scaleMultiplier : 0) + textSize.width;
     const contentHeight = Math.max(portraitSize.height, textSize.height);
-    const minimumBodySize = bubbleBodyMinimumSize(currentStyle.visualStyle, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]);
-    const baseBubbleWidth = Math.max(totalWidth / scaleMultiplier + 48, minimumBodySize.width);
-    const baseBubbleHeight = Math.max(contentHeight / scaleMultiplier + 48, minimumBodySize.height);
+    const { width: baseBubbleWidth, height: baseBubbleHeight } = bubbleBodySizeForContent({
+      contentWidth: totalWidth / scaleMultiplier,
+      contentHeight: contentHeight / scaleMultiplier,
+      styles: [currentStyle.visualStyle, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]]
+    });
     const bubbleWidth = Math.max(totalWidth, (baseBubbleWidth - 48) * scaleMultiplier);
     const bubbleHeight = Math.max(contentHeight, (baseBubbleHeight - 48) * scaleMultiplier);
     const stageLeft = -native.width / 2;
@@ -12943,9 +13072,11 @@ function createSurface(runtime, actor, actorKey, kind, style, scheduler) {
       };
       const totalWidth = portraitSize.width + (hasPortrait ? contentGap * scaleMultiplier : 0) + textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const minimumBodySize = bubbleBodyMinimumSize(currentStyle.visualStyle, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]);
-      const baseBubbleWidth = Math.max(totalWidth / scaleMultiplier + 48, minimumBodySize.width);
-      const baseBubbleHeight = Math.max(contentHeight / scaleMultiplier + 48, minimumBodySize.height);
+      const { width: baseBubbleWidth, height: baseBubbleHeight } = bubbleBodySizeForContent({
+        contentWidth: totalWidth / scaleMultiplier,
+        contentHeight: contentHeight / scaleMultiplier,
+        styles: [currentStyle.visualStyle, ...shapeTransition === void 0 ? [] : [shapeTransition.from, shapeTransition.to]]
+      });
       const bubbleWidth = Math.max(totalWidth, (baseBubbleWidth - 48) * scaleMultiplier);
       const bubbleHeight = Math.max(contentHeight, (baseBubbleHeight - 48) * scaleMultiplier);
       const nativeSize = renderer.getNativeSize();
@@ -13462,7 +13593,7 @@ var builtInBubbleStyles = Object.freeze([Object.freeze({
   textStyle: "default"
 })]);
 var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-var EXTENSION_VERSION = "0.17.0";
+var EXTENSION_VERSION = "0.17.1";
 var BLOCK_ICON_URI = extensionConfig$1.blockIconURI;
 function extensionError(message) {
   const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);

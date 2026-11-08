@@ -5,6 +5,21 @@ export declare function bubbleBodyMinimumSize(...styles: readonly BubbleVisualSt
     height: number;
     width: number;
 }>;
+/** Gap kept between the content box and the inside of the outline stroke. */
+export declare const bubbleContentClearance = 6;
+/**
+ * Computes the Bubble SVG size whose visible outline encloses a content box of
+ * the given size with {@link bubbleContentClearance} to spare, for every listed
+ * style (all styles of a shape transition must fit the same content).
+ */
+export declare function bubbleBodySizeForContent(input: {
+    readonly contentWidth: number;
+    readonly contentHeight: number;
+    readonly styles: readonly BubbleVisualStyle[];
+}): Readonly<{
+    height: number;
+    width: number;
+}>;
 export interface RenderBubbleSvgInput {
     readonly style: BubbleVisualStyle;
     readonly lines: readonly string[];

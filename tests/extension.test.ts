@@ -837,11 +837,13 @@ describe("Bubble extension", () => {
     );
     const drawableId = harness.created.at(-1);
     expect(drawableId).toBeDefined();
-    expect(harness.positions.get(drawableId!)).toEqual([150, -20]);
+    // The body grows until its outline clears the text, so the stage-edge
+    // clamp pulls the bubble in further than the bare text width would.
+    expect(harness.positions.get(drawableId!)).toEqual([138, -20]);
 
     bounds = { bottom: -20, left: -50, right: 10, top: 60 };
     target.onTargetVisualChange?.(target);
-    expect(harness.positions.get(drawableId!)).toEqual([130, 20]);
+    expect(harness.positions.get(drawableId!)).toEqual([138, 20]);
 
     extension.setBubblePlacement({ STYLE: "placed", PLACEMENT: "33.75" });
     await extension.sayWithBubbleStyle(
@@ -849,7 +851,7 @@ describe("Bubble extension", () => {
       { target },
     );
     expect(harness.positions.get(harness.created.at(-1)!)).not.toEqual([
-      130, 20,
+      138, 20,
     ]);
   });
 
@@ -879,7 +881,10 @@ describe("Bubble extension", () => {
       [120, 120],
     );
     // The requested x position is 168; stage-edge clamping keeps it visible.
-    expect(harness.positions.get(textDrawable)).toEqual([132, -12]);
+    expect(harness.positions.get(textDrawable)).toEqual([
+      expect.closeTo(117.6),
+      -12,
+    ]);
   });
 
   it("places, offsets, zooms, and rounds the portrait inside the bubble", async () => {
@@ -1118,7 +1123,7 @@ describe("Bubble extension", () => {
       { target: hiddenActor },
     );
     const drawableId = harness.created.at(-1)!;
-    expect(harness.positions.get(drawableId)).toEqual([0, 140]);
+    expect(harness.positions.get(drawableId)).toEqual([0, 128]);
     expect(harness.visibility.get(drawableId)).toBe(true);
     expect(hiddenActor.onTargetVisualChange).toBeNull();
     expect(harness.createdSvgSkins.at(-1)).not.toContain(
@@ -1173,7 +1178,7 @@ describe("Bubble extension", () => {
       { MESSAGE: "footer", STYLE: "stage" },
       { target: stage },
     );
-    expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -140]);
+    expect(harness.positions.get(harness.created.at(-1)!)).toEqual([0, -128]);
     await extension.setBubbleAnimationMode({ MODE: "idle" }, { target: stage });
     await extension.closeBubble({}, { target: stage });
   });

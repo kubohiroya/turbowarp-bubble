@@ -1,7 +1,7 @@
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
 import {
   bubbleBodyCenterOffset,
-  bubbleBodyMinimumSize,
+  bubbleBodySizeForContent,
   renderBubbleSvg,
 } from "./bubble-svg.js";
 import {
@@ -1053,20 +1053,18 @@ export function createSvgOverlaySurface(
       (hasPortrait ? contentGap * scaleMultiplier : 0) +
       textSize.width;
     const contentHeight = Math.max(portraitSize.height, textSize.height);
-    const minimumBodySize = bubbleBodyMinimumSize(
-      currentStyle.visualStyle,
-      ...(shapeTransition === undefined
-        ? []
-        : [shapeTransition.from, shapeTransition.to]),
-    );
-    const baseBubbleWidth = Math.max(
-      totalWidth / scaleMultiplier + bubblePadding * 2,
-      minimumBodySize.width,
-    );
-    const baseBubbleHeight = Math.max(
-      contentHeight / scaleMultiplier + bubblePadding * 2,
-      minimumBodySize.height,
-    );
+    // Grow the body until its outline encloses the content with clearance.
+    const { width: baseBubbleWidth, height: baseBubbleHeight } =
+      bubbleBodySizeForContent({
+        contentWidth: totalWidth / scaleMultiplier,
+        contentHeight: contentHeight / scaleMultiplier,
+        styles: [
+          currentStyle.visualStyle,
+          ...(shapeTransition === undefined
+            ? []
+            : [shapeTransition.from, shapeTransition.to]),
+        ],
+      });
     const bubbleWidth = Math.max(
       totalWidth,
       (baseBubbleWidth - bubblePadding * 2) * scaleMultiplier,
