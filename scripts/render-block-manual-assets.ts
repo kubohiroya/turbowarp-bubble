@@ -3,7 +3,11 @@ import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { bubbleVisualStyles, renderBubbleSvg } from "../src/bubble-svg.ts";
+import {
+  bubbleBodySizeForContent,
+  bubbleVisualStyles,
+  renderBubbleSvg,
+} from "../src/bubble-svg.ts";
 import { wrapText } from "../src/text-layout.ts";
 
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -748,26 +752,35 @@ function widthLinebreakGuideSvg() {
       const cardX = 32 + index * 520;
       const cardY = 130;
       const lines = wrapGuideText(sample, maxWidth);
-      const bubbleWidth = maxWidth + 48;
-      const bubbleHeight = Math.max(106, 64 + lines.length * 22);
+      // Size the body exactly like the runtime: grow it until the outline
+      // clears the wrapped text.
+      const fontSize = 14;
+      const { width: bubbleWidth, height: bubbleHeight } =
+        bubbleBodySizeForContent({
+          contentWidth: Math.max(...lines.map(measureGuideText)),
+          contentHeight: lines.length * fontSize * 1.35,
+          styles: ["NORMAL"],
+        });
       const bubbleSvg = renderBubbleSvg({
         style: "NORMAL",
         lines,
         width: bubbleWidth,
         height: bubbleHeight,
         tailDirection: 205,
-        fontSize: 14,
+        fontSize,
         title: `maxWidth ${maxWidth} wrapping example`,
       });
       const bubbleX = cardX + 250 - bubbleWidth / 2;
       const bubbleY = cardY + 82;
+      const limitLeft = bubbleX + bubbleWidth / 2 - maxWidth / 2;
+      const limitRight = limitLeft + maxWidth;
       return `<g data-layout-engine="wrapText" data-max-width="${maxWidth}">
         <rect x="${cardX}" y="${cardY}" width="504" height="390" rx="18" fill="#ffffff" stroke="#d9deea" stroke-width="2"/>
         <text x="${cardX + 20}" y="${cardY + 36}" style="fill:${colors.ink};font-size:19px;font-weight:700">maxWidth = ${maxWidth}px</text>
         <text x="${cardX + 484}" y="${cardY + 35}" text-anchor="end" class="small">${lines.length} lines</text>
         ${embedRenderedSvg(bubbleSvg, bubbleX, bubbleY, bubbleWidth, bubbleHeight)}
-        <line x1="${bubbleX + 24}" y1="${cardY + 338}" x2="${bubbleX + bubbleWidth - 24}" y2="${cardY + 338}" stroke="#ef476f" stroke-width="2"/>
-        <path d="M ${bubbleX + 30} ${cardY + 333} L ${bubbleX + 24} ${cardY + 338} L ${bubbleX + 30} ${cardY + 343} M ${bubbleX + bubbleWidth - 30} ${cardY + 333} L ${bubbleX + bubbleWidth - 24} ${cardY + 338} L ${bubbleX + bubbleWidth - 30} ${cardY + 343}" fill="none" stroke="#ef476f" stroke-width="2"/>
+        <line x1="${limitLeft}" y1="${cardY + 338}" x2="${limitRight}" y2="${cardY + 338}" stroke="#ef476f" stroke-width="2"/>
+        <path d="M ${limitLeft + 6} ${cardY + 333} L ${limitLeft} ${cardY + 338} L ${limitLeft + 6} ${cardY + 343} M ${limitRight - 6} ${cardY + 333} L ${limitRight} ${cardY + 338} L ${limitRight - 6} ${cardY + 343}" fill="none" stroke="#ef476f" stroke-width="2"/>
         <text x="${cardX + 252}" y="${cardY + 370}" text-anchor="middle" class="small">文字領域の上限 ${maxWidth}px（padding・tailは別）</text>
       </g>`;
     })
