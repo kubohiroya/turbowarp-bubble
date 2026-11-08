@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   bubbleBodyCenterOffset,
   bubbleBodyMinimumSize,
+  bubbleBodySizeForContent,
   bubbleVisualStyles,
   renderBubbleSvg,
 } from "../src/bubble-svg.js";
@@ -141,5 +142,169 @@ describe("renderBubbleSvg", () => {
     expect(() =>
       renderBubbleSvg({ style: "NORMAL", lines: [], width: 0 }),
     ).toThrow("dimensions must be positive");
+  });
+});
+
+interface Vertex {
+  readonly x: number;
+  readonly y: number;
+}
+
+/**
+ * Reads the outline vertices of a tail-less body. For the cloud, the arc end
+ * points are the valleys between outward-bulging puffs, so the polygon through
+ * them is the cloud's inner envelope. ANNOUNCEMENT's inner frame is a rect.
+ */
+function outlinePolygons(svg: string): Vertex[][] {
+  const polygons: Vertex[][] = [];
+  for (const [, d] of svg.matchAll(/<path d="([^"]+)"/gu)) {
+    const vertices: Vertex[] = [];
+    for (const command of d!.matchAll(/([MLA])([^MLAZ]+)/gu)) {
+      const numbers = command[2]!.trim().split(/\s+/u).map(Number);
+      vertices.push({ x: numbers.at(-2)!, y: numbers.at(-1)! });
+    }
+    polygons.push(vertices);
+  }
+  for (const [, x, y, width, height, radius] of svg.matchAll(
+    /<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" rx="([\d.]+)"/gu,
+  )) {
+    const left = Number(x);
+    const top = Number(y);
+    const right = left + Number(width);
+    const bottom = top + Number(height);
+    const r = Number(radius);
+    const corners = [
+      { cx: right - r, cy: top + r, start: -90 },
+      { cx: right - r, cy: bottom - r, start: 0 },
+      { cx: left + r, cy: bottom - r, start: 90 },
+      { cx: left + r, cy: top + r, start: 180 },
+    ];
+    polygons.push(
+      corners.flatMap(({ cx, cy, start }) =>
+        Array.from({ length: 11 }, (_, index) => {
+          const radians = ((start + index * 9) * Math.PI) / 180;
+          return {
+            x: cx + Math.cos(radians) * r,
+            y: cy + Math.sin(radians) * r,
+          };
+        }),
+      ),
+    );
+  }
+  return polygons;
+}
+
+function inside(point: Vertex, polygon: readonly Vertex[]): boolean {
+  let result = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i, i += 1) {
+    const a = polygon[i]!;
+    const b = polygon[j]!;
+    if (
+      a.y > point.y !== b.y > point.y &&
+      point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x
+    ) {
+      result = !result;
+    }
+  }
+  return result;
+}
+
+describe("bubbleBodySizeForContent", () => {
+  const contentSizes = [
+    [24, 20],
+    [100, 20],
+    [180, 48],
+    [320, 61],
+    [200, 120],
+  ] as const;
+
+  it.each(bubbleVisualStyles.filter((style) => style !== "NO_BUBBLE"))(
+    "keeps content clear of the %s outline",
+    (style) => {
+      for (const [contentWidth, contentHeight] of contentSizes) {
+        const { width, height } = bubbleBodySizeForContent({
+          contentWidth,
+          contentHeight,
+          styles: [style],
+        });
+        const svg = renderBubbleSvg({
+          style,
+          lines: [],
+          width,
+          height,
+          tailDirection: null,
+        });
+        // Half the 3px stroke must stay outside the content box.
+        const halfWidth = contentWidth / 2 + 1.5;
+        const halfHeight = contentHeight / 2 + 1.5;
+        const box = {
+          left: width / 2 - halfWidth,
+          right: width / 2 + halfWidth,
+          top: height / 2 - halfHeight,
+          bottom: height / 2 + halfHeight,
+        };
+        const samples: Vertex[] = [];
+        for (let t = 0; t <= 1; t += 1 / 32) {
+          const x = box.left + (box.right - box.left) * t;
+          const y = box.top + (box.bottom - box.top) * t;
+          samples.push(
+            { x, y: box.top },
+            { x, y: box.bottom },
+            { x: box.left, y },
+            { x: box.right, y },
+          );
+        }
+        const polygons = outlinePolygons(svg);
+        expect(polygons.length).toBeGreaterThan(0);
+        for (const polygon of polygons) {
+          for (const sample of samples) {
+            expect(
+              inside(sample, polygon),
+              `${style} ${contentWidth}x${contentHeight}`,
+            ).toBe(true);
+          }
+          for (const vertex of polygon) {
+            const intrudes =
+              vertex.x > box.left &&
+              vertex.x < box.right &&
+              vertex.y > box.top &&
+              vertex.y < box.bottom;
+            expect(intrudes, `${style} ${contentWidth}x${contentHeight}`).toBe(
+              false,
+            );
+          }
+        }
+      }
+    },
+  );
+
+  it("fits every style of a shape transition", () => {
+    const content = { contentWidth: 150, contentHeight: 20 };
+    const normal = bubbleBodySizeForContent({ ...content, styles: ["NORMAL"] });
+    const cloud = bubbleBodySizeForContent({
+      ...content,
+      styles: ["THINKING"],
+    });
+    const both = bubbleBodySizeForContent({
+      ...content,
+      styles: ["NORMAL", "THINKING"],
+    });
+
+    expect(both.width).toBeGreaterThanOrEqual(
+      Math.max(normal.width, cloud.width) - 4,
+    );
+    expect(both.height).toBeGreaterThanOrEqual(
+      Math.max(normal.height, cloud.height) - 4,
+    );
+  });
+
+  it("keeps the cloud minimum for short thoughts", () => {
+    expect(
+      bubbleBodySizeForContent({
+        contentWidth: 0,
+        contentHeight: 0,
+        styles: ["THINKING"],
+      }),
+    ).toEqual(bubbleBodyMinimumSize("THINKING"));
   });
 });

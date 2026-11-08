@@ -47,7 +47,7 @@ export {
 import { actorRelativeBubbleCenter } from "./actor-transform.js";
 import {
   bubbleBodyCenterOffset,
-  bubbleBodyMinimumSize,
+  bubbleBodySizeForContent,
   renderBubbleSvg,
 } from "./bubble-svg.js";
 import {
@@ -810,20 +810,18 @@ function createSurface(
         (hasPortrait ? contentGap * scaleMultiplier : 0) +
         textSize.width;
       const contentHeight = Math.max(portraitSize.height, textSize.height);
-      const minimumBodySize = bubbleBodyMinimumSize(
-        currentStyle.visualStyle,
-        ...(shapeTransition === undefined
-          ? []
-          : [shapeTransition.from, shapeTransition.to]),
-      );
-      const baseBubbleWidth = Math.max(
-        totalWidth / scaleMultiplier + bubblePadding * 2,
-        minimumBodySize.width,
-      );
-      const baseBubbleHeight = Math.max(
-        contentHeight / scaleMultiplier + bubblePadding * 2,
-        minimumBodySize.height,
-      );
+      // Grow the body until its outline encloses the content with clearance.
+      const { width: baseBubbleWidth, height: baseBubbleHeight } =
+        bubbleBodySizeForContent({
+          contentWidth: totalWidth / scaleMultiplier,
+          contentHeight: contentHeight / scaleMultiplier,
+          styles: [
+            currentStyle.visualStyle,
+            ...(shapeTransition === undefined
+              ? []
+              : [shapeTransition.from, shapeTransition.to]),
+          ],
+        });
       // The SVG viewport includes padding for the tail. Placement and clamping
       // use the visible body border, including style-specific minimum sizes.
       const bubbleWidth = Math.max(
