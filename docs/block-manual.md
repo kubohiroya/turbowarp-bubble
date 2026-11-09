@@ -15,8 +15,8 @@ The complete input-wait example uses five extensions. Add Temporary Variables fr
 |     1 | Temporary Variables       | Add from the TurboWarp extension library                                                                  |
 |     2 | Async Input 0.12.0        | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.12.0/dist/async-input.js`               |
 |     3 | Runtime Expression 0.10.0 | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.10.0/dist/runtime-expression.js` |
-|     4 | Asset Cache 0.7.0         | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.7.0/dist/asset-cache.js`                |
-|     5 | Bubble 0.17.2             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.17.2/dist/turbowarp-bubble.js`               |
+|     4 | Asset Cache 0.8.0         | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.8.0/dist/asset-cache.js`                |
+|     5 | Bubble 0.18.0             | `https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.18.0/dist/turbowarp-bubble.js`               |
 
 To try a development build, load this repository's `dist/turbowarp-bubble.js` as a local custom extension. Bubble reports an explicit error if the renderer lacks the default SVG overlay APIs, if an image/media feature is used without Asset Cache, or if Async Input or Runtime Expression is missing when it starts a condition-based Bubble wait. The lower-level Composition API can inject another text capability.
 
@@ -328,7 +328,7 @@ Saved projects using the former `say/think [MESSAGE] with bubble style [STYLE]` 
 
 | Symptom                              | Cause and solution                                                              |
 | ------------------------------------ | ------------------------------------------------------------------------------- |
-| Asset Cache required error           | Load Asset Cache 0.7.0 without sandbox before using image/media assets          |
+| Asset Cache required error           | Load Asset Cache 0.8.0 without sandbox before using image/media assets          |
 | SVG overlay backend error            | Use a host with `renderer.addOverlay()` or explicitly select `scratch-render`   |
 | Async Input required error           | Load Async Input 0.3.x without sandbox before using the Bubble wait             |
 | Runtime Expression required error    | Load Runtime Expression 0.3.x without sandbox before using the Bubble wait      |

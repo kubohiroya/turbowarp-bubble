@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.17.2",
+  "version": "0.18.0",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": {
     "name": "Hiroya Kubo",
@@ -88,7 +88,7 @@
     "pages:build": "node scripts/prepare-pages.mjs"
   },
   "peerDependencies": {
-    "@kubohiroya/turbowarp-asset-cache": "^0.7.0",
+    "@kubohiroya/turbowarp-asset-cache": "^0.8.0",
     "@kubohiroya/turbowarp-async-input": "^0.12.0",
     "@kubohiroya/turbowarp-runtime-expression": "^0.10.0"
   },
@@ -105,7 +105,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@kubohiroya/turbowarp-asset-cache": "^0.7.0",
+    "@kubohiroya/turbowarp-asset-cache": "^0.8.0",
     "@kubohiroya/turbowarp-async-input": "^0.12.0",
     "@kubohiroya/turbowarp-extension-data-editor": "^0.8.1",
     "@kubohiroya/turbowarp-extension-manifest": "^0.5.0",
