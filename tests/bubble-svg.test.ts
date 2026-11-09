@@ -83,6 +83,43 @@ describe("renderBubbleSvg", () => {
     expect(svg).toContain('data-bubble-body-height="96"');
   });
 
+  it("moves and scales the ANNOUNCEMENT inner frame with the body", () => {
+    const width = 220;
+    const height = 112;
+    const svg = renderBubbleSvg({
+      style: "ANNOUNCEMENT",
+      lines: ["告知"],
+      width,
+      height,
+      tailDirection: 90,
+      offset: [10, -10, 120],
+    });
+    const frame = svg.match(
+      /<path d="([^"]+)"[^>]*data-bubble-inner-frame="true"/u,
+    );
+    expect(frame).not.toBeNull();
+    const points = [...frame![1]!.matchAll(/[ML] ([-\d.]+) ([-\d.]+)/gu)].map(
+      ([, x, y]) => ({ x: Number(x), y: Number(y) }),
+    );
+    const xs = points.map(({ x }) => x);
+    const ys = points.map(({ y }) => y);
+    const text = svg.match(/<text x="([-\d.]+)" y="[-\d.]+"/u)!;
+
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(
+      (width - 60) * 1.2,
+      1,
+    );
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(
+      (height - 60) * 1.2,
+      1,
+    );
+    // The frame stays centered on the body, which is also the text center.
+    expect((Math.max(...xs) + Math.min(...xs)) / 2).toBeCloseTo(
+      Number(text[1]),
+      1,
+    );
+  });
+
   it("applies tail length, body offset, scale, and scaled text", () => {
     const baseline = renderBubbleSvg({
       style: "NORMAL",
@@ -153,7 +190,7 @@ interface Vertex {
 /**
  * Reads the outline vertices of a tail-less body. For the cloud, the arc end
  * points are the valleys between outward-bulging puffs, so the polygon through
- * them is the cloud's inner envelope. ANNOUNCEMENT's inner frame is a rect.
+ * them is the cloud's inner envelope. ANNOUNCEMENT also draws an inner frame.
  */
 function outlinePolygons(svg: string): Vertex[][] {
   const polygons: Vertex[][] = [];
@@ -164,32 +201,6 @@ function outlinePolygons(svg: string): Vertex[][] {
       vertices.push({ x: numbers.at(-2)!, y: numbers.at(-1)! });
     }
     polygons.push(vertices);
-  }
-  for (const [, x, y, width, height, radius] of svg.matchAll(
-    /<rect x="([\d.]+)" y="([\d.]+)" width="([\d.]+)" height="([\d.]+)" rx="([\d.]+)"/gu,
-  )) {
-    const left = Number(x);
-    const top = Number(y);
-    const right = left + Number(width);
-    const bottom = top + Number(height);
-    const r = Number(radius);
-    const corners = [
-      { cx: right - r, cy: top + r, start: -90 },
-      { cx: right - r, cy: bottom - r, start: 0 },
-      { cx: left + r, cy: bottom - r, start: 90 },
-      { cx: left + r, cy: top + r, start: 180 },
-    ];
-    polygons.push(
-      corners.flatMap(({ cx, cy, start }) =>
-        Array.from({ length: 11 }, (_, index) => {
-          const radians = ((start + index * 9) * Math.PI) / 180;
-          return {
-            x: cx + Math.cos(radians) * r,
-            y: cy + Math.sin(radians) * r,
-          };
-        }),
-      ),
-    );
   }
   return polygons;
 }

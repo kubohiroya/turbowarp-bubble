@@ -7131,7 +7131,19 @@ function renderBody(style, width, height, direction, fill, border, tailLength, o
     case "YELLING": return withTail(burstBodyPoints(width, height));
     case "WAVY": return withTail(wavyBodyPoints(width, height));
     case "WHISPERING": return withTail(rounded, "stroke-dasharray=\"5 5\"");
-    case "ANNOUNCEMENT": return `${withTail(rounded)}<rect x="30" y="30" width="${width - 60}" height="${height - 60}" rx="13" fill="none" stroke="${border}" stroke-width="1.5"/>`;
+    case "ANNOUNCEMENT": {
+      const frame = roundedRectanglePoints(width, height, 13, 30);
+      const placedFrame = direction === null ? frame : (() => {
+        const { bodyCenter } = transformedBodyGeometry(rounded, width, height, direction, tailLength, offset);
+        const center = {
+          x: width / 2,
+          y: height / 2
+        };
+        const scale = offset.scalePercent / 100;
+        return frame.map((point) => transformPoint(point, center, bodyCenter, scale));
+      })();
+      return `${withTail(rounded)}<path d="${polygonPath(placedFrame)}" fill="none" stroke="${border}" stroke-width="1.5" stroke-linejoin="round" data-bubble-inner-frame="true"/>`;
+    }
     case "NARRATION": return bodyPath(transformWithoutTail(rounded), fill, border);
     case "OFF_PANEL": return withTail(rounded);
     case "NORMAL": return withTail(rounded);
