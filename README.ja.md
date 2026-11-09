@@ -6,7 +6,7 @@
 
 `@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。
 
-現在のリリースはBubble 0.17.2です。既定の描画経路はSVG Text 0.14.0を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Cache 0.7.0、Async Input 0.12.0、Runtime Expression 0.10.0です。Asset Cacheへの移行については[0.13.0のリリースノート](docs/release-notes-0.13.0.md)、再利用可能な名前付きclose policyについては[0.10.0のリリースノート](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0のリリースノート](docs/release-notes-0.9.0.md)を参照してください。
+現在のリリースはBubble 0.18.0です。既定の描画経路はSVG Text 0.14.0を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Cache 0.8.0、Async Input 0.12.0、Runtime Expression 0.10.0です。Asset Cacheへの移行については[0.13.0のリリースノート](docs/release-notes-0.13.0.md)、再利用可能な名前付きclose policyについては[0.10.0のリリースノート](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0のリリースノート](docs/release-notes-0.9.0.md)を参照してください。
 
 ## 最小デモ
 
@@ -87,7 +87,7 @@ flowchart TB
 
 `bubbleRenderBackend`を省略した場合の既定値は`"svg-overlay"`です。`renderer.addOverlay(root, "scale")`でstage canvas上に共有SVG rootを置き、body、tail、text、portrait、corner clip、continue indicatorをDOM要素として描画します。文字にはstandalone拡張の共有named-style registry、またはBubble内包compositionから得るSVG Text 0.14.0のhost-neutral layoutを使います。この既定経路ではBubbleの表示、text更新、style更新、animationのために`createDrawable()`、`createSVGSkin()`、`createBitmapSkin()`を呼ばず、Bubble由来の処理はscratch-renderの`SVGSkin`／`Silhouette`経路へ入りません。`"scratch-render"`は互換性とロールバックのため明示指定時だけ使用します。
 
-TurboWarpでstock Asset Cache 0.7.0をBubbleより先に読み込むと、Bubbleはportrait等を初めて使う時に`runtime.ext_kubohiroyaassetcache.getDOMImageCapability()`を呼び、Asset Cacheブロックで登録された同じregistryへ遅延接続します。文字だけを使う場合はAsset Cacheを読み込みません。Composition APIのhostは、次のようにcapabilityを明示注入できます。
+TurboWarpでstock Asset Cache 0.8.0をBubbleより先に読み込むと、Bubbleはportrait等を初めて使う時に`runtime.ext_kubohiroyaassetcache.getDOMImageCapability()`を呼び、Asset Cacheブロックで登録された同じregistryへ遅延接続します。文字だけを使う場合はAsset Cacheを読み込みません。Composition APIのhostは、次のようにcapabilityを明示注入できます。
 
 ```ts
 import { createAssetManagerComposition } from "@kubohiroya/turbowarp-asset-cache/composition";
@@ -302,7 +302,7 @@ const reveal = normalizeBubbleReveal({ unit: "CHARACTER" });
 const chunks = splitBubbleText("A👩‍🚀B", reveal);
 ```
 
-SVG Text 0.14.0は既定のskin非依存文字providerとして通常dependencyに含まれます。別途インストールは不要です。standalone SVG Text 0.14.0を先に読み込むと、project blockで定義したstyleを公開handoff経由で再利用します。今回のoptional peerはAsset Cache 0.7.0、Async Input 0.12.0、Runtime Expression 0.10.0以降の互換範囲を指定します。hostが独自の`svgOverlayTextCapability`を注入する場合も、Bubble自身のSVG Text dependencyは0.13.0以降の互換範囲です。Asset Cache 0.1.0はAPI導入履歴の基準であり、今回その旧package版を依存解決に許容する意味ではありません。
+SVG Text 0.14.0は既定のskin非依存文字providerとして通常dependencyに含まれます。別途インストールは不要です。standalone SVG Text 0.14.0を先に読み込むと、project blockで定義したstyleを公開handoff経由で再利用します。今回のoptional peerはAsset Cache 0.8.0、Async Input 0.12.0、Runtime Expression 0.10.0以降の互換範囲を指定します。hostが独自の`svgOverlayTextCapability`を注入する場合も、Bubble自身のSVG Text dependencyは0.13.0以降の互換範囲です。Asset Cache 0.1.0はAPI導入履歴の基準であり、今回その旧package版を依存解決に許容する意味ではありません。
 
 `bubbleRenderBackend: "scratch-render"`へrollbackした場合も、standalone SVG Text拡張が未ロードなら同じ0.8.1 dependencyからskin版providerを生成します。standalone SVG Text拡張が既にロードされているhostでは、互換性のためその既存providerを引き続き使用します。
 
@@ -332,15 +332,15 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 
 1. 入力待ちの例を使う場合は、TurboWarp Editorでプロジェクトを開き、拡張機能の追加からTemporary Variablesを追加します。
 2. 「カスタム拡張機能」を選び、サンドボックスなし（Run without sandbox）で実行できる状態にします。
-3. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Cache 0.7.0を読み込みます。
+3. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Cache 0.8.0を読み込みます。
 4. `finish [UNIT] ...`にはRuntime Expression 0.10.0、conditionを使う待機またはclose policyにはAsync Input 0.12.0とRuntime Expression 0.10.0を読み込みます。timeoutだけのclose policyにはどちらも不要です。
-5. 最後にBubble 0.17.2を読み込みます。SVG Text 0.14.0のlayout providerはBubble bundleに含まれます。
+5. 最後にBubble 0.18.0を読み込みます。SVG Text 0.14.0のlayout providerはBubble bundleに含まれます。
 
 文字だけの最小構成はBubbleです。Temporary Variables、Asset Cache、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。Bubbleを読み込むと、基本の`say [MESSAGE]`／`think [MESSAGE]`ブロックはstyle定義なしですぐ使えます。それぞれ組み込みBubble style `say`／`think`を選び、各styleが本体形状とtail/trail形状を不可分な1つの外観として持ちます。どちらも予約text profile `default`を使います。named custom styleが必要な場合だけ`define bubble style`と`show [MESSAGE] with bubble style [STYLE]`を使います。それ以外のnamed text styleや、外形・配置・media・reveal・motionの明示設定はcustom profileになります。
 
 ```text
 # portrait／blink／lip-sync／continue／音声を使う場合だけ追加
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.7.0/dist/asset-cache.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-asset-cache@0.8.0/dist/asset-cache.js
 
 # conditionを使う統合待機またはclose policyでAsync Inputを追加
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.12.0/dist/async-input.js
@@ -349,7 +349,7 @@ https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.12.0/dist/async
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.10.0/dist/runtime-expression.js
 
 # Bubble（必ず最後）
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.17.2/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.18.0/dist/turbowarp-bubble.js
 ```
 
 TurboWarpのカスタム拡張機能はURLからJavaScriptを読み込むため、初回読み込み時にネットワーク接続が必要です。開発用URLをunsandboxedとして読み込むには、server originを正確に`http://localhost:8000/`とする必要があります。`127.0.0.1`、`0.0.0.0`、ほかのportにはこの例外が適用されません。リポジトリrootで`python3 -m http.server 8000`を実行し、`http://localhost:8000/dist/turbowarp-bubble.js`を読み込んでください。別の方法として、カスタム拡張機能のfileまたはtext入力を選び、**サンドボックスなしで実行する**を有効にできます。`file://`で直接開いたファイルや、サンドボックス付きの拡張機能としては動作しません。host制約の詳細は[TurboWarpのunsandboxed拡張機能ドキュメント](https://docs.turbowarp.org/development/extensions/unsandboxed)を参照してください。
