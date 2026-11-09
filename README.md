@@ -6,7 +6,7 @@ English | [日本語](README.ja.md)
 
 `@kubohiroya/turbowarp-bubble` is an unsandboxed extension that manages TurboWarp `say` and `think` displays as separate text, character-expression, and input-waiting indicator layers. It also provides a composition API for using the same features directly from applications.
 
-The current release is Bubble 0.17.1. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.14.0. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.7.0, Async Input 0.12.0, and Runtime Expression 0.10.0. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
+The current release is Bubble 0.17.2. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.14.0. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.7.0, Async Input 0.12.0, and Runtime Expression 0.10.0. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
 
 ## Minimal demo
 
@@ -334,7 +334,7 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 2. Select “Custom Extension” and enable Run without sandbox.
 3. Load Asset Cache 0.7.0 if you use portraits, blinking, lip-sync, continue frames, or audio.
 4. Load Runtime Expression 0.10.0 for `finish [UNIT] ...`; load both Async Input 0.12.0 and Runtime Expression 0.10.0 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
-5. Load Bubble 0.17.1 last. The SVG Text 0.14.0 layout provider is included in the Bubble bundle.
+5. Load Bubble 0.17.2 last. The SVG Text 0.14.0 layout provider is included in the Bubble bundle.
 
 Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Cache, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 
@@ -349,7 +349,7 @@ https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.12.0/dist/async
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.10.0/dist/runtime-expression.js
 
 # Bubble (always load last)
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.17.1/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.17.2/dist/turbowarp-bubble.js
 ```
 
 TurboWarp custom extensions load JavaScript from URLs, so a network connection is required the first time they are loaded. For an unsandboxed development URL, TurboWarp requires the server origin to be exactly `http://localhost:8000/`; `127.0.0.1`, `0.0.0.0`, and other ports do not receive this exception. From the repository root, run `python3 -m http.server 8000`, then load `http://localhost:8000/dist/turbowarp-bubble.js`. Alternatively, choose the custom-extension file or text input and enable **Run extension without sandbox**. The extension does not work when opened directly with `file://` or when run as a sandboxed extension. See [TurboWarp's unsandboxed extension documentation](https://docs.turbowarp.org/development/extensions/unsandboxed) for the host restrictions.
