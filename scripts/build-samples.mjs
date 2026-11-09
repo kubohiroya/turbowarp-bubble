@@ -143,11 +143,18 @@ export async function buildSamples({ check = false } = {}) {
     const output = new URL(`samples/${sample.name}.sb3`, root);
     const archive = zip(entries);
     if (check) {
-      assert.deepEqual(
-        await readFile(output),
-        archive,
-        `Stale sample: ${sample.name}; run samples:build`,
-      );
+      // Compare bytes directly: assert.deepEqual on a mismatch builds a
+      // diff of the whole archive, which exhausts memory for real samples.
+      const existing = await readFile(output);
+      if (!existing.equals(archive)) {
+        const digest = (data) =>
+          createHash("sha256").update(data).digest("hex").slice(0, 12);
+        assert.fail(
+          `Stale sample: ${sample.name}; run samples:build ` +
+            `(committed ${existing.length} bytes sha256:${digest(existing)}, ` +
+            `expected ${archive.length} bytes sha256:${digest(archive)})`,
+        );
+      }
     } else {
       await writeFile(output, archive);
     }

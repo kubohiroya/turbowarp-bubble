@@ -3078,7 +3078,16 @@ function Ee(e, t, n, r, i, a, o, s) {
 		case "YELLING": return u(Se(t, n));
 		case "WAVY": return u(Ce(t, n));
 		case "WHISPERING": return u(c, "stroke-dasharray=\"5 5\"");
-		case "ANNOUNCEMENT": return `${u(c)}<rect x="30" y="30" width="${t - 60}" height="${n - 60}" rx="13" fill="none" stroke="${a}" stroke-width="1.5"/>`;
+		case "ANNOUNCEMENT": {
+			let e = oe(t, n, 13, 30), i = r === null ? e : (() => {
+				let { bodyCenter: i } = pe(c, t, n, r, o, s), a = {
+					x: t / 2,
+					y: n / 2
+				}, l = s.scalePercent / 100;
+				return e.map((e) => fe(e, a, i, l));
+			})();
+			return `${u(c)}<path d="${me(i)}" fill="none" stroke="${a}" stroke-width="1.5" stroke-linejoin="round" data-bubble-inner-frame="true"/>`;
+		}
 		case "NARRATION": return ge(l(c), i, a);
 		case "OFF_PANEL": return u(c);
 		case "NORMAL": return u(c);

@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.17.1",
+  "version": "0.17.2",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": {
     "name": "Hiroya Kubo",
