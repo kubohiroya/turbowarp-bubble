@@ -13660,7 +13660,7 @@ var BubbleExtension = class {
     runtime.on?.("PROJECT_STOP_ALL", releaseAll);
     runtime.on?.("STOP_FOR_TARGET", releaseTarget);
     runtime.on?.("RUNTIME_DISPOSED", () => {
-      this.disposeBubbles().catch(() => void 0);
+      this.resetForProject().catch(() => void 0);
     });
   }
   getInfo() {
@@ -14066,6 +14066,17 @@ var BubbleExtension = class {
   async dispose() {
     this.fixedEditorsDispose?.();
     await this.disposeBubbles();
+  }
+  async resetForProject() {
+    if (this.disposed) return;
+    this.cancelAllWaits("Bubble project was unloaded.");
+    const composition = this.composition;
+    this.composition = null;
+    this.handles.clear();
+    this.styles.clear();
+    for (const style of builtInBubbleStyles) this.styles.set(style.name, style);
+    this.closePolicies.clear();
+    if (composition) await composition.dispose();
   }
   async disposeBubbles() {
     if (this.disposed) return;

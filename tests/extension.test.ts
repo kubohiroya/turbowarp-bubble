@@ -1559,6 +1559,68 @@ describe("Bubble extension", () => {
     },
   );
 
+  it("keeps working for the next project after RUNTIME_DISPOSED and PROJECT_LOADED", async () => {
+    const harness = createRuntime();
+    const extension = createScratchRenderExtension(harness.runtime);
+    const target = actor();
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "first project", STYLE: "dialogue" },
+      { target },
+    );
+    const firstProjectDrawables = [...harness.created];
+    expect(firstProjectDrawables.length).toBeGreaterThan(0);
+
+    // vm.loadProject disposes the runtime but keeps the extension loaded.
+    harness.emit("RUNTIME_DISPOSED");
+    harness.emit("PROJECT_LOADED");
+
+    await vi.waitFor(() =>
+      expect(harness.destroyed).toEqual(
+        expect.arrayContaining(firstProjectDrawables),
+      ),
+    );
+    // Styles defined by the previous project do not leak into the next one.
+    await expect(
+      extension.sayWithBubbleStyle(
+        { MESSAGE: "stale", STYLE: "dialogue" },
+        { target },
+      ),
+    ).rejects.toThrow("bubble style is not defined");
+
+    await extension.say({ MESSAGE: "second project" }, { target });
+    expect(harness.createdSvgSkins.at(-1)).toContain("second project");
+    extension.defineBubbleStyle({
+      STYLE: "dialogue",
+      TEXT_STYLE: "dialogue-text",
+    });
+    await extension.sayWithBubbleStyle(
+      { MESSAGE: "styled again", STYLE: "dialogue" },
+      { target },
+    );
+
+    // The runtime listeners are still active for the next project.
+    const shown = harness.created.length;
+    harness.emit("PROJECT_STOP_ALL");
+    await vi.waitFor(() =>
+      expect(harness.destroyed).toEqual(
+        expect.arrayContaining(harness.created.slice(0, shown)),
+      ),
+    );
+
+    // Only genuine extension disposal tears the extension down.
+    await extension.dispose();
+    expect(() =>
+      extension.defineBubbleStyle({
+        STYLE: "dialogue",
+        TEXT_STYLE: "dialogue-text",
+      }),
+    ).toThrow("disposed");
+  });
+
   it("requires Async Input and Runtime Expression for Bubble waits", async () => {
     const target = actor();
     const noInput = createRuntime({ asyncInput: false });
