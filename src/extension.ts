@@ -179,8 +179,9 @@ export class BubbleExtension implements TurboWarpExtension {
     runtime.on?.("STOP_FOR_TARGET", releaseTarget);
     runtime.on?.("RUNTIME_DISPOSED", () => {
       // The fixed input editors stay with the extension, which outlives the
-      // project; their helper releases and restores them on its own.
-      void this.disposeBubbles().catch(() => undefined);
+      // project; their helper releases and restores them on its own. Only the
+      // project's bubbles, styles, and policies are reset here.
+      void this.resetForProject().catch(() => undefined);
     });
   }
 
@@ -786,6 +787,18 @@ export class BubbleExtension implements TurboWarpExtension {
   public async dispose(): Promise<void> {
     this.fixedEditorsDispose?.();
     await this.disposeBubbles();
+  }
+
+  private async resetForProject(): Promise<void> {
+    if (this.disposed) return;
+    this.cancelAllWaits("Bubble project was unloaded.");
+    const composition = this.composition;
+    this.composition = null;
+    this.handles.clear();
+    this.styles.clear();
+    for (const style of builtInBubbleStyles) this.styles.set(style.name, style);
+    this.closePolicies.clear();
+    if (composition) await composition.dispose();
   }
 
   private async disposeBubbles(): Promise<void> {
