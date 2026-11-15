@@ -1260,21 +1260,40 @@ function registerFixedInputEditors$1(scratch, runtime) {
   const api = scratch.gui?.blockEditors;
   if (api?.apiVersion !== 1 || typeof api.registerFixedInputEditor !== "function") return void 0;
   const events = runtime;
+  const definitions = fixedInputEditorOptions$1();
   const removers = [];
-  let active = true;
-  const dispose = () => {
-    if (!active) return;
-    active = false;
-    events.off?.("RUNTIME_DISPOSED", dispose);
+  let state = "registered";
+  const release = () => {
     for (const remove of removers.splice(0).reverse()) remove();
   };
-  try {
-    for (const options of fixedInputEditorOptions$1()) removers.push(api.registerFixedInputEditor.call(api, options));
-    events.on?.("RUNTIME_DISPOSED", dispose);
-  } catch (error) {
-    dispose();
-    throw error;
-  }
+  const register = () => {
+    try {
+      for (const options of definitions) removers.push(api.registerFixedInputEditor.call(api, options));
+    } catch (error) {
+      release();
+      throw error;
+    }
+  };
+  const releaseForRuntimeDispose = () => {
+    if (state !== "registered") return;
+    state = "released";
+    release();
+  };
+  const restoreAfterProjectLoad = () => {
+    if (state !== "released") return;
+    register();
+    state = "registered";
+  };
+  const dispose = () => {
+    if (state === "disposed") return;
+    state = "disposed";
+    events.off?.("RUNTIME_DISPOSED", releaseForRuntimeDispose);
+    events.off?.("PROJECT_LOADED", restoreAfterProjectLoad);
+    release();
+  };
+  register();
+  events.on?.("RUNTIME_DISPOSED", releaseForRuntimeDispose);
+  events.on?.("PROJECT_LOADED", restoreAfterProjectLoad);
   return dispose;
 }
 //#endregion
@@ -13641,7 +13660,7 @@ var BubbleExtension = class {
     runtime.on?.("PROJECT_STOP_ALL", releaseAll);
     runtime.on?.("STOP_FOR_TARGET", releaseTarget);
     runtime.on?.("RUNTIME_DISPOSED", () => {
-      this.dispose().catch(() => void 0);
+      this.disposeBubbles().catch(() => void 0);
     });
   }
   getInfo() {
@@ -14045,9 +14064,12 @@ var BubbleExtension = class {
     this.handles.clear();
   }
   async dispose() {
+    this.fixedEditorsDispose?.();
+    await this.disposeBubbles();
+  }
+  async disposeBubbles() {
     if (this.disposed) return;
     this.disposed = true;
-    this.fixedEditorsDispose?.();
     this.cancelAllWaits("Bubble extension was disposed.");
     if (this.composition) await this.composition.dispose();
     this.handles.clear();

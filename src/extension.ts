@@ -178,7 +178,9 @@ export class BubbleExtension implements TurboWarpExtension {
     runtime.on?.("PROJECT_STOP_ALL", releaseAll);
     runtime.on?.("STOP_FOR_TARGET", releaseTarget);
     runtime.on?.("RUNTIME_DISPOSED", () => {
-      void this.dispose().catch(() => undefined);
+      // The fixed input editors stay with the extension, which outlives the
+      // project; their helper releases and restores them on its own.
+      void this.disposeBubbles().catch(() => undefined);
     });
   }
 
@@ -782,9 +784,13 @@ export class BubbleExtension implements TurboWarpExtension {
   }
 
   public async dispose(): Promise<void> {
+    this.fixedEditorsDispose?.();
+    await this.disposeBubbles();
+  }
+
+  private async disposeBubbles(): Promise<void> {
     if (this.disposed) return;
     this.disposed = true;
-    this.fixedEditorsDispose?.();
     this.cancelAllWaits("Bubble extension was disposed.");
     if (this.composition) await this.composition.dispose();
     this.handles.clear();
