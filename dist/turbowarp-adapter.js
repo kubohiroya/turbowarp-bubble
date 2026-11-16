@@ -235,19 +235,22 @@ function x() {
 function S(e, t) {
 	let n = e.gui?.blockEditors;
 	if (n?.apiVersion !== 1 || typeof n.registerFixedInputEditor != "function") return;
-	let r = t, i = [], a = !0, o = () => {
-		if (a) {
-			a = !1, r.off?.("RUNTIME_DISPOSED", o);
-			for (let e of i.splice(0).reverse()) e();
+	let r = t, i = x(), a = [], o = "registered", s = () => {
+		for (let e of a.splice(0).reverse()) e();
+	}, c = () => {
+		try {
+			for (let e of i) a.push(n.registerFixedInputEditor.call(n, e));
+		} catch (e) {
+			throw s(), e;
 		}
+	}, l = () => {
+		o === "registered" && (o = "released", s());
+	}, u = () => {
+		o === "released" && (c(), o = "registered");
 	};
-	try {
-		for (let e of x()) i.push(n.registerFixedInputEditor.call(n, e));
-		r.on?.("RUNTIME_DISPOSED", o);
-	} catch (e) {
-		throw o(), e;
-	}
-	return o;
+	return c(), r.on?.("RUNTIME_DISPOSED", l), r.on?.("PROJECT_LOADED", u), () => {
+		o !== "disposed" && (o = "disposed", r.off?.("RUNTIME_DISPOSED", l), r.off?.("PROJECT_LOADED", u), s());
+	};
 }
 var C = 480, w = 360, T = 100, E = 50, D = 1, O = 128, k = {
 	fontSize: 14,
@@ -535,11 +538,19 @@ var te = l.blocks, ne = l.menus, re = "https://kubohiroya.github.io/turbowarp-sv
 		return Math.max(0, ...r.lines.map((e) => e.width));
 	}
 	getLayoutCapability() {
-		return this.layoutCapabilityValue ??= Object.freeze({ layoutText: (e) => {
-			if (typeof e != "object" || !e || typeof e.styleName != "string" || typeof e.text != "string") throw TypeError("SVG Text layout capability input is invalid.");
-			let t = this.requireLayoutNativeSize(e.nativeSize), n = this.resolveStyle(e.styleName);
-			return M(this.normalizeMessage(e.text), n.definition, t);
-		} }), this.layoutCapabilityValue;
+		return this.layoutCapabilityValue ??= Object.freeze({
+			layoutText: (e) => {
+				if (typeof e != "object" || !e || typeof e.styleName != "string" || typeof e.text != "string") throw TypeError("SVG Text layout capability input is invalid.");
+				let t = this.requireLayoutNativeSize(e.nativeSize), n = this.resolveStyle(e.styleName);
+				return M(this.normalizeMessage(e.text), n.definition, t);
+			},
+			layoutRichText: (e) => {
+				if (typeof e != "object" || !e || typeof e.styleName != "string") throw TypeError("SVG Text rich layout capability input is invalid.");
+				this.requireLayoutNativeSize(e.nativeSize);
+				let t = this.resolveStyle(e.styleName);
+				return ze(/* @__PURE__ */ new Map([[e.styleName, t.definition]]), e);
+			}
+		}), this.layoutCapabilityValue;
 	}
 	setCompositionText(e, t, n) {
 		let r = Object.freeze({
