@@ -734,6 +734,8 @@ runは`{ type: "text", text }`または`{ type: "ruby", base, reading }`で、`@
 - rubyのrunは`CHARACTER`／`WORD`／`LINE`／`BLOCK`のいずれのreveal unitでも1単位として扱うため、`中野`がreadingを伴わずに現れることはありません。
 - rubyの描画には`setRichText`を実装したtext capabilityが必要です。未実装のcapabilityへrubyのrunsが渡された場合、baseだけを黙って描くのではなく`BUBBLE-COMPOSITION-007`で明示的に失敗します。
 - capabilityは`measureRichText`と`splitRichText`も実装できます。`splitRichText`があるときはrevealの分割をcapabilityへ委譲し、無いときはBubbleが分割してrubyのrunを分割せずに保ちます。
+- 既定の`svg-overlay`バックエンドでは、`BubbleSvgOverlayTextCapability`の`layoutText`と並ぶ省略可能な`layoutRichText`がrubyを配置します。戻り値はplainのレイアウトと同じスタイルの項目と寸法に、`fragments`を持つ`lines`を加えたものです。fragmentは`{ type: "text", text, x, baseline }`か`{ type: "ruby", base, reading }`で、`base`と`reading`はそれぞれ`text`、`x`、`baseline`、`fontSize`を持ちます。座標は位置付きのplainの行と同じく、テキストのレイアウトの中心からの相対値です。overlayは各fragmentを`<tspan>`として描き（rubyの読みには`data-bubble-ruby="reading"`、親文字には`data-bubble-ruby="base"`を付けます）、読みに要る高さを含むrichのレイアウトの幅と高さから吹き出しの大きさを決めます。`createSvgTextOverlayTextCapability()`はSVG Textのレイアウトcompositionの`layoutRichText`を結線し、同梱のフォールバックのcompositionもこれを備えます。文字列とrubyを含まないrunsは引き続き`layoutText`を使い、overlayの出力は変わりません。
+- `layoutRichText`の無いoverlayのtext capabilityでも、plainのテキストはこれまでどおり描けます。ただしrubyを含む内容は`BUBBLE-COMPOSITION-007`で失敗します。単体のSVG Text拡張機能の`getLayoutCapability()`は0.14.1まで`layoutText`だけを公開するため、overlayでrubyを描くには、現時点では同梱のフォールバック（単体のSVG Textを読み込まない構成）か、明示的に渡す`svgOverlayTextCapability`が必要です。
 
 返されたhandleの`setText(text)`は同じsurface上の本文を更新し、文字送りなどに利用できます。`handle.updateStyle(style)`は表示中のBubbleへstyle変更を即時適用します。同じ`actorKey`へ新しいBubbleを表示すると、以前のBubbleを完全に破棄してから置き換えます。`releaseTarget`、`releaseAll`、`dispose`も、所有するtimer、text capability target、surfaceを解放します。composition間で状態は共有しません。
 

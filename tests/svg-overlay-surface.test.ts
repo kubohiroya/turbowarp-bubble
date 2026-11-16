@@ -725,3 +725,226 @@ describe("SVG overlay backend", () => {
     ).toThrow(/bubbleRenderBackend must be scratch-render or svg-overlay/u);
   });
 });
+
+const rubySentence = Object.freeze([
+  Object.freeze({ text: "私は", type: "text" as const }),
+  Object.freeze({ base: "中野", reading: "なかの", type: "ruby" as const }),
+  Object.freeze({ text: "です", type: "text" as const }),
+]);
+
+function rubyTspans(window: Window, part: "base" | "reading") {
+  return [
+    ...window.document.querySelectorAll(`tspan[data-bubble-ruby="${part}"]`),
+  ];
+}
+
+function bodyHeight(window: Window): number {
+  return Number(
+    window.document
+      .querySelector('[data-bubble-layer="body"]')
+      ?.getAttribute("data-bubble-body-height"),
+  );
+}
+
+describe("SVG overlay backend ruby content", () => {
+  it("renders the ruby base on the line and its reading above it", async () => {
+    const harness = createHarness();
+    const textLayouts = createSvgTextLayoutComposition();
+    textLayouts.defineStyle({ name: "body", backgroundColor: "transparent" });
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+    });
+    composition.defineStyle({ name: "dialog", textStyle: "body" });
+
+    const plain = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "dialog",
+      text: "私は中野です",
+    });
+    const plainBodyHeight = bodyHeight(harness.window);
+    await plain.close();
+
+    const handle = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "dialog",
+      text: rubySentence,
+    });
+    const expected = textLayouts.layoutRichText({
+      nativeSize: [480, 360],
+      runs: rubySentence,
+      styleName: "body",
+    });
+    const ruby = expected.lines
+      .flatMap((line) => line.fragments)
+      .find((fragment) => fragment.type === "ruby");
+    if (ruby?.type !== "ruby") throw new Error("expected a ruby fragment");
+
+    const [reading] = rubyTspans(harness.window, "reading");
+    const [base] = rubyTspans(harness.window, "base");
+    expect(reading?.textContent).toBe("なかの");
+    expect(base?.textContent).toBe("中野");
+    expect(reading?.getAttribute("x")).toBe(
+      String(ruby.reading.x - expected.width / 2),
+    );
+    expect(reading?.getAttribute("y")).toBe(
+      String(ruby.reading.baseline - expected.height / 2),
+    );
+    expect(reading?.getAttribute("font-size")).toBe(
+      String(ruby.reading.fontSize),
+    );
+    expect(base?.getAttribute("y")).toBe(
+      String(ruby.base.baseline - expected.height / 2),
+    );
+    expect(Number(reading?.getAttribute("y"))).toBeLessThan(
+      Number(base?.getAttribute("y")),
+    );
+    const text = harness.window.document.querySelector("text");
+    expect(text?.getAttribute("text-anchor")).toBe("start");
+    expect(
+      [...(text?.querySelectorAll("tspan:not([data-bubble-ruby])") ?? [])]
+        .map((tspan) => tspan.textContent)
+        .join(""),
+    ).toBe("私はです");
+    // The reading's vertical room enlarges the bubble.
+    expect(bodyHeight(harness.window)).toBeGreaterThan(plainBodyHeight);
+    expect(harness.renderer.createSVGSkin).not.toHaveBeenCalled();
+    expect(harness.renderer.createDrawable).not.toHaveBeenCalled();
+
+    harness.setNativeSize([960, 720]);
+    harness.emit("NativeSizeChanged");
+    const resized = textLayouts.layoutRichText({
+      nativeSize: [960, 720],
+      runs: rubySentence,
+      styleName: "body",
+    });
+    const resizedRuby = resized.lines
+      .flatMap((line) => line.fragments)
+      .find((fragment) => fragment.type === "ruby");
+    if (resizedRuby?.type !== "ruby") throw new Error("expected ruby");
+    expect(
+      rubyTspans(harness.window, "reading")[0]?.getAttribute("font-size"),
+    ).toBe(String(resizedRuby.reading.fontSize));
+
+    await handle.setText("Updated");
+    expect(rubyTspans(harness.window, "reading")).toHaveLength(0);
+    expect(harness.window.document.querySelector("text")?.textContent).toBe(
+      "Updated",
+    );
+    await handle.close();
+  });
+
+  it("never reveals a reading without its whole base", async () => {
+    const harness = createHarness();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+    });
+    composition.defineStyle({
+      name: "reveal",
+      textStyle: "body",
+      reveal: { unit: "CHARACTER", layout: "RESERVED", intervalSeconds: 0 },
+    });
+    const handle = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "reveal",
+      text: rubySentence,
+    });
+    const reservedHeight = bodyHeight(harness.window);
+    const states: string[] = [];
+    const record = (): void => {
+      const readings = rubyTspans(harness.window, "reading");
+      const bases = rubyTspans(harness.window, "base");
+      expect(readings).toHaveLength(bases.length);
+      for (const base of bases) expect(base.textContent).toBe("中野");
+      // RESERVED keeps the full content's size, reading room included.
+      expect(bodyHeight(harness.window)).toBe(reservedHeight);
+      states.push(
+        harness.window.document.querySelector("text")?.textContent ?? "",
+      );
+    };
+    record();
+    while (await handle.revealNext()) record();
+
+    expect(states).toEqual([
+      "私",
+      "私は",
+      "私はなかの中野",
+      "私はなかの中野で",
+      "私はなかの中野です",
+    ]);
+    await handle.close();
+  });
+
+  it("keeps ruby-free runs on the plain layout path", async () => {
+    const harness = createHarness();
+    const layoutRichText = vi.fn();
+    const layoutText = vi.fn(harness.textCapability.layoutText);
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: { layoutRichText, layoutText },
+    });
+    composition.defineStyle({ name: "dialog", textStyle: "body" });
+    const handle = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "dialog",
+      text: [
+        { text: "Hello ", type: "text" },
+        { text: "world", type: "text" },
+      ],
+    });
+    expect(layoutText).toHaveBeenCalledWith(
+      expect.objectContaining({ text: "Hello world" }),
+    );
+    expect(layoutRichText).not.toHaveBeenCalled();
+    expect(harness.window.document.querySelector("text")?.textContent).toBe(
+      "Hello world",
+    );
+    await handle.close();
+  });
+
+  it("fails explicitly when the overlay capability has no rich layout", async () => {
+    const harness = createHarness();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+      svgOverlayTextCapability: harness.textCapability,
+    });
+    composition.defineStyle({ name: "dialog", textStyle: "body" });
+
+    await expect(
+      composition.show({
+        actor: actor("sprite-1"),
+        actorKey: "sprite-1",
+        kind: "say",
+        styleName: "dialog",
+        text: rubySentence,
+      }),
+    ).rejects.toMatchObject({
+      code: "BUBBLE-COMPOSITION-007",
+      message: expect.stringContaining("layoutRichText"),
+    });
+    expect(harness.window.document.body.textContent).not.toContain("中野");
+    expect(composition.hasActiveBubble("sprite-1")).toBe(false);
+
+    const handle = await composition.show({
+      actor: actor("sprite-1"),
+      actorKey: "sprite-1",
+      kind: "say",
+      styleName: "dialog",
+      text: "plain",
+    });
+    await expect(handle.setText(rubySentence)).rejects.toMatchObject({
+      code: "BUBBLE-COMPOSITION-007",
+    });
+    expect(harness.window.document.body.textContent).not.toContain("なかの");
+    // The failed transition is reported again by close, as on every backend.
+    await handle.close().catch(() => undefined);
+    expect(composition.hasActiveBubble("sprite-1")).toBe(false);
+  });
+});
