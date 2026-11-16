@@ -10541,7 +10541,7 @@ function createBubbleComposition(options) {
   });
 }
 //#endregion
-//#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.14.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
+//#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.15.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
 var block_definitions_default = {
   extensionName: "SVG Text",
   blocks: [{
@@ -10783,21 +10783,40 @@ function registerFixedInputEditors(scratch, runtime) {
   const api = scratch.gui?.blockEditors;
   if (api?.apiVersion !== 1 || typeof api.registerFixedInputEditor !== "function") return void 0;
   const events = runtime;
+  const definitions = fixedInputEditorOptions();
   const removers = [];
-  let active = true;
-  const dispose = () => {
-    if (!active) return;
-    active = false;
-    events.off?.("RUNTIME_DISPOSED", dispose);
+  let state = "registered";
+  const release = () => {
     for (const remove of removers.splice(0).reverse()) remove();
   };
-  try {
-    for (const options of fixedInputEditorOptions()) removers.push(api.registerFixedInputEditor.call(api, options));
-    events.on?.("RUNTIME_DISPOSED", dispose);
-  } catch (error) {
-    dispose();
-    throw error;
-  }
+  const register = () => {
+    try {
+      for (const options of definitions) removers.push(api.registerFixedInputEditor.call(api, options));
+    } catch (error) {
+      release();
+      throw error;
+    }
+  };
+  const releaseForRuntimeDispose = () => {
+    if (state !== "registered") return;
+    state = "released";
+    release();
+  };
+  const restoreAfterProjectLoad = () => {
+    if (state !== "released") return;
+    register();
+    state = "registered";
+  };
+  const dispose = () => {
+    if (state === "disposed") return;
+    state = "disposed";
+    events.off?.("RUNTIME_DISPOSED", releaseForRuntimeDispose);
+    events.off?.("PROJECT_LOADED", restoreAfterProjectLoad);
+    release();
+  };
+  register();
+  events.on?.("RUNTIME_DISPOSED", releaseForRuntimeDispose);
+  events.on?.("PROJECT_LOADED", restoreAfterProjectLoad);
   return dispose;
 }
 var baseStageWidth = 480;
@@ -11189,12 +11208,20 @@ var SvgTextExtension = class {
   * Consumers receive current layout data without access to the mutable registry.
   */
   getLayoutCapability() {
-    this.layoutCapabilityValue ?? (this.layoutCapabilityValue = Object.freeze({ layoutText: (input) => {
-      if (typeof input !== "object" || input === null || typeof input.styleName !== "string" || typeof input.text !== "string") throw new TypeError("SVG Text layout capability input is invalid.");
-      const nativeSize = this.requireLayoutNativeSize(input.nativeSize);
-      const selection = this.resolveStyle(input.styleName);
-      return createSvgTextLayout(this.normalizeMessage(input.text), selection.definition, nativeSize);
-    } }));
+    this.layoutCapabilityValue ?? (this.layoutCapabilityValue = Object.freeze({
+      layoutText: (input) => {
+        if (typeof input !== "object" || input === null || typeof input.styleName !== "string" || typeof input.text !== "string") throw new TypeError("SVG Text layout capability input is invalid.");
+        const nativeSize = this.requireLayoutNativeSize(input.nativeSize);
+        const selection = this.resolveStyle(input.styleName);
+        return createSvgTextLayout(this.normalizeMessage(input.text), selection.definition, nativeSize);
+      },
+      layoutRichText: (input) => {
+        if (typeof input !== "object" || input === null || typeof input.styleName !== "string") throw new TypeError("SVG Text rich layout capability input is invalid.");
+        this.requireLayoutNativeSize(input.nativeSize);
+        const selection = this.resolveStyle(input.styleName);
+        return layoutRichTextFromStyles(/* @__PURE__ */ new Map([[input.styleName, selection.definition]]), input);
+      }
+    }));
     return this.layoutCapabilityValue;
   }
   setCompositionText(styleName, render, target) {
@@ -11479,6 +11506,10 @@ function layoutTextFromStyles(styles, input) {
   if (typeof input.text !== "string") throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text text must be a string.");
   return createSvgTextLayout(normalizeText(input.text), definition, validateNativeSize(input.nativeSize));
 }
+/**
+* Lays out content runs, ruby included, with one named style. The composition and the extension's
+* layout capability share it, so both validate runs, sizes and limits the same way.
+*/
 function layoutRichTextFromStyles(styles, input) {
   if (!isRecord$4(input)) throw compositionError("SVG-TEXT-COMPOSITION-001", "SVG Text rich layout input is invalid.");
   requireExactKeys(input, [
@@ -13821,7 +13852,7 @@ var builtInBubbleStyles = Object.freeze([Object.freeze({
   textStyle: "default"
 })]);
 var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-var EXTENSION_VERSION = "0.19.0";
+var EXTENSION_VERSION = "0.19.1";
 var BLOCK_ICON_URI = extensionConfig$1.blockIconURI;
 function extensionError(message) {
   const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
