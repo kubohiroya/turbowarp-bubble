@@ -11680,6 +11680,47 @@ function adaptSvgTextLayout(value) {
     width
   });
 }
+function adaptSvgTextRichLayout(value) {
+  if (!isRecord$3(value) || !Array.isArray(value.lines)) throw new TypeError("SVG Text rich layout result is invalid.");
+  const { lines: _plainLines, ...style } = adaptSvgTextLayout({
+    ...value,
+    lines: []
+  });
+  const offsetX = style.width / 2;
+  const offsetY = style.height / 2;
+  const adaptGlyph = (glyph, label) => {
+    if (!isRecord$3(glyph) || typeof glyph.text !== "string") throw new TypeError(`SVG Text ruby ${label} is invalid.`);
+    return Object.freeze({
+      baseline: requireFiniteNumber(glyph.baseline, `SVG Text ruby ${label} baseline`) - offsetY,
+      fontSize: requireFiniteNumber(glyph.fontSize, `SVG Text ruby ${label} font size`),
+      text: glyph.text,
+      x: requireFiniteNumber(glyph.x, `SVG Text ruby ${label} x`) - offsetX
+    });
+  };
+  const adaptFragment = (fragment) => {
+    if (!isRecord$3(fragment)) throw new TypeError("SVG Text rich layout fragment is invalid.");
+    if (fragment.type === "ruby") return Object.freeze({
+      base: adaptGlyph(fragment.base, "base"),
+      reading: adaptGlyph(fragment.reading, "reading"),
+      type: "ruby"
+    });
+    if (fragment.type !== "text" || typeof fragment.text !== "string") throw new TypeError("SVG Text rich layout fragment is invalid.");
+    return Object.freeze({
+      baseline: requireFiniteNumber(fragment.baseline, "SVG Text fragment baseline") - offsetY,
+      text: fragment.text,
+      type: "text",
+      x: requireFiniteNumber(fragment.x, "SVG Text fragment x") - offsetX
+    });
+  };
+  const lines = Object.freeze(value.lines.map((line) => {
+    if (!isRecord$3(line) || !Array.isArray(line.fragments)) throw new TypeError("SVG Text rich layout line is invalid.");
+    return Object.freeze({ fragments: Object.freeze(line.fragments.map(adaptFragment)) });
+  }));
+  return Object.freeze({
+    ...style,
+    lines
+  });
+}
 /**
 * Adapt the TurboWarp-SVG-Text extension to Bubble's host-neutral text
 * capability contract.
@@ -11745,7 +11786,7 @@ function createSvgTextCompositionCapability(compositionInput) {
 */
 function createSvgTextOverlayTextCapability(compositionInput) {
   const composition = validateLayoutComposition(compositionInput);
-  return Object.freeze({
+  const capability = {
     layoutText({ nativeSize, styleName, text }) {
       return adaptSvgTextLayout(composition.layoutText({
         nativeSize: [nativeSize.width, nativeSize.height],
@@ -11761,7 +11802,14 @@ function createSvgTextOverlayTextCapability(compositionInput) {
       });
       return Math.max(1, ...layout.lines.map((line) => requireFiniteNumber(line.width, "SVG Text line width")));
     }
-  });
+  };
+  if (typeof composition.layoutRichText === "function") capability.layoutRichText = ({ maxWidth, nativeSize, runs, styleName }) => adaptSvgTextRichLayout(composition.layoutRichText?.({
+    nativeSize: [nativeSize.width, nativeSize.height],
+    runs,
+    styleName,
+    ...maxWidth === void 0 ? {} : { maxWidth }
+  }));
+  return Object.freeze(capability);
 }
 /**
 * Adapts the stock SVG Text extension's shared named-style layout registry.
@@ -11961,6 +12009,62 @@ function normalizeTextLayout(value) {
     ...preserveWhitespace === void 0 ? {} : { preserveWhitespace }
   });
 }
+function requireFiniteCoordinate(value, label) {
+  const result = Number(value);
+  if (typeof value !== "number" || !Number.isFinite(result)) throw new TypeError(`${label} must be a finite number.`);
+  return result;
+}
+function normalizeRichTextGlyph(value, label) {
+  if (!isRecord$1(value) || typeof value.text !== "string") throw new TypeError(`SVG overlay ruby ${label} is invalid.`);
+  return Object.freeze({
+    baseline: requireFiniteCoordinate(value.baseline, `SVG overlay ruby ${label} baseline`),
+    fontSize: requireFiniteDimension(value.fontSize, `SVG overlay ruby ${label} fontSize`),
+    text: value.text,
+    x: requireFiniteCoordinate(value.x, `SVG overlay ruby ${label} x`)
+  });
+}
+function normalizeRichTextFragment(value) {
+  if (!isRecord$1(value)) throw new TypeError("SVG overlay rich text fragment is invalid.");
+  if (value.type === "text") {
+    if (typeof value.text !== "string") throw new TypeError("SVG overlay rich text fragment text is invalid.");
+    return Object.freeze({
+      baseline: requireFiniteCoordinate(value.baseline, "SVG overlay rich text fragment baseline"),
+      text: value.text,
+      type: "text",
+      x: requireFiniteCoordinate(value.x, "SVG overlay rich text fragment x")
+    });
+  }
+  if (value.type === "ruby") return Object.freeze({
+    base: normalizeRichTextGlyph(value.base, "base"),
+    reading: normalizeRichTextGlyph(value.reading, "reading"),
+    type: "ruby"
+  });
+  throw new TypeError("SVG overlay rich text fragment type must be text or ruby.");
+}
+function normalizeRichTextLayout(value) {
+  if (!isRecord$1(value) || !Array.isArray(value.lines)) throw new TypeError("SVG overlay rich text layout is invalid.");
+  const { lines: _plainLines, ...style } = normalizeTextLayout({
+    ...value,
+    lines: []
+  });
+  const lines = Object.freeze(value.lines.map((line) => {
+    if (!isRecord$1(line) || !Array.isArray(line.fragments)) throw new TypeError("SVG overlay rich text line is invalid.");
+    return Object.freeze({ fragments: Object.freeze(line.fragments.map((fragment) => normalizeRichTextFragment(fragment))) });
+  }));
+  return Object.freeze({
+    ...style,
+    lines
+  });
+}
+function normalizeRenderedText(value) {
+  return value.kind === "rich" ? Object.freeze({
+    kind: "rich",
+    layout: normalizeRichTextLayout(value.layout)
+  }) : Object.freeze({
+    kind: "plain",
+    layout: normalizeTextLayout(value.layout)
+  });
+}
 function createTextTarget(document, group) {
   let size = {
     width: 180,
@@ -11969,22 +12073,19 @@ function createTextTarget(document, group) {
   let layoutProvider;
   let capturedLayoutProvider;
   let capturedSize;
-  const applyLayout = (layoutInput) => {
-    const layout = normalizeTextLayout(layoutInput);
-    const children = [];
-    if (layout.backgroundColor !== void 0 && layout.backgroundColor !== "transparent") {
-      const background = document.createElementNS(svgNamespace, "rect");
-      background.setAttribute("x", String(-layout.width / 2));
-      background.setAttribute("y", String(-layout.height / 2));
-      background.setAttribute("width", String(layout.width));
-      background.setAttribute("height", String(layout.height));
-      background.setAttribute("fill", layout.backgroundColor);
-      if (layout.backgroundCornerRadius !== void 0) background.setAttribute("rx", String(layout.backgroundCornerRadius));
-      children.push(background);
-    }
+  const createBackground = (layout) => {
+    if (layout.backgroundColor === void 0 || layout.backgroundColor === "transparent") return;
+    const background = document.createElementNS(svgNamespace, "rect");
+    background.setAttribute("x", String(-layout.width / 2));
+    background.setAttribute("y", String(-layout.height / 2));
+    background.setAttribute("width", String(layout.width));
+    background.setAttribute("height", String(layout.height));
+    background.setAttribute("fill", layout.backgroundColor);
+    if (layout.backgroundCornerRadius !== void 0) background.setAttribute("rx", String(layout.backgroundCornerRadius));
+    return background;
+  };
+  const createTextElement = (layout, anchor) => {
     const text = document.createElementNS(svgNamespace, "text");
-    const anchor = layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle";
-    const x = layout.alignment === "left" ? -layout.width / 2 : layout.alignment === "right" ? layout.width / 2 : 0;
     text.setAttribute("text-anchor", anchor);
     text.setAttribute("fill", layout.fill);
     text.setAttribute("font-family", layout.fontFamily);
@@ -11992,6 +12093,51 @@ function createTextTarget(document, group) {
     if (layout.preserveWhitespace !== false) text.setAttributeNS(xmlNamespace, "xml:space", "preserve");
     if (layout.fontStyle !== void 0) text.setAttribute("font-style", layout.fontStyle);
     if (layout.fontWeight !== void 0) text.setAttribute("font-weight", String(layout.fontWeight));
+    return text;
+  };
+  /**
+  * Fragments carry absolute positions, so every tspan is start-anchored. A
+  * ruby fragment draws its reading before its base; both always come from
+  * the same fragment, so a reading never appears without its whole base.
+  */
+  const applyRichLayout = (layout) => {
+    const children = [];
+    const background = createBackground(layout);
+    if (background !== void 0) children.push(background);
+    const text = createTextElement(layout, "start");
+    const appendTspan = (content, x, baseline, fontSize, rubyPart) => {
+      const tspan = document.createElementNS(svgNamespace, "tspan");
+      tspan.setAttribute("x", String(x));
+      tspan.setAttribute("y", String(baseline));
+      if (fontSize !== void 0) tspan.setAttribute("font-size", String(fontSize));
+      if (rubyPart !== void 0) tspan.setAttribute("data-bubble-ruby", rubyPart);
+      tspan.textContent = content;
+      text.appendChild(tspan);
+    };
+    for (const line of layout.lines) for (const fragment of line.fragments) {
+      if (fragment.type === "text") {
+        appendTspan(fragment.text, fragment.x, fragment.baseline);
+        continue;
+      }
+      const { base, reading } = fragment;
+      appendTspan(reading.text, reading.x, reading.baseline, reading.fontSize, "reading");
+      appendTspan(base.text, base.x, base.baseline, base.fontSize, "base");
+    }
+    children.push(text);
+    group.replaceChildren(...children);
+    size = {
+      width: layout.width,
+      height: layout.height
+    };
+  };
+  const applyLayout = (layoutInput) => {
+    const layout = normalizeTextLayout(layoutInput);
+    const children = [];
+    const background = createBackground(layout);
+    if (background !== void 0) children.push(background);
+    const anchor = layout.alignment === "left" ? "start" : layout.alignment === "right" ? "end" : "middle";
+    const x = layout.alignment === "left" ? -layout.width / 2 : layout.alignment === "right" ? layout.width / 2 : 0;
+    const text = createTextElement(layout, anchor);
     const firstBaseline = -Math.max(layout.fontSize, (layout.lines.length - 1) * layout.lineHeight + layout.fontSize) / 2 + layout.fontSize;
     layout.lines.forEach((line, index) => {
       const tspan = document.createElementNS(svgNamespace, "tspan");
@@ -12008,6 +12154,17 @@ function createTextTarget(document, group) {
       height: layout.height
     };
   };
+  const applyRendered = (rendered) => {
+    if (rendered.kind === "rich") {
+      applyRichLayout(normalizeRichTextLayout(rendered.layout));
+      return;
+    }
+    applyLayout(rendered.layout);
+  };
+  const plainProvider = (provider) => provider === void 0 ? void 0 : () => ({
+    kind: "plain",
+    layout: provider()
+  });
   return Object.freeze({
     [overlayTextTargetMarker]: true,
     group,
@@ -12037,17 +12194,24 @@ function createTextTarget(document, group) {
     },
     refresh() {
       if (capturedLayoutProvider !== void 0) {
-        const capturedLayout = normalizeTextLayout(capturedLayoutProvider());
+        const { layout: capturedLayout } = normalizeRenderedText(capturedLayoutProvider());
         capturedSize = {
           width: capturedLayout.width,
           height: capturedLayout.height
         };
       }
-      if (layoutProvider !== void 0) applyLayout(layoutProvider());
+      if (layoutProvider !== void 0) applyRendered(layoutProvider());
     },
     render(layout, nextLayoutProvider) {
-      layoutProvider = nextLayoutProvider;
+      layoutProvider = plainProvider(nextLayoutProvider);
       applyLayout(layout);
+    },
+    renderRich(layout, nextLayoutProvider) {
+      layoutProvider = nextLayoutProvider === void 0 ? void 0 : () => ({
+        kind: "rich",
+        layout: nextLayoutProvider()
+      });
+      applyRichLayout(normalizeRichTextLayout(layout));
     }
   });
 }
@@ -12059,7 +12223,7 @@ function requireTextTarget(value) {
 function createSvgOverlayTextAdapter(capabilityInput, renderer) {
   if (!isRecord$1(capabilityInput) || typeof capabilityInput.layoutText !== "function") throw new TypeError("SVG overlay backend requires a text layout capability.");
   const capability = capabilityInput;
-  return Object.freeze({
+  const adapter = {
     setText({ styleName, target, text }) {
       const overlayTarget = requireTextTarget(target);
       const layoutProvider = () => capability.layoutText({
@@ -12083,8 +12247,35 @@ function createSvgOverlayTextAdapter(capabilityInput, renderer) {
         styleName,
         text
       }).width, "SVG overlay measured text width");
+    },
+    /**
+    * Ruby needs a rich layout. A capability without one fails here rather
+    * than drawing the base text and dropping the reading.
+    */
+    setRichText({ maxWidth, runs, styleName, target }) {
+      const overlayTarget = requireTextTarget(target);
+      const layoutRichText = requireOverlayRichLayout(capability);
+      const layoutProvider = () => layoutRichText({
+        nativeSize: readNativeSize(renderer),
+        runs,
+        styleName,
+        ...maxWidth === void 0 ? {} : { maxWidth }
+      });
+      overlayTarget.renderRich(layoutProvider(), layoutProvider);
     }
-  });
+  };
+  if (typeof capability.layoutRichText === "function") adapter.measureRichText = ({ maxWidth, runs, styleName }) => requireFiniteDimension(requireOverlayRichLayout(capability)({
+    nativeSize: readNativeSize(renderer),
+    runs,
+    styleName,
+    ...maxWidth === void 0 ? {} : { maxWidth }
+  }).width, "SVG overlay measured rich text width");
+  return Object.freeze(adapter);
+}
+function requireOverlayRichLayout(capability) {
+  const layoutRichText = capability.layoutRichText;
+  if (typeof layoutRichText !== "function") throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Bubble ruby content on the SVG overlay requires the overlay text capability layoutRichText method.");
+  return (input) => layoutRichText.call(capability, input);
 }
 function isSafeImageSource(resource) {
   if (!(/* @__PURE__ */ new Set([
@@ -12845,10 +13036,16 @@ function createDefaultSvgOverlayTextCapability() {
     definedStyles.add(name);
   };
   defineStyle("default");
-  return createSvgTextOverlayTextCapability(Object.freeze({ layoutText(input) {
-    if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
-    return composition.layoutText(input);
-  } }));
+  return createSvgTextOverlayTextCapability(Object.freeze({
+    layoutText(input) {
+      if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
+      return composition.layoutText(input);
+    },
+    layoutRichText(input) {
+      if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
+      return composition.layoutRichText(input);
+    }
+  }));
 }
 function createDefaultScratchRenderTextCapability(runtime) {
   const composition = createSvgTextComposition({ runtime });

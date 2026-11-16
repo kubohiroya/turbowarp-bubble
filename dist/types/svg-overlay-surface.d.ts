@@ -1,4 +1,5 @@
 import { type BubbleImageCapability, type BubbleKind, type BubbleScheduler, type BubbleStyle, type BubbleSurface, type BubbleTextCapability } from "./composition.js";
+import type { BubbleContent } from "./content-run.js";
 export type BubbleRenderBackend = "scratch-render" | "svg-overlay";
 export type BubbleOverlayUnsupportedBehavior = "error" | "fallback";
 export declare const bubbleRenderBackends: readonly ["scratch-render", "svg-overlay"];
@@ -26,6 +27,41 @@ export interface BubbleSvgOverlayTextLayout {
     readonly preserveWhitespace?: boolean;
     readonly width: number;
 }
+/** A run of plain text placed by a rich layout. */
+export interface BubbleSvgOverlayRichTextTextFragment {
+    /** Baseline relative to the center of the text layout. */
+    readonly baseline: number;
+    readonly text: string;
+    readonly type: "text";
+    /** Start x coordinate relative to the center of the text layout. */
+    readonly x: number;
+}
+/** One glyph group of a ruby fragment: its base or its reading. */
+export interface BubbleSvgOverlayRichTextGlyph {
+    /** Baseline relative to the center of the text layout. */
+    readonly baseline: number;
+    readonly fontSize: number;
+    readonly text: string;
+    /** Start x coordinate relative to the center of the text layout. */
+    readonly x: number;
+}
+/** A ruby annotation: the base sits on the line and the reading above it. */
+export interface BubbleSvgOverlayRichTextRubyFragment {
+    readonly base: BubbleSvgOverlayRichTextGlyph;
+    readonly reading: BubbleSvgOverlayRichTextGlyph;
+    readonly type: "ruby";
+}
+export type BubbleSvgOverlayRichTextFragment = BubbleSvgOverlayRichTextRubyFragment | BubbleSvgOverlayRichTextTextFragment;
+export interface BubbleSvgOverlayRichTextLine {
+    readonly fragments: readonly BubbleSvgOverlayRichTextFragment[];
+}
+/**
+ * A laid-out content run sequence. Style fields match the plain layout; the
+ * width and height include the vertical room ruby readings need.
+ */
+export interface BubbleSvgOverlayRichTextLayout extends Omit<BubbleSvgOverlayTextLayout, "lines"> {
+    readonly lines: readonly BubbleSvgOverlayRichTextLine[];
+}
 export interface BubbleSvgOverlayTextCapability {
     layoutText(input: Readonly<{
         nativeSize: Readonly<{
@@ -43,6 +79,19 @@ export interface BubbleSvgOverlayTextCapability {
         styleName: string;
         text: string;
     }>): number;
+    /**
+     * Optional rich layout for content runs. Without it the overlay renders
+     * plain text only, and ruby content fails with BUBBLE-COMPOSITION-007.
+     */
+    layoutRichText?(input: Readonly<{
+        maxWidth?: number;
+        nativeSize: Readonly<{
+            height: number;
+            width: number;
+        }>;
+        runs: BubbleContent;
+        styleName: string;
+    }>): BubbleSvgOverlayRichTextLayout;
 }
 export interface BubbleSvgOverlayImageResource {
     readonly height: number;

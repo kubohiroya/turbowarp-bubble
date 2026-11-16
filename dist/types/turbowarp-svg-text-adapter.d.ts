@@ -1,4 +1,4 @@
-import type { BubbleTextCapability } from "./text-capability.js";
+import type { BubbleContent, BubbleTextCapability } from "./text-capability.js";
 import type { BubbleSvgOverlayTextCapability } from "./svg-overlay-surface.js";
 export interface TurboWarpSvgTextExtension {
     getLayoutCapability?(): SvgTextLayoutCompositionLike;
@@ -32,12 +32,40 @@ interface SvgTextLayoutLike {
     }>;
     readonly width: number;
 }
+interface SvgTextRichLayoutGlyphLike {
+    readonly baseline: number;
+    readonly fontSize: number;
+    readonly text: string;
+    readonly x: number;
+}
+type SvgTextRichLayoutFragmentLike = Readonly<{
+    base: SvgTextRichLayoutGlyphLike;
+    reading: SvgTextRichLayoutGlyphLike;
+    type: "ruby";
+}> | Readonly<{
+    baseline: number;
+    text: string;
+    type: "text";
+    x: number;
+}>;
+interface SvgTextRichLayoutLike extends Omit<SvgTextLayoutLike, "lines"> {
+    readonly lines: readonly Readonly<{
+        fragments: readonly SvgTextRichLayoutFragmentLike[];
+    }>[];
+}
 export interface SvgTextLayoutCompositionLike {
     layoutText(input: Readonly<{
         nativeSize: readonly [width: number, height: number];
         styleName: string;
         text: string;
     }>): SvgTextLayoutLike;
+    /** SVG Text 0.14 lays out content runs, including ruby, without skins. */
+    layoutRichText?(input: Readonly<{
+        maxWidth?: number;
+        nativeSize: readonly [width: number, height: number];
+        runs: BubbleContent;
+        styleName: string;
+    }>): SvgTextRichLayoutLike;
 }
 /**
  * Adapt the TurboWarp-SVG-Text extension to Bubble's host-neutral text

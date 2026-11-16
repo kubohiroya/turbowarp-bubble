@@ -225,4 +225,84 @@ describe("SVG Text composition rich pass-through", () => {
     expect(capability.setRichText).toBeUndefined();
     expect(capability.measureRichText).toBeUndefined();
   });
+
+  it("maps SVG Text rich layout fragments to centered overlay coordinates", () => {
+    const composition = createSvgTextLayoutComposition();
+    composition.defineStyle({
+      name: "dialogue",
+      backgroundColor: "#ffffff",
+      font: "Helvetica",
+      textColor: "#575e75",
+    });
+    const capability = createSvgTextOverlayTextCapability(composition);
+    const runs = Object.freeze([
+      Object.freeze({ text: "私は", type: "text" as const }),
+      Object.freeze({ base: "中野", reading: "なかの", type: "ruby" as const }),
+    ]);
+    const upstream = composition.layoutRichText({
+      maxWidth: 200,
+      nativeSize: [480, 360],
+      runs,
+      styleName: "dialogue",
+    });
+    const layout = capability.layoutRichText?.({
+      maxWidth: 200,
+      nativeSize: { width: 480, height: 360 },
+      runs,
+      styleName: "dialogue",
+    });
+
+    expect(layout).toMatchObject({
+      backgroundColor: "#ffffff",
+      fill: "#575e75",
+      fontFamily: "Helvetica",
+      fontSize: upstream.style.fontSize,
+      height: upstream.height,
+      width: upstream.width,
+    });
+    const centerX = upstream.width / 2;
+    const centerY = upstream.height / 2;
+    expect(layout?.lines).toEqual(
+      upstream.lines.map((line) => ({
+        fragments: line.fragments.map((fragment) =>
+          fragment.type === "text"
+            ? {
+                baseline: fragment.baseline - centerY,
+                text: fragment.text,
+                type: "text",
+                x: fragment.x - centerX,
+              }
+            : {
+                base: {
+                  baseline: fragment.base.baseline - centerY,
+                  fontSize: fragment.base.fontSize,
+                  text: fragment.base.text,
+                  x: fragment.base.x - centerX,
+                },
+                reading: {
+                  baseline: fragment.reading.baseline - centerY,
+                  fontSize: fragment.reading.fontSize,
+                  text: fragment.reading.text,
+                  x: fragment.reading.x - centerX,
+                },
+                type: "ruby",
+              },
+        ),
+      })),
+    );
+  });
+
+  it("omits rich layout when SVG Text does not provide it", () => {
+    const layouts = createSvgTextLayoutComposition();
+    const plainOnly = { layoutText: layouts.layoutText };
+    expect(
+      createSvgTextOverlayTextCapability(plainOnly).layoutRichText,
+    ).toBeUndefined();
+    // The stock extension handoff exposes layoutText only.
+    expect(
+      createTurboWarpSvgTextOverlayTextCapability({
+        getLayoutCapability: () => plainOnly,
+      }).layoutRichText,
+    ).toBeUndefined();
+  });
 });

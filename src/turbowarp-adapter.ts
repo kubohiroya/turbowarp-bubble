@@ -95,6 +95,12 @@ export {
   type BubbleSvgOverlayImageResource,
   type BubbleSvgOverlayRenderer,
   type BubbleSvgOverlaySurfaceManager,
+  type BubbleSvgOverlayRichTextFragment,
+  type BubbleSvgOverlayRichTextGlyph,
+  type BubbleSvgOverlayRichTextLayout,
+  type BubbleSvgOverlayRichTextLine,
+  type BubbleSvgOverlayRichTextRubyFragment,
+  type BubbleSvgOverlayRichTextTextFragment,
   type BubbleSvgOverlayTextCapability,
   type BubbleSvgOverlayTextLine,
   type BubbleSvgOverlayTextLayout,
@@ -335,6 +341,12 @@ function createDefaultSvgOverlayTextCapability(): BubbleSvgOverlayTextCapability
     ): ReturnType<typeof composition.layoutText> {
       if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
       return composition.layoutText(input);
+    },
+    layoutRichText(
+      input: Parameters<typeof composition.layoutRichText>[0],
+    ): ReturnType<typeof composition.layoutRichText> {
+      if (!definedStyles.has(input.styleName)) defineStyle(input.styleName);
+      return composition.layoutRichText(input);
     },
   });
   return createSvgTextOverlayTextCapability(layoutComposition);

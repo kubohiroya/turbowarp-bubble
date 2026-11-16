@@ -4,6 +4,9 @@ import type {
   BubbleTextTarget,
 } from "./text-capability.js";
 import type {
+  BubbleSvgOverlayRichTextFragment,
+  BubbleSvgOverlayRichTextGlyph,
+  BubbleSvgOverlayRichTextLayout,
   BubbleSvgOverlayTextCapability,
   BubbleSvgOverlayTextLayout,
 } from "./svg-overlay-surface.js";
@@ -65,6 +68,27 @@ interface SvgTextLayoutLike {
   readonly width: number;
 }
 
+interface SvgTextRichLayoutGlyphLike {
+  readonly baseline: number;
+  readonly fontSize: number;
+  readonly text: string;
+  readonly x: number;
+}
+
+type SvgTextRichLayoutFragmentLike =
+  | Readonly<{
+      base: SvgTextRichLayoutGlyphLike;
+      reading: SvgTextRichLayoutGlyphLike;
+      type: "ruby";
+    }>
+  | Readonly<{ baseline: number; text: string; type: "text"; x: number }>;
+
+interface SvgTextRichLayoutLike extends Omit<SvgTextLayoutLike, "lines"> {
+  readonly lines: readonly Readonly<{
+    fragments: readonly SvgTextRichLayoutFragmentLike[];
+  }>[];
+}
+
 export interface SvgTextLayoutCompositionLike {
   layoutText(
     input: Readonly<{
@@ -73,6 +97,15 @@ export interface SvgTextLayoutCompositionLike {
       text: string;
     }>,
   ): SvgTextLayoutLike;
+  /** SVG Text 0.14 lays out content runs, including ruby, without skins. */
+  layoutRichText?(
+    input: Readonly<{
+      maxWidth?: number;
+      nativeSize: readonly [width: number, height: number];
+      runs: BubbleContent;
+      styleName: string;
+    }>,
+  ): SvgTextRichLayoutLike;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -171,6 +204,77 @@ function adaptSvgTextLayout(value: unknown): BubbleSvgOverlayTextLayout {
   });
 }
 
+function adaptSvgTextRichLayout(
+  value: unknown,
+): BubbleSvgOverlayRichTextLayout {
+  if (!isRecord(value) || !Array.isArray(value.lines)) {
+    throw new TypeError("SVG Text rich layout result is invalid.");
+  }
+  // Style fields and the center offset follow the plain layout adaptation.
+  const { lines: _plainLines, ...style } = adaptSvgTextLayout({
+    ...value,
+    lines: [],
+  });
+  void _plainLines;
+  const offsetX = style.width / 2;
+  const offsetY = style.height / 2;
+  const adaptGlyph = (
+    glyph: unknown,
+    label: string,
+  ): BubbleSvgOverlayRichTextGlyph => {
+    if (!isRecord(glyph) || typeof glyph.text !== "string") {
+      throw new TypeError(`SVG Text ruby ${label} is invalid.`);
+    }
+    return Object.freeze({
+      baseline:
+        requireFiniteNumber(glyph.baseline, `SVG Text ruby ${label} baseline`) -
+        offsetY,
+      fontSize: requireFiniteNumber(
+        glyph.fontSize,
+        `SVG Text ruby ${label} font size`,
+      ),
+      text: glyph.text,
+      x: requireFiniteNumber(glyph.x, `SVG Text ruby ${label} x`) - offsetX,
+    });
+  };
+  const adaptFragment = (
+    fragment: unknown,
+  ): BubbleSvgOverlayRichTextFragment => {
+    if (!isRecord(fragment)) {
+      throw new TypeError("SVG Text rich layout fragment is invalid.");
+    }
+    if (fragment.type === "ruby") {
+      return Object.freeze({
+        base: adaptGlyph(fragment.base, "base"),
+        reading: adaptGlyph(fragment.reading, "reading"),
+        type: "ruby" as const,
+      });
+    }
+    if (fragment.type !== "text" || typeof fragment.text !== "string") {
+      throw new TypeError("SVG Text rich layout fragment is invalid.");
+    }
+    return Object.freeze({
+      baseline:
+        requireFiniteNumber(fragment.baseline, "SVG Text fragment baseline") -
+        offsetY,
+      text: fragment.text,
+      type: "text" as const,
+      x: requireFiniteNumber(fragment.x, "SVG Text fragment x") - offsetX,
+    });
+  };
+  const lines = Object.freeze(
+    value.lines.map((line: unknown) => {
+      if (!isRecord(line) || !Array.isArray(line.fragments)) {
+        throw new TypeError("SVG Text rich layout line is invalid.");
+      }
+      return Object.freeze({
+        fragments: Object.freeze(line.fragments.map(adaptFragment)),
+      });
+    }),
+  );
+  return Object.freeze({ ...style, lines });
+}
+
 /**
  * Adapt the TurboWarp-SVG-Text extension to Bubble's host-neutral text
  * capability contract.
@@ -256,7 +360,7 @@ export function createSvgTextOverlayTextCapability(
   compositionInput: SvgTextLayoutCompositionLike,
 ): BubbleSvgOverlayTextCapability {
   const composition = validateLayoutComposition(compositionInput);
-  return Object.freeze({
+  const capability: BubbleSvgOverlayTextCapability = {
     layoutText({
       nativeSize,
       styleName,
@@ -291,7 +395,26 @@ export function createSvgTextOverlayTextCapability(
         ),
       );
     },
-  });
+  };
+  // Ruby needs SVG Text's rich layout. Without it Bubble reports
+  // BUBBLE-COMPOSITION-007 instead of dropping the reading.
+  if (typeof composition.layoutRichText === "function") {
+    capability.layoutRichText = ({
+      maxWidth,
+      nativeSize,
+      runs,
+      styleName,
+    }): BubbleSvgOverlayRichTextLayout =>
+      adaptSvgTextRichLayout(
+        composition.layoutRichText?.({
+          nativeSize: [nativeSize.width, nativeSize.height],
+          runs,
+          styleName,
+          ...(maxWidth === undefined ? {} : { maxWidth }),
+        }),
+      );
+  }
+  return Object.freeze(capability);
 }
 
 /**
