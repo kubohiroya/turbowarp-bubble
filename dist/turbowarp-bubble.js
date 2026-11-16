@@ -13821,7 +13821,7 @@ var builtInBubbleStyles = Object.freeze([Object.freeze({
   textStyle: "default"
 })]);
 var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-var EXTENSION_VERSION = "0.18.1";
+var EXTENSION_VERSION = "0.19.0";
 var BLOCK_ICON_URI = extensionConfig$1.blockIconURI;
 function extensionError(message) {
   const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
