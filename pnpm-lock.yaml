@@ -12,27 +12,27 @@ importers:
         specifier: 4.0.3
         version: 4.0.3
       '@kubohiroya/turbowarp-svg-text':
-        specifier: ^0.15.0
-        version: 0.15.0
+        specifier: ^0.16.0
+        version: 0.16.0
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@10.8.0)
       '@kubohiroya/turbowarp-asset-cache':
-        specifier: ^0.8.0
-        version: 0.8.0(@kubohiroya/turbowarp-named-data@0.8.0-rc.1)
+        specifier: ^0.9.0
+        version: 0.9.0(@kubohiroya/turbowarp-named-data@0.8.0-rc.1)
       '@kubohiroya/turbowarp-async-input':
-        specifier: ^0.12.0
-        version: 0.12.0
+        specifier: ^0.13.0
+        version: 0.13.0
       '@kubohiroya/turbowarp-extension-data-editor':
-        specifier: ^0.8.1
-        version: 0.8.1(react@18.3.1)
+        specifier: ^0.11.0
+        version: 0.11.0(react@18.3.1)
       '@kubohiroya/turbowarp-extension-manifest':
         specifier: ^0.5.0
         version: 0.5.0
       '@kubohiroya/turbowarp-runtime-expression':
-        specifier: ^0.10.0
-        version: 0.10.0
+        specifier: ^0.11.0
+        version: 0.11.0
       '@kubohiroya/vite-plugin-turbowarp-extension':
         specifier: ^0.11.0
         version: 0.11.0(vite@8.2.1(@types/node@26.1.2)(yaml@2.9.1))
@@ -139,17 +139,17 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
-  '@kubohiroya/turbowarp-asset-cache@0.8.0':
-    resolution: {integrity: sha512-V2aIdwJXxpw4wggI0slTpU+tXOEYjEns1pNLgbbrhMCYTTPMQOP+swGL/6VyYzIBVj/gIvxqJjxCRYjgFQkt6A==}
+  '@kubohiroya/turbowarp-asset-cache@0.9.0':
+    resolution: {integrity: sha512-D2NGEoXGEXRE96jCp3rhQh3RzNGT7qCs/WUSsbD+pu8l1oi0Ns6ywISHHnKClG5N++oAdNh9kC60rX1IkDy9Og==}
     engines: {node: '>=24'}
     peerDependencies:
       '@kubohiroya/turbowarp-named-data': ^0.8.0-rc.1
 
-  '@kubohiroya/turbowarp-async-input@0.12.0':
-    resolution: {integrity: sha512-ZiHxIa/0mWIrmAZvufMLyKcdIMvf8etEOSseoFucIT4eXAApRPqrYVkWKJnKt5+nVGXnyrkwb/+yrTM+h3C7cw==}
+  '@kubohiroya/turbowarp-async-input@0.13.0':
+    resolution: {integrity: sha512-xHeiwife7rfzCWILcmAanc5EMDULtdgxFhp/1lbQh/6CkT2hG6DZi3qVFi79tVPtFBWfqVREdENLyiDv0Fh8XA==}
     engines: {node: '>=24'}
     peerDependencies:
-      '@kubohiroya/turbowarp-jsqr': ^0.8.0
+      '@kubohiroya/turbowarp-jsqr': ^0.9.0
       '@kubohiroya/turbowarp-webusb-pasori': ^0.7.0
     peerDependenciesMeta:
       '@kubohiroya/turbowarp-jsqr':
@@ -157,8 +157,8 @@ packages:
       '@kubohiroya/turbowarp-webusb-pasori':
         optional: true
 
-  '@kubohiroya/turbowarp-extension-data-editor@0.8.1':
-    resolution: {integrity: sha512-lNPLj2JxG02/OPVPOzGofToGL2m6XGZre1cE0tsJ6t8CEfi+FFmYVmdURt/k3IvUUVqViDxMiiJhcrbXwkzY5Q==}
+  '@kubohiroya/turbowarp-extension-data-editor@0.11.0':
+    resolution: {integrity: sha512-x1ttE4cvsKfKJz7RNDt4/hK/9pk+GEHDm4oR9Y6t0qY6nRDXatAl3ybPJhU7Y702tCYhmtn9Fo46hjYM6OS9dA==}
     engines: {node: '>=24'}
     peerDependencies:
       react: ^16.14.0 || ^17 || ^18
@@ -177,12 +177,12 @@ packages:
     resolution: {integrity: sha512-pzaAIJcxYzvTntRRp+9CzQ5NHSafIu8oODTh+XPZokapgY7hLBGv/xB3owI1LJSSTbFD5csr+ovRn772iR6Swg==}
     engines: {node: '>=24'}
 
-  '@kubohiroya/turbowarp-runtime-expression@0.10.0':
-    resolution: {integrity: sha512-f/TkwNhFP//Jrn3qlU+Cb437xiV+vKVN5BeEM1/rkPuaudp3AfxmgQfkAqS94BuWo+XnXg8LhFXsG1zgWFutCA==}
+  '@kubohiroya/turbowarp-runtime-expression@0.11.0':
+    resolution: {integrity: sha512-76TmAn//336uk26B9FHIQTU9IVQFBEKNw3vUFmEsTr5qXm6XIlfA1TD0cyvEMMt3k8pQ4Rwds6zSWgKTggSW7w==}
     engines: {node: '>=24'}
 
-  '@kubohiroya/turbowarp-svg-text@0.15.0':
-    resolution: {integrity: sha512-7ui1FD/yGkvmv9S7MyCag4+u1w/KlO9nWwfdTF/5IqgjXc5gISq51gzYEE8RRsG+ZYEnCaQpydRiNz0f2AyXOA==}
+  '@kubohiroya/turbowarp-svg-text@0.16.0':
+    resolution: {integrity: sha512-1cXHuMiVQ/MFdzqIPgHJ5TDwKcYuv5KRYLevlOypcyXK0kI+EqQS8QQbfeSILJRWVRUj/7ho9Ev4ZtfPm1egTQ==}
     engines: {node: '>=24'}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.11.0':
@@ -1118,13 +1118,13 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
-  '@kubohiroya/turbowarp-asset-cache@0.8.0(@kubohiroya/turbowarp-named-data@0.8.0-rc.1)':
+  '@kubohiroya/turbowarp-asset-cache@0.9.0(@kubohiroya/turbowarp-named-data@0.8.0-rc.1)':
     dependencies:
       '@kubohiroya/turbowarp-named-data': 0.8.0-rc.1
 
-  '@kubohiroya/turbowarp-async-input@0.12.0': {}
+  '@kubohiroya/turbowarp-async-input@0.13.0': {}
 
-  '@kubohiroya/turbowarp-extension-data-editor@0.8.1(react@18.3.1)':
+  '@kubohiroya/turbowarp-extension-data-editor@0.11.0(react@18.3.1)':
     dependencies:
       '@rjsf/core': 5.24.13(@rjsf/utils@5.24.13(react@18.3.1))(react@18.3.1)
       '@rjsf/utils': 5.24.13(react@18.3.1)
@@ -1140,9 +1140,9 @@ snapshots:
 
   '@kubohiroya/turbowarp-named-data@0.8.0-rc.1': {}
 
-  '@kubohiroya/turbowarp-runtime-expression@0.10.0': {}
+  '@kubohiroya/turbowarp-runtime-expression@0.11.0': {}
 
-  '@kubohiroya/turbowarp-svg-text@0.15.0': {}
+  '@kubohiroya/turbowarp-svg-text@0.16.0': {}
 
   '@kubohiroya/vite-plugin-turbowarp-extension@0.11.0(vite@8.2.1(@types/node@26.1.2)(yaml@2.9.1))':
     dependencies:

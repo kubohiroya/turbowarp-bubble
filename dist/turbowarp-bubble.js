@@ -10541,7 +10541,7 @@ function createBubbleComposition(options) {
   });
 }
 //#endregion
-//#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.15.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
+//#region node_modules/.pnpm/@kubohiroya+turbowarp-svg-text@0.16.0/node_modules/@kubohiroya/turbowarp-svg-text/dist/composition.js
 var block_definitions_default = {
   extensionName: "SVG Text",
   blocks: [{
@@ -13852,7 +13852,7 @@ var builtInBubbleStyles = Object.freeze([Object.freeze({
   textStyle: "default"
 })]);
 var EXTENSION_DOCS_URI = "https://kubohiroya.github.io/turbowarp-bubble/";
-var EXTENSION_VERSION = "0.19.1";
+var EXTENSION_VERSION = "0.20.0";
 var BLOCK_ICON_URI = extensionConfig$1.blockIconURI;
 function extensionError(message) {
   const error = /* @__PURE__ */ new Error(`[Bubble] ${message}`);
