@@ -349,7 +349,7 @@ https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-async-input@0.13.0/dist/async
 https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-runtime-expression@0.11.0/dist/runtime-expression.js
 
 # Bubble (always load last)
-https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.20.0/dist/turbowarp-bubble.js
+https://cdn.jsdelivr.net/npm/@kubohiroya/turbowarp-bubble@0.20.1/dist/turbowarp-bubble.js
 ```
 
 TurboWarp custom extensions load JavaScript from URLs, so a network connection is required the first time they are loaded. For an unsandboxed development URL, TurboWarp requires the server origin to be exactly `http://localhost:8000/`; `127.0.0.1`, `0.0.0.0`, and other ports do not receive this exception. From the repository root, run `python3 -m http.server 8000`, then load `http://localhost:8000/dist/turbowarp-bubble.js`. Alternatively, choose the custom-extension file or text input and enable **Run extension without sandbox**. The extension does not work when opened directly with `file://` or when run as a sandboxed extension. See [TurboWarp's unsandboxed extension documentation](https://docs.turbowarp.org/development/extensions/unsandboxed) for the host restrictions.

@@ -1,6 +1,6 @@
 {
   "name": "@kubohiroya/turbowarp-bubble",
-  "version": "0.20.0",
+  "version": "0.20.1",
   "description": "Composable say and think bubbles with portrait layers and animated continue indicators for TurboWarp.",
   "author": {
     "name": "Hiroya Kubo",
@@ -136,5 +136,27 @@
   "dependencies": {
     "@cto.af/linebreak": "4.0.3",
     "@kubohiroya/turbowarp-svg-text": "^0.16.0"
+  },
+  "turbowarpExtension": {
+    "resourceDeclaration": {
+      "schemaVersion": 1,
+      "resources": [
+        {
+          "type": "audio-output",
+          "usage": "conditional",
+          "purpose": {
+            "en": "Play voice and sound effects associated with a bubble",
+            "ja": "吹き出しに設定された音声や効果音を再生する"
+          },
+          "condition": {
+            "en": "When a voice or sound effect is configured",
+            "ja": "音声や効果音が設定されている場合"
+          },
+          "via": [
+            "@kubohiroya/turbowarp-asset-cache"
+          ]
+        }
+      ]
+    }
   }
 }
