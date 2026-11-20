@@ -6,7 +6,7 @@ English | [日本語](README.ja.md)
 
 `@kubohiroya/turbowarp-bubble` is an unsandboxed extension that manages TurboWarp `say` and `think` displays as separate text, character-expression, and input-waiting indicator layers. It also provides a composition API for using the same features directly from applications.
 
-The current release is Bubble 0.20.0. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.16.0. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.9.0, Async Input 0.13.0, and Runtime Expression 0.11.0. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
+The current release is Bubble 0.20.1. Its default rendering path is the skin-free SVG overlay backed by SVG Text 0.16.0. For the complete TurboWarp feature set, the currently recommended companion releases are Asset Cache 0.9.0, Async Input 0.13.0, and Runtime Expression 0.11.0. See the [0.13.0 release notes](docs/release-notes-0.13.0.md) for the Asset Cache migration, the [0.10.0 release notes](docs/release-notes-0.10.0.md) for reusable named close policies, and the [0.9.0 release notes](docs/release-notes-0.9.0.md) for the built-in `say`/`think` styles.
 
 ## Minimal demo
 
@@ -334,7 +334,7 @@ TurboWarp Bubble's `dist/turbowarp-bubble.js` is an **unsandboxed custom extensi
 2. Select “Custom Extension” and enable Run without sandbox.
 3. Load Asset Cache 0.9.0 if you use portraits, blinking, lip-sync, continue frames, or audio.
 4. Load Runtime Expression 0.11.0 for `finish [UNIT] ...`; load both Async Input 0.13.0 and Runtime Expression 0.11.0 for condition-based waits and close policies. A timeout-only close policy needs neither extension.
-5. Load Bubble 0.20.0 last. The SVG Text 0.16.0 layout provider is included in the Bubble bundle.
+5. Load Bubble 0.20.1 last. The SVG Text 0.16.0 layout provider is included in the Bubble bundle.
 
 Bubble alone is the minimum configuration for text-only use. Temporary Variables, Asset Cache, Async Input, and Runtime Expression can be omitted when you do not use the features they support. After loading Bubble, its basic `say [MESSAGE]` and `think [MESSAGE]` blocks work immediately without a style definition. They select the built-in Bubble styles `say` and `think`, respectively. Each style binds its body shape and tail/trail shape as one visual choice, and both use the reserved text profile `default`. Use `define bubble style` and `show [MESSAGE] with bubble style [STYLE]` only when you need a named custom style. Other named text styles and every explicit body, placement, media, reveal, or motion setting select the custom profile.
 

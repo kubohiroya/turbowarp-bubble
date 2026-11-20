@@ -6,7 +6,7 @@
 
 `@kubohiroya/turbowarp-bubble`は、TurboWarp上の`say`／`think`表示を、文字、キャラクター表情、入力待ちアイコンに分けて管理するunsandboxed機能拡張です。同じ機能をアプリから直接利用するためのcomposition APIも提供します。
 
-現在のリリースはBubble 0.20.0です。既定の描画経路はSVG Text 0.16.0を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Cache 0.9.0、Async Input 0.13.0、Runtime Expression 0.11.0です。Asset Cacheへの移行については[0.13.0のリリースノート](docs/release-notes-0.13.0.md)、再利用可能な名前付きclose policyについては[0.10.0のリリースノート](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0のリリースノート](docs/release-notes-0.9.0.md)を参照してください。
+現在のリリースはBubble 0.20.1です。既定の描画経路はSVG Text 0.16.0を使うskin非依存のSVG overlayです。TurboWarpですべての機能を使う場合、現在の推奨組み合わせはAsset Cache 0.9.0、Async Input 0.13.0、Runtime Expression 0.11.0です。Asset Cacheへの移行については[0.13.0のリリースノート](docs/release-notes-0.13.0.md)、再利用可能な名前付きclose policyについては[0.10.0のリリースノート](docs/release-notes-0.10.0.md)、組み込み`say`／`think` styleについては[0.9.0のリリースノート](docs/release-notes-0.9.0.md)を参照してください。
 
 ## 最小デモ
 
@@ -334,7 +334,7 @@ TurboWarp Bubbleの`dist/turbowarp-bubble.js`は、TurboWarpのrendererとtarget
 2. 「カスタム拡張機能」を選び、サンドボックスなし（Run without sandbox）で実行できる状態にします。
 3. portrait、blink、lip-sync、continue frames、音声を使う場合はAsset Cache 0.9.0を読み込みます。
 4. `finish [UNIT] ...`にはRuntime Expression 0.11.0、conditionを使う待機またはclose policyにはAsync Input 0.13.0とRuntime Expression 0.11.0を読み込みます。timeoutだけのclose policyにはどちらも不要です。
-5. 最後にBubble 0.20.0を読み込みます。SVG Text 0.16.0のlayout providerはBubble bundleに含まれます。
+5. 最後にBubble 0.20.1を読み込みます。SVG Text 0.16.0のlayout providerはBubble bundleに含まれます。
 
 文字だけの最小構成はBubbleです。Temporary Variables、Asset Cache、Async Input、Runtime Expressionは、対応する機能を使わなければ追加しなくても構いません。Bubbleを読み込むと、基本の`say [MESSAGE]`／`think [MESSAGE]`ブロックはstyle定義なしですぐ使えます。それぞれ組み込みBubble style `say`／`think`を選び、各styleが本体形状とtail/trail形状を不可分な1つの外観として持ちます。どちらも予約text profile `default`を使います。named custom styleが必要な場合だけ`define bubble style`と`show [MESSAGE] with bubble style [STYLE]`を使います。それ以外のnamed text styleや、外形・配置・media・reveal・motionの明示設定はcustom profileになります。
 
