@@ -126,7 +126,7 @@ const builtInBubbleStyles: readonly BubbleStyleInput[] = Object.freeze([
 ]);
 export const EXTENSION_DOCS_URI =
   "https://kubohiroya.github.io/turbowarp-bubble/";
-export const EXTENSION_VERSION = "0.20.1";
+export const EXTENSION_VERSION = "0.21.0";
 export const BLOCK_ICON_URI = extensionConfig.blockIconURI;
 
 function extensionError(message: string): Error {
