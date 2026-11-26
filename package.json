@@ -107,7 +107,7 @@
     "@eslint/js": "^10.0.1",
     "@kubohiroya/turbowarp-asset-cache": "^0.10.1",
     "@kubohiroya/turbowarp-async-input": "^0.15.0",
-    "@kubohiroya/turbowarp-extension-data-editor": "^0.11.4",
+    "@kubohiroya/turbowarp-extension-data-editor": "^0.11.5",
     "@kubohiroya/turbowarp-extension-manifest": "^0.8.0",
     "@kubohiroya/turbowarp-runtime-expression": "^0.12.1",
     "@kubohiroya/vite-plugin-turbowarp-extension": "^0.12.0",
