@@ -350,6 +350,8 @@ export interface BubbleCompositionOptions {
   readonly audio?: BubbleAudioCapability;
   readonly textCapability: BubbleTextCapability;
   readonly createSurface: BubbleSurfaceFactory;
+  /** Host viewport limit for text before actor-relative scale and portrait layout. */
+  readonly getMaxTextWidth?: (style: BubbleStyle) => number;
   readonly scheduler?: BubbleScheduler;
   readonly onAnimationError?: (
     error: unknown,
@@ -1548,10 +1550,41 @@ export function createBubbleComposition(
        * must not fall back to the plain renderer mid-reveal.
        */
       const usesRichPath = (): boolean => !isPlainBubbleContent(currentContent);
+      const textLayoutStyle = (
+        content: BubbleContent,
+        style: BubbleStyle,
+      ): BubbleStyle => {
+        const viewportWidth = options.getMaxTextWidth?.(style);
+        if (viewportWidth === undefined) return style;
+        if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) {
+          throw new BubbleCompositionError(
+            "BUBBLE-COMPOSITION-007",
+            "Host text width must be positive and finite.",
+          );
+        }
+        // Rich layout providers may reserve maxWidth even when the text is short.
+        if (
+          style.maxWidth === undefined &&
+          usesRichPath() &&
+          (textCapability.measureRichText?.({
+            runs: content,
+            styleName: style.textStyle,
+          }) ?? Number.POSITIVE_INFINITY) <= viewportWidth
+        )
+          return style;
+        return {
+          ...style,
+          maxWidth: Math.min(
+            style.maxWidth ?? Number.POSITIVE_INFINITY,
+            viewportWidth,
+          ),
+        };
+      };
       const applySurfaceContent = async (
         content: BubbleContent,
         nextStyle: BubbleStyle = activeStyle,
       ): Promise<void> => {
+        nextStyle = textLayoutStyle(content, nextStyle);
         if (usesRichPath()) {
           if (!surface) return;
           if (
@@ -1595,6 +1628,7 @@ export function createBubbleComposition(
         nextStyle: BubbleStyle = activeStyle,
       ): void => {
         if (!surface) return;
+        nextStyle = textLayoutStyle(content, nextStyle);
         if (!usesRichPath()) {
           textCapability.setText({
             styleName: nextStyle.textStyle,

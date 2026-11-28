@@ -103,6 +103,154 @@ function actor(id: string, x = 0, y = 0) {
   };
 }
 
+function speechTailTip(harness: ReturnType<typeof createHarness>) {
+  const body = harness.window.document.querySelector(
+    '[data-bubble-layer="body"]',
+  )!;
+  const text = harness.window.document.querySelector(
+    '[data-bubble-layer="text"]',
+  )!;
+  const translate = (element: Element) =>
+    element
+      .getAttribute("transform")!
+      .match(/translate\(([-\d.]+) ([-\d.]+)\)/u)!
+      .slice(1)
+      .map(Number);
+  const [bodyX, bodyY] = translate(body as unknown as Element);
+  const [centerX, centerY] = translate(text as unknown as Element);
+  const halfWidth =
+    (Number(body.getAttribute("data-bubble-body-width")) - 48) / 2;
+  const halfHeight =
+    (Number(body.getAttribute("data-bubble-body-height")) - 48) / 2;
+  const points = [
+    ...body
+      .querySelector("path")!
+      .getAttribute("d")!
+      .matchAll(/[ML]\s+([-\d.]+)\s+([-\d.]+)/gu),
+  ].map((match) => ({
+    x: Number(match[1]) + bodyX!,
+    y: Number(match[2]) + bodyY!,
+  }));
+  const tipIndices = points.flatMap(({ x, y }, index) =>
+    Math.abs(x - centerX!) > halfWidth + 0.01 ||
+    Math.abs(y - centerY!) > halfHeight + 0.01
+      ? [index]
+      : [],
+  );
+  expect(tipIndices).toHaveLength(1);
+  const index = tipIndices[0]!;
+  const native = harness.renderer.getNativeSize() as [number, number];
+  const world = (point: { x: number; y: number }) => ({
+    x: point.x - native[0] / 2,
+    y: native[1] / 2 - point.y,
+  });
+  const left = points[(index + points.length - 1) % points.length]!;
+  const right = points[(index + 1) % points.length]!;
+  return {
+    tip: world(points[index]!),
+    base: world({ x: (left.x + right.x) / 2, y: (left.y + right.y) / 2 }),
+  };
+}
+
+describe("custom Bubble stage bounds", () => {
+  for (const [x, placement] of [
+    [160, "up-right"],
+    [-160, "up-left"],
+  ] as const) {
+    it(`aims the tail base midpoint at the sprite center when ${placement} is fenced`, async () => {
+      const harness = createHarness([2000, 360]);
+      const composition = createTurboWarpBubbleComposition(harness.runtime, {
+        document: harness.window.document as unknown as Document,
+        svgOverlayTextCapability: harness.textCapability,
+      });
+      composition.defineStyle({
+        name: "speech",
+        textStyle: "body",
+        placement,
+        visualStyle: "NORMAL",
+      });
+      const target = {
+        ...actor("speaker", x, -40),
+        // Deliberately asymmetric artwork: its AABB center is not the sprite center.
+        getBoundsForBubble: () => ({
+          left: x - 10,
+          right: x + 50,
+          bottom: -70,
+          top: -10,
+        }),
+      };
+      const handle = await composition.show({
+        actor: target,
+        actorKey: "speaker",
+        kind: "say",
+        styleName: "speech",
+        text: "A".repeat(35),
+      });
+      const before = speechTailTip(harness);
+      harness.setNativeSize([480, 360]);
+      harness.emit("NativeSizeChanged");
+      const after = speechTailTip(harness);
+      for (const { tip, base } of [before, after]) {
+        const dx = tip.x - base.x;
+        const dy = tip.y - base.y;
+        const tx = target.x - base.x;
+        const ty = target.y - base.y;
+        expect(Math.abs(dx * ty - dy * tx) / Math.hypot(dx, dy)).toBeLessThan(
+          0.01,
+        );
+        expect(dx * tx + dy * ty).toBeGreaterThan(0);
+      }
+      await handle.close();
+    });
+  }
+
+  for (const maxWidth of [undefined, 900, 90]) {
+    it(`wraps overwide speech within the stage with maxWidth=${maxWidth}`, async () => {
+      const harness = createHarness();
+      const composition = createTurboWarpBubbleComposition(harness.runtime, {
+        document: harness.window.document as unknown as Document,
+        svgOverlayTextCapability: harness.textCapability,
+      });
+      composition.defineStyle({
+        name: "speech",
+        textStyle: "body",
+        visualStyle: "NORMAL",
+        ...(maxWidth === undefined ? {} : { maxWidth }),
+      });
+      const content =
+        "長いセリフでも話者の方向を維持して画面内で自動的に改行します。".repeat(
+          3,
+        );
+      const handle = await composition.show({
+        actor: actor("speaker", 140, -75),
+        actorKey: "speaker",
+        kind: "say",
+        styleName: "speech",
+        text: content,
+      });
+      const lines = [
+        ...harness.window.document.querySelectorAll(
+          '[data-bubble-layer="text"] tspan',
+        ),
+      ];
+      expect(lines.length).toBeGreaterThan(1);
+      expect(lines.map((line) => line.textContent).join("")).toBe(content);
+      for (const line of lines)
+        expect((line.textContent?.length ?? 0) * 10).toBeLessThanOrEqual(
+          maxWidth === 90 ? 90 : 480,
+        );
+      expect(
+        Number(
+          harness.window.document
+            .querySelector('[data-bubble-layer="body"]')!
+            .getAttribute("data-bubble-body-width"),
+        ) - 48,
+      ).toBeLessThanOrEqual(480);
+      await handle.close();
+    });
+  }
+});
+
 describe("SVG overlay backend", () => {
   it("renders the basic style with Scratch dimensions, tails, and placement", async () => {
     const harness = createHarness();
@@ -747,6 +895,40 @@ function bodyHeight(window: Window): number {
 }
 
 describe("SVG overlay backend ruby content", () => {
+  it("automatically wraps long ruby content without dropping readings", async () => {
+    const harness = createHarness();
+    const composition = createTurboWarpBubbleComposition(harness.runtime, {
+      document: harness.window.document as unknown as Document,
+    });
+    composition.defineStyle({
+      name: "speech",
+      textStyle: "default",
+      visualStyle: "NORMAL",
+    });
+    const content = Array.from({ length: 16 }, () => [...rubySentence]).flat();
+    const handle = await composition.show({
+      actor: actor("speaker", 140, -75),
+      actorKey: "speaker",
+      kind: "say",
+      styleName: "speech",
+      text: content,
+    });
+    expect(rubyTspans(harness.window, "reading")).toHaveLength(16);
+    expect(
+      rubyTspans(harness.window, "base")
+        .map((t) => t.textContent)
+        .join(""),
+    ).toBe("中野".repeat(16));
+    expect(
+      Number(
+        harness.window.document
+          .querySelector('[data-bubble-layer="body"]')!
+          .getAttribute("data-bubble-body-width"),
+      ) - 48,
+    ).toBeLessThanOrEqual(480);
+    await handle.close();
+  });
+
   it("renders the ruby base on the line and its reading above it", async () => {
     const harness = createHarness();
     const textLayouts = createSvgTextLayoutComposition();

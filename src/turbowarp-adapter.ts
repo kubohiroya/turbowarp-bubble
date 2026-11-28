@@ -503,6 +503,16 @@ function clamp(value: number, minimum: number, maximum: number): number {
   return Math.min(maximum, Math.max(minimum, value));
 }
 
+function readStageSize(renderer: TurboWarpBubbleRenderer): DrawableSize {
+  const value = renderer.getNativeSize();
+  const width = Array.isArray(value) ? Number(value[0]) : 0;
+  const height = Array.isArray(value) ? Number(value[1]) : 0;
+  return {
+    width: Number.isFinite(width) && width > 0 ? width : 480,
+    height: Number.isFinite(height) && height > 0 ? height : 360,
+  };
+}
+
 function expandSvgViewport(
   svg: string,
   width: number,
@@ -913,6 +923,29 @@ function createSurface(
               tailLength: currentStyle.tailLength,
               offset: bodyOffset,
             });
+      const bounds = targetBounds(actor);
+      const actorCenterX = Number.isFinite(actor.x)
+        ? Number(actor.x)
+        : (bounds.left + bounds.right) / 2;
+      const actorCenterY = Number.isFinite(actor.y)
+        ? Number(actor.y)
+        : (bounds.bottom + bounds.top) / 2;
+      // Convert the speaker center after fencing into the canonical SVG coordinates.
+      const tailTarget =
+        tailDirection === null
+          ? undefined
+          : {
+              x:
+                baseBubbleWidth / 2 +
+                bodyCenterOffset.x +
+                actorCenterX -
+                centerX,
+              y:
+                baseBubbleHeight / 2 +
+                bodyCenterOffset.y +
+                centerY -
+                actorCenterY,
+            };
       const viewportExtraX =
         Math.abs(bodyOffset[0]) +
         baseBubbleWidth * Math.abs(scaleMultiplier - 1) +
@@ -928,6 +961,7 @@ function createSurface(
         baseBubbleWidth,
         bodyOffset,
         tailDirection,
+        tailTarget,
         tailLength: currentStyle.tailLength,
         viewportExtraX,
         viewportExtraY,
@@ -941,6 +975,7 @@ function createSurface(
           width: baseBubbleWidth,
           height: baseBubbleHeight,
           tailDirection,
+          ...(tailTarget === undefined ? {} : { tailTarget }),
           tailLength: currentStyle.tailLength,
           offset: bodyOffset,
           title: `${currentStyle.name} Bubble body`,
@@ -1474,6 +1509,37 @@ export function createTurboWarpBubbleComposition(
         runtime.ext_kubohiroyasvgtext === undefined
           ? createDefaultScratchRenderTextCapability(runtime)
           : createTurboWarpSvgTextCapability(runtime.ext_kubohiroyasvgtext);
+      const extension = runtime.ext_kubohiroyasvgtext;
+      if (isRecord(extension) && typeof extension.measureText !== "function") {
+        if (typeof extension.getLayoutCapability === "function") {
+          const layoutCapability =
+            createTurboWarpSvgTextOverlayTextCapability(extension);
+          textCapability = {
+            ...textCapability,
+            measureText({ styleName, text }) {
+              const native = readStageSize(renderer);
+              return (
+                layoutCapability.measureText?.({
+                  nativeSize: native,
+                  styleName,
+                  text,
+                }) ??
+                layoutCapability.layoutText({
+                  nativeSize: native,
+                  styleName,
+                  text,
+                }).width
+              );
+            },
+          };
+        } else {
+          // Legacy hosts without either measurement API keep their existing capability contract.
+          textCapability = {
+            setText: textCapability.setText,
+            releaseTarget: textCapability.releaseTarget,
+          };
+        }
+      }
     } catch (error) {
       throw new BubbleRuntimeAdapterError(
         "BUBBLE-RUNTIME-003",
@@ -1573,6 +1639,28 @@ export function createTurboWarpBubbleComposition(
     ...(imageResolver === undefined ? {} : { imageResolver }),
     audio,
     textCapability,
+    ...(typeof textCapability.measureText !== "function"
+      ? {}
+      : {
+          getMaxTextWidth(style: BubbleStyle): number {
+            const stageWidth = readStageSize(renderer).width;
+            const scale =
+              style.placement.basis === "actor"
+                ? style.offset.scalePercent / 100
+                : 1;
+            const portraitWidth =
+              style.portrait === undefined
+                ? 0
+                : portraitBoxSize * (style.portrait.offset.zoomPercent / 100) +
+                  contentGap;
+            return Math.max(
+              1,
+              (stageWidth - stageSafeMargin * 2) / scale -
+                bubblePadding * 2 -
+                portraitWidth,
+            );
+          },
+        }),
     createSurface({ actor, actorKey, kind, style }) {
       if (!isRecord(actor) || typeof actor.id !== "string") {
         throw new BubbleRuntimeAdapterError(

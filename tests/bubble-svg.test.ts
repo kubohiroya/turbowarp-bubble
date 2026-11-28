@@ -8,6 +8,90 @@ import {
 } from "../src/bubble-svg.js";
 
 describe("renderBubbleSvg", () => {
+  it("aims from the border chord midpoint to the speaker center after offset and scale", () => {
+    for (const offset of [
+      [0, 0, 100],
+      [30, -15, 140],
+      [-25, 10, 70],
+    ] as const) {
+      for (let direction = 0; direction < 360; direction += 22.5) {
+        const bodyOffset = bubbleBodyCenterOffset({
+          style: "NORMAL",
+          width: 220,
+          height: 112,
+          tailDirection: 225,
+          offset,
+        });
+        const radians = (direction * Math.PI) / 180;
+        const ray = { x: Math.sin(radians), y: -Math.cos(radians) };
+        const target = {
+          x: 110 + bodyOffset.x + ray.x * 1000,
+          y: 56 + bodyOffset.y + ray.y * 1000,
+        };
+        const svg = renderBubbleSvg({
+          style: "NORMAL",
+          lines: [],
+          width: 220,
+          height: 112,
+          tailDirection: 225,
+          tailTarget: target,
+          offset,
+        });
+        const points = [...svg.matchAll(/[ML] ([-\d.]+) ([-\d.]+)/gu)].map(
+          ([, x, y]) => ({ x: Number(x), y: Number(y) }),
+        );
+        const scale = offset[2] / 100;
+        const tips = points.filter(
+          (p) =>
+            Math.abs(p.x - (110 + bodyOffset.x)) > 86 * scale + 0.001 ||
+            Math.abs(p.y - (56 + bodyOffset.y)) > 32 * scale + 0.001,
+        );
+        expect(tips).toHaveLength(1);
+        const tip = tips[0]!;
+        const index = points.indexOf(tip);
+        const left = points[(index + points.length - 1) % points.length]!;
+        const right = points[(index + 1) % points.length]!;
+        const base = { x: (left.x + right.x) / 2, y: (left.y + right.y) / 2 };
+        const dx = tip.x - base.x;
+        const dy = tip.y - base.y;
+        const tx = target.x - base.x;
+        const ty = target.y - base.y;
+        // Measure perpendicular distance, not merely a matching left/right sign.
+        expect(
+          Math.abs(dx * ty - dy * tx) / Math.hypot(tx, ty),
+          JSON.stringify({ direction, offset, base, tip, target }),
+        ).toBeLessThan(0.001);
+        expect(dx * tx + dy * ty).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("omits an outward tail when the body covers the sprite center", () => {
+    const svg = renderBubbleSvg({
+      style: "NORMAL",
+      lines: [],
+      tailTarget: { x: 110, y: 56 },
+    });
+    expect(svg).not.toContain('data-boolean-operation="union"');
+    expect(() =>
+      renderBubbleSvg({
+        style: "NORMAL",
+        lines: [],
+        tailTarget: { x: NaN, y: 0 },
+      }),
+    ).toThrow("tailTarget coordinates must be finite");
+    // Targeted rendering does not depend on the legacy placement-derived tip.
+    expect(() =>
+      renderBubbleSvg({
+        style: "NORMAL",
+        lines: [],
+        tailDirection: 0,
+        offset: [0, 50, 100],
+        tailTarget: { x: 500, y: 0 },
+      }),
+    ).not.toThrow();
+  });
+
   it.each(bubbleVisualStyles)("renders the canonical %s SVG", (style) => {
     const svg = renderBubbleSvg({
       style,

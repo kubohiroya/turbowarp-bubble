@@ -1445,12 +1445,33 @@ export function createSvgOverlaySurface(
             tailLength: currentStyle.tailLength,
             offset: bodyOffset,
           });
+    const bounds = targetBounds(actor);
+    const actorCenterX = Number.isFinite(actor.x)
+      ? Number(actor.x)
+      : (bounds.left + bounds.right) / 2;
+    const actorCenterY = Number.isFinite(actor.y)
+      ? Number(actor.y)
+      : (bounds.bottom + bounds.top) / 2;
+    // Convert the speaker center after fencing into the canonical SVG coordinates.
+    const tailTarget =
+      tailDirection === null
+        ? undefined
+        : {
+            x:
+              baseBubbleWidth / 2 + bodyCenterOffset.x + actorCenterX - centerX,
+            y:
+              baseBubbleHeight / 2 +
+              bodyCenterOffset.y +
+              centerY -
+              actorCenterY,
+          };
     const nextBodySignature = JSON.stringify({
       baseBubbleHeight,
       baseBubbleWidth,
       bodyOffset,
       shapeTransition,
       tailDirection,
+      tailTarget,
       tailLength: currentStyle.tailLength,
       visualStyle: currentStyle.visualStyle,
     });
@@ -1463,6 +1484,7 @@ export function createSvgOverlaySurface(
           width: baseBubbleWidth,
           height: baseBubbleHeight,
           tailDirection,
+          ...(tailTarget === undefined ? {} : { tailTarget }),
           tailLength: currentStyle.tailLength,
           offset: bodyOffset,
           title: `${currentStyle.name} Bubble body`,
