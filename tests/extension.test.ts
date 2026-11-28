@@ -203,6 +203,9 @@ function createRuntime(
   );
   const releaseTextActor = vi.fn(() => true);
   const svgTextLayouts = createSvgTextLayoutComposition();
+  for (const name of ["dialogue", "dialogue-text"]) {
+    svgTextLayouts.defineStyle({ name, backgroundColor: "transparent" });
+  }
   const listeners = new Map<string, Array<(...args: unknown[]) => void>>();
   const conditionState = { value: false };
   const runtimeExpression = {
@@ -308,6 +311,99 @@ afterEach(() => {
 });
 
 describe("TurboWarp composition adapter", () => {
+  it("automatically wraps custom speech through the scratch-render backend", async () => {
+    const harness = createRuntime();
+    const composition = createScratchRenderComposition(harness.runtime);
+    composition.defineStyle({
+      name: "speech",
+      textStyle: "default",
+      visualStyle: "NORMAL",
+    });
+    const content =
+      "長いセリフでも舞台の幅を超えたら自動的に改行します。".repeat(4);
+    const handle = await composition.show({
+      actor: actor(),
+      actorKey: "hero-id",
+      kind: "say",
+      styleName: "speech",
+      text: content,
+    });
+    const displayed = (
+      harness.setText.mock.calls.at(-1)![0] as { TEXT: string }
+    ).TEXT;
+    expect(displayed.split("\n").length).toBeGreaterThan(1);
+    expect(displayed.replaceAll("\n", "")).toBe(content);
+    await handle.close();
+  });
+
+  it("aims the scratch-render tail base midpoint at the sprite center after fencing", async () => {
+    const harness = createRuntime();
+    let stageWidth = 2000;
+    harness.renderer.getNativeSize = () => [stageWidth, 360];
+    const composition = createScratchRenderComposition(harness.runtime);
+    const target = {
+      ...actor(),
+      x: 160,
+      y: -40,
+      getBoundsForBubble: () => ({
+        left: 150,
+        right: 210,
+        bottom: -70,
+        top: -10,
+      }),
+    };
+    composition.defineStyle({
+      name: "speech",
+      textStyle: "default",
+      placement: "up-right",
+      visualStyle: "NORMAL",
+    });
+    const handle = await composition.show({
+      actor: target,
+      actorKey: target.id,
+      kind: "say",
+      styleName: "speech",
+      text: "Long enough to reach the stage edge",
+    });
+    const tip = () => {
+      const svg = harness.createdSvgSkins.at(-1)!;
+      const width = Number(svg.match(/data-bubble-body-width="([\d.]+)"/u)![1]);
+      const points = [...svg.matchAll(/[ML]\s+([-\d.]+)\s+([-\d.]+)/gu)].map(
+        (m) => ({ x: Number(m[1]), y: Number(m[2]) }),
+      );
+      const height = Number(
+        svg.match(/data-bubble-body-height="([\d.]+)"/u)![1],
+      );
+      const point = points.reduce((a, b) => (a.y > b.y ? a : b));
+      const index = points.indexOf(point);
+      const left = points[(index + points.length - 1) % points.length]!;
+      const right = points[(index + 1) % points.length]!;
+      const position = harness.positions.get(harness.created[0]!)!;
+      const world = (p: { x: number; y: number }) => ({
+        x: position[0] + p.x - width / 2,
+        y: position[1] - p.y + height / 2,
+      });
+      return {
+        tip: world(point),
+        base: world({ x: (left.x + right.x) / 2, y: (left.y + right.y) / 2 }),
+      };
+    };
+    const before = tip();
+    stageWidth = 480;
+    target.onTargetVisualChange?.(target);
+    for (const { tip: end, base } of [before, tip()]) {
+      const dx = end.x - base.x;
+      const dy = end.y - base.y;
+      const tx = target.x - base.x;
+      const ty = target.y - base.y;
+      expect(Math.abs(dx * ty - dy * tx) / Math.hypot(dx, dy)).toBeLessThan(
+        0.01,
+      );
+      expect(dx * tx + dy * ty).toBeGreaterThan(0);
+    }
+    await handle.close();
+  });
+
   it("defers Asset Cache lookup until a media style is shown", () => {
     const harness = createRuntime({ assetManager: false });
 

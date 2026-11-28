@@ -243,6 +243,8 @@ const layout = wrapText({
 
 Composition APIのBubble styleへ`maxWidth`と任意の`textLocale`を渡すと、Text capabilityの`measureText`を使ってこの`wrapText`基盤が実際の表示文字列を自動改行します。SVG Textまたはhost側のText capabilityが`measureText`を提供しない場合、`maxWidth`を使った表示は明示的なcapabilityエラーになります。
 
+TurboWarp adapterでは、舞台の横幅から余白・portrait・倍率を考慮した上限を自動計算します。`maxWidth`が未指定でも長いセリフを改行し、指定した幅が舞台より広い場合も舞台側の上限を適用します。狭い`maxWidth`はそのまま有効です。ホスト独自のComposition APIでは、`getMaxTextWidth(style)`で表示領域の上限を渡せます。
+
 ![maxWidthの違いによる自動改行と、日本語禁則処理の例](docs/assets/width-linebreak-guide.svg)
 
 図の各行はproductionの`wrapText`を直接呼んだ結果です。図版専用の手作業改行は使っていません。
@@ -465,9 +467,9 @@ Actor相対の正規方向名は次の16個です。別名は大文字小文字�
 
 ![Actor相対のdistance、tail length、offset、scaleを比較する図](docs/assets/actor-transform-guide.svg)
 
-Actor相対の`distance`はActorのStage座標AABB（axis-aligned bounding box。rendererの`getBoundsForBubble()`が返す上下左右）からtail先端までで、既定値は`12`です。`tail length`は通常位置における本体borderからtail先端までで、既定値は`18`です。
+Actor相対の`distance`は、ActorのStage座標AABB（rendererの`getBoundsForBubble()`が返す上下左右）を基準に本体の初期位置を決める間隔で、既定値は`12`です。`tail length`は輪郭上の付け根の中点から先端までの長さで、既定値は`18`です。先端がActor中心を通り越す場合は、その中心までに制限します。
 
-`offset x/y/scale`の既定値は`[0, 0, 100]`です。xは右、yは上が正です。scaleはBubble外形だけでなく、SVG Textの文字（フォントサイズ）、表情画像、次へアイコン、内部余白へ一体で適用します。scaleだけを変えた場合は、拡大量の半径分だけ本体中心をActorから離し、Actor側の間隔を維持します。その後x/y offsetを加え、固定したtail先端へ向けてtailを再生成するため、offset後の実長は`tail length`から変化し得ます。Stage端では全体が画面内に収まるようクランプします。これら3設定は背景相対placementでは無視します。
+`offset x/y/scale`の既定値は`[0, 0, 100]`です。xは右、yは上が正です。scaleはBubble外形だけでなく、SVG Textの文字（フォントサイズ）、表情画像、次へアイコン、内部余白へ一体で適用します。scaleとx/y offsetを適用した本体をStage内へクランプした後、輪郭上のしっぽの付け根の両端の中点から、Actorのスプライト座標中心（`x`・`y`）へ向けてしっぽを生成します。本体の移動によって話者と異なる方向を向くことはありません。Actor中心が本体に覆われる場合はしっぽを表示しません。これら3設定は背景相対placementでは無視します。
 
 #### 立ち絵・まばたき・口パク
 

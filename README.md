@@ -243,6 +243,8 @@ const layout = wrapText({
 
 Passing `maxWidth` and an optional `textLocale` in a Composition API Bubble style makes this `wrapText` foundation wrap the actual displayed string using the Text capability's `measureText`. If SVG Text or a host-provided Text capability does not provide `measureText`, displaying content with `maxWidth` produces an explicit capability error.
 
+The TurboWarp adapter also derives a width limit from the Stage, padding, portrait, and scale. Long speech wraps automatically when `maxWidth` is omitted, and a width larger than the Stage is capped. A narrower `maxWidth` still applies. Hosts using the standalone Composition API can provide their viewport limit through `getMaxTextWidth(style)`.
+
 ![Automatic wrapping at different maxWidth values with Japanese line-breaking rules](docs/assets/width-linebreak-guide.svg)
 
 Every line in the figure is produced by calling the production `wrapText` implementation directly; the illustration does not use manually inserted line breaks.
@@ -465,9 +467,9 @@ Each of the 16 directions in the figure shows an Actor, the actual Bubble outlin
 
 ![Actor-relative distance, tail length, offset, and scale compared](docs/assets/actor-transform-guide.svg)
 
-Actor-relative `distance` runs from the Actor's Stage-coordinate AABB (the axis-aligned bounding box represented by the top, bottom, left, and right values returned by the renderer's `getBoundsForBubble()`) to the tail tip. Its default is `12`. `tail length` runs from the body border at the normal position to the tail tip. Its default is `18`.
+Actor-relative `distance` determines the body's initial gap from the Actor's Stage-coordinate AABB (the bounds returned by `getBoundsForBubble()`). Its default is `12`. `tail length` measures from the midpoint of the tail's border attachment to its tip, with a default of `18`. The tip stops at the Actor center if it would otherwise pass it.
 
-The default `offset x/y/scale` is `[0, 0, 100]`. Positive x points right, and positive y points up. Scale applies as one transformation to the Bubble outline, SVG Text content and font size, expression images, continue icon, and inner padding. When only scale changes, Bubble moves the body center away from the Actor by the radius of the size increase, preserving the Actor-side gap. It then applies the x/y offset and regenerates the tail toward its fixed tip, so the resulting length after the offset can differ from `tail length`. At Stage edges, the full Bubble is clamped to remain onscreen. These three settings are ignored for background-relative placement.
+The default `offset x/y/scale` is `[0, 0, 100]`. Positive x points right, and positive y points up. Scale applies together to the Bubble outline, SVG Text content and font size, expression images, continue icon, and inner padding. After applying scale, offsets, and Stage fencing to the body, the adapter generates the tail from the midpoint of its two border attachment points toward the sprite's coordinate center (`x`, `y`). Moving the body therefore preserves the direction toward the speaker. A body covering the Actor center omits the tail. These three settings are ignored for background-relative placement.
 
 #### Portrait, blink, and lip-sync
 

@@ -221,6 +221,8 @@ export interface RenderBubbleSvgInput {
   readonly height?: number;
   /** Scratch direction: 0 is up, 90 is right. */
   readonly tailDirection?: number | null;
+  /** Speaker center in this SVG's coordinate system, after body placement. */
+  readonly tailTarget?: Readonly<{ x: number; y: number }>;
   readonly tailLength?: number;
   readonly offset?: BubbleOffsetInput;
   readonly fillColor?: string;
@@ -424,6 +426,40 @@ function directionRay(direction: number): Point {
   return { x: Math.sin(radians), y: -Math.cos(radians) };
 }
 
+function tailGeometryToTarget(
+  body: readonly Point[],
+  center: Point,
+  target: Point,
+  length: number,
+): ReturnType<typeof tailGeometryForPolygon> | undefined {
+  const vector = subtract(target, center);
+  const targetDistance = Math.hypot(vector.x, vector.y);
+  if (targetDistance < 1e-9) return undefined;
+  const geometry = tailGeometryForPolygon(
+    body,
+    center,
+    { x: vector.x / targetDistance, y: vector.y / targetDistance },
+    0,
+  );
+  // A speaker covered by the body has no outward-pointing tail.
+  if (targetDistance <= distance(center, geometry.borderPoint))
+    return undefined;
+  const midpoint = {
+    x: (geometry.base[0].x + geometry.base[1].x) / 2,
+    y: (geometry.base[0].y + geometry.base[1].y) / 2,
+  };
+  const fromBase = subtract(target, midpoint);
+  const remaining = Math.hypot(fromBase.x, fromBase.y);
+  const ratio = Math.min(length / remaining, 1);
+  return {
+    ...geometry,
+    tip: {
+      x: midpoint.x + fromBase.x * ratio,
+      y: midpoint.y + fromBase.y * ratio,
+    },
+  };
+}
+
 function transformPoint(
   point: Point,
   center: Point,
@@ -500,19 +536,25 @@ function unionBodyAndTail(
   fill: string,
   border: string,
   extra = "",
+  target?: Point,
+  tailLength = svgDefaultTailLength,
 ): string {
   const tipVector = subtract(tip, bodyCenter);
   const tipDistance = Math.hypot(tipVector.x, tipVector.y);
-  if (!(tipDistance > 0)) {
+  if (target === undefined && !(tipDistance > 0)) {
     throw new TypeError("Bubble body center and tail tip must differ.");
   }
-  const geometry = tailGeometryForPolygon(
-    body,
-    bodyCenter,
-    { x: tipVector.x / tipDistance, y: tipVector.y / tipDistance },
-    0,
-    tip,
-  );
+  const geometry =
+    target === undefined
+      ? tailGeometryForPolygon(
+          body,
+          bodyCenter,
+          { x: tipVector.x / tipDistance, y: tipVector.y / tipDistance },
+          0,
+          tip,
+        )
+      : tailGeometryToTarget(body, bodyCenter, target, tailLength);
+  if (geometry === undefined) return bodyPath(body, fill, border, extra);
   const toClipperPath = (points: readonly Point[]): [number, number][] =>
     points.map(({ x, y }) => [x, y]);
   const solution = jsclipper.union(
@@ -643,16 +685,22 @@ function thoughtTrail(
   fill: string,
   border: string,
   dreaming: boolean,
+  target?: Point,
+  tailLength = svgDefaultTailLength,
 ): string {
   const tipVector = subtract(tip, bodyCenter);
   const tipDistance = Math.hypot(tipVector.x, tipVector.y);
-  const geometry = tailGeometryForPolygon(
-    body,
-    bodyCenter,
-    { x: tipVector.x / tipDistance, y: tipVector.y / tipDistance },
-    0,
-    tip,
-  );
+  const geometry =
+    target === undefined
+      ? tailGeometryForPolygon(
+          body,
+          bodyCenter,
+          { x: tipVector.x / tipDistance, y: tipVector.y / tipDistance },
+          0,
+          tip,
+        )
+      : tailGeometryToTarget(body, bodyCenter, target, tailLength);
+  if (geometry === undefined) return "";
   const center = {
     x: (geometry.base[0].x + geometry.base[1].x) / 2,
     y: (geometry.base[0].y + geometry.base[1].y) / 2,
@@ -782,6 +830,7 @@ function renderBody(
   border: string,
   tailLength: number,
   offset: BubbleOffset,
+  target?: Point,
 ): string {
   const rounded = roundedRectanglePoints(width, height);
   const transformWithoutTail = (body: readonly Point[]): readonly Point[] => {
@@ -812,6 +861,8 @@ function renderBody(
       fill,
       border,
       extra,
+      target,
+      tailLength,
     );
   };
   switch (style) {
@@ -832,7 +883,7 @@ function renderBody(
       const center = { x: width / 2, y: height / 2 };
       const translateX = transformed.bodyCenter.x - center.x * scale;
       const translateY = transformed.bodyCenter.y - center.y * scale;
-      return `${thoughtTrail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, style === "DREAMING")}<g transform="translate(${translateX} ${translateY}) scale(${scale})">${cloudBody(width, height, fill, border)}</g>`;
+      return `${thoughtTrail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, style === "DREAMING", target, tailLength)}<g transform="translate(${translateX} ${translateY}) scale(${scale})">${cloudBody(width, height, fill, border)}</g>`;
     }
     case "YELLING":
       return withTail(burstBodyPoints(width, height));
@@ -893,6 +944,13 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
   const requestedHeight = requireDimension(input.height, 112);
   const fontSize = requireDimension(input.fontSize, 15);
   const direction = normalizeDirection(input.tailDirection);
+  const target = input.tailTarget;
+  if (
+    target !== undefined &&
+    (!Number.isFinite(target.x) || !Number.isFinite(target.y))
+  ) {
+    throw new TypeError("tailTarget coordinates must be finite.");
+  }
   const tailLength = normalizeSvgTailLength(
     input.tailLength ?? svgDefaultTailLength,
   );
@@ -956,6 +1014,7 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
           border,
           tailLength,
           offset,
+          target,
         )
       : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(
           shapeTransition.from,
@@ -966,6 +1025,7 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
           border,
           tailLength,
           offset,
+          target,
         )}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(
           shapeTransition.to,
           width,
@@ -975,6 +1035,7 @@ export function renderBubbleSvg(input: RenderBubbleSvgInput): string {
           border,
           tailLength,
           offset,
+          target,
         )}</g>`;
   const title = escapeXml(input.title ?? `${input.style} bubble`);
   const transitionAttributes =

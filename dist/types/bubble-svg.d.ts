@@ -27,6 +27,11 @@ export interface RenderBubbleSvgInput {
     readonly height?: number;
     /** Scratch direction: 0 is up, 90 is right. */
     readonly tailDirection?: number | null;
+    /** Speaker center in this SVG's coordinate system, after body placement. */
+    readonly tailTarget?: Readonly<{
+        x: number;
+        y: number;
+    }>;
     readonly tailLength?: number;
     readonly offset?: BubbleOffsetInput;
     readonly fillColor?: string;
