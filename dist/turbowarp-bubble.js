@@ -6870,6 +6870,30 @@ function directionRay(direction) {
     y: -Math.cos(radians)
   };
 }
+function tailGeometryToTarget(body, center, target, length) {
+  const vector = subtract(target, center);
+  const targetDistance = Math.hypot(vector.x, vector.y);
+  if (targetDistance < 1e-9) return void 0;
+  const geometry = tailGeometryForPolygon(body, center, {
+    x: vector.x / targetDistance,
+    y: vector.y / targetDistance
+  }, 0);
+  if (targetDistance <= distance(center, geometry.borderPoint)) return void 0;
+  const midpoint = {
+    x: (geometry.base[0].x + geometry.base[1].x) / 2,
+    y: (geometry.base[0].y + geometry.base[1].y) / 2
+  };
+  const fromBase = subtract(target, midpoint);
+  const remaining = Math.hypot(fromBase.x, fromBase.y);
+  const ratio = Math.min(length / remaining, 1);
+  return {
+    ...geometry,
+    tip: {
+      x: midpoint.x + fromBase.x * ratio,
+      y: midpoint.y + fromBase.y * ratio
+    }
+  };
+}
 function transformPoint(point, center, bodyCenter, scale) {
   return {
     x: bodyCenter.x + (point.x - center.x) * scale,
@@ -6910,14 +6934,15 @@ function polygonArea(points) {
 function bodyPath(points, fill, border, extra = "") {
   return `<path d="${polygonPath(points)}" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round" ${extra}/>`;
 }
-function unionBodyAndTail(body, bodyCenter, tip, fill, border, extra = "") {
+function unionBodyAndTail(body, bodyCenter, tip, fill, border, extra = "", target, tailLength = svgDefaultTailLength) {
   const tipVector = subtract(tip, bodyCenter);
   const tipDistance = Math.hypot(tipVector.x, tipVector.y);
-  if (!(tipDistance > 0)) throw new TypeError("Bubble body center and tail tip must differ.");
-  const geometry = tailGeometryForPolygon(body, bodyCenter, {
+  if (target === void 0 && !(tipDistance > 0)) throw new TypeError("Bubble body center and tail tip must differ.");
+  const geometry = target === void 0 ? tailGeometryForPolygon(body, bodyCenter, {
     x: tipVector.x / tipDistance,
     y: tipVector.y / tipDistance
-  }, 0, tip);
+  }, 0, tip) : tailGeometryToTarget(body, bodyCenter, target, tailLength);
+  if (geometry === void 0) return bodyPath(body, fill, border, extra);
   const toClipperPath = (points) => points.map(({ x, y }) => [x, y]);
   const solution = import_jsclipper_adapter.default.union([toClipperPath(body)], [[toClipperPath([
     geometry.base[0],
@@ -7011,13 +7036,14 @@ function cloudBody(width, height, fill, border) {
   });
   return `<path d="M ${format(first.x)} ${format(first.y)} ${arcs.join(" ")} Z" fill="${fill}" stroke="${border}" stroke-width="3" stroke-linejoin="round"/>`;
 }
-function thoughtTrail(body, bodyCenter, tip, fill, border, dreaming) {
+function thoughtTrail(body, bodyCenter, tip, fill, border, dreaming, target, tailLength = svgDefaultTailLength) {
   const tipVector = subtract(tip, bodyCenter);
   const tipDistance = Math.hypot(tipVector.x, tipVector.y);
-  const geometry = tailGeometryForPolygon(body, bodyCenter, {
+  const geometry = target === void 0 ? tailGeometryForPolygon(body, bodyCenter, {
     x: tipVector.x / tipDistance,
     y: tipVector.y / tipDistance
-  }, 0, tip);
+  }, 0, tip) : tailGeometryToTarget(body, bodyCenter, target, tailLength);
+  if (geometry === void 0) return "";
   const center = {
     x: (geometry.base[0].x + geometry.base[1].x) / 2,
     y: (geometry.base[0].y + geometry.base[1].y) / 2
@@ -7121,7 +7147,7 @@ function bubbleBodyCenterOffset(input) {
     y: transformed.bodyCenter.y - center.y
   });
 }
-function renderBody(style, width, height, direction, fill, border, tailLength, offset) {
+function renderBody(style, width, height, direction, fill, border, tailLength, offset, target) {
   const rounded = roundedRectanglePoints(width, height);
   const transformWithoutTail = (body) => {
     if (direction === null) return body;
@@ -7130,7 +7156,7 @@ function renderBody(style, width, height, direction, fill, border, tailLength, o
   const withTail = (body, extra = "") => {
     if (direction === null) return bodyPath(body, fill, border, extra);
     const transformed = transformedBodyGeometry(body, width, height, direction, tailLength, offset);
-    return unionBodyAndTail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, extra);
+    return unionBodyAndTail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, extra, target, tailLength);
   };
   switch (style) {
     case "NO_BUBBLE": return "";
@@ -7145,7 +7171,7 @@ function renderBody(style, width, height, direction, fill, border, tailLength, o
       };
       const translateX = transformed.bodyCenter.x - center.x * scale;
       const translateY = transformed.bodyCenter.y - center.y * scale;
-      return `${thoughtTrail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, style === "DREAMING")}<g transform="translate(${translateX} ${translateY}) scale(${scale})">${cloudBody(width, height, fill, border)}</g>`;
+      return `${thoughtTrail(transformed.body, transformed.bodyCenter, transformed.tip, fill, border, style === "DREAMING", target, tailLength)}<g transform="translate(${translateX} ${translateY}) scale(${scale})">${cloudBody(width, height, fill, border)}</g>`;
     }
     case "YELLING": return withTail(burstBodyPoints(width, height));
     case "WAVY": return withTail(wavyBodyPoints(width, height));
@@ -7179,6 +7205,8 @@ function renderBubbleSvg(input) {
   const requestedHeight = requireDimension(input.height, 112);
   const fontSize = requireDimension(input.fontSize, 15);
   const direction = normalizeDirection(input.tailDirection);
+  const target = input.tailTarget;
+  if (target !== void 0 && (!Number.isFinite(target.x) || !Number.isFinite(target.y))) throw new TypeError("tailTarget coordinates must be finite.");
   const tailLength = normalizeSvgTailLength(input.tailLength ?? svgDefaultTailLength);
   const offset = input.offset === void 0 ? svgDefaultOffset : normalizeSvgOffset(input.offset);
   const shapeTransition = input.shapeTransition;
@@ -7200,7 +7228,7 @@ function renderBubbleSvg(input) {
     y: height / 2
   } : transformedBodyGeometry(roundedRectanglePoints(width, height), width, height, direction, tailLength, offset).bodyCenter;
   const text = input.lines.map((line, index) => `<text x="${textCenter.x}" y="${textCenter.y + (firstBaseline + index * lineHeight - height / 2) * textScale}" text-anchor="middle" fill="${escapeXml$2(textColor)}" font-family="${escapeXml$2(fontFamily)}" font-size="${fontSize * textScale}">${escapeXml$2(line)}</text>`).join("");
-  const body = shapeTransition === void 0 ? renderBody(input.style, width, height, direction, fill, border, tailLength, offset) : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(shapeTransition.from, width, height, direction, fill, border, tailLength, offset)}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(shapeTransition.to, width, height, direction, fill, border, tailLength, offset)}</g>`;
+  const body = shapeTransition === void 0 ? renderBody(input.style, width, height, direction, fill, border, tailLength, offset, target) : `<g opacity="${(1 - shapeTransition.progress).toFixed(4)}">${renderBody(shapeTransition.from, width, height, direction, fill, border, tailLength, offset, target)}</g><g opacity="${shapeTransition.progress.toFixed(4)}">${renderBody(shapeTransition.to, width, height, direction, fill, border, tailLength, offset, target)}</g>`;
   const title = escapeXml$2(input.title ?? `${input.style} bubble`);
   const transitionAttributes = shapeTransition === void 0 ? "" : ` data-bubble-shape-transition-from="${shapeTransition.from}" data-bubble-shape-transition-to="${shapeTransition.to}" data-bubble-shape-transition-progress="${shapeTransition.progress.toFixed(4)}"`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" role="img" data-bubble-renderer="canonical" data-bubble-style="${input.style}" data-bubble-body-width="${width}" data-bubble-body-height="${height}"${transitionAttributes}><title>${title}</title>${body}${text}</svg>`;
@@ -10142,7 +10170,21 @@ function createBubbleComposition(options) {
       * must not fall back to the plain renderer mid-reveal.
       */
       const usesRichPath = () => !isPlainBubbleContent(currentContent);
+      const textLayoutStyle = (content, style) => {
+        const viewportWidth = options.getMaxTextWidth?.(style);
+        if (viewportWidth === void 0) return style;
+        if (!Number.isFinite(viewportWidth) || viewportWidth <= 0) throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Host text width must be positive and finite.");
+        if (style.maxWidth === void 0 && usesRichPath() && (textCapability.measureRichText?.({
+          runs: content,
+          styleName: style.textStyle
+        }) ?? Number.POSITIVE_INFINITY) <= viewportWidth) return style;
+        return {
+          ...style,
+          maxWidth: Math.min(style.maxWidth ?? Number.POSITIVE_INFINITY, viewportWidth)
+        };
+      };
       const applySurfaceContent = async (content, nextStyle = activeStyle) => {
+        nextStyle = textLayoutStyle(content, nextStyle);
         if (usesRichPath()) {
           if (!surface) return;
           if (nextStyle.layoutProfile === "scratch-default" && surface.renderScratchText) throw new BubbleCompositionError("BUBBLE-COMPOSITION-007", "Bubble ruby content requires a rich text capability; the scratch-default surface renders plain text only.");
@@ -10168,6 +10210,7 @@ function createBubbleComposition(options) {
       };
       const applyReservedLayout = (content, nextStyle = activeStyle) => {
         if (!surface) return;
+        nextStyle = textLayoutStyle(content, nextStyle);
         if (!usesRichPath()) {
           textCapability.setText({
             styleName: nextStyle.textStyle,
@@ -12738,12 +12781,20 @@ function createSvgOverlaySurface(manager, actor, actorKey, kind, style, schedule
       tailLength: currentStyle.tailLength,
       offset: bodyOffset
     });
+    const bounds = targetBounds$1(actor);
+    const actorCenterX = Number.isFinite(actor.x) ? Number(actor.x) : (bounds.left + bounds.right) / 2;
+    const actorCenterY = Number.isFinite(actor.y) ? Number(actor.y) : (bounds.bottom + bounds.top) / 2;
+    const tailTarget = tailDirection === null ? void 0 : {
+      x: baseBubbleWidth / 2 + bodyCenterOffset.x + actorCenterX - centerX,
+      y: baseBubbleHeight / 2 + bodyCenterOffset.y + centerY - actorCenterY
+    };
     const nextBodySignature = JSON.stringify({
       baseBubbleHeight,
       baseBubbleWidth,
       bodyOffset,
       shapeTransition,
       tailDirection,
+      tailTarget,
       tailLength: currentStyle.tailLength,
       visualStyle: currentStyle.visualStyle
     });
@@ -12754,6 +12805,7 @@ function createSvgOverlaySurface(manager, actor, actorKey, kind, style, schedule
         width: baseBubbleWidth,
         height: baseBubbleHeight,
         tailDirection,
+        ...tailTarget === void 0 ? {} : { tailTarget },
         tailLength: currentStyle.tailLength,
         offset: bodyOffset,
         title: `${currentStyle.name} Bubble body`,
@@ -13171,6 +13223,15 @@ function clamp(value, minimum, maximum) {
   if (maximum < minimum) return (minimum + maximum) / 2;
   return Math.min(maximum, Math.max(minimum, value));
 }
+function readStageSize(renderer) {
+  const value = renderer.getNativeSize();
+  const width = Array.isArray(value) ? Number(value[0]) : 0;
+  const height = Array.isArray(value) ? Number(value[1]) : 0;
+  return {
+    width: Number.isFinite(width) && width > 0 ? width : 480,
+    height: Number.isFinite(height) && height > 0 ? height : 360
+  };
+}
 function expandSvgViewport(svg, width, height, extraX, extraY) {
   const expandedWidth = width + extraX * 2;
   const expandedHeight = height + extraY * 2;
@@ -13392,6 +13453,13 @@ function createSurface(runtime, actor, actorKey, kind, style, scheduler) {
         tailLength: currentStyle.tailLength,
         offset: bodyOffset
       });
+      const bounds = targetBounds(actor);
+      const actorCenterX = Number.isFinite(actor.x) ? Number(actor.x) : (bounds.left + bounds.right) / 2;
+      const actorCenterY = Number.isFinite(actor.y) ? Number(actor.y) : (bounds.bottom + bounds.top) / 2;
+      const tailTarget = tailDirection === null ? void 0 : {
+        x: baseBubbleWidth / 2 + bodyCenterOffset.x + actorCenterX - centerX,
+        y: baseBubbleHeight / 2 + bodyCenterOffset.y + centerY - actorCenterY
+      };
       const viewportExtraX = Math.abs(bodyOffset[0]) + baseBubbleWidth * Math.abs(scaleMultiplier - 1) + Math.max(0, currentStyle.tailLength - 18) + 8;
       const viewportExtraY = Math.abs(bodyOffset[1]) + baseBubbleHeight * Math.abs(scaleMultiplier - 1) + Math.max(0, currentStyle.tailLength - 18) + 8;
       const nextBodySkinSignature = JSON.stringify({
@@ -13399,6 +13467,7 @@ function createSurface(runtime, actor, actorKey, kind, style, scheduler) {
         baseBubbleWidth,
         bodyOffset,
         tailDirection,
+        tailTarget,
         tailLength: currentStyle.tailLength,
         viewportExtraX,
         viewportExtraY,
@@ -13412,6 +13481,7 @@ function createSurface(runtime, actor, actorKey, kind, style, scheduler) {
           width: baseBubbleWidth,
           height: baseBubbleHeight,
           tailDirection,
+          ...tailTarget === void 0 ? {} : { tailTarget },
           tailLength: currentStyle.tailLength,
           offset: bodyOffset,
           title: `${currentStyle.name} Bubble body`,
@@ -13737,6 +13807,30 @@ function createTurboWarpBubbleComposition(runtimeInput, options = {}) {
   else if (options.textCapability !== void 0) textCapability = options.textCapability;
   else try {
     textCapability = runtime.ext_kubohiroyasvgtext === void 0 ? createDefaultScratchRenderTextCapability(runtime) : createTurboWarpSvgTextCapability(runtime.ext_kubohiroyasvgtext);
+    const extension = runtime.ext_kubohiroyasvgtext;
+    if (isRecord(extension) && typeof extension.measureText !== "function") {
+      if (typeof extension.getLayoutCapability === "function") {
+        const layoutCapability = createTurboWarpSvgTextOverlayTextCapability(extension);
+        textCapability = {
+          ...textCapability,
+          measureText({ styleName, text }) {
+            const native = readStageSize(renderer);
+            return layoutCapability.measureText?.({
+              nativeSize: native,
+              styleName,
+              text
+            }) ?? layoutCapability.layoutText({
+              nativeSize: native,
+              styleName,
+              text
+            }).width;
+          }
+        };
+      } else textCapability = {
+        setText: textCapability.setText,
+        releaseTarget: textCapability.releaseTarget
+      };
+    }
   } catch (error) {
     throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-003", `Bubble could not initialize the scratch-render text provider: ${error instanceof Error ? error.message : String(error)}`);
   }
@@ -13791,6 +13885,12 @@ function createTurboWarpBubbleComposition(runtimeInput, options = {}) {
     ...imageResolver === void 0 ? {} : { imageResolver },
     audio,
     textCapability,
+    ...typeof textCapability.measureText !== "function" ? {} : { getMaxTextWidth(style) {
+      const stageWidth = readStageSize(renderer).width;
+      const scale = style.placement.basis === "actor" ? style.offset.scalePercent / 100 : 1;
+      const portraitWidth = style.portrait === void 0 ? 0 : portraitBoxSize * (style.portrait.offset.zoomPercent / 100) + contentGap;
+      return Math.max(1, (stageWidth - 32) / scale - 48 - portraitWidth);
+    } },
     createSurface({ actor, actorKey, kind, style }) {
       if (!isRecord(actor) || typeof actor.id !== "string") throw new BubbleRuntimeAdapterError("BUBBLE-RUNTIME-001", "Bubble actor target is invalid.");
       return renderBackend === "svg-overlay" ? createSvgOverlaySurface(overlayManager, actor, actorKey, kind, style, scheduler) : createSurface(runtime, actor, actorKey, kind, style, scheduler);

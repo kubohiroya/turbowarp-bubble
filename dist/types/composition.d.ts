@@ -162,6 +162,8 @@ export interface BubbleCompositionOptions {
     readonly audio?: BubbleAudioCapability;
     readonly textCapability: BubbleTextCapability;
     readonly createSurface: BubbleSurfaceFactory;
+    /** Host viewport limit for text before actor-relative scale and portrait layout. */
+    readonly getMaxTextWidth?: (style: BubbleStyle) => number;
     readonly scheduler?: BubbleScheduler;
     readonly onAnimationError?: (error: unknown, context: BubbleAnimationErrorContext) => void;
 }
